@@ -17,4 +17,5 @@ package domains
 func InitRuntime(settings *DomainSettings, domain Domain) {
 	settings.Tarpit = NewTarpitLimiter(domain.TarpitDelayMs, domain.TarpitSusLv, domain.TarpitMaxConns)
 	settings.Cache = NewEdgeCache(domain.EdgeCache, domain.EdgeCacheTTL, domain.EdgeCacheMaxMB)
+	settings.Waiting = NewWaitingRoom(domain.WaitingRoom, domain.WaitingRoomThreshold, domain.WaitingRoomAdmit)
 }

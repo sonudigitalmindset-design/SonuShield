@@ -52,6 +52,9 @@ type Domain struct {
 	EdgeCache           bool             `json:"edgeCache"`
 	EdgeCacheTTL        int              `json:"edgeCacheTTL"`
 	EdgeCacheMaxMB      int              `json:"edgeCacheMaxMB"`
+	WaitingRoom         bool             `json:"waitingRoom"`
+	WaitingRoomThreshold int              `json:"waitingRoomThreshold"`
+	WaitingRoomAdmit    int              `json:"waitingRoomAdmit"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -97,11 +100,15 @@ type DomainSettings struct {
 	EdgeCache           bool
 	EdgeCacheTTL        int
 	EdgeCacheMaxMB      int
+	WaitingRoom         bool
+	WaitingRoomThreshold int
+	WaitingRoomAdmit    int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
-	Tarpit *TarpitLimiter
-	Cache  *EdgeCache
+	Tarpit  *TarpitLimiter
+	Cache   *EdgeCache
+	Waiting *WaitingRoom
 }
 
 type DomainLog struct {

@@ -228,6 +228,9 @@ func Load() {
 			EdgeCache:           domain.EdgeCache,
 			EdgeCacheTTL:        domain.EdgeCacheTTL,
 			EdgeCacheMaxMB:      domain.EdgeCacheMaxMB,
+			WaitingRoom:         domain.WaitingRoom,
+			WaitingRoomThreshold: domain.WaitingRoomThreshold,
+			WaitingRoomAdmit:    domain.WaitingRoomAdmit,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

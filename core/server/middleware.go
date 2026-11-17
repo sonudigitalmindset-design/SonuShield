@@ -566,6 +566,16 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	//Waiting room. When enabled and bypassed traffic is over the
+	//threshold, excess visitors queue fairly instead of being
+	//dropped. Reserved paths and cached responses already returned
+	//above, so only backend-bound traffic is ever queued.
+	if domainSettings.Waiting != nil {
+		if checkWaitingRoom(writer, request, ip, domainSettings.Waiting, domainData.RequestsBypassedPerSecond) {
+			return
+		}
+	}
+
 	//Allow backend to read client information
 	request.Header.Add("x-real-ip", ip)
 	request.Header.Add("proxy-real-ip", ip)
