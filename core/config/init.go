@@ -101,9 +101,9 @@ func Load() {
 
 	fmt.Println("Loading Fingerprints ...")
 
-	GetFingerprints("https://raw.githubusercontent.com/41Baloo/balooProxy/main/global/fingerprints/known_fingerprints.json", &firewall.KnownFingerprints)
-	GetFingerprints("https://raw.githubusercontent.com/41Baloo/balooProxy/main/global/fingerprints/bot_fingerprints.json", &firewall.BotFingerprints)
-	GetFingerprints("https://raw.githubusercontent.com/41Baloo/balooProxy/main/global/fingerprints/malicious_fingerprints.json", &firewall.ForbiddenFingerprints)
+	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/known_fingerprints.json", &firewall.KnownFingerprints)
+	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/bot_fingerprints.json", &firewall.BotFingerprints)
+	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/malicious_fingerprints.json", &firewall.ForbiddenFingerprints)
 
 	for i, domain := range domains.Config.Domains {
 		domains.Domains = append(domains.Domains, domain.Name)
@@ -235,7 +235,7 @@ func Load() {
 }
 
 func VersionCheck() error {
-	resp, err := http.Get("https://raw.githubusercontent.com/41Baloo/balooProxy/main/global/proxy/version.json")
+	resp, err := http.Get("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/proxy/version.json")
 	if err != nil {
 		return errors.New("Failed to check for proxy version: " + err.Error())
 	}
