@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+*.md
+config.json
+crash.log
+oryxBuildBinary
+main
+dist/

@@ -16,7 +16,7 @@ import (
 
 	"github.com/inancgumus/screen"
 	"github.com/kor44/gofilter"
-	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/v4/cpu"
 	"golang.org/x/term"
 
 	"goProxy/core/domains"
