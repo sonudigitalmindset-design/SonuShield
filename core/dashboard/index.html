@@ -311,6 +311,28 @@ tr.selected td{background:var(--nav-active-bg)}
         <div id="simResult" style="margin-top:12px"></div>
       </div>
       <div class="panel">
+        <h2>Export / import rules</h2>
+        <p class="small muted">Export downloads the rule set as JSON. Import validates every rule first — an invalid import is rejected and nothing changes. Replace mode overwrites the whole rule set; append mode adds to it.</p>
+        <div class="btnrow">
+          <button type="button" id="rulesExportBtn">Export rules (JSON)</button>
+        </div>
+        <form id="importForm" style="margin-top:12px">
+          <div class="formgrid">
+            <div class="field" style="grid-column:1/-1">
+              <label for="importJson">Rules JSON</label>
+              <textarea id="importJson" rows="5" spellcheck="false" autocomplete="off" placeholder='[{"expression": "(http.path eq \"/wp-login.php\")", "action": "4"}]'></textarea>
+            </div>
+            <div class="field">
+              <label for="importMode">Mode</label>
+              <select id="importMode"><option value="replace">Replace all rules</option><option value="append">Append to existing rules</option></select>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit">Import rules</button>
+          </div>
+        </form>
+      </div>
+      <div class="panel">
         <h2>What the actions mean</h2>
         <table>
           <thead><tr><th>Action</th><th>Meaning</th></tr></thead>
@@ -832,6 +854,40 @@ function simulateRule(){
   });
 }
 
+function exportRules(){
+  showInline("rulesError", "rulesOk", "", "");
+  domainAction(currentDomain, "EXPORT_RULES").then(function(r){
+    var blob = new Blob([JSON.stringify(r.RULES || [], null, 2)], {type: "application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "sonushield-rules-" + currentDomain + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    showInline("rulesError", "rulesOk", "", "Exported " + (r.RULE_COUNT || 0) + " rule(s).");
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", "Could not export rules: " + err.message, "");
+  });
+}
+
+function importRules(ev){
+  ev.preventDefault();
+  var payload = $("importJson").value.trim();
+  if(!payload) return;
+  var mode = $("importMode").value;
+  if(mode === "replace" && !window.confirm("Replace ALL firewall rules for " + currentDomain + " with the imported set? The current config is backed up first.")) return;
+  showInline("rulesError", "rulesOk", "", "");
+  domainWrite(currentDomain, "IMPORT_RULES", {rules: payload, mode: mode}).then(function(r){
+    showInline("rulesError", "rulesOk", "", "Imported " + (r.IMPORTED || 0) + " rule(s) and saved to config.json.");
+    $("importJson").value = "";
+    return loadRules(true);
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", "Could not import rules: " + err.message, "");
+  });
+}
+
 function loadLogs(){
   setText("logsDomain", currentDomain);
   return domainAction(currentDomain, "GET_LOGS").then(function(r){
@@ -1182,6 +1238,8 @@ $("simForm").addEventListener("submit", function(ev){
   ev.preventDefault();
   simulateRule();
 });
+$("rulesExportBtn").addEventListener("click", exportRules);
+$("importForm").addEventListener("submit", importRules);
 $("ruleCancel").addEventListener("click", function(){
   resetRuleForm();
   showInline("rulesError", "rulesOk", "", "");
