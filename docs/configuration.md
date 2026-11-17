@@ -81,6 +81,12 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `autoSSLCacheDir` | String | Directory where obtained certificates are cached (default `autocert-cache`). |
 | `autoSSLEmail` | String | Optional contact email sent to Let's Encrypt for expiry notices. Empty sends none. |
 | `quietMode` | Bool | `true` removes product-identifying strings from visitor-facing output. Default `false`. See [Quiet Mode](#quiet-mode). |
+| `metricsEnabled` | Bool | `true` exposes the Prometheus metrics endpoint on the admin-secret path. Default `false` (disabled). See [Prometheus Metrics](#prometheus-metrics). |
+| `reportDirectory` | String | Directory that receives one JSON + CSV attack report per finished attack. Empty (default) disables directory export. See [Attack Reports](#attack-reports). |
+| `logFormat` | String | `"json"` enables structured JSON logging to `logFile`; `"text"` (default) keeps the existing output. See [Structured Logs](#structured-logs). |
+| `logFile` | String | Path of the JSON log file. Required when `logFormat` is `"json"`; without it, JSON logging stays disabled with a startup warning. |
+| `logMaxBytes` | Int | Maximum size of the current log file in bytes before rotation (default `10485760`, 10 MiB; values below 64 KiB use the default). |
+| `logMaxFiles` | Int | Total log files kept including the current one (default `5`; clamped to `1`–`100`). |
 
 Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 
@@ -101,6 +107,8 @@ Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 | `certificate` | String | Path to the domain's TLS certificate, for example `assets/server/server.crt`. Not loaded in Cloudflare mode. |
 | `key` | String | Path to the domain's TLS private key, for example `assets/server/server.key`. Not loaded in Cloudflare mode. |
 | `webhook` | Object | Discord alert settings. See [Webhook](#webhook). |
+| `telegram` | Object | Telegram alert settings. See [Telegram and Email Alerts](#telegram-and-email-alerts). |
+| `email` | Object | Email (SMTP) alert settings. See [Telegram and Email Alerts](#telegram-and-email-alerts). |
 | `firewallRules` | Array | Custom firewall rules. See [Firewall Rules](firewall-rules.md). |
 | `bypassStage1` | Int | Bypassing requests per second that activate Stage 2. |
 | `bypassStage2` | Int | Bypassing requests per second that activate Stage 3. |
@@ -183,6 +191,72 @@ With `quietMode: true`, visitor-facing output carries no product identification:
 
 Quiet mode affects only what site visitors see. It never affects authorship attribution: the `/_bProxy/credits` endpoint, the `LICENSE` file, README/docs credits, and code-level credits are always present and unchanged.
 
+## Prometheus Metrics
+
+With `metricsEnabled: true`, the proxy serves Prometheus exposition format (text 0.0.4) at:
+
+```text
+/_bProxy/<adminsecret>/metrics
+```
+
+Access control is the same secret-gated pattern as the dashboard and the v1 API: the path contains the `adminsecret`, and the endpoint is disabled entirely unless `metricsEnabled` is set. It is never exposed openly. Scrapes are handled before any challenge or rate limiting, so they are neither challenged nor counted in the request statistics. When disabled, the path falls through to normal request handling exactly as if the endpoint did not exist.
+
+Exported series (all per domain, except the info and aggregate gauges):
+
+| Series | Description |
+|--------|-------------|
+| `sonushield_info{version}` | Proxy version. Always `1`. |
+| `sonushield_requests_total{domain}` | Total requests seen. |
+| `sonushield_requests_bypassed_total{domain}` | Requests that passed the challenges. |
+| `sonushield_requests_per_second{domain}` | Current total requests per second. |
+| `sonushield_requests_bypassed_per_second{domain}` | Current bypassed requests per second. |
+| `sonushield_peak_requests_per_second{domain}` | Peak total requests per second in the current attack window. |
+| `sonushield_peak_requests_bypassed_per_second{domain}` | Peak bypassed requests per second in the current attack window. |
+| `sonushield_stage{domain}` | Current challenge stage (1–3). |
+| `sonushield_stage_locked{domain}` | `1` when the stage is manually locked, else `0`. |
+| `sonushield_attack_raw{domain}` / `sonushield_attack_bypass{domain}` | `1` while the respective attack state is active. |
+| `sonushield_blocks_total{domain,reason}` | Blocks by reason: `ratelimit`, `fingerprint`, `waf`, `suspect`. |
+| `sonushield_challenges_total{domain,stage}` | Challenges served, by stage. |
+| `sonushield_waf_matches_total{domain,rule}` | WAF-lite matches, by rule name. |
+| `sonushield_backend_requests_total{domain,result}` | Backend round trips: `ok` or `error`. |
+| `sonushield_backend_latency_seconds{domain}` | Backend latency histogram (buckets 5 ms–10 s, plus `+Inf`, with `_sum` and `_count`). |
+| `sonushield_cpu_usage_percent` / `sonushield_ram_usage_percent` | Proxy process CPU/RAM, when measurable. |
+| `sonushield_unknown_fingerprints` / `sonushield_ips_tracked` | Aggregate counts only. No IP address or fingerprint value is ever used as a label, so cardinality stays bounded.
+
+Example scrape configuration (replace the host and secret):
+
+```yaml
+scrape_configs:
+  - job_name: sonushield
+    scheme: https
+    metrics_path: /_bProxy/CHANGE_ME/metrics
+    static_configs:
+      - targets: ['example.com:443']
+```
+
+## Attack Reports
+
+The [`GET_ATTACK_REPORT`](api.md#domain-actions) API action returns a summary for one domain: the attack window (from the per-second request logger), totals, current and peak request rates, stage and attack flags, and the actions taken (blocks by reason, challenges by stage, WAF matches by rule, backend results and average latency). It also lists the top IPs and unknown fingerprints with request counts, enriched with country/ASN when a GeoIP database is configured.
+
+The per-IP and per-fingerprint tallies are **proxy-wide**, not per-domain: the firewall tracks them globally, and reports label them as such. Country aggregates are computed over the listed top IPs only. Reports contain metadata only — no request bodies, cookies, headers, or secrets.
+
+With `reportDirectory` set, the proxy additionally writes one JSON file and one CSV file per finished attack into that directory (created if needed), named `<domain>_<window start>_<window end>.json` / `.csv`. A numeric suffix is added if a file with that name already exists, so earlier reports are never overwritten. Export failures are logged and never affect traffic. The CSV form is a single flat table with the header `section,key,value,detail`, covering the summary fields, action counts, top IPs (with `country=` / `asn=` detail), fingerprints, and countries.
+
+## Structured Logs
+
+With `logFormat: "json"` and `logFile` set, the proxy appends one JSON object per line to the log file for these events: `allow` (request passed the challenges), `block` (ratelimit, fingerprint, WAF, or suspect block), `challenge` (stage 1/2/3 served), `waf` (WAF-lite match in log-only mode), and `attack_start` / `attack_end`. Every entry carries `ts`, `level`, `event`, and `domain`; request entries add `ip`, `action`, `rule` and/or matched firewall-rule `rules`, fingerprints (`fingerprint`, `ja4`, `http_fingerprint`), `stage`, `sus_level`, `method`, `path`, truncated `user_agent`, and fail-open `country` / `asn` when a GeoIP database is loaded.
+
+Privacy rules, enforced in the logger itself:
+
+- Request bodies, cookies, and headers are never logged.
+- The path is stripped of its query string, so tokens in URLs cannot leak.
+- The admin secret embedded in API/dashboard/metrics paths is redacted to `/_bProxy/[redacted]/...`.
+- The user-agent is truncated to 200 characters.
+
+JSON is written only to the file, never to stdout (the terminal HUD redraws there). `logFormat` values other than `json` keep the existing text output; `json` without `logFile` logs a startup warning and stays disabled. A `reload` applies new log settings without a restart.
+
+Retention is size-based rotation: when the current file would pass `logMaxBytes` (default 10 MiB), it is renamed to `<file>.1`, older files shift up, and the oldest is deleted, keeping `logMaxFiles` files in total (default 5, so disk use stays near `logMaxBytes × logMaxFiles`). If the log file cannot be opened, written, or rotated, logging disables itself with one warning instead of filling the disk or affecting traffic. The log directory must already exist — it is not created automatically.
+
 ## JA4 Local Overrides
 
 SonuShield computes a JA4 fingerprint for every TLS connection alongside the legacy fingerprint (see [How It Works](how-it-works.md#tls-fingerprinting)). The built-in JA4 lists start empty, and you can teach the proxy JA4 values you have observed yourself with an optional `ja4_fingerprints.json` file next to `config.json`:
@@ -214,6 +288,59 @@ Each domain can send Discord DDoS alerts through a webhook. Create a webhook in 
 Both messages support placeholders: `{{domain.name}}`, `{{attack.start}}`, `{{attack.end}}`, `{{proxy.cpu}}`, and `{{proxy.ram}}`.
 
 Alerts are only sent when the stage is **not** locked, when the first stage starts being bypassed, and when the attack ends. See [DDoS Alerts](features.md#ddos-alerts).
+
+## Telegram and Email Alerts
+
+Alongside Discord, each domain can send the same attack start/stop alerts over Telegram and email. Each channel is independent: configure any combination, and a channel with missing settings stays silent. All credentials come from `config.json` only — none are bundled, invented, or logged, and a failed send prints only a generic failure line.
+
+Telegram needs a bot token and a chat ID from your own bot (create one with [@BotFather](https://t.me/BotFather), then message the bot and read the chat ID from the `getUpdates` API response):
+
+```json
+"telegram": {
+  "botToken": "123456:your-bot-token",
+  "chatId": "000000000",
+  "attack_start_msg": "Attack detected on {{domain.name}}",
+  "attack_stop_msg": "Attack on {{domain.name}} has stopped"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `botToken` | String | Your Telegram bot's token. |
+| `chatId` | String | The chat (user, group, or channel) the bot sends alerts to. |
+| `attack_start_msg` | String | Message sent when the domain first comes under attack. Empty uses a built-in default. |
+| `attack_stop_msg` | String | Message sent when the attack has ended. Empty uses a built-in default. |
+
+Messages are plain text and support the same placeholders as the Discord webhook (`{{domain.name}}`, `{{attack.start}}`, `{{attack.end}}`, `{{proxy.cpu}}`, `{{proxy.ram}}`).
+
+Email needs an SMTP server you control or have an account on:
+
+```json
+"email": {
+  "smtpHost": "smtp.example.com",
+  "smtpPort": 587,
+  "username": "alerts@example.com",
+  "password": "your-smtp-password",
+  "from": "alerts@example.com",
+  "to": "owner@example.com",
+  "useTLS": false,
+  "attack_start_msg": "",
+  "attack_stop_msg": ""
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `smtpHost` | String | SMTP server hostname. Empty disables email alerts. |
+| `smtpPort` | Int | SMTP port (`0` defaults to `587`; use `465` with `useTLS`). |
+| `username` | String | SMTP username. Empty sends without authentication. |
+| `password` | String | SMTP password (or app password). Never logged. |
+| `from` | String | Sender address. Empty uses the username. |
+| `to` | String | Recipient address. Empty disables email alerts. |
+| `useTLS` | Bool | `true` connects with implicit TLS (port 465 style). `false` (default) uses plain TCP and upgrades with STARTTLS when the server offers it. |
+| `attack_start_msg` / `attack_stop_msg` | String | Message body, same placeholders as above. Empty uses a built-in default. |
+
+Credentials are sent only to the configured SMTP server, and only over an encrypted connection or to a local server. Subjects are `SonuShield DDoS alert: <domain> — attack started/stopped`.
 
 ## Stage Thresholds
 

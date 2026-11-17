@@ -22,9 +22,9 @@ Three challenges, weakest first, escalating automatically when the current one i
 
 ![Discord DDoS alert](assets/alerts.svg)
 
-SonuShield can notify you over Discord whenever one of your domains comes under attack and when the attack ends. Each alert is a Discord embed titled "DDoS Alert" containing your configured message plus fields for the current total and allowed requests per second. The attack-end alert additionally reports the peak request rates and includes a traffic chart.
+SonuShield can notify you over Discord, Telegram, or email whenever one of your domains comes under attack and when the attack ends. The Discord alert is an embed titled "DDoS Alert" containing your configured message plus fields for the current total and allowed requests per second. The attack-end alert additionally reports the peak request rates and includes a traffic chart. Telegram and email alerts carry the same start/stop events as plain-text messages, with the same custom-message templates.
 
-Alerts are only sent when the stage is **not** locked, when the first stage starts being bypassed, and when the attack ends. Setup: per-domain [`webhook`](configuration.md#webhook) settings.
+Alerts are only sent when the stage is **not** locked, when the first stage starts being bypassed, and when the attack ends. Setup: per-domain [`webhook`](configuration.md#webhook) settings for Discord, [`telegram` / `email`](configuration.md#telegram-and-email-alerts) settings for the other channels. Each channel is independent and inert until configured.
 
 ## Lightweight
 
@@ -79,6 +79,18 @@ With `autoSSL` enabled, domains without certificate files get Let's Encrypt cert
 ## Quiet Mode
 
 With `quietMode` enabled, visitor-facing output carries no product identification: no `SonuShield` response header, generic block and error messages, and a generic unknown-host page. Attribution is unaffected — the credits endpoint, license, and docs credits always stay. Details: [Configuration](configuration.md#quiet-mode).
+
+## Prometheus Metrics
+
+With `metricsEnabled` set, the proxy exposes request, block, and challenge counters, request-rate gauges, stage, and backend latency histograms in Prometheus exposition format, per domain. The endpoint is disabled by default and, when enabled, served only on the admin-secret path — it is never open, and scrapes are neither challenged nor counted. Details: [Configuration](configuration.md#prometheus-metrics).
+
+## Attack Reports
+
+The `GET_ATTACK_REPORT` API action returns a summary of the current or most recent attack for a domain — window, totals, current and peak rates, actions taken (blocks, challenges, WAF matches, backend results), and the top IPs, fingerprints, and countries — as JSON or CSV. With `reportDirectory` set, one JSON + CSV pair is also written per finished attack. Reports contain metadata only: no bodies, cookies, or secrets. Details: [Configuration](configuration.md#attack-reports) and [API Reference](api.md#domain-actions).
+
+## Structured Logs
+
+With `logFormat: "json"` and a `logFile` path, the proxy writes one JSON line per event — allowed requests, blocks, challenges, WAF matches, and attack start/end — with consistent fields (timestamp, level, domain, IP, action, rule, fingerprints, stage, path). Size-based rotation bounds disk use. The default text output is unchanged when JSON logging is off. Details: [Configuration](configuration.md#structured-logs).
 
 ## HTTP API
 

@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Mostly planned, not yet implemented.** Batches 2, 4–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batch 1 is implemented** (see its section below). For what SonuShield can do today, see [Features](features.md).
+> **Mostly planned, not yet implemented.** Batches 4–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1 and 2 are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
 
 Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → 7 → 8 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
 
@@ -16,12 +16,12 @@ Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → 7 → 8
 
 Still planned from this batch's original scope: backend health checks and a cached fallback page.
 
-## Batch 2 — Metrics, Alerts, Reports
+## Batch 2 — Metrics, Alerts, Reports ✅ Implemented
 
-- Prometheus metrics.
-- Telegram / email alerts (Discord alerts already exist).
-- Attack reports with export.
-- Structured logs.
+- Prometheus metrics: secret-gated endpoint, disabled by default; per-domain counters, gauges, stage, and backend latency.
+- Telegram / email alerts alongside Discord (activation needs the operator's own bot token / SMTP credentials).
+- Attack reports with JSON/CSV export: `GET_ATTACK_REPORT` API action plus optional per-attack files in an operator-configured directory.
+- Structured logs: optional JSON logging with rotation and privacy redaction; the default text output is unchanged.
 
 ## Batch 4 — Extra Protection and Management
 
