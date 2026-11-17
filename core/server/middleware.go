@@ -234,6 +234,19 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		logging.Log(logging.Entry{Event: "honeypot", Domain: domainName, IP: ip, Action: "honeypot", Rule: logPath, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 
+	//Fake search-bot verification. Only when the operator enabled
+	//it: a claimed Googlebot/Bingbot that DNS does not confirm
+	//raises suspicion. DNS failures fail open ("unchecked") and add
+	//nothing. The classification is also a firewall rule field.
+	searchBot := ""
+	if domainSettings.FakeBotCheck {
+		searchBot = firewall.ClassifySearchBot(ip, reqUa)
+		if searchBot == "fake" {
+			susLv += firewall.FakeBotBump(domainSettings.FakeBotSusLv)
+			logging.Log(logging.Entry{Event: "fakebot", Domain: domainName, IP: ip, Action: "fake_bot", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		}
+	}
+
 	httpFp := firewall.ComputeHTTPFingerprint(request)
 	h2Fp := firewall.ComputeHTTP2Fingerprint(request)
 	repListed := firewall.LookupReputation(ip)
@@ -267,6 +280,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.fingerprint":        tlsFp,
 			"ip.ja4":                ja4Fp,
 			"ip.reputation":         repValue,
+			"ip.searchbot":          searchBot,
 			"ip.http_requests":      ipCount,
 			"ip.challenge_requests": ipCountCookie,
 

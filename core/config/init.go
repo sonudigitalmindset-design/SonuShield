@@ -219,6 +219,8 @@ func Load() {
 			WAFWpLoginLimit:     domain.WAFWpLoginLimit,
 			HoneypotPaths:       domain.HoneypotPaths,
 			HoneypotSusLv:       domain.HoneypotSusLv,
+			FakeBotCheck:        domain.FakeBotCheck,
+			FakeBotSusLv:        domain.FakeBotSusLv,
 		})
 
 		firewall.Mutex.Lock()

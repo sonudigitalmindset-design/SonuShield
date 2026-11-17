@@ -44,6 +44,8 @@ type Domain struct {
 	WAFMode             string           `json:"wafMode"`
 	HoneypotPaths       []string         `json:"honeypotPaths"`
 	HoneypotSusLv       int              `json:"honeypotSusLv"`
+	FakeBotCheck        bool             `json:"fakeBotCheck"`
+	FakeBotSusLv        int              `json:"fakeBotSusLv"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -81,6 +83,8 @@ type DomainSettings struct {
 	WAFWpLoginLimit     int
 	HoneypotPaths       []string
 	HoneypotSusLv       int
+	FakeBotCheck        bool
+	FakeBotSusLv        int
 }
 
 type DomainLog struct {
