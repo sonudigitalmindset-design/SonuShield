@@ -50,6 +50,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	var ip string
 	var tlsFp string
+	var ja4Fp string
 	var browser string
 	var botFp string
 
@@ -76,6 +77,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		//Retrieve information about the client
 		firewall.Mutex.RLock()
 		tlsFp = firewall.Connections[request.RemoteAddr]
+		ja4Fp = firewall.ConnectionsJA4[request.RemoteAddr]
 		fpCount = firewall.UnkFps[tlsFp]
 		ipCount = firewall.AccessIps[ip]
 		ipCountCookie = firewall.AccessIpsCookie[ip]
@@ -84,6 +86,18 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		//Read-Only IMPORTANT: Must be put in mutex if you add the ability to change indexed fingerprints while program is running
 		browser = firewall.KnownFingerprints[tlsFp]
 		botFp = firewall.BotFingerprints[tlsFp]
+
+		//JA4 fills in only when the legacy fingerprint is unknown, so the
+		//legacy lists stay the primary signal. JA4 lists are empty by
+		//default; see global/fingerprints/SOURCES.md.
+		if ja4Fp != "" {
+			if browser == "" {
+				browser = firewall.KnownJA4[ja4Fp]
+			}
+			if botFp == "" {
+				botFp = firewall.BotJA4[ja4Fp]
+			}
+		}
 	}
 
 	firewall.Mutex.Lock()
@@ -132,8 +146,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		firewall.Mutex.Unlock()
 	}
 
-	//Block user-specified fingerprints
+	//Block user-specified fingerprints (legacy list first, JA4 second)
 	forbiddenFp := firewall.ForbiddenFingerprints[tlsFp]
+	if forbiddenFp == "" && ja4Fp != "" {
+		forbiddenFp = firewall.ForbiddenJA4[ja4Fp]
+	}
 	if forbiddenFp != "" {
 		writer.Header().Set("Content-Type", "text/plain")
 		SendResponse("Blocked by SonuShield.\nYour browser "+forbiddenFp+" is not allowed.", buffer, writer)
@@ -147,6 +164,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	domainSettings := settingsQuery.(domains.DomainSettings)
 
 	reqUa := request.UserAgent()
+	httpFp := firewall.ComputeHTTPFingerprint(request)
 
 	if len(domainSettings.CustomRules) != 0 {
 		requestVariables := gofilter.Message{
@@ -154,6 +172,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.engine":             browser,
 			"ip.bot":                botFp,
 			"ip.fingerprint":        tlsFp,
+			"ip.ja4":                ja4Fp,
 			"ip.http_requests":      ipCount,
 			"ip.challenge_requests": ipCountCookie,
 
@@ -164,7 +183,8 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"http.query":      request.URL.RawQuery,
 			"http.path":       request.URL.Path,
 			"http.user_agent": strings.ToLower(reqUa),
-			"http.cookie":     request.Header.Get("Cookie"),
+			"http.cookie":      request.Header.Get("Cookie"),
+			"http.fingerprint": httpFp,
 
 			"proxy.stage":         domainData.Stage,
 			"proxy.cloudflare":    domains.Config.Proxy.Cloudflare,
@@ -329,7 +349,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	case "/_bProxy/fingerprint":
 		writer.Header().Set("Content-Type", "text/plain")
-		SendResponse("IP: "+ip+"\nIP Requests: "+strconv.Itoa(ipCount)+"\nIP Challenge Requests: "+strconv.Itoa(ipCountCookie)+"\nSusLV: "+strconv.Itoa(susLv)+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp, buffer, writer)
+		SendResponse("IP: "+ip+"\nIP Requests: "+strconv.Itoa(ipCount)+"\nIP Challenge Requests: "+strconv.Itoa(ipCountCookie)+"\nSusLV: "+strconv.Itoa(susLv)+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp+"\nJA4: "+ja4Fp+"\nHTTP Fingerprint: "+httpFp, buffer, writer)
 		return
 	case "/_bProxy/verified":
 		writer.Header().Set("Content-Type", "text/plain")

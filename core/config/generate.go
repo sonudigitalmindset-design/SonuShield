@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sonushield/core/domains"
+	"sonushield/core/firewall"
 	"sonushield/core/utils"
 	"io/ioutil"
 	"net/http"
@@ -116,4 +117,48 @@ func GetFingerprints(url string, target *map[string]string) error {
 		return errors.New("failed to fetch fingerprints: " + err.Error())
 	}
 	return nil
+}
+
+// LoadJA4LocalOverrides merges operator-observed JA4 values from a local
+// JSON file (next to config.json) over the fetched JA4 lists. Local entries
+// win on key conflicts. The file is optional: when it does not exist this
+// is a silent no-op, and when it fails to parse a warning is printed and
+// the fetched lists are kept unchanged (fail-open).
+//
+// Expected format:
+//
+//	{
+//	  "known": {"t13d...": "Chromium"},
+//	  "bot": {"t13d...": "SomeBot"},
+//	  "malicious": {"t13d...": "Flood tool"}
+//	}
+//
+// Only JA4 values observed on your own proxy (see /_bProxy/fingerprint)
+// belong here: SonuShield JA4 values are computed from the fields Go's
+// TLS stack exposes and are not comparable with values from external
+// JA4 databases. See global/fingerprints/SOURCES.md.
+func LoadJA4LocalOverrides(path string) {
+	body, err := ioutil.ReadFile(path)
+	if err != nil {
+		return
+	}
+
+	var overrides struct {
+		Known     map[string]string `json:"known"`
+		Bot       map[string]string `json:"bot"`
+		Malicious map[string]string `json:"malicious"`
+	}
+	if err := json.Unmarshal(body, &overrides); err != nil {
+		fmt.Println("[ ! ] [ Failed to parse " + path + ", keeping fetched JA4 lists: " + err.Error() + " ]")
+		return
+	}
+
+	merge := func(dst map[string]string, src map[string]string) {
+		for key, value := range src {
+			dst[key] = value
+		}
+	}
+	merge(firewall.KnownJA4, overrides.Known)
+	merge(firewall.BotJA4, overrides.Bot)
+	merge(firewall.ForbiddenJA4, overrides.Malicious)
 }

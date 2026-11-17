@@ -105,6 +105,14 @@ func Load() {
 	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/bot_fingerprints.json", &firewall.BotFingerprints)
 	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/malicious_fingerprints.json", &firewall.ForbiddenFingerprints)
 
+	//JA4 lists. Intentionally empty by default: SonuShield JA4 values are
+	//only comparable with other SonuShield-computed values, so no values
+	//are bundled. See global/fingerprints/SOURCES.md.
+	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/ja4_known.json", &firewall.KnownJA4)
+	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/ja4_bot.json", &firewall.BotJA4)
+	GetFingerprints("https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/global/fingerprints/ja4_malicious.json", &firewall.ForbiddenJA4)
+	LoadJA4LocalOverrides("ja4_fingerprints.json")
+
 	for i, domain := range domains.Config.Domains {
 		domains.Domains = append(domains.Domains, domain.Name)
 

@@ -9,6 +9,7 @@ func init() {
 	gofilter.RegisterField("ip.engine", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.bot", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.fingerprint", gofilter.FT_STRING)
+	gofilter.RegisterField("ip.ja4", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.requests", gofilter.FT_INT)
 	gofilter.RegisterField("ip.http_requests", gofilter.FT_INT)
 	gofilter.RegisterField("ip.challenge_requests", gofilter.FT_INT)
@@ -22,6 +23,7 @@ func init() {
 	gofilter.RegisterField("http.user_agent", gofilter.FT_STRING)
 	gofilter.RegisterField("http.cookie", gofilter.FT_STRING)
 	gofilter.RegisterField("http.headers", gofilter.FT_STRING)
+	gofilter.RegisterField("http.fingerprint", gofilter.FT_STRING)
 	gofilter.RegisterField("http.body", gofilter.FT_STRING)
 
 	gofilter.RegisterField("proxy.stage", gofilter.FT_INT)
