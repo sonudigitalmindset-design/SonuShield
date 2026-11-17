@@ -1,502 +1,604 @@
-# **Features**
+# SonuShield
 
-## **TLS-Fingerprinting**
+SonuShield is a lightweight HTTP anti-DDoS reverse proxy written in Go. It sits in front of your web server, fingerprints incoming TLS connections, and automatically escalates through three challenges — an invisible cookie challenge, a proof-of-work JavaScript challenge, and a custom captcha — as attacks get stronger, while affecting real visitors as little as possible.
 
-`TLS Fingerprinting` opens a whole new world of possibilities to defend against malicious attacks.
+> **Attribution:** Originally by [41Baloo (balooProxy)](https://github.com/41Baloo/balooProxy), forked and rebuilt by [Sonu Digital Mindset](https://github.com/sonudigitalmindset-design). SonuShield is free software licensed under the [GNU General Public License v3.0](LICENSE). The original project's copyright and license notices are preserved.
 
-On one hand you can use `tls fingerprinting` to `whitelist` specific fingerprints, take for example seo bots, `blacklist` unwanted fingerprints, like for example wordpress exploit crawlers, ratelimit attackers that use proxies to change their ips or just simply gain more information about a visitor
+## Contents
 
-## **Staged DDoS-Mitigation**
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Certificates](#certificates)
+- [Running](#running)
+- [Docker](#docker)
+- [DNS Setup](#dns-setup)
+- [Configuration](#configuration)
+- [Terminal](#terminal)
+- [Commands](#commands)
+- [Custom Firewall Rules](#custom-firewall-rules)
+- [API](#api)
+- [Startup Checks](#startup-checks)
+- [Roadmap](#roadmap)
+- [License](#license)
 
-balooProxy comes with `3 distinct challenges`, in order to defend against bots/ddos attacks effectively, whilst effecting an actual users experience as little as possible. In order to archive that, balooProxy starts with the "weakest" and least notable challenge and automatically changes them when it detects one of them is being bypassed
+## Features
 
-### **Cookie Challenge**
+### TLS Fingerprinting
 
-The cookie challenge is completely invisible and supported by every webbrowser, aswell as most http libraries. It is an effective method to defend against simple ddos attacks
+TLS fingerprinting opens up a whole new range of ways to defend against malicious attacks. You can use it to whitelist specific fingerprints (for example, SEO bots), blacklist unwanted fingerprints (for example, WordPress exploit crawlers), rate-limit attackers that change IPs through proxies, or simply learn more about a visitor.
 
-### **PoW JS Challenge**
+In [Cloudflare Mode](#cloudflare-mode), TLS fingerprinting is not available: the fingerprint and browser are reported as `Cloudflare` instead.
 
-The PoW JS challenge allows you to reliably block slightly more advanced bots while impacting the user experience as little as possible 
+### Staged DDoS Mitigation
 
-- Difficulty 5: ~3.100 Seconds
-- Difficulty 4: ~0.247 Seconds
-- Difficulty 3: ~0.244 Seconds
-- Difficulty 2: ~0.215 Seconds
-- Difficulty 1: ~0.212 Seconds
+SonuShield comes with 3 distinct challenges. It starts with the weakest, least noticeable challenge and automatically switches to stronger ones when it detects the current one is being bypassed.
 
-![Pow JS Challenge](https://cdn.discordapp.com/attachments/980872824577216532/1250383254171680830/image.png)
+| Stage | Challenge | Effect |
+|-------|-----------|--------|
+| 1 | Cookie challenge | Invisible; stops simple attacks |
+| 2 | Proof-of-work JS challenge | Stops more advanced bots |
+| 3 | Custom captcha | Last resort; stops most malicious requests and good bots too |
 
-### **Custom Captcha**
+Stage switching is automatic and driven by the per-domain thresholds in your configuration (see [Stage Thresholds](#stage-thresholds)). You can also lock a stage manually with the [`stage`](#commands) terminal command. Firewall rules can raise a request's suspicion level above the current stage; a level of 4 or higher blocks the request outright (see [Custom Firewall Rules](#custom-firewall-rules)).
 
-The custom captcha should be your last resort or be used to protect especially weak webpages.
+#### Cookie Challenge
 
-![Custom Captcha](https://cdn.discordapp.com/attachments/847520565606613042/1061764715577098250/image.png)
+The cookie challenge is completely invisible and supported by every web browser as well as most HTTP libraries. It is an effective method to defend against simple DDoS attacks.
 
-## **DDoS Alerts**
+#### PoW JS Challenge
 
-Always be informed when you are under attack of a (D)DoS attack with customisable discord alerts.
+The proof-of-work JavaScript challenge reliably blocks slightly more advanced bots while impacting the user experience as little as possible. The visitor sees a loading animation with the text "Completing challenge ..." while their browser solves a small proof-of-work puzzle automatically; the page then reloads into the protected site. The challenge page also displays the `publicSalt` and `challenge` values used for that attempt.
 
-![Discord Attack Alerts](https://cdn.discordapp.com/attachments/1055573537148108941/1077581121832878140/image.png)
+Solve times measured by the original project:
 
-For more information on how to customise discord alerts refeer to 
+| Difficulty | Approx. solve time |
+|------------|--------------------|
+| 5 | ~3.100 seconds |
+| 4 | ~0.247 seconds |
+| 3 | ~0.244 seconds |
+| 2 | ~0.215 seconds |
+| 1 | ~0.212 seconds |
 
-## **Lightweight**
+The difficulty is set per domain with `stage2Difficulty` (default `5` when unset). Note: the challenge page loads the `balooPow` proof-of-work script from a public CDN (the `41Baloo/balooPow` repository). Your visitors' browsers must be able to reach that CDN for Stage 2 challenges to complete.
 
-balooProxy tries to be as lightweight as possible, in order to run smoothly for everyone. Everything has its limits tho.
+#### Custom Captcha
 
-## **Cloudflare Mode**
+The custom captcha should be your last resort, or be used to protect especially weak pages. The visitor drags a slider to reveal green text hidden in a picture, then types the text (up to 6 characters) into the form. This stops most malicious requests as well as good bots.
 
-Not everyone can afford expensive servers, aswell as a global cdn and this is fine. That's why balooProxy supports being used along with cloudflare, although this comes at the cost of a few features, like `tls fingerprinting`.
+### DDoS Alerts
 
-# **Installation**
+SonuShield can notify you over Discord whenever one of your domains comes under attack and when the attack ends. Each alert is a Discord embed titled "DDoS Alert" containing your configured message plus fields for the current total and allowed requests per second. The attack-end alert additionally reports the peak request rates and includes a traffic chart.
 
-## **Server Setup**
+Alerts are only sent when the stage is **not** locked, when the first stage starts being bypassed, and when the attack ends. To set this up, configure the per-domain [`webhook`](#webhook) settings.
 
-To start, download the [latest version of balooProxy](https://github.com/41Baloo/balooProxy/releases) balooProxy or compile it from source.
+### Lightweight
 
-If you already have a `config.json` drag it in the same folder in your server as the `main` you downloaded/compiled. If you do not, simply start balooProxy by running `./main` and answer the questions the proxy asks you. After you answered those questions stop the proxy with `ctrl + c`.
+SonuShield is a single static binary designed to run smoothly on small servers with minimal resource use. Everything has its limits, though: it runs on one server, so it cannot absorb volumetric attacks large enough to saturate that server's network connection on its own. For very large attacks, use it together with an upstream protection service.
 
-# **Running**
-You can run the proxy as a [service](https://abhinand05.medium.com/run-any-executable-as-systemd-service-in-linux-21298674f66f) or inside of a screen. To run the proxy inside a screen on ubuntu/debian first run `apt update`. After that is done install screen by running `apt install screen` and follow its installation process. To start running the proxy inside of a screen run `screen -S balooProxy`. This will put you inside a screen, making sure the proxy keeps running even when you log out of ssh. Now just start the proxy inside the screen by running `./main` (make sure the proxy isnt running anywhere else already) and quit the screen by pressing `ctrl + a + d`. You can always reopen the screen by running `screen -d -r`
+### Cloudflare Mode
 
-# **Docker Setup**
-To use balooProxy with Docker, start by executing the `./main` file to generate a config.json. Next, build the Docker image by running `docker build -t baloo-proxy .` in the same folder as the main file. Once the build is complete, run the Docker image using `docker run -d -p 80:80 -p 443:443 -t baloo-proxy`. To access the terminal of the Docker image, use `docker attach CONTAINERID`.
-The container ID can be obtained by running `docker ps`. To detach from the terminal, press `Ctrl + p + q`. To stop the container, run `docker stop CONTAINERID`. To remove the container, use `docker rm CONTAINERID`, and to remove the image, run `docker rmi baloo-proxy`.
+Not everyone can afford expensive servers and a global CDN. SonuShield can run behind Cloudflare: set `cloudflare` to `true` in your configuration. In this mode the proxy listens on port 80 only, reads the client IP from the `Cf-Connecting-Ip` header, does not load TLS certificates, and TLS fingerprinting is unavailable. Your Cloudflare SSL/TLS encryption mode must be set to `Flexible` for this to work. Enabling Cloudflare mode without actually using Cloudflare will not work.
 
-## **DNS Setup**
+## Requirements
 
-The proxy is now successfully running, however you still need to point your dns records to the proxy. To do so get the servers ip the proxy is currently running on. Go to your dns management and point the domain you want to proxy to the proxy ip via an `A` record, if the ip is an ipv4 or an `AAAA` record, if the ip is an ipv6. If you chose to use the proxy with Cloudflare, make sure the option "`Proxy status`" is set to "`Proxied`". If you chose not to use Cloudflare but are managing the dns via Cloudflare, make sure "`Proxy status`" is set to "`DNS only`". Also make sure no other records are pointing to your actual backend, since the proxy can otherwise be bypassed by attacking the backend directly, without first going through the proxy. After you did all of that wait ~10 minutes for the dns entry to register. You can check if your domain is successfully proxied by opening a new tab in the browser of your choice, opening dev tools, navigating to the network tab, opening your website, and searching for a "`baloo-proxy`" header in "Response Headers" of your request. If that exist, you successfully setup balooProxy
+- Go 1.24 or newer, to build from source.
+- A server with ports 80 and 443 available (443 is only used outside Cloudflare mode).
+- Outbound HTTPS access to `raw.githubusercontent.com` at startup, for the fingerprint lists and the version check (see [Startup Checks](#startup-checks)).
+- One TLS certificate and private key per domain, unless you run in Cloudflare mode (see [Certificates](#certificates)).
 
-![DNS Example](https://cdn.discordapp.com/attachments/1007957829795201116/1094910870372483072/image.png)
-![Network Tab](https://cdn.discordapp.com/attachments/1007957829795201116/1094912722174492672/image.png)
+## Installation
 
+### Build from Source
 
-## **Configuration**
----
-
-The `config.json` allows you to change several features and values about balooProxy. There are three main fields, `proxy`, `domains` and `rules`.
-
-### **Proxy**
----
-
-This field specifically allows you to change general settings about balooProxy
-
-### `cloudflare` <sup>Bool</sup>
-
-If this field is set to true balooProxy will be in cloudflare mode. 
-(**NOTE**: `SSL/TLS encryption mode` in your cloudflare settings has to be set to "`Flexible`". Enabeling this mode without using cloudflare will also not work. Additionally, some features, such as `TLS-Fingerprinting` will not work and always return "`Cloudflare`")
-
-### `maxLogLength` <sup>Int</sup>
-
-This field sets the amount of logs entires shown in the ssh terminal
-
-### `secret` <sup>Map[String]String</sup>
-
-This field allows you to set the secret keys for the `cookie`, `js` and `captcha` challenge. It is highly advised to change the default values using [a tool](https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new) to generate secure secrets
-
-### `ratelimits` <sup>Map[String]Int</sup>
-
-This field allows you to set the different ratelimit values
-
-**`requests`**: Amount of requests a single ip can send within 2 minutes
-
-**`unknownFingerprint`**: Amount of requests a single unknown fingerprint can send within 2 minutes
-
-**`challengeFailures`**: Amount of times a single ip can fail a challenge within 2 minutes
-
-**`noRequestsSent`**: Amount of times a single ip can open a tcp connection without making http requests
-
-### **Domains**
----
-
-This field specifically allows you to change settings for a specific domain
-
-### `name` <sup>String</sup>
-
-The domains name (For example `example.com`)
-
-### `scheme` <sup>String</sup>
-
-The scheme balooProxy should use to communicate with your backend (Can be `http` or `https`. Generally you should use `http` as it is faster and less cpu intensive)
-
-### `backend` <sup>String</sup>
-
-Your backends ip (**Note**: You can specify ports by using the following format `1.1.1.1:8888`)
-
-### `certificate` <sup>String</sup>
-
-Path to your ssl certificate (For example `server.crt` or `/certificates/example.com.crt`)
-
-### `key` <sup>String</sup>
-
-Path to your ssl private key (For example `server.key` or `/keys/example.com.key`)
-
-### `webhook` <sup>Map[String]String</sup>
-
-This field allows you to customise/enable discord DDoS alert notifications. It should be noted, discord alerts only get sent when the stage is **not** locked aswell as only when the first stage is bypassed and when the attack ended.
-
-**`url`**: The webhook url the alert should be sent to. Refer to [Discords Introduction To Webhooks](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) for more information.
-
-**`name`**: The name your alert should have displayed above it in discord
-
-**`avatar`**: Url to the profile picture your alert should have inside discord
-
-**`attack_start_msg`**: The message the alert should send when your domain is first under attack. Notice: you can use placeholders, like `{{domain.name}}`, `{{attack.start}}`, `{{attack.end}}`, `{{proxy.cpu}}` and `{{proxy.ram}}` here
-
-**`attack_end_msg`**: The message the alert should send when your domain is no longer under attack. Notice: you can use placeholders, like `{{domain.name}}`, `{{attack.start}}`, `{{attack.end}}`, `{{proxy.cpu}}` and `{{proxy.ram}}` here
-
-### **Firewall Rules**
----
-
-Refer to [Custom Firewall Rules](#Custom-Firewall-Rules)
-
-# **Terminal**
-
-## **Main Hud**
----
-
-The main hud shows you different information about your proxy
-
-### `cpu`
-
-Shows you the current cpu usage of the server balooProxy is running on in percent
-
-### `stage`
-
-Shows you the stage balooProxy is currently in
-
-### `stage locked`
-
-Shows `true` if the stage was manually set and locked by using the `stage` command in the terminal
-
-### `total`
-
-Shows the number of all incoming requests per second to balooProxy
-
-### `bypassed`
-
-Shows the number of requests per second that passed balooProxy and have been forwarded to the backend
-
-### `connections`
-
-Shows the current amount of open L4 connections to balooProxy
-
-### `latest logs`
-
-Shows information about the last requests that passed balooProxy (The amount can be specified in `config.json`)
-
-## **Commands**
----
-
-The terminal allows you to input commands which change the behaviour of balooProxy
-
-### `help`
-
-The command `help` shows you a quick summary of all available commands. Type anything or press enter to exit it
-
-### `stage`
-
-The command `stage` followed by a number will set the proxies stage to said number
-(**Note**: Setting the `stage` manually means the proxy will remain in that `stage` no matter what. Even if an attack is ongoing that bypasses this `stage`. Setting your `stage` to `0` will set the `stage` to 1 and enable automatic stage-switching again. Setting the `stage` to a number higher than `3` will result in all requests getting blocked)
-
-### `domain`
-
-The command `domain` followed by the name of a domain allows you to switch between your domains
-
-### `add`
-
-The command `add` prompts you with questions to add another domain to your proxy (**Note**: This can be done in the config.json aswell, however that currently requires your proxy to restart to apply the changes)
-
-### `reload`
-
-The command `reload` will cause the proxy to read the config.json again, aswell as reset some other generic settings, in order to apply changes from your config.json (**NOTE**: This is automatically executed every 5 hours)
-
-# **Custom Firewall Rules**
-
-Thanks to [gofilter]("https://github.com/kor44/gofilter") balooProxy allows you to add your own firewall rules by using a ruleset engine based on [wireguards display filter expressions](https://www.wireshark.org/docs/wsug_html_chunked/ChWorkBuildDisplayFilterSection.html)
-
-## **Fields**
----
-
-### `ip.src` <sup>IP</sup>
-
-Represents the clients ip address
-
-### `ip.engine` <sup>String</sup>
-
-Represents the clients browser ("") if not applicable
-
-### `ip.bot` <sup>String</sup>
-
-Represents the bots name ("") if not applicable
-
-### `ip.fingerprint` <sup>String</sup>
-
-Represents the clients raw tls fingerprint
-
-### `ip.http_requests` <sup>Int</sup>
-
-Represents the clients total forwarded http requests in the last 2 minutes
-
-### `ip.challenge_requests` <sup>Int</sup>
-
-Represents the clients total attempts at solving a challenge in the last 2 minutes
-
-### `http.host` <sup>String</sup>
-
-Represents the hostname of the current domain
-
-### `http.version` <sup>String</sup>
-
-Represents the http version used by the client (either `HTTP/1.1` or `HTTP/2`)
-
-### `http.method` <sup>String</sup>
-
-Represents the http method used by the client (all capital)
-
-### `http.query` <sup>String</sup>
-
-Represents the raw query string sent by the client
-
-### `http.path` <sup>String</sup>
-
-Represents the path requested by the client (e.g. `/pictures/dogs`)
-
-### `http.user_agent` <sup>String</sup>
-
-Represents the user-agent sent by the client (**Important**: will always be lowercase)
-
-### `http.cookie` <sup>String</sup>
-
-Represents the cookie string sent by the client
-
-### `http.headers` <sup>Map[String]String</sup>
-
-Represents the headers send by the client (**Do not use!**. Not production ready)
-
-### `proxy.stage` <sup>Int</sup>
-
-Represents the stage the reverse proxy is currently in
-
-### `proxy.cloudflare` <sup>Bool</sup>
-
-Returns `true` if the proxy is in cloudflare mode
-
-### `proxy.stage_locked` <sup>Bool</sup>
-
-Returns `true` if the `stage` is locked to a specific stage
-
-### `proxy.attack` <sup>Bool</sup>
-
-Returns `true` if the proxy is under attack
-
-### `proxy.bypass_attack` <sup>Bool</sup>
-
-Returns `true` if the proxy is getting attacked by an attack that bypasses the current security measures
-
-### `proxy.rps` <sup>Int</sup>
-
-Represents the number of currently incoming requests per second
-
-### `proxy.rps_allowed` <sup>Int</sup>
-
-Represents the number of currently incoming requests per second forwarded to the backend
-
-## **Comparison Operatos**
----
-
-Check if two values are identical
-
-`eq`, `==`
-```
-(http.path eq "/")
-
-(http.path == "/")
+```sh
+git clone https://github.com/sonudigitalmindset-design/SonuShield.git
+cd SonuShield
+go build -o main .
 ```
 
+This produces a `main` binary in the repository directory.
 
-Check if two values are not identical
+### Automatic Prerelease Builds
 
-`ne`, `!=`
-```
-(http.path ne "/")
+Every push to the `main` branch publishes an automatic prerelease build (tag `latest`) through GitHub Actions. These builds may contain bugs. You can find them on the [Releases page](https://github.com/sonudigitalmindset-design/SonuShield/releases).
 
-(http.path != "/")
-```
+### First Run
 
+Run `./main` without a `config.json` in the same directory and SonuShield will ask you a series of setup questions (Cloudflare mode, timeouts, rate limits, then one domain) and write a `config.json` for you. Stop it with `Ctrl+C`, review the generated file, then start it again. Secrets generated during setup are random strings.
 
-Check if the value to the left is bigger than the value to the right
+If you already have a `config.json`, place it in the same directory as the `main` binary before starting.
 
-`gt`, `>`
-```
-(proxy.rps gt 200)
+> **Note:** Example configurations use `CHANGE_ME` placeholder secrets. SonuShield refuses to start if any secret still contains `CHANGE_ME` — replace all of them with real random values first.
 
-(proxy.rps > 200)
-```
+## Certificates
 
+Outside Cloudflare mode, every domain needs a TLS certificate and private key. Their paths are set per domain with `certificate` and `key` in `config.json`, and they are loaded at startup. If a certificate or key is missing or invalid, SonuShield refuses to start.
 
-Check if the value to the right is bigger than the value to the left
+### Development Certificates
 
-`lt`, `<`
-```
-(proxy.rps lt 10)
+For local testing only, generate self-signed certificates with the included script:
 
-(proxy.rps < 10)
+```sh
+./scripts/generate-certs.sh
 ```
 
+This writes `assets/server/server.crt` and `assets/server/server.key`, matching the paths used in `examples/config.json`. Generated certificates and keys are ignored by git and are never committed.
 
-Check if value to the left is bigger or equal to the value to the right
+> **Warning:** Self-signed certificates are for development only. Browsers will show security warnings for them. In production, use real certificates (for example, from Let's Encrypt) and keep private keys secret.
 
-`ge`, `>=`
-```
-(proxy.rps_bypassed ge 50)
+Do not use any certificate or key previously found in this repository's history: the old default private key was public and must never be reused. In Cloudflare mode, leave `certificate` and `key` empty — they are not loaded.
 
-(proxy.rps_bypassed >= 50)
-```
+## Running
 
+### In the Foreground
 
-Check if value to the right is bigger or equal to the value to the left
-
-`le`, `<=`
-```
-(proxy.rps_bypassed le 50)
-
-(proxy.rps_bypassed <= 50)
+```sh
+./main
 ```
 
-## **Logical Operators**
----
+The terminal shows the live [HUD](#terminal) and accepts [commands](#commands). Keep the terminal open, or use one of the methods below to keep the proxy running after you log out.
 
-Require both comparisons to return true
+### Inside a screen Session
 
-`and`, `&&`
-```
-(http.path eq "/" and http.query eq "")
+On Ubuntu/Debian, install `screen`, then:
 
-(http.path eq "/" && http.query eq "")
-```
-
-
-Require either one of the comparisons to return true
-
-`or`, `||`
-```
-(http.path eq "/" or http.query eq "/alternative")
-
-(http.path eq "/" || http.query eq "/alternative")
+```sh
+apt update && apt install screen
+screen -S sonushield
+./main
 ```
 
+Detach with `Ctrl+A` then `D`. Reattach any time with:
 
-Require comparison to return false to be true
-
-`not`, `!`
-```
-!(http.path eq "/" and http.query eq "")
-
-not(http.path eq "/" && http.query eq "")
+```sh
+screen -d -r
 ```
 
-## **Search / Match Operators**
----
+### As a systemd Service
 
+Create `/etc/systemd/system/sonushield.service`:
 
-Returns true if field contains value
+```ini
+[Unit]
+Description=SonuShield anti-DDoS reverse proxy
+After=network.target
 
-`contains`
-```
-(http.user_agent contains "chrome")
-```
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/sonushield
+ExecStart=/opt/sonushield/main
+Restart=on-failure
 
-
-Returns true if field matches a regex expression
-
-`matches`
-```
-(http.header matches "(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)")
-```
-
-## **Structure**
----
-
-Firewall rules are build in the `config.json` and have the following structure
-
-```
-"rules": [
-        {
-            "expression": "(http.path eq \"/captcha\")",
-            "action": "3"
-        },
-        {
-            "expression": "(http.path eq \"/curl\" and ip.bot eq \"Curl\")",
-            "action": "0"
-        }
-    ]
+[Install]
+WantedBy=multi-user.target
 ```
 
-Every individual has to have the `expression` and `action` field.
+Place the `main` binary and your `config.json` in `/opt/sonushield`, then:
 
-## **Priority**
----
-Rules are priorities from top to bottom in the `config.json`. A role has priority over every rule coming after it in the json.
-
-(**Note**: As will later be described, some rules will stop balooProxy from checking for other matching rules. This is why it is recommended to have rules with higher `action` values be higher in the json aswell.)
-
-## **Actions**
----
-
-The resulting action to a rule is decided based on the `"susLv"`, which is a scale from `0`-`3` how suspicious/malicious the request is. The `susLv` itself starts of at the current `stage` balooProxy is in. This is normally `1` but might change to `2` and `3` depending on how many bypassing requests balooProxy currently experiences.
-
-Each number has its own reaction.
-
-### `0` <sup>Allow</sup>
-
-The request is whitelisted and will not be challenged in any form
-
-### `1` <sup>Cookie Challenge</sup>
-
-The request will be challenged with a simple cookie challenge which will be passed automatically by most good bots
-
-### `2` <sup>JS Challenge</sup>
-
-The request will be challenged with a javascript challenge which will stop most bots, including good once
-
-### `3` <sup>Captcha</sup>
-
-The request will be challenged with a visual captcha. The user will have to input text he sees on a picture. Will stop most malicious requests aswell as good bots
-
-### `4 or higher` <sup>Block</sup>
-
-Every request with a susLv of 4 or higher will be blocked
-
-## **Adding Actions**
----
-You can set a rules action to be a specific action by setting it's `action` to a specific number 
-
-(**Note**: If a rule matches a request and sets the `action` to a specific number balooProxy will not check for other matching rules. Hence you should usually give rules with a higher `action` value a lower `priority` value aswell).
-
+```sh
+systemctl daemon-reload
+systemctl enable --now sonushield
 ```
+
+Binding ports 80 and 443 requires privileges: either run as `root` as above, or grant the binary the `cap_net_bind_service` capability with `setcap 'cap_net_bind_service=+ep' /opt/sonushield/main` and run it as an unprivileged user.
+
+## Docker
+
+The image is built in two stages: a `golang:1.24-alpine` builder stage compiles a static binary, and a minimal `alpine:3.21` runtime stage runs it as the non-root `appuser` (with `cap_net_bind_service` so it can still bind ports 80 and 443). The runtime image includes a CA certificate bundle, which the proxy needs to fetch its fingerprint lists and version information over HTTPS at startup.
+
+Build the image from the repository root:
+
+```sh
+docker build -t sonushield .
+```
+
+Run it, mounting your configuration file into the container:
+
+```sh
+docker run -d -p 80:80 -p 443:443 -v /path/to/config.json:/app/config.json sonushield
+```
+
+Important details:
+
+- **`config.json` is not baked into the image.** You must mount it at `/app/config.json`, as shown above.
+- **Certificate files must be reachable inside the container.** If your configuration points at certificate/key paths, mount those files too and use the in-container paths in `config.json`, for example `-v /path/to/certs:/app/certs` with `certificate` set to `/app/certs/example.com.crt`. In Cloudflare mode, leave the certificate and key empty instead.
+- **Generate your configuration on the host first** — run `./main` once outside Docker, or copy and edit `examples/config.json`. The interactive first-run setup is awkward inside a detached container.
+- The proxy writes `crash.log` in its working directory (`/app`).
+
+Manage the container:
+
+```sh
+docker ps                                   # find the container ID
+docker attach CONTAINERID                   # open the terminal HUD
+# detach from it with Ctrl+P then Ctrl+Q
+docker stop CONTAINERID                     # stop the container
+docker rm CONTAINERID                       # remove the container
+docker rmi sonushield                       # remove the image
+```
+
+## DNS Setup
+
+Point your domain's DNS records at the server running SonuShield:
+
+| Type | Name | Value |
+|------|------|-------|
+| `A` | `@` (or your subdomain) | The proxy server's IPv4 address |
+| `AAAA` | `@` (or your subdomain) | The proxy server's IPv6 address, if it has one |
+
+Rules that matter:
+
+- If you use SonuShield **with** Cloudflare, set the record's **Proxy status** to **Proxied**.
+- If you manage DNS in Cloudflare but do **not** use SonuShield with Cloudflare, set **Proxy status** to **DNS only**.
+- Make sure **no** DNS record points directly at your backend server. Otherwise attackers can bypass the proxy entirely by attacking the backend directly.
+- Wait about 10 minutes for the DNS change to propagate.
+
+To verify the proxy is in front of your site, open your website in a browser, open DevTools, go to the Network tab, and look at the response headers of a request: you should see a `SonuShield: 1.5` header. If it is there, SonuShield is successfully proxying your domain.
+
+## Configuration
+
+`config.json` has two top-level fields: `proxy` (general settings) and `domains` (one entry per protected domain). Firewall rules are configured per domain, under each domain's `firewallRules` — see [Custom Firewall Rules](#custom-firewall-rules).
+
+### Example Configuration
+
+```json
 {
-    "expression": "(http.host contains \":\")",
+  "proxy": {
+    "cloudflare": false,
+    "adminsecret": "CHANGE_ME",
+    "apisecret": "CHANGE_ME",
+    "secrets": {
+      "cookie": "CHANGE_ME1",
+      "javascript": "CHANGE_ME2",
+      "captcha": "CHANGE_ME3"
+    },
+    "timeout": {
+      "idle": 5,
+      "read": 5,
+      "write": 7,
+      "read_header": 5
+    },
+    "ratelimit_time": 120,
+    "ratelimits": {
+      "requests": 500,
+      "unknownFingerprint": 150,
+      "challengeFailures": 40,
+      "noRequestsSent": 10
+    },
+    "colors": ["0", "31"]
+  },
+  "domains": [
+    {
+      "name": "example.com",
+      "backend": "1.1.1.1",
+      "scheme": "http",
+      "certificate": "assets/server/server.crt",
+      "key": "assets/server/server.key",
+      "webhook": {
+        "url": "",
+        "name": "SonuShield",
+        "avatar": "",
+        "attack_start_msg": "Attack detected on {{domain.name}}",
+        "attack_stop_msg": "Attack on {{domain.name}} has stopped"
+      },
+      "firewallRules": [],
+      "bypassStage1": 75,
+      "bypassStage2": 250,
+      "stage2Difficulty": 5,
+      "disableBypassStage3": 100,
+      "disableRawStage3": 250,
+      "disableBypassStage2": 50,
+      "disableRawStage2": 75
+    }
+  ]
+}
+```
+
+A fuller multi-domain example is available in [`examples/config.json`](examples/config.json). Remember to replace every `CHANGE_ME` secret before starting.
+
+### Proxy Settings
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cloudflare` | Bool | Set to `true` to run behind Cloudflare. See [Cloudflare Mode](#cloudflare-mode). |
+| `adminsecret` | String | Secret used in the v1 API path. Must not contain `CHANGE_ME`. |
+| `apisecret` | String | Secret sent in the `proxy-secret` / `Proxy-Secret` API header. Must not contain `CHANGE_ME`. |
+| `secrets` | Map[String]String | Challenge secrets with keys `cookie`, `javascript`, and `captcha`. Must not contain `CHANGE_ME`. Generate secure random values, for example with `openssl rand -hex 20` or [random.org](https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new). |
+| `timeout` | Object | Connection timeouts in seconds: `idle` (default 5), `read` (default 5), `write` (default 7), `read_header` (default 5). A value of `0` keeps the default. |
+| `ratelimit_time` | Int | Window in seconds over which the rate limits below are counted. Values below 10 are raised to 10; defaults to 10 when unset. |
+| `ratelimits` | Map[String]Int | Rate limit thresholds (see below). |
+| `colors` | Array[String] | ANSI color codes for the terminal HUD, for example `["0", "31"]`. |
+
+Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
+
+| Key | Description |
+|-----|-------------|
+| `requests` | Requests a single IP may send before it is blocked. |
+| `unknownFingerprint` | Requests a single unknown TLS fingerprint may send before it is blocked. Only applied to clients whose browser could not be identified. |
+| `challengeFailures` | Failed challenge attempts from a single IP before it is blocked. |
+| `noRequestsSent` | TCP connections opened by a single IP without sending an HTTP request before it is blocked. |
+
+### Domain Settings
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | The domain name, for example `example.com`. Requests are matched by the `Host` header. |
+| `scheme` | String | Scheme used to talk to your backend: `http` or `https`. `http` is generally faster and less CPU-intensive. Note: `https` backends are contacted with TLS certificate verification disabled. |
+| `backend` | String | Your backend's IP or hostname. You can specify a port, for example `1.1.1.1:8888`. |
+| `certificate` | String | Path to the domain's TLS certificate, for example `assets/server/server.crt`. Not loaded in Cloudflare mode. |
+| `key` | String | Path to the domain's TLS private key, for example `assets/server/server.key`. Not loaded in Cloudflare mode. |
+| `webhook` | Object | Discord alert settings. See [Webhook](#webhook). |
+| `firewallRules` | Array | Custom firewall rules. See [Custom Firewall Rules](#custom-firewall-rules). |
+| `bypassStage1` | Int | Bypassing requests per second that activate Stage 2. |
+| `bypassStage2` | Int | Bypassing requests per second that activate Stage 3. |
+| `stage2Difficulty` | Int | Proof-of-work difficulty for Stage 2 (default `5` when `0`). |
+| `disableBypassStage3` | Int | Bypassing requests per second low enough to disable Stage 3. |
+| `disableRawStage3` | Int | Total requests per second low enough to disable Stage 3 (bypassing requests must also be low enough). |
+| `disableBypassStage2` | Int | Bypassing requests per second low enough to disable Stage 2. |
+| `disableRawStage2` | Int | Total requests per second low enough to disable Stage 2 (bypassing requests must also be low enough). |
+
+Requests forwarded to your backend carry extra headers your backend can read: `x-real-ip`, `proxy-real-ip` (both the client IP), and `proxy-tls-fp` (the client's TLS fingerprint, or `Cloudflare` in Cloudflare mode).
+
+Outside Cloudflare mode, plain HTTP requests on port 80 are redirected to HTTPS (301), except for unknown hosts, which receive an error message. In Cloudflare mode the proxy serves plain HTTP on port 80 only.
+
+### Webhook
+
+Each domain can send Discord DDoS alerts through a webhook. Create a webhook in your Discord server (Server Settings → Integrations → Webhooks) and see [Discord's introduction to webhooks](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) for details. Leave `url` empty to disable alerts for a domain.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | String | The Discord webhook URL alerts are sent to. |
+| `name` | String | The name shown above the alert in Discord. |
+| `avatar` | String | URL of the profile picture shown with the alert in Discord. |
+| `attack_start_msg` | String | Message sent when your domain first comes under attack. |
+| `attack_stop_msg` | String | Message sent when the attack has ended. |
+
+Both messages support placeholders: `{{domain.name}}`, `{{attack.start}}`, `{{attack.end}}`, `{{proxy.cpu}}`, and `{{proxy.ram}}`.
+
+### Stage Thresholds
+
+The automatic stage system watches two numbers per domain: total requests per second and bypassing requests per second (requests that passed the current challenge). When bypassing requests exceed `bypassStage1`, Stage 2 activates; when they exceed `bypassStage2`, Stage 3 activates. Stages step back down when both the bypassing and total request rates fall below the matching `disable*` thresholds. Locking a stage with the [`stage`](#commands) command disables automatic switching until you unlock it with `stage 0`.
+
+## Terminal
+
+While SonuShield runs, the terminal shows a live HUD for the watched domain and accepts commands typed at the prompt.
+
+### Main HUD
+
+| Field | Description |
+|-------|-------------|
+| Cpu Usage | Current CPU usage of the server, in percent. |
+| Domain | The domain currently being watched. |
+| Stage | The stage the watched domain is currently in. |
+| Stage Locked | `true` if the stage was manually set and locked with the `stage` command. |
+| Total | Incoming requests per second across all requests. |
+| Bypassed | Requests per second that passed the proxy and were forwarded to the backend. |
+| Latest Logs | Information about the most recent requests. The number of lines shown follows the terminal height. |
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `help` | Shows a summary of all available commands. Type anything or press Enter to exit the help view. |
+| `stage [number]` | Sets the watched domain's stage to the given number and locks it there, no matter what — even during an ongoing attack that bypasses that stage. `stage 0` unlocks the stage, resets it to 1, and re-enables automatic stage switching. A stage higher than 3 blocks all requests. |
+| `domain [name]` | Switches the watched domain. With no name, lists all available domains. |
+| `add` | Starts an interactive dialogue to add another domain to the proxy, then reloads the configuration. You can also edit `config.json` directly, but that requires a `reload` (or restart) to apply. |
+| `clrlogs` | Clears the logs for the watched domain, or for all domains when no domain is being watched. |
+| `reload` | Re-reads `config.json` and applies changes, resetting some general settings. Run this after editing the configuration by hand. |
+
+## Custom Firewall Rules
+
+Thanks to [gofilter](https://github.com/kor44/gofilter), SonuShield lets you add your own firewall rules using a rule engine based on [Wireshark display filter expressions](https://www.wireshark.org/docs/wsug_html_chunked/ChWorkBuildDisplayFilterSection.html).
+
+### Fields
+
+These fields can be used in rule expressions. Values reflect the current request and the current rate-limit window.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ip.src` | IP | The client's IP address. |
+| `ip.engine` | String | The client's browser (`""` if it could not be identified). |
+| `ip.bot` | String | The bot's name (`""` if not applicable). |
+| `ip.fingerprint` | String | The client's raw TLS fingerprint (`Cloudflare` in Cloudflare mode). |
+| `ip.http_requests` | Int | The client's forwarded HTTP requests in the current rate-limit window. |
+| `ip.challenge_requests` | Int | The client's challenge attempts in the current rate-limit window. |
+| `http.host` | String | The hostname of the current domain. |
+| `http.version` | String | The HTTP version used by the client (for example `HTTP/1.1` or `HTTP/2`). |
+| `http.method` | String | The HTTP method used by the client (all capitals). |
+| `http.url` | String | The full request URI. |
+| `http.query` | String | The raw query string sent by the client. |
+| `http.path` | String | The path requested by the client (for example `/pictures/dogs`). |
+| `http.user_agent` | String | The user agent sent by the client. **Important:** always lowercased. |
+| `http.cookie` | String | The cookie string sent by the client. |
+| `proxy.stage` | Int | The stage the reverse proxy is currently in. |
+| `proxy.cloudflare` | Bool | `true` if the proxy is in Cloudflare mode. |
+| `proxy.stage_locked` | Bool | `true` if the stage is locked to a specific stage. |
+| `proxy.attack` | Bool | `true` if the proxy is under attack. |
+| `proxy.bypass_attack` | Bool | `true` if the proxy is being attacked by an attack that bypasses the current security measures. |
+| `proxy.rps` | Int | Currently incoming requests per second. |
+| `proxy.rps_allowed` | Int | Currently incoming requests per second forwarded to the backend. |
+
+> **Do not use** `ip.country`, `ip.asn`, `ip.requests`, `http.headers`, or `http.body` in rules. These names are registered in the rule engine but are never given values, so rules using them will not behave as expected.
+
+### Comparison Operators
+
+```text
+(http.path eq "/")            (http.path == "/")            identical
+(http.path ne "/")            (http.path != "/")            not identical
+(proxy.rps gt 200)            (proxy.rps > 200)             left greater than right
+(proxy.rps lt 10)             (proxy.rps < 10)              left smaller than right
+(proxy.rps_allowed ge 50)     (proxy.rps_allowed >= 50)     left greater than or equal
+(proxy.rps_allowed le 50)     (proxy.rps_allowed <= 50)     left smaller than or equal
+```
+
+### Logical Operators
+
+```text
+(http.path eq "/" and http.query eq "")     (http.path eq "/" && http.query eq "")     both must be true
+(http.path eq "/" or http.query eq "/x")    (http.path eq "/" || http.query eq "/x")   either must be true
+!(http.path eq "/")                         not(http.path eq "/")                      negates the comparison
+```
+
+### Search / Match Operators
+
+```text
+(http.user_agent contains "chrome")                          field contains value
+(http.user_agent matches "(?=.*\d)(?=.*[a-z])(?=.*[A-Z])")   field matches a regex
+```
+
+### Structure
+
+Firewall rules live in each domain's `firewallRules` array in `config.json`. Every rule needs an `expression` and an `action`:
+
+```json
+"firewallRules": [
+  {
+    "expression": "(http.path eq \"/captcha\")",
     "action": "3"
-}
+  },
+  {
+    "expression": "(http.path eq \"/curl\" and ip.bot eq \"Curl\")",
+    "action": "0"
+  }
+]
 ```
 
-In this example, the rule checks whether or not the request is made by a socket and if so, challenges the request with a captcha.
-***
+### Priority
 
-You can also set actions more dynamically by using a `+` in front of the `action` value. This will tell balooProxy that you want to increase the *current* susLv of the request by the amount specified after the `+`.
+Rules are evaluated from top to bottom. A rule listed earlier has priority over every rule listed after it. Some actions stop SonuShield from checking further matching rules (see below), so rules with higher action values should usually be listed higher in the array as well.
 
-(**Note**: actions that use a `+` do not stop balooProxy from checking if further rules match, if the rule matches. This allows you to stack multiple checks ontop of each other and set reactions more dynamically and react less aggressively when not attacked)
+### Actions
 
-```
+The resulting action is decided by the request's `susLv` (suspicion level), a scale from `0` to `3` and above. It starts at the domain's current stage (normally `1`, higher during attacks) and is adjusted by matching rules.
+
+| susLv | Reaction |
+|-------|----------|
+| `0` | **Allow.** The request is whitelisted and will not be challenged in any form. |
+| `1` | **Cookie challenge.** A simple cookie challenge, passed automatically by most good bots. |
+| `2` | **JS challenge.** A JavaScript challenge that stops most bots, including good ones. |
+| `3` | **Captcha.** A visual captcha the user must solve. Stops most malicious requests as well as good bots. |
+| `4` or higher | **Block.** The request is blocked. |
+
+### Adding Actions
+
+An `action` can set the suspicion level to an exact number. When a rule with an absolute action matches, SonuShield stops checking further rules for that request:
+
+```json
 {
-    "expression": "(http.engine eq \"\")",
-    "action": "+1"
+  "expression": "(http.host contains \":\")",
+  "action": "3"
 }
 ```
 
-In this example, the rule checks whether or not the request is made by a known browser. If not, the `susLv` gets raised by `1`.
+This example challenges requests whose host contains a `:` (typical of direct socket connections) with a captcha.
 
-# **API**
+Prefixing the action with `+` or `-` instead adjusts the *current* suspicion level by that amount, and SonuShield keeps checking further rules. This lets you stack multiple checks and react less aggressively when not under attack:
 
-A full documentation of BalooProxies 2.0 API can be found at https://app.swaggerhub.com/apis-docs/BalooProxy/BalooProxy/2.0.0#/
+```json
+{
+  "expression": "(ip.engine eq \"\")",
+  "action": "+1"
+}
+```
+
+This example raises the suspicion level by `1` for requests from an unknown browser engine. A `-1` action would lower it by `1`.
+
+## API
+
+SonuShield exposes an HTTP API for reading proxy statistics, firewall rules, and logs. Both API versions authenticate with the `apisecret` from your configuration. The v1 path additionally contains your `adminsecret`.
+
+> The API documentation previously hosted on SwaggerHub is no longer available. This section is the authoritative API reference for the current code.
+
+### Version 1
+
+Send a `POST` request with a JSON body to:
+
+```text
+POST /_bProxy/<adminsecret>/api/v1
+Header: proxy-secret: <apisecret>
+Body:   {"domain": "<domain name or empty>", "action": "<ACTION>"}
+```
+
+With an empty `domain`, proxy-level actions are executed. With a domain name, domain-level actions are executed for that domain.
+
+### Version 2
+
+Send a request to one of these paths (any method with a readable body works; the header is what authenticates the call):
+
+```text
+/_bProxy/api/v2/<ACTION>
+/_bProxy/api/v2/<domain>/<ACTION>
+Header: Proxy-Secret: <apisecret>
+```
+
+### Response Format
+
+All API responses are JSON:
+
+```json
+{"success": true, "results": {"TOTAL_REQUESTS": 12345}}
+```
+
+Failures return `"success": false` with an error code in `results.ERROR`:
+
+| Error code | Meaning |
+|------------|---------|
+| `ERR_DOMAIN_NOT_FOUND` | The requested domain does not exist. |
+| `ERR_ACTION_NOT_FOUND` | The requested action does not exist. |
+| `ERR_BODY_READ_FAILED` | The request body could not be read. |
+| `ERR_JSON_READ_FAILED` | The request body is not valid JSON. |
+
+Requests with a missing or wrong API secret are passed through to the normal request handling instead of receiving an API response.
+
+### Proxy Actions
+
+| Action | Returns |
+|--------|---------|
+| `GET_PROXY_STATS` | `CPU_USAGE`, `RAM_USAGE` |
+| `GET_PROXY_STATS_CPU_USAGE` | `CPU_USAGE` |
+| `GET_PROXY_STATS_RAM_USAGE` | `RAM_USAGE` |
+| `GET_IP_REQUESTS` | `TOTAL_IP_REQUESTS`, `CHALLENGE_IP_REQUESTS` |
+| `GET_FINGERPRINT_REQUESTS` | `TOTAL_FINGERPRINT_REQUESTS` (unknown fingerprints only) |
+| `GET_IP_CACHE` | `IP_CACHE` |
+| `FILL_IP_CACHE` | Diagnostic action: fills the IP cache with test entries. |
+| `RELOAD` | Accepted, but currently a no-op. Use the `reload` terminal command to reload the configuration. |
+
+### Domain Actions
+
+| Action | Returns |
+|--------|---------|
+| `GET_TOTAL_REQUESTS` | `TOTAL_REQUESTS` |
+| `GET_BYPASSED_REQUESTS` | `BYPASSED_REQUESTS` |
+| `GET_TOTAL_REQUESTS_PER_SECOND` | `TOTAL_REQUESTS_REQUESTS_PER_SECOND` |
+| `GET_BYPASSED_REQUESTS_PER_SECOND` | `BYPASSED_REQUESTS_REQUESTS_PER_SECOND` |
+| `GET_FIREWALL_RULES` | `FIREWALL_RULES` |
+| `GET_LOGS` | `LOGS` |
+
+### Reserved Paths
+
+These paths are handled by the proxy itself and never forwarded to the backend:
+
+| Path | Description |
+|------|-------------|
+| `/_bProxy/stats` | Plain-text domain statistics: stage, total/bypassed requests, requests per second, and the proxy fingerprint. |
+| `/_bProxy/fingerprint` | Plain-text details about the current request: IP, request counts, suspicion level, TLS fingerprint, and browser/bot identification. |
+| `/_bProxy/verified` | Used by the challenge pages to confirm a solved challenge. Returns `verified`. |
+| `/_bProxy/credits` | Attribution and license information. |
+
+The `/_bProxy/` path prefix and the challenge cookie names are kept unchanged from the original project for compatibility with existing integrations.
+
+## Startup Checks
+
+At startup, SonuShield fetches the TLS fingerprint lists and the version information from this repository over HTTPS (`raw.githubusercontent.com`). The version check compares the published stable version against the built-in version (`1.5`); if a newer stable version exists, the proxy prints an update notice and waits 10 seconds before starting. If the version check itself fails (for example, with no outbound network access), startup stops. Fingerprint-list fetch failures do not stop startup, but leave the corresponding lists empty.
+
+## Roadmap
+
+> **Planned, not yet implemented.** This section describes work planned for SonuShield. Nothing listed here exists in the current code yet.
+>
+> - A Cloudflare-style web dashboard for managing domains, firewall rules, stages, and logs from the browser.
+> - Additional protection features and management improvements.
+
+## License
+
+SonuShield is licensed under the [GNU General Public License v3.0](LICENSE). Originally by [41Baloo (balooProxy)](https://github.com/41Baloo/balooProxy), forked and rebuilt by [Sonu Digital Mindset](https://github.com/sonudigitalmindset-design).
