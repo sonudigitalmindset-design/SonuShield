@@ -80,6 +80,14 @@ func Serve() {
 		http2.ConfigureServer(serviceH, &http2.Server{})
 
 		service.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Let's Encrypt HTTP-01 challenges (autoSSL only). Answered
+			// before the domain lookup and HTTPS redirect: the
+			// challenge must be served over plain HTTP. When auto
+			// SSL is disabled this returns false immediately.
+			if domains.HandleACMEChallenge(w, r) {
+				return
+			}
+
 			firewall.Mutex.RLock()
 			domainData, domainFound := domains.DomainsData[r.Host]
 			firewall.Mutex.RUnlock()

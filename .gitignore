@@ -62,3 +62,7 @@ assets/server/
 # Local GeoIP databases (MaxMind DB files supplied by the operator).
 # Never commit downloaded databases.
 *.mmdb
+
+# Let's Encrypt certificates obtained by autoSSL (autocert cache).
+# Never commit certificates or private keys.
+autocert-cache/

@@ -478,8 +478,13 @@ func ReloadConfig() {
 		})
 		dProxy.Transport = &RoundTripper{}
 
+		// With autoSSL enabled, a domain without certificate/key paths
+		// keeps the empty certificate here; domains.GetCertificate
+		// falls back to the Let's Encrypt manager for such domains.
+		// A domain with only one of the two paths set still fails
+		// below, exactly as before.
 		var cert tls.Certificate = tls.Certificate{}
-		if !proxy.Cloudflare {
+		if !proxy.Cloudflare && !(domains.Config.Proxy.AutoSSL && domain.Certificate == "" && domain.Key == "") {
 			var certErr error
 			cert, certErr = tls.LoadX509KeyPair(domain.Certificate, domain.Key)
 			if certErr != nil {
@@ -548,6 +553,14 @@ func ReloadConfig() {
 		}
 		firewall.Mutex.Unlock()
 	}
+
+	// Auto SSL: build the Let's Encrypt manager from the final domain
+	// list. Disabled by default; in Cloudflare mode there is no TLS
+	// listener, so the option is ignored with a warning.
+	if domains.Config.Proxy.AutoSSL && proxy.Cloudflare {
+		fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ autoSSL is enabled but Cloudflare mode has no TLS listener; automatic certificates are disabled. ]")
+	}
+	domains.ConfigureAutoCert()
 
 	proxy.WatchedDomain = domains.Domains[0]
 }

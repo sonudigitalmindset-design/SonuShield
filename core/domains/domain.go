@@ -122,6 +122,9 @@ type Proxy struct {
 	ReputationFeed  string            `json:"reputationFeedURL"`
 	ReputationIntvl int               `json:"reputationFeedInterval"`
 	ReputationSusLv int               `json:"reputationSusLv"`
+	AutoSSL         bool              `json:"autoSSL"`
+	AutoSSLCacheDir string            `json:"autoSSLCacheDir"`
+	AutoSSLEmail    string            `json:"autoSSLEmail"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

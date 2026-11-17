@@ -18,6 +18,11 @@ func GetCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) 
 	domainVal, ok := DomainsMap.Load(clientHello.ServerName)
 	if ok {
 		tempDomain := domainVal.(DomainSettings)
+		if len(tempDomain.DomainCertificates.Certificate) == 0 {
+			if cert, err := AutoCertCertificate(clientHello); cert != nil || err != nil {
+				return cert, err
+			}
+		}
 		return &tempDomain.DomainCertificates, nil
 	}
 	return nil, nil
