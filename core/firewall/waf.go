@@ -61,9 +61,10 @@ var wafRules = []wafRule{
 
 const maxWAFBodyBytes = 1 << 20 // 1 MB
 
-// resolveWAFMode normalizes the configured mode. Unknown values fall back
-// to log-only, never to blocking.
-func resolveWAFMode(mode string) string {
+// ResolveWAFMode normalizes the configured mode. Unknown values fall back
+// to log-only, never to blocking. Exported so the API can report the
+// effective mode for a domain.
+func ResolveWAFMode(mode string) string {
 	switch strings.ToLower(strings.TrimSpace(mode)) {
 	case "off":
 		return "off"
@@ -85,7 +86,7 @@ func decodeLenient(unescaped func(string) (string, error), s string) string {
 // In log mode matches are logged and false is returned. In off mode
 // nothing is inspected. The request body, when read, is restored.
 func CheckRequest(request *http.Request, mode string, inspectBody bool, wpLoginLimit int, ip string) (blocked bool, ruleName string) {
-	resolved := resolveWAFMode(mode)
+	resolved := ResolveWAFMode(mode)
 	if resolved == "off" {
 		return false, ""
 	}

@@ -50,7 +50,7 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	}
 	domainSettings, _ := uncastedDomainSettings.(domains.DomainSettings)
 
-	handleDomainActions(apiRequest.Action, writer, &domainData, &domainSettings)
+	handleDomainActions(apiRequest.Action, writer, &domainData, &domainSettings, apiRequest.Params)
 	return true
 }
 
@@ -110,6 +110,15 @@ func handleProxyActions(action string, writer http.ResponseWriter) {
 	case "RELOAD":
 		firewall.Mutex.Lock()
 		firewall.Mutex.Unlock()
+	case "GET_PROXY_FEATURES":
+		APIResponse(writer, true, proxyFeaturesResponse())
+	case "REFRESH_REPUTATION_FEED":
+		started := firewall.RefreshReputationFeedAsync()
+		feedConfigured, _, _, _, _, _, _, _, _ := firewall.ReputationStatus()
+		APIResponse(writer, true, map[string]interface{}{
+			"REFRESH_STARTED": started,
+			"FEED_CONFIGURED": feedConfigured,
+		})
 	default:
 		APIResponse(writer, false, map[string]interface{}{
 			"ERROR": ERR_ACTION_NOT_FOUND,
@@ -117,7 +126,7 @@ func handleProxyActions(action string, writer http.ResponseWriter) {
 	}
 }
 
-func handleDomainActions(action string, writer http.ResponseWriter, domainData *domains.DomainData, domainSettings *domains.DomainSettings) {
+func handleDomainActions(action string, writer http.ResponseWriter, domainData *domains.DomainData, domainSettings *domains.DomainSettings, params map[string]string) {
 	switch action {
 	case "GET_TOTAL_REQUESTS":
 		APIResponse(writer, true, map[string]interface{}{
@@ -143,6 +152,17 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 		APIResponse(writer, true, map[string]interface{}{
 			"LOGS": domainData.LastLogs,
 		})
+	case "GET_DOMAIN_FEATURES":
+		APIResponse(writer, true, domainFeaturesResponse(domainSettings))
+	case "SET_DOMAIN_FEATURES":
+		response, errCode := applyDomainFeatures(domainSettings, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	default:
 		APIResponse(writer, false, map[string]interface{}{
 			"ERROR": ERR_ACTION_NOT_FOUND,
@@ -186,7 +206,7 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		domainData := domains.DomainsData[parts[0]]
 		firewall.Mutex.RUnlock()
 
-		handleDomainActions(parts[1], w, &domainData, &domainSettingsdomain)
+		handleDomainActions(parts[1], w, &domainData, &domainSettingsdomain, queryParams(r))
 		return true
 	}
 }

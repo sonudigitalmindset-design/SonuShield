@@ -44,6 +44,15 @@ var (
 
 	feedMu      sync.Mutex
 	feedRunning bool
+
+	// Last feed fetch outcome, for operator-facing status output.
+	feedStatusMu    sync.Mutex
+	feedLastSuccess time.Time
+	feedLastError   string
+
+	// Guards manually triggered refreshes so repeated requests do not
+	// stampede the feed URL. The background loop is unaffected.
+	feedRefreshMu sync.Mutex
 )
 
 func emptyReputationSet() *reputationSet {
@@ -141,6 +150,67 @@ func LookupReputation(ipStr string) bool {
 	return feedReputation.Load().contains(ip)
 }
 
+// ReputationStatus describes the configured feed, the sizes of the
+// loaded sets, and the last fetch outcome. Counts are 0 when nothing
+// is loaded; lastSuccessUnix is 0 when the feed has never loaded
+// successfully; lastError is "" when the last fetch succeeded or no
+// fetch has been attempted.
+func ReputationStatus() (feedConfigured bool, feedIntervalMinutes int, localIPs, localNetworks, feedIPs, feedNetworks int, bump int, lastSuccessUnix int64, lastError string) {
+	if cfg := feedConfig.Load(); cfg != nil {
+		feedConfigured = cfg.url != ""
+		feedIntervalMinutes = int(cfg.interval / time.Minute)
+	}
+	if set := localReputation.Load(); set != nil {
+		localIPs = len(set.ips)
+		localNetworks = len(set.nets)
+	}
+	if set := feedReputation.Load(); set != nil {
+		feedIPs = len(set.ips)
+		feedNetworks = len(set.nets)
+	}
+	bump = ReputationBump()
+	feedStatusMu.Lock()
+	lastSuccessUnix = feedLastSuccess.Unix()
+	lastError = feedLastError
+	feedStatusMu.Unlock()
+	if len(lastError) > 200 {
+		lastError = lastError[:200]
+	}
+	return
+}
+
+// RefreshReputationFeedAsync triggers a feed refresh in the background
+// and reports whether one was started: false when no feed is
+// configured or a manually triggered refresh is already running. The
+// refresh itself is fail-open, exactly like the background loop.
+func RefreshReputationFeedAsync() bool {
+	cfg := feedConfig.Load()
+	if cfg == nil || cfg.url == "" {
+		return false
+	}
+	if !feedRefreshMu.TryLock() {
+		return false
+	}
+	go func() {
+		defer feedRefreshMu.Unlock()
+		refreshReputationFeed()
+	}()
+	return true
+}
+
+// recordFeedResult stores the outcome of a feed fetch for status
+// output. An empty message means success.
+func recordFeedResult(errMsg string) {
+	feedStatusMu.Lock()
+	defer feedStatusMu.Unlock()
+	if errMsg == "" {
+		feedLastSuccess = time.Now()
+		feedLastError = ""
+	} else {
+		feedLastError = errMsg
+	}
+}
+
 func refreshReputationFeedLoop() {
 	for {
 		refreshReputationFeed()
@@ -162,11 +232,13 @@ func refreshReputationFeed() {
 	resp, err := client.Get(cfg.url)
 	if err != nil {
 		fmt.Println("[ ! ] [ Reputation feed fetch failed, keeping previous data: " + err.Error() + " ]")
+		recordFeedResult("fetch failed: " + err.Error())
 		return
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println("[ ! ] [ Reputation feed returned status " + resp.Status + ", keeping previous data ]")
+		recordFeedResult("feed returned status " + resp.Status)
 		return
 	}
 
@@ -175,14 +247,17 @@ func refreshReputationFeed() {
 	body, err := io.ReadAll(io.LimitReader(resp.Body, maxFeedBytes+1))
 	if err != nil {
 		fmt.Println("[ ! ] [ Reputation feed read failed, keeping previous data: " + err.Error() + " ]")
+		recordFeedResult("read failed: " + err.Error())
 		return
 	}
 	if len(body) > maxFeedBytes {
 		fmt.Println("[ ! ] [ Reputation feed exceeds 10 MB, keeping previous data ]")
+		recordFeedResult("feed exceeds 10 MB")
 		return
 	}
 
 	set := parseReputationList(strings.Split(string(body), "\n"))
 	feedReputation.Store(set)
+	recordFeedResult("")
 	fmt.Println("[ + ] [ Reputation feed loaded: " + fmt.Sprint(len(set.ips)) + " IPs, " + fmt.Sprint(len(set.nets)) + " networks ]")
 }

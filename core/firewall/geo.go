@@ -64,6 +64,12 @@ func GeoConfigured() bool {
 	return countryDB.Load() != nil || asnDB.Load() != nil
 }
 
+// GeoStatus reports separately whether the Country and ASN databases
+// are loaded, for operator-facing status output.
+func GeoStatus() (countryLoaded, asnLoaded bool) {
+	return countryDB.Load() != nil, asnDB.Load() != nil
+}
+
 // LookupGeo returns the ISO country code and autonomous system number for
 // an IP address. Either value may be the zero value (""/0) when no
 // database is configured, the lookup fails, or the database has no record
