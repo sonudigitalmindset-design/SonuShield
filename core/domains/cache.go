@@ -27,10 +27,12 @@ package domains
 // (default 64 MB); when full, expired entries go first, then the
 // oldest. A reload discards the cache.
 //
-// Stale entries are kept briefly past expiry so the load-balancer
-// fallback (Batch 4) can serve them, clearly marked, when every
-// backend is down. LookupStale is the only reader that sees
-// expired entries; normal lookups never serve stale content.
+// Stale entries are kept for up to staleGrace past expiry so the
+// load-balancer fallback (Batch 4) can serve them, clearly
+// marked, when every backend is down. LookupStale is the only
+// reader that sees expired entries; normal lookups never serve
+// stale content. Entries older than lifetime + staleGrace are
+// dropped on sight.
 //
 // All methods are safe on a nil *EdgeCache (feature disabled):
 // lookups miss, stores and purges are no-ops.
@@ -48,6 +50,9 @@ const (
 	defaultEdgeCacheMaxMB      = 64
 	maxEdgeCacheMaxMB          = 1024
 	maxEdgeEntryBytes          = 1 << 20 // 1 MB
+	// staleGrace bounds how long an expired entry is retained
+	// for the all-backends-down fallback.
+	staleGrace = time.Hour
 )
 
 type cacheEntry struct {
@@ -98,7 +103,9 @@ func CacheKey(r *http.Request) string {
 }
 
 // Lookup returns a fresh cached response for key, if one exists.
-// Expired entries are removed and reported as misses.
+// Expired entries are reported as misses but retained (up to the
+// stale grace) so the all-backends-down fallback can still serve
+// them; only entries past the grace are removed here.
 func (c *EdgeCache) Lookup(key string) (status int, header http.Header, body []byte, age time.Duration, ok bool) {
 	if c == nil {
 		return 0, nil, nil, 0, false
@@ -111,23 +118,33 @@ func (c *EdgeCache) Lookup(key string) (status int, header http.Header, body []b
 		return 0, nil, nil, 0, false
 	}
 	if now.After(entry.storedAt.Add(entry.lifetime)) {
-		delete(c.entries, key)
-		c.bytes -= int64(len(entry.body))
+		if now.After(entry.storedAt.Add(entry.lifetime + staleGrace)) {
+			delete(c.entries, key)
+			c.bytes -= int64(len(entry.body))
+		}
 		return 0, nil, nil, 0, false
 	}
 	return entry.status, entry.header, entry.body, now.Sub(entry.storedAt), true
 }
 
 // LookupStale returns a cached response even when expired, for the
-// all-backends-down fallback. It never deletes entries.
+// all-backends-down fallback, as long as it is within the stale
+// grace. Entries past the grace are dropped and reported as
+// misses.
 func (c *EdgeCache) LookupStale(key string) (status int, header http.Header, body []byte, ok bool) {
 	if c == nil {
 		return 0, nil, nil, false
 	}
+	now := time.Now()
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	entry, exists := c.entries[key]
 	if !exists {
+		return 0, nil, nil, false
+	}
+	if now.After(entry.storedAt.Add(entry.lifetime + staleGrace)) {
+		delete(c.entries, key)
+		c.bytes -= int64(len(entry.body))
 		return 0, nil, nil, false
 	}
 	return entry.status, entry.header, entry.body, true
