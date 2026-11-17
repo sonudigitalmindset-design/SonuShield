@@ -227,6 +227,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	httpFp := firewall.ComputeHTTPFingerprint(request)
+	h2Fp := firewall.ComputeHTTP2Fingerprint(request)
 	repListed := firewall.LookupReputation(ip)
 	repValue := ""
 	if repListed {
@@ -270,6 +271,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"http.user_agent": strings.ToLower(reqUa),
 			"http.cookie":      request.Header.Get("Cookie"),
 			"http.fingerprint": httpFp,
+			"http.http2":       h2Fp,
 
 			"proxy.stage":         domainData.Stage,
 			"proxy.cloudflare":    domains.Config.Proxy.Cloudflare,
@@ -484,7 +486,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	case "/_bProxy/fingerprint":
 		writer.Header().Set("Content-Type", "text/plain")
-		SendResponse("IP: "+ip+"\nIP Requests: "+strconv.Itoa(ipCount)+"\nIP Challenge Requests: "+strconv.Itoa(ipCountCookie)+"\nSusLV: "+strconv.Itoa(susLv)+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp+"\nJA4: "+ja4Fp+"\nHTTP Fingerprint: "+httpFp, buffer, writer)
+		SendResponse("IP: "+ip+"\nIP Requests: "+strconv.Itoa(ipCount)+"\nIP Challenge Requests: "+strconv.Itoa(ipCountCookie)+"\nSusLV: "+strconv.Itoa(susLv)+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp+"\nJA4: "+ja4Fp+"\nHTTP Fingerprint: "+httpFp+"\nHTTP/2: "+h2Fp, buffer, writer)
 		return
 	case "/_bProxy/verified":
 		writer.Header().Set("Content-Type", "text/plain")

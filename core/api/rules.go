@@ -59,7 +59,7 @@ var ruleFields = map[string]bool{
 	"http.host": true, "http.version": true, "http.method": true,
 	"http.url": true, "http.query": true, "http.path": true,
 	"http.user_agent": true, "http.cookie": true,
-	"http.fingerprint": true,
+	"http.fingerprint": true, "http.http2": true,
 	"proxy.stage":      true, "proxy.cloudflare": true,
 	"proxy.stage_locked": true, "proxy.attack": true,
 	"proxy.bypass_attack": true, "proxy.rps": true,
