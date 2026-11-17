@@ -237,6 +237,12 @@ func Load() {
 			HealthCheckPath:     domain.HealthCheckPath,
 			HealthCheckInterval: domain.HealthCheckInterval,
 			WebsocketIdleTimeout: domain.WebsocketIdleTimeout,
+			JWTProtectedPaths:   domain.JWTProtectedPaths,
+			APIKeyHeader:        domain.APIKeyHeader,
+			APIKeyPaths:         domain.APIKeyPaths,
+			GraphQLPath:         domain.GraphQLPath,
+			GraphQLMaxDepth:     domain.GraphQLMaxDepth,
+			GraphQLMaxFields:    domain.GraphQLMaxFields,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

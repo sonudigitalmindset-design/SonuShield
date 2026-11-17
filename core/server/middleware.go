@@ -582,6 +582,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	request.Header.Add("proxy-tls-fp", tlsFp)
 	request.Header.Add("proxy-tls-name", browser+botFp)
 
+	//API protection gate (Batch 4): JWT validation, API-key
+	//limits, and GraphQL limits. Inert unless the operator
+	//configured protected paths; API clients still pass the
+	//normal challenge flow above.
+	if checkAPIGate(writer, request, domainName, ip, domainSettings, tlsFp, ja4Fp, httpFp, browser, botFp, domainData.Stage, susLv) {
+		return
+	}
+
 	//WebSocket upgrade with an idle timeout (Batch 4). Only when
 	//the operator configured websocketIdleTimeout; otherwise the
 	//upgrade flows through the normal reverse proxy exactly as

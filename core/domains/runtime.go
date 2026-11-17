@@ -1,5 +1,7 @@
 package domains
 
+import "fmt"
+
 // InitRuntime builds the per-domain runtime state that lives
 // alongside the settings: tarpits, edge caches, waiting rooms,
 // backend pools, and API-protection state. It is called once per
@@ -20,4 +22,15 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	settings.Waiting = NewWaitingRoom(domain.WaitingRoom, domain.WaitingRoomThreshold, domain.WaitingRoomAdmit)
 	WarnUnknownLBPolicy(domain.Name, domain.LBPolicy)
 	settings.Pool = NewBackendPool(domain.Name, domain.Scheme, domain.Backends, domain.Backend, domain.LBPolicy, domain.HealthCheckEnabled, domain.HealthCheckPath, domain.HealthCheckInterval)
+	settings.JWT = NewJWTVerifier(domain.Name, domain.JWTSecret, domain.JWTJWKSURL)
+	if len(domain.JWTProtectedPaths) > 0 && settings.JWT == nil {
+		fmt.Println("[ ! ] [ jwtProtectedPaths set for " + domain.Name + " but no jwtSecret/jwtJWKSURL configured; protected routes will reject all requests ]")
+	}
+	if settings.APIKeyHeader == "" {
+		settings.APIKeyHeader = "X-API-Key"
+	}
+	settings.APIKeys = NewAPIKeyState(domain.APIKeys)
+	if len(domain.APIKeyPaths) > 0 && settings.APIKeys == nil {
+		fmt.Println("[ ! ] [ apiKeyPaths set for " + domain.Name + " but no apiKeys configured; key-protected routes will reject all requests ]")
+	}
 }

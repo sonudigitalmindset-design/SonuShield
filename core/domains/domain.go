@@ -61,6 +61,15 @@ type Domain struct {
 	HealthCheckPath     string           `json:"healthCheckPath"`
 	HealthCheckInterval int              `json:"healthCheckInterval"`
 	WebsocketIdleTimeout int             `json:"websocketIdleTimeout"`
+	JWTSecret           string           `json:"jwtSecret"`
+	JWTJWKSURL          string           `json:"jwtJWKSURL"`
+	JWTProtectedPaths   []string         `json:"jwtProtectedPaths"`
+	APIKeys             []APIKeyConfig   `json:"apiKeys"`
+	APIKeyHeader        string           `json:"apiKeyHeader"`
+	APIKeyPaths         []string         `json:"apiKeyPaths"`
+	GraphQLPath         string           `json:"graphqlPath"`
+	GraphQLMaxDepth     int              `json:"graphqlMaxDepth"`
+	GraphQLMaxFields    int              `json:"graphqlMaxFields"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -115,6 +124,12 @@ type DomainSettings struct {
 	HealthCheckPath     string
 	HealthCheckInterval int
 	WebsocketIdleTimeout int
+	JWTProtectedPaths   []string
+	APIKeyHeader        string
+	APIKeyPaths         []string
+	GraphQLPath         string
+	GraphQLMaxDepth     int
+	GraphQLMaxFields    int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
@@ -122,6 +137,8 @@ type DomainSettings struct {
 	Cache   *EdgeCache
 	Waiting *WaitingRoom
 	Pool    *BackendPool
+	JWT     *JWTVerifier
+	APIKeys *APIKeyState
 }
 
 type DomainLog struct {
