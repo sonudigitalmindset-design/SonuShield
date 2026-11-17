@@ -24,10 +24,12 @@ package api
 //
 // SET changes apply to the running proxy only. They are NOT written
 // back to config.json: a reload or restart restores the config-file
-// values. Persisting dashboard edits to the config file is future
-// control-panel work. A full config reload from the API is not
-// offered: the existing reload path panics on invalid config, which
-// must never be reachable from an API call.
+// values. For the same settings with persistence, use the
+// control-panel action SET_DOMAIN_CONFIG, which validates, writes
+// config.json atomically, and then applies. A full config reload
+// from the API is offered by the RELOAD action, which validates the
+// config file before applying it and never runs the panicking reload
+// path on invalid input.
 
 import (
 	"net/http"

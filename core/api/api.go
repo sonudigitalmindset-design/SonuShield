@@ -119,6 +119,10 @@ func handleProxyActions(action string, writer http.ResponseWriter) {
 			"REFRESH_STARTED": started,
 			"FEED_CONFIGURED": feedConfigured,
 		})
+	case "GET_DOMAINS":
+		APIResponse(writer, true, domainsListResponse())
+	case "CLEAR_LOGS":
+		APIResponse(writer, true, clearAllLogsResponse())
 	default:
 		APIResponse(writer, false, map[string]interface{}{
 			"ERROR": ERR_ACTION_NOT_FOUND,
@@ -169,6 +173,34 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			APIResponse(writer, false, map[string]interface{}{
 				"ERROR": errCode,
 			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "GET_STAGE":
+		APIResponse(writer, true, stageResponse(domainSettings.Name))
+	case "SET_STAGE":
+		response, errCode := applyStage(domainSettings.Name, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "CLEAR_LOGS":
+		APIResponse(writer, true, clearLogsResponse(domainSettings.Name))
+	case "GET_DOMAIN_CONFIG":
+		APIResponse(writer, true, domainConfigResponse(domainSettings))
+	case "SET_DOMAIN_CONFIG":
+		response, errCode, detail := applyDomainConfig(domainSettings, params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
 			return
 		}
 		APIResponse(writer, true, response)
