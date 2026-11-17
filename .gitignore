@@ -49,3 +49,6 @@ go.work
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode
+
+# Build artifacts accidentally committed in the past; never commit binaries.
+oryxBuildBinary
