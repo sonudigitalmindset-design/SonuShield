@@ -7,6 +7,7 @@ import (
 	"sonushield/core/dashboard"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/logging"
 	"sonushield/core/metrics"
 	"sonushield/core/proxy"
 	"sonushield/core/utils"
@@ -57,6 +58,16 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if metrics.IsMetricsRequest(request) {
 		metrics.ServeMetrics(writer)
 		return
+	}
+
+	// Log paths must never carry the admin secret, which is a path
+	// segment of the API, dashboard, and metrics routes. Redact it
+	// once here; every structured-log entry below uses logPath.
+	logPath := request.URL.Path
+	if proxy.AdminSecret != "" {
+		if rest, ok := strings.CutPrefix(logPath, "/_bProxy/"+proxy.AdminSecret); ok {
+			logPath = "/_bProxy/[redacted]" + rest
+		}
 	}
 
 	var ip string
@@ -136,6 +147,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if ipCountCookie > proxy.FailChallengeRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
 		metrics.ObserveBlock(domainName, "ratelimit")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "ratelimit", Rule: "R1", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 		SendResponse(blockMessage("You have been ratelimited. (R1)"), buffer, writer)
 		return
 	}
@@ -144,6 +156,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if ipCount > proxy.IPRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
 		metrics.ObserveBlock(domainName, "ratelimit")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "ratelimit", Rule: "R2", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 		SendResponse(blockMessage("You have been ratelimited. (R2)"), buffer, writer)
 		return
 	}
@@ -153,6 +166,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		if fpCount > proxy.FPRatelimit {
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "ratelimit")
+			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "ratelimit", Rule: "R3", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			SendResponse(blockMessage("You have been ratelimited. (R3)"), buffer, writer)
 			return
 		}
@@ -170,6 +184,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if forbiddenFp != "" {
 		writer.Header().Set("Content-Type", "text/plain")
 		metrics.ObserveBlock(domainName, "fingerprint")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "fingerprint", Rule: forbiddenFp, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 		SendResponse(blockMessage("Your browser "+forbiddenFp+" is not allowed."), buffer, writer)
 		return
 	}
@@ -197,6 +212,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	wafBlocked, wafRule := firewall.CheckRequest(request, domainSettings.WAFMode, domainSettings.WAFInspectBody, domainSettings.WAFWpLoginLimit, ip)
 	if wafRule != "" {
 		metrics.ObserveWAFMatch(domainName, wafRule)
+		wafEvent, wafAction := "waf", "waf_log"
+		if wafBlocked {
+			wafEvent, wafAction = "block", "waf"
+		}
+		logging.Log(logging.Entry{Event: wafEvent, Domain: domainName, IP: ip, Action: wafAction, Rule: wafRule, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 	if wafBlocked {
 		metrics.ObserveBlock(domainName, "waf")
@@ -212,6 +232,10 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if repListed {
 		repValue = "listed"
 	}
+
+	// Matched firewall rules, for structured logging only. Computed
+	// below when logging is enabled; empty otherwise.
+	matchedRules := []string{}
 
 	if len(domainSettings.CustomRules) != 0 {
 		//Geo/ASN lookup. Zero values when no database is configured, so
@@ -257,6 +281,9 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		susLv = firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
+		if logging.Enabled() {
+			matchedRules = firewall.MatchedRules(domainSettings, requestVariables)
+		}
 	}
 
 	//IP reputation applies after firewall rules, whether or not the domain
@@ -288,6 +315,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
+			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")"), buffer, writer)
 			return
 		}
@@ -313,11 +341,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			//This request is not to be challenged (whitelist)
 		case 1:
 			metrics.ObserveChallenge(domainName, 1)
+			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			writer.Header().Set("Set-Cookie", "_1__bProxy_v="+encryptedIP+"; SameSite=Lax; path=/; Secure")
 			http.Redirect(writer, request, request.URL.RequestURI(), http.StatusFound)
 			return
 		case 2:
 			metrics.ObserveChallenge(domainName, 2)
+			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			//Challenge provider (Turnstile/hCaptcha) replaces the
 			//proof-of-work page when the operator configured one with
 			//their own keys. Falls back to proof-of-work when the
@@ -350,6 +380,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			return
 		case 3:
 			metrics.ObserveChallenge(domainName, 3)
+			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			secretPart := encryptedIP[:6]
 			publicPart := encryptedIP[6:]
 
@@ -416,6 +447,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
+			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr), buffer, writer)
 			return
 		}
@@ -437,6 +469,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	domainData.BypassedRequests++
 	domains.DomainsData[domainName] = domainData
 	firewall.Mutex.Unlock()
+
+	// Structured log for requests that passed the challenge. Logged
+	// after the mutex is released; nothing here takes the firewall
+	// lock, so the log write can never stall request handling on it.
+	logging.Log(logging.Entry{Event: "allow", Domain: domainName, IP: ip, Action: "allow", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent(), RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 
 	//Reserved proxy-paths
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/logging"
 	"sonushield/core/proxy"
 	"sonushield/core/server"
 	"sonushield/core/utils"
@@ -101,6 +102,11 @@ func Load() {
 	}
 
 	firewall.InitReputation(domains.Config.Proxy.ReputationList, domains.Config.Proxy.ReputationFeed, domains.Config.Proxy.ReputationIntvl, domains.Config.Proxy.ReputationSusLv)
+
+	// Structured JSON logging (Batch 2). Disabled unless logFormat
+	// is "json" and logFile is set; Configure warns and disables
+	// itself on any problem, so a bad log config never stops the proxy.
+	logging.Configure(domains.Config.Proxy.LogFormat, domains.Config.Proxy.LogFile, domains.Config.Proxy.LogMaxBytes, domains.Config.Proxy.LogMaxFiles)
 
 	proxy.IPRatelimit = domains.Config.Proxy.Ratelimits["requests"]
 	proxy.FPRatelimit = domains.Config.Proxy.Ratelimits["unknownFingerprint"]

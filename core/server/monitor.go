@@ -21,6 +21,7 @@ import (
 
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/logging"
 	"sonushield/core/pnc"
 	"sonushield/core/proxy"
 	"sonushield/core/reports"
@@ -143,6 +144,7 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 				// the firewall tallies from a goroutine, so it never
 				// takes the write lock held by this loop.
 				reports.ExportOnAttackEnd(domainName, domainData)
+				logging.Log(logging.Entry{Event: "attack_end", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
 				domainData.PeakRequestsPerSecond = 0
 				domainData.PeakRequestsBypassedPerSecond = 0
 				domainData.RequestLogger = []domains.RequestLog{}
@@ -165,6 +167,7 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 						CpuUsage: proxy.CpuUsage,
 					})
 					go utils.SendAlerts(domainData, domainSettings, int(0))
+					logging.Log(logging.Entry{Event: "attack_start", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
 				}
 				// Start/Set cooldown
 				domainData.BufferCooldown = 10
@@ -201,6 +204,7 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 					CpuUsage: proxy.CpuUsage,
 				})
 				go utils.SendAlerts(domainData, domainSettings, int(0))
+				logging.Log(logging.Entry{Event: "attack_start", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
 			}
 
 			//Set/Start cooldown
@@ -454,6 +458,10 @@ func ReloadConfig() {
 	}
 
 	firewall.InitReputation(domains.Config.Proxy.ReputationList, domains.Config.Proxy.ReputationFeed, domains.Config.Proxy.ReputationIntvl, domains.Config.Proxy.ReputationSusLv)
+
+	// Structured JSON logging (Batch 2). Re-applied on reload so new
+	// log settings take effect without a restart.
+	logging.Configure(domains.Config.Proxy.LogFormat, domains.Config.Proxy.LogFile, domains.Config.Proxy.LogMaxBytes, domains.Config.Proxy.LogMaxFiles)
 
 	proxy.IPRatelimit = domains.Config.Proxy.Ratelimits["requests"]
 	proxy.FPRatelimit = domains.Config.Proxy.Ratelimits["unknownFingerprint"]

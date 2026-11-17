@@ -132,6 +132,10 @@ type Proxy struct {
 	QuietMode       bool              `json:"quietMode"`
 	MetricsEnabled  bool              `json:"metricsEnabled"`
 	ReportDirectory string            `json:"reportDirectory"`
+	LogFormat       string            `json:"logFormat"`
+	LogFile         string            `json:"logFile"`
+	LogMaxBytes     int64             `json:"logMaxBytes"`
+	LogMaxFiles     int               `json:"logMaxFiles"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }
