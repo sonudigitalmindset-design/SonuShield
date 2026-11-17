@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" role="img" aria-label="Firewall rules: evaluated top to bottom, adjusting the suspicion level from allow to block">
+  <defs>
+    <marker id="arrow7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#57606a"/>
+    </marker>
+  </defs>
+  <rect width="900" height="300" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+  <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+    <text x="40" y="36" font-size="14" font-weight="700" fill="#14263f">Rules run top to bottom — earlier rules win</text>
+    <g font-family="ui-monospace,monospace" font-size="12">
+      <rect x="40" y="48" width="470" height="40" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="56" y="73" fill="#14263f">(http.path eq "/captcha")</text>
+      <rect x="420" y="56" width="76" height="24" rx="6" fill="#14263f"/>
+      <text x="458" y="72" text-anchor="middle" fill="#ffffff">action 3</text>
+      <rect x="40" y="96" width="470" height="40" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="56" y="121" fill="#14263f">(ip.engine eq "")</text>
+      <rect x="420" y="104" width="76" height="24" rx="6" fill="#f59e0b"/>
+      <text x="458" y="120" text-anchor="middle" fill="#0d1b2e">action +1</text>
+      <rect x="40" y="144" width="470" height="40" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="56" y="169" fill="#14263f">(http.user_agent contains "chrome")</text>
+      <rect x="420" y="152" width="76" height="24" rx="6" fill="#4f7fb8"/>
+      <text x="458" y="168" text-anchor="middle" fill="#ffffff">action -1</text>
+    </g>
+    <line x1="275" y1="192" x2="275" y2="224" stroke="#57606a" stroke-width="2" marker-end="url(#arrow7)"/>
+    <text x="40" y="252" font-size="13" fill="#57606a">Absolute actions stop further checks. +/- actions stack</text>
+    <text x="40" y="272" font-size="13" fill="#57606a">and checking continues.</text>
+    <g>
+      <text x="560" y="36" font-size="14" font-weight="700" fill="#14263f">Suspicion level (susLv)</text>
+      <rect x="560" y="48" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+      <rect x="560" y="48" width="60" height="34" rx="8" fill="#22c55e"/>
+      <text x="590" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">0</text>
+      <text x="700" y="70" font-size="13" fill="#14263f">Allow — whitelisted</text>
+      <rect x="560" y="90" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+      <rect x="560" y="90" width="60" height="34" rx="8" fill="#4f7fb8"/>
+      <text x="590" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">1</text>
+      <text x="700" y="112" font-size="13" fill="#14263f">Cookie challenge</text>
+      <rect x="560" y="132" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+      <rect x="560" y="132" width="60" height="34" rx="8" fill="#f59e0b"/>
+      <text x="590" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">2</text>
+      <text x="700" y="154" font-size="13" fill="#14263f">JS challenge</text>
+      <rect x="560" y="174" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+      <rect x="560" y="174" width="60" height="34" rx="8" fill="#d97706"/>
+      <text x="590" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">3</text>
+      <text x="700" y="196" font-size="13" fill="#14263f">Captcha</text>
+      <rect x="560" y="216" width="300" height="34" rx="8" fill="#ffffff" stroke="#ef4444"/>
+      <rect x="560" y="216" width="60" height="34" rx="8" fill="#ef4444">
+        <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <text x="590" y="238" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">4+</text>
+      <text x="700" y="238" font-size="13" fill="#14263f">Block</text>
+      <text x="560" y="274" font-size="12" fill="#57606a">Starts at the domain's current stage.</text>
+    </g>
+  </g>
+</svg>
