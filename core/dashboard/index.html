@@ -145,6 +145,21 @@ tbody tr:hover td{background:var(--panel-2)}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 16px}
 .footer{margin-top:var(--space-4);color:var(--faint);font-size:12px}
 .kbd{font-family:var(--mono);background:var(--code-bg);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:4px;padding:1px 6px;font-size:12px;white-space:nowrap}
+/* Forms and controls */
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px;margin:8px 0}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 6px}
+.field input,.field select{width:100%}
+.field .hint{font-size:12px;color:var(--faint);margin-top:4px}
+button.danger{border-color:var(--bad-border);color:var(--bad-text)}
+button.danger:hover{border-color:var(--bad-text)}
+button.small{padding:4px 10px;font-size:12.5px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.inline-err{display:none;border:1px solid var(--bad-border);background:var(--bad-bg);color:var(--bad-text);border-radius:var(--radius);padding:10px 14px;margin:12px 0}
+.inline-err.show{display:block}
+.inline-ok{display:none;border:1px solid var(--ok-border);background:var(--ok-bg);color:var(--ok-text);border-radius:var(--radius);padding:10px 14px;margin:12px 0}
+.inline-ok.show{display:block}
+tr.clickable{cursor:pointer}
+tr.selected td{background:var(--nav-active-bg)}
 @media (max-width:880px){
   .layout{flex-direction:column}
   .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);padding:8px;overflow-x:auto;white-space:nowrap}
@@ -171,6 +186,7 @@ tbody tr:hover td{background:var(--panel-2)}
   </span>
   <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
   <button id="refreshBtn" type="button" disabled>Refresh</button>
+  <button id="reloadBtn" type="button" disabled>Reload config</button>
   <button id="disconnectBtn" type="button" disabled>Forget secret</button>
 </header>
 <div class="layout">
@@ -178,9 +194,12 @@ tbody tr:hover td{background:var(--panel-2)}
     <h3>Monitor</h3>
     <button class="navbtn active" type="button" data-view="overview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Overview</span></button>
     <button class="navbtn" type="button" data-view="domains"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg><span>Domains</span></button>
-    <button class="navbtn" type="button" data-view="rules"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span>Firewall rules</span><span class="tag">Read-only</span></button>
-    <button class="navbtn" type="button" data-view="stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Stage</span><span class="tag">Read-only</span></button>
+    <button class="navbtn" type="button" data-view="rules"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span>Firewall rules</span></button>
+    <button class="navbtn" type="button" data-view="stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Stage</span></button>
     <button class="navbtn" type="button" data-view="logs"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="2.6"/></svg><span>Logs</span></button>
+    <h3>Manage</h3>
+    <button class="navbtn" type="button" data-view="settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
+    <button class="navbtn" type="button" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13h6M9 17h4"/></svg><span>Reports</span></button>
     <h3>About</h3>
     <button class="navbtn" type="button" data-view="about"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01" stroke-width="2.6"/></svg><span>About &amp; limits</span></button>
   </nav>
@@ -211,8 +230,8 @@ tbody tr:hover td{background:var(--panel-2)}
         <div class="card"><div class="label">Bypassed (all time)</div><div class="value" id="cBypassed">—</div><div class="foot">since last reload</div></div>
         <div class="card"><div class="label">CPU usage</div><div class="value" id="cCpu">—</div><div class="foot">server CPU, percent</div></div>
         <div class="card"><div class="label">RAM usage</div><div class="value" id="cRam">—</div><div class="foot">proxy memory, percent</div></div>
-        <div class="card"><div class="label">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot">from /_bProxy/stats</div></div>
-        <div class="card"><div class="label">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot">not exposed by the API</div></div>
+        <div class="card"><div class="label">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot">from the stage API</div></div>
+        <div class="card"><div class="label">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot">automatic switching when unlocked</div></div>
       </div>
       <div class="panel">
         <h2>Top IPs by requests (current rate-limit window)</h2>
@@ -227,13 +246,16 @@ tbody tr:hover td{background:var(--panel-2)}
 
     <section id="view-domains" class="view">
       <h1>Domains</h1>
-      <p class="sub">Per-domain traffic from the API. The API has no domain-list endpoint, so enter a domain name to inspect it, or use the domain in the address bar.</p>
+      <p class="sub">Configured domains from the API. Select a domain to inspect and manage it everywhere in this dashboard.</p>
+      <div class="panel">
+        <h2>Configured domains</h2>
+        <div id="domList"><div class="state">No data yet. Connect to load live data.</div></div>
+      </div>
       <div class="toolbar">
-        <label for="domainInput" class="muted">Domain</label>
+        <label for="domainInput" class="muted">Or inspect a name directly</label>
         <input id="domainInput" class="grow" type="text" spellcheck="false" autocomplete="off" placeholder="example.com" style="flex:1;min-width:180px">
         <button id="domainBtn" type="button" class="primary">Inspect domain</button>
       </div>
-      <div class="note info"><strong>Not available in v1:</strong> the API does not expose the configured domain list, backends, or schemes. Those live only in <code>config.json</code> on the server. This view therefore shows live traffic for the domain you name — it cannot list all domains or show backend addresses.</div>
       <div class="panel">
         <h2 id="domTitle">—</h2>
         <div id="domBody"><div class="state">No data yet. Connect to load live data.</div></div>
@@ -241,9 +263,32 @@ tbody tr:hover td{background:var(--panel-2)}
     </section>
 
     <section id="view-rules" class="view">
-      <h1>Firewall rules <span class="badge">read-only</span></h1>
-      <p class="sub">Rules for <strong id="rulesDomain">—</strong>, in evaluation order (top rule first). The API has no rule-edit endpoint, so rules can only be changed in <code>config.json</code> followed by the terminal <span class="kbd">reload</span> command.</p>
+      <h1>Firewall rules</h1>
+      <p class="sub">Rules for <strong id="rulesDomain">—</strong>, in evaluation order (top rule first). Changes are saved to <code>config.json</code> on the server immediately, take effect without a reload, and keep a backup of the previous config as <code>config.json.bak</code>.</p>
+      <div class="inline-err" id="rulesError" role="alert"></div>
+      <div class="inline-ok" id="rulesOk" role="status"></div>
       <div id="rulesBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      <div class="panel">
+        <h2 id="ruleFormTitle">Add a rule</h2>
+        <form id="ruleForm">
+          <div class="formgrid">
+            <div class="field" style="grid-column:1/-1">
+              <label for="ruleExpr">Expression</label>
+              <input id="ruleExpr" type="text" spellcheck="false" autocomplete="off" placeholder='(http.path eq "/wp-login.php")' required>
+              <div class="hint">Fields: <code>ip.*</code>, <code>http.*</code>, <code>proxy.*</code> — see the firewall-rules docs. Expressions that do not compile, or use an unknown field, are rejected and nothing changes.</div>
+            </div>
+            <div class="field">
+              <label for="ruleAction">Action</label>
+              <input id="ruleAction" type="text" spellcheck="false" autocomplete="off" placeholder="4" required>
+              <div class="hint"><code>0</code> allow, <code>1</code>–<code>3</code> challenge, <code>4+</code> block, <code>+N</code>/<code>-N</code> adjust and continue.</div>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" id="ruleSubmit">Add rule</button>
+            <button type="button" id="ruleCancel" hidden>Cancel edit</button>
+          </div>
+        </form>
+      </div>
       <div class="panel">
         <h2>What the actions mean</h2>
         <table>
@@ -261,12 +306,25 @@ tbody tr:hover td{background:var(--panel-2)}
     </section>
 
     <section id="view-stage" class="view">
-      <h1>Stage <span class="badge">read-only</span></h1>
-      <p class="sub">The current challenge stage for <strong id="stageDomain">—</strong>. Stage control is terminal-only in v1: the API has no stage endpoint.</p>
+      <h1>Stage</h1>
+      <p class="sub">The current challenge stage for <strong id="stageDomain">—</strong>.</p>
       <div class="cards">
-        <div class="card"><div class="label">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot">from /_bProxy/stats</div></div>
-        <div class="card"><div class="label">Stage locked</div><div class="value">Not exposed</div><div class="foot">only visible in the terminal HUD</div></div>
-        <div class="card"><div class="label">Under attack</div><div class="value">Not exposed</div><div class="foot">only visible in the terminal HUD</div></div>
+        <div class="card"><div class="label">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot">from the stage API</div></div>
+        <div class="card"><div class="label">Stage locked</div><div class="value" id="stageLocked">—</div><div class="foot">automatic switching when unlocked</div></div>
+        <div class="card"><div class="label">Under attack</div><div class="value" id="stageAttack">—</div><div class="foot">raw or bypassing attack in progress</div></div>
+      </div>
+      <div class="inline-err" id="stageError" role="alert"></div>
+      <div class="inline-ok" id="stageOk" role="status"></div>
+      <div class="panel">
+        <h2>Change the stage</h2>
+        <div class="btnrow">
+          <button type="button" data-stage="0">Automatic (unlock)</button>
+          <button type="button" data-stage="1">Lock Stage 1</button>
+          <button type="button" data-stage="2">Lock Stage 2</button>
+          <button type="button" data-stage="3">Lock Stage 3</button>
+          <button type="button" data-underattack="true" class="danger">Under-attack mode</button>
+        </div>
+        <p class="small muted">Stage changes apply immediately and are <strong>runtime-only</strong>: a config reload or restart returns the domain to automatic switching. Under-attack mode locks Stage 3; Automatic turns it off.</p>
       </div>
       <div class="panel">
         <h2>What each stage does</h2>
@@ -280,32 +338,101 @@ tbody tr:hover td{background:var(--panel-2)}
           </tbody>
         </table>
       </div>
-      <div class="note"><strong>To change the stage,</strong> use the proxy terminal on the server: <span class="kbd">stage 2</span> locks Stage 2, <span class="kbd">stage 0</span> unlocks and returns to automatic switching. There is deliberately no stage button here — the API exposes no stage action, and this dashboard adds none.</div>
+      <div class="note"><strong>Stage changes are runtime-only.</strong> Locking a stage here has the same effect as the terminal <span class="kbd">stage</span> command, and a reload or restart returns the domain to automatic switching. There is no need to use the terminal for stage control.</div>
     </section>
 
     <section id="view-logs" class="view">
       <h1>Logs</h1>
       <p class="sub">Most recent requests that passed the challenges, for <strong id="logsDomain">—</strong>. Newest first. Logs only include requests that passed; blocked and challenged requests are not logged here.</p>
+      <div class="toolbar">
+        <button id="clearLogsBtn" type="button" class="danger">Clear logs for this domain</button>
+        <button id="clearAllLogsBtn" type="button">Clear logs for all domains</button>
+        <span class="small muted" id="logsNote"></span>
+      </div>
+      <div class="inline-err" id="logsError" role="alert"></div>
       <div id="logsBody"><div class="state">No data yet. Connect to load live data.</div></div>
+    </section>
+
+    <section id="view-settings" class="view">
+      <h1>Settings</h1>
+      <p class="sub">Configuration for <strong id="settingsDomain">—</strong>. Saved changes are written to <code>config.json</code> on the server immediately and survive restarts. Secrets, backends, schemes, and certificate paths can only be changed in <code>config.json</code> on the server, followed by Reload config.</p>
+      <div class="inline-err" id="settingsError" role="alert"></div>
+      <div class="inline-ok" id="settingsOk" role="status"></div>
+      <form id="settingsForm">
+        <div class="panel">
+          <h2>Attack thresholds</h2>
+          <div class="formgrid">
+            <div class="field"><label for="setBypassStage1">Bypass Stage 1 (r/s)</label><input id="setBypassStage1" type="number" min="0" step="1"><div class="hint">Bypassed requests/s that trigger Stage 2.</div></div>
+            <div class="field"><label for="setBypassStage2">Bypass Stage 2 (r/s)</label><input id="setBypassStage2" type="number" min="0" step="1"><div class="hint">Bypassed requests/s that trigger Stage 3.</div></div>
+            <div class="field"><label for="setDisableBypassStage3">Disable bypass Stage 3</label><input id="setDisableBypassStage3" type="number" min="0" step="1"><div class="hint">Bypassed requests/s below which Stage 3 steps down.</div></div>
+            <div class="field"><label for="setDisableRawStage3">Disable raw Stage 3</label><input id="setDisableRawStage3" type="number" min="0" step="1"><div class="hint">Total requests/s below which Stage 3 steps down.</div></div>
+            <div class="field"><label for="setDisableBypassStage2">Disable bypass Stage 2</label><input id="setDisableBypassStage2" type="number" min="0" step="1"><div class="hint">Bypassed requests/s below which Stage 2 steps down.</div></div>
+            <div class="field"><label for="setDisableRawStage2">Disable raw Stage 2</label><input id="setDisableRawStage2" type="number" min="0" step="1"><div class="hint">Total requests/s below which an attack is considered over.</div></div>
+            <div class="field"><label for="setStage2Difficulty">Stage 2 difficulty (0 = default)</label><input id="setStage2Difficulty" type="number" min="0" max="16" step="1"><div class="hint">Proof-of-work difficulty. 0 uses the default of 5.</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Proof-of-work &amp; challenges</h2>
+          <div class="formgrid">
+            <div class="field"><label for="setAdaptivePow">Adaptive proof-of-work</label><select id="setAdaptivePow"><option value="true">Enabled</option><option value="false">Disabled</option></select><div class="hint">Difficulty scales with bypassed traffic between the bounds below.</div></div>
+            <div class="field"><label for="setPowMin">PoW difficulty min (0 = default)</label><input id="setPowMin" type="number" min="0" max="16" step="1"></div>
+            <div class="field"><label for="setPowMax">PoW difficulty max (0 = default)</label><input id="setPowMax" type="number" min="0" max="16" step="1"></div>
+          </div>
+          <p class="small muted">Challenge provider: <strong id="settingsProvider">—</strong> · keys configured: <strong id="settingsKeys">—</strong>. Provider and keys are config-file-only and are never shown here.</p>
+        </div>
+        <div class="panel">
+          <h2>WAF-lite</h2>
+          <div class="formgrid">
+            <div class="field"><label for="setWafMode">WAF mode</label><select id="setWafMode"><option value="off">Off</option><option value="log">Log only</option><option value="block">Block</option></select><div class="hint">Block mode answers matches with a generic 403.</div></div>
+            <div class="field"><label for="setWafInspectBody">Inspect request bodies</label><select id="setWafInspectBody"><option value="true">Yes</option><option value="false">No</option></select></div>
+            <div class="field"><label for="setWafWpLimit">WordPress login limit (per min/IP)</label><input id="setWafWpLimit" type="number" min="0" step="1"><div class="hint">0 uses the default of 20/minute.</div></div>
+          </div>
+        </div>
+        <div class="btnrow">
+          <button class="primary" type="submit">Save settings</button>
+          <button type="button" id="settingsReloadBtn">Reload current values</button>
+        </div>
+      </form>
+      <div class="panel">
+        <h2>Proxy features</h2>
+        <div id="proxyFeatures"><div class="state">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="refreshFeedBtn">Refresh reputation feed</button></div>
+      </div>
+    </section>
+
+    <section id="view-reports" class="view">
+      <h1>Attack report</h1>
+      <p class="sub">Attack summary for <strong id="reportDomain">—</strong>, built from live counters. IP and fingerprint tallies are proxy-wide and labelled as such in the report.</p>
+      <div class="toolbar">
+        <label for="reportTop" class="muted">Show top</label>
+        <input id="reportTop" type="number" min="1" max="50" value="10" style="width:80px">
+        <button id="reportLoadBtn" type="button" class="primary">Load report</button>
+        <button id="reportJsonBtn" type="button">Download JSON</button>
+        <button id="reportCsvBtn" type="button">Download CSV</button>
+      </div>
+      <div class="inline-err" id="reportError" role="alert"></div>
+      <div id="reportBody"><div class="state">No report loaded yet.</div></div>
     </section>
 
     <section id="view-about" class="view">
       <h1>About &amp; limits</h1>
-      <p class="sub">SonuShield Dashboard v1 — a read-only monitoring page served by the proxy itself. No build step, no external resources: everything on this page is served from the single proxy binary and works offline.</p>
+      <p class="sub">SonuShield Dashboard — the control panel served by the proxy itself. No build step, no external resources: everything on this page is served from the single proxy binary and works offline.</p>
       <div class="panel">
         <h2>What this dashboard can do</h2>
         <ul>
           <li>Show live request rates, totals, CPU/RAM, and the current stage.</li>
-          <li>Show firewall rules and recent passed requests per domain.</li>
-          <li>Show top requesting IPs and unknown fingerprints for the current rate-limit window.</li>
+          <li>List configured domains with backends, schemes, and live summaries.</li>
+          <li>Change the stage, lock it, or switch under-attack mode on and off (runtime-only; a reload resets it).</li>
+          <li>Add, edit, and delete firewall rules — saved to <code>config.json</code> immediately, with a backup kept.</li>
+          <li>Edit domain thresholds, proof-of-work, and WAF-lite settings — saved to <code>config.json</code> immediately.</li>
+          <li>Show recent passed requests, clear logs, load attack reports, and export them as JSON or CSV.</li>
+          <li>Reload the configuration from <code>config.json</code> after validating it; an invalid config is rejected and the running proxy is untouched.</li>
         </ul>
-        <h2>What it deliberately cannot do (API gaps)</h2>
+        <h2>What still needs the config file</h2>
         <ul>
-          <li><strong>Change the stage</strong> — no API action exists; use the terminal <span class="kbd">stage</span> command.</li>
-          <li><strong>List domains or show backends/schemes</strong> — no API action exists; see <code>config.json</code>.</li>
-          <li><strong>Show stage-locked or under-attack state</strong> — not exposed by any API action or reserved path.</li>
-          <li><strong>Edit firewall rules</strong> — no API action exists; edit <code>config.json</code> and run <span class="kbd">reload</span> in the terminal.</li>
-          <li><strong>Clear logs or reload the configuration</strong> — terminal-only (<span class="kbd">clrlogs</span>, <span class="kbd">reload</span>). The API <code>RELOAD</code> action is a no-op.</li>
+          <li><strong>Secrets</strong> — API/admin secrets, challenge keys, the Telegram bot token, and the email password are never shown or accepted here. Edit <code>config.json</code> on the server. Admin/API secret changes need a restart.</li>
+          <li><strong>Adding or removing domains, backends, schemes, and certificate paths</strong> — edit <code>config.json</code>, then use Reload config here.</li>
+          <li><strong>Proxy-wide settings</strong> (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging) — edit <code>config.json</code>, then use Reload config here.</li>
         </ul>
         <h2>Security notes</h2>
         <ul>
@@ -367,28 +494,49 @@ document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
   applyTheme(current === "light" ? "light" : "dark");
 })();
 
-function apiV2(path){
-  return fetch(path, {headers: {"Proxy-Secret": apiSecret}, credentials: "same-origin", cache: "no-store"})
+function apiV2(path, method){
+  return fetch(path, {method: method || "GET", headers: {"Proxy-Secret": apiSecret}, credentials: "same-origin", cache: "no-store"})
     .then(function(res){ return res.text().then(function(text){
       var data;
       try { data = JSON.parse(text); }
       catch(e){ throw new Error("API did not return JSON (secret rejected or request fell through to the backend)."); }
       if(!data || data.success !== true){
         var code = (data && data.results && data.results.ERROR) ? data.results.ERROR : "unknown API error";
-        throw new Error("API error: " + code);
+        var detail = (data && data.results && data.results.ERROR_DETAIL) ? data.results.ERROR_DETAIL : "";
+        var err = new Error("API error: " + code + (detail ? " — " + detail : ""));
+        err.code = code;
+        err.detail = detail;
+        throw err;
       }
       return data.results || {};
     }); });
 }
 function proxyAction(action){ return apiV2("/_bProxy/api/v2/" + action); }
 function domainAction(domain, action){ return apiV2("/_bProxy/api/v2/" + encodeURIComponent(domain) + "/" + action); }
-function fetchStatsText(){
-  return fetch("/_bProxy/stats", {credentials: "same-origin", cache: "no-store"})
-    .then(function(res){ return res.text(); });
+function buildQuery(params){
+  return Object.keys(params || {}).map(function(k){
+    return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
+  }).join("&");
 }
-function parseStage(text){
-  var m = /^\s*Stage:\s*(\S+)/m.exec(text || "");
-  return m ? m[1] : null;
+/* Mutating actions use POST with query parameters (v2 style). */
+function proxyWrite(action, params){
+  var q = buildQuery(params);
+  return apiV2("/_bProxy/api/v2/" + action + (q ? "?" + q : ""), "POST");
+}
+function domainWrite(domain, action, params){
+  var q = buildQuery(params);
+  return apiV2("/_bProxy/api/v2/" + encodeURIComponent(domain) + "/" + action + (q ? "?" + q : ""), "POST");
+}
+function showInline(id, okId, msg, okMsg){
+  var errEl = $(id), okEl = okId ? $(okId) : null;
+  if(errEl){
+    if(msg){ errEl.textContent = msg; errEl.classList.add("show"); }
+    else { errEl.textContent = ""; errEl.classList.remove("show"); }
+  }
+  if(okEl){
+    if(okMsg){ okEl.textContent = okMsg; okEl.classList.add("show"); }
+    else { okEl.textContent = ""; okEl.classList.remove("show"); }
+  }
 }
 function stageBadge(stage){
   if(stage === "1") return '<span class="badge stage1">Stage 1 · Cookie</span>';
@@ -432,9 +580,8 @@ function loadOverview(){
   var pByp = domainAction(dom, "GET_BYPASSED_REQUESTS").catch(function(){ return null; });
   var pIps = proxyAction("GET_IP_REQUESTS").catch(function(){ return null; });
   var pFps = proxyAction("GET_FINGERPRINT_REQUESTS").catch(function(){ return null; });
-  var pStage = (dom === hostDomain) ? fetchStatsText().catch(function(){ return null; }) : Promise.resolve(null);
-  return Promise.all([pStats, pRps, pBrps, pTot, pByp, pIps, pFps, pStage]).then(function(r){
-    var stats = r[0], rps = r[1], brps = r[2], tot = r[3], byp = r[4], ips = r[5], fps = r[6], stageText = r[7];
+  return Promise.all([pStats, pRps, pBrps, pTot, pByp, pIps, pFps]).then(function(r){
+    var stats = r[0], rps = r[1], brps = r[2], tot = r[3], byp = r[4], ips = r[5], fps = r[6];
     if(stats){ setText("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setText("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); }
     if(rps) setText("cTotalRps", num(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND));
     if(brps) setText("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
@@ -446,45 +593,102 @@ function loadOverview(){
     if(fps){
       setHTML("topFps", topTable(fps.TOTAL_FINGERPRINT_REQUESTS, "TLS fingerprint", "Requests"));
     }
-    if(stageText != null){
-      var st = parseStage(stageText);
-      setHTML("cStage", stageBadge(st));
-      setText("cStageFoot", "from /_bProxy/stats · " + hostDomain);
-      setHTML("stageBig", stageBadge(st));
-      setText("stageBigFoot", "from /_bProxy/stats · " + hostDomain);
-    } else if(dom !== hostDomain){
-      setText("cStage", "—");
-      setText("cStageFoot", "stage is only shown for " + hostDomain);
-      setHTML("stageBig", "—");
-      setText("stageBigFoot", "stage is only shown for " + hostDomain);
-    }
-    setText("cLocked", "Not exposed");
   });
+}
+
+function loadStageState(){
+  return domainAction(currentDomain, "GET_STAGE").then(function(r){
+    var stage = (r.STAGE == null ? null : String(r.STAGE));
+    setHTML("cStage", stageBadge(stage));
+    setText("cStageFoot", "from the stage API · " + currentDomain);
+    setHTML("stageBig", stageBadge(stage));
+    setText("stageBigFoot", "from the stage API · " + currentDomain);
+    setText("cLocked", r.STAGE_LOCKED ? "Yes" : "No");
+    setText("stageLocked", r.STAGE_LOCKED ? "Yes" : "No");
+    setText("stageAttack", r.UNDER_ATTACK ? "Yes" : "No");
+    return r;
+  }).catch(function(){
+    setHTML("cStage", "—");
+    setText("cLocked", "—");
+    setHTML("stageBig", "—");
+    setText("stageLocked", "—");
+    setText("stageAttack", "—");
+    return null;
+  });
+}
+
+function loadDomains(){
+  return proxyAction("GET_DOMAINS").then(function(r){
+    var list = r.DOMAINS || [];
+    if(!list.length){
+      setHTML("domList", '<div class="state">No domains configured.</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>Domain</th><th>Backend</th><th>Stage</th><th>Locked</th><th>Under attack</th><th>Total r/s</th><th>Bypassed r/s</th><th>Rules</th></tr></thead><tbody>';
+    list.forEach(function(d){
+      var sel = (d.NAME === currentDomain) ? ' class="clickable selected"' : ' class="clickable"';
+      h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? "Yes" : "No") + "</td><td>" + (d.UNDER_ATTACK ? "Yes" : "No") + "</td><td>" + num(d.TOTAL_RPS) + "</td><td>" + num(d.BYPASSED_RPS) + "</td><td>" + num(d.RULE_COUNT) + "</td></tr>";
+    });
+    setHTML("domList", h + "</tbody></table>");
+    document.querySelectorAll("#domList tr[data-domain]").forEach(function(row){
+      row.addEventListener("click", function(){ setDomain(row.getAttribute("data-domain")); });
+    });
+  }).catch(function(){
+    setHTML("domList", '<div class="state state-error"><strong>Could not load the domain list.</strong><br>The API secret may have been rejected.</div>');
+  });
+}
+
+function setDomain(name){
+  if(!name) return;
+  currentDomain = name;
+  syncDomainLabels();
+  $("domainInput").value = name;
+  refreshAll();
+}
+
+function syncDomainLabels(){
+  setText("ovDomain", currentDomain);
+  setText("stageDomain", currentDomain);
+  setText("settingsDomain", currentDomain);
+  setText("reportDomain", currentDomain);
 }
 
 function loadDomainPanel(){
   var dom = currentDomain;
   setText("domTitle", dom);
+  var pCfg = domainAction(dom, "GET_DOMAIN_CONFIG").catch(function(){ return null; });
   var pRps = domainAction(dom, "GET_TOTAL_REQUESTS_PER_SECOND").catch(function(){ return null; });
   var pBrps = domainAction(dom, "GET_BYPASSED_REQUESTS_PER_SECOND").catch(function(){ return null; });
   var pTot = domainAction(dom, "GET_TOTAL_REQUESTS").catch(function(){ return null; });
   var pByp = domainAction(dom, "GET_BYPASSED_REQUESTS").catch(function(){ return null; });
-  return Promise.all([pRps, pBrps, pTot, pByp]).then(function(r){
-    if(!r[0] && !r[1] && !r[2] && !r[3]){
+  return Promise.all([pCfg, pRps, pBrps, pTot, pByp]).then(function(r){
+    var cfg = r[0];
+    if(!cfg && !r[1] && !r[2] && !r[3] && !r[4]){
       setHTML("domBody", '<div class="state"><strong>No data.</strong><br>The domain may not exist in the proxy config, or the API secret was rejected.</div>');
       return;
     }
     var h = '<table><tbody>'
-      + "<tr><td>Total requests / second</td><td>" + num(r[0] && r[0].TOTAL_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
-      + "<tr><td>Bypassed requests / second</td><td>" + num(r[1] && r[1].BYPASSED_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
-      + "<tr><td>Total requests (all time)</td><td>" + num(r[2] && r[2].TOTAL_REQUESTS) + "</td></tr>"
-      + "<tr><td>Bypassed requests (all time)</td><td>" + num(r[3] && r[3].BYPASSED_REQUESTS) + "</td></tr>"
-      + "</tbody></table>";
-    setHTML("domBody", h);
+      + "<tr><td>Total requests / second</td><td>" + num(r[1] && r[1].TOTAL_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>Bypassed requests / second</td><td>" + num(r[2] && r[2].BYPASSED_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>Total requests (all time)</td><td>" + num(r[3] && r[3].TOTAL_REQUESTS) + "</td></tr>"
+      + "<tr><td>Bypassed requests (all time)</td><td>" + num(r[4] && r[4].BYPASSED_REQUESTS) + "</td></tr>";
+    if(cfg){
+      h += "<tr><td>Backend</td><td class='mono'>" + esc(cfg.BACKEND || "—") + "</td></tr>"
+        + "<tr><td>Scheme</td><td class='mono'>" + esc(cfg.SCHEME || "—") + "</td></tr>"
+        + "<tr><td>Certificate</td><td class='mono'>" + esc(cfg.CERTIFICATE || "— (auto SSL or Cloudflare mode)") + "</td></tr>"
+        + "<tr><td>Firewall rules</td><td>" + num(cfg.RULE_COUNT) + "</td></tr>"
+        + "<tr><td>Challenge provider</td><td>" + esc(cfg.CHALLENGE_PROVIDER || "none (proof-of-work)") + "</td></tr>"
+        + "<tr><td>WAF mode</td><td>" + esc(cfg.WAF_MODE_EFFECTIVE || cfg.WAF_MODE || "—") + "</td></tr>"
+        + "<tr><td>Alerts</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? "yes" : "no") + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? "yes" : "no") + " · Email: " + (cfg.EMAIL_CONFIGURED ? "yes" : "no") + "</td></tr>";
+    }
+    setHTML("domBody", h + "</tbody></table>");
   });
 }
 
-function loadRules(){
+var editingIndex = null;
+
+function loadRules(force){
+  if(editingIndex !== null && !force) return Promise.resolve();
   setText("rulesDomain", currentDomain);
   return domainAction(currentDomain, "GET_FIREWALL_RULES").then(function(r){
     var rules = r.FIREWALL_RULES || [];
@@ -492,13 +696,79 @@ function loadRules(){
       setHTML("rulesBody", '<div class="state">No firewall rules configured for this domain.</div>');
       return;
     }
-    var h = '<table><thead><tr><th>#</th><th>Expression</th><th>Action</th><th>Meaning</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>#</th><th>Expression</th><th>Action</th><th>Meaning</th><th>Actions</th></tr></thead><tbody>';
     rules.forEach(function(rule, i){
-      h += "<tr><td>" + (i+1) + "</td><td class='mono'>" + esc(rule.expression) + "</td><td class='mono'>" + esc(rule.action) + "</td><td>" + esc(actionExplain(rule.action)) + "</td></tr>";
+      h += "<tr><td>" + (i+1) + "</td><td class='mono'>" + esc(rule.expression) + "</td><td class='mono'>" + esc(rule.action) + "</td><td>" + esc(actionExplain(rule.action)) + "</td>"
+        + '<td style="white-space:nowrap"><button type="button" class="small" data-rule-edit="' + i + '">Edit</button> '
+        + '<button type="button" class="small danger" data-rule-del="' + i + '">Delete</button></td></tr>';
     });
     setHTML("rulesBody", h + "</tbody></table>");
+    document.querySelectorAll("[data-rule-edit]").forEach(function(btn){
+      btn.addEventListener("click", function(){ startRuleEdit(parseInt(btn.getAttribute("data-rule-edit"), 10)); });
+    });
+    document.querySelectorAll("[data-rule-del]").forEach(function(btn){
+      btn.addEventListener("click", function(){ deleteRule(parseInt(btn.getAttribute("data-rule-del"), 10)); });
+    });
   }).catch(function(){
     setHTML("rulesBody", '<div class="state state-error"><strong>Could not load rules.</strong><br>The domain may not exist, or the API secret was rejected.</div>');
+  });
+}
+
+function resetRuleForm(){
+  editingIndex = null;
+  setText("ruleFormTitle", "Add a rule");
+  $("ruleSubmit").textContent = "Add rule";
+  $("ruleCancel").hidden = true;
+  $("ruleForm").reset();
+}
+
+function startRuleEdit(index){
+  domainAction(currentDomain, "GET_FIREWALL_RULES").then(function(r){
+    var rules = r.FIREWALL_RULES || [];
+    if(index < 0 || index >= rules.length) return;
+    editingIndex = index;
+    $("ruleExpr").value = rules[index].expression || "";
+    $("ruleAction").value = rules[index].action || "";
+    setText("ruleFormTitle", "Edit rule #" + (index + 1));
+    $("ruleSubmit").textContent = "Save rule";
+    $("ruleCancel").hidden = false;
+    showInline("rulesError", "rulesOk", "", "");
+    $("ruleExpr").focus();
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", "Could not load the rule: " + err.message, "");
+  });
+}
+
+function deleteRule(index){
+  if(!window.confirm("Delete rule #" + (index + 1) + "? This is saved to config.json immediately.")) return;
+  showInline("rulesError", "rulesOk", "", "");
+  domainWrite(currentDomain, "DELETE_RULE", {index: String(index)}).then(function(){
+    showInline("rulesError", "rulesOk", "", "Rule deleted and saved to config.json.");
+    return loadRules(true);
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", "Could not delete the rule: " + err.message, "");
+  });
+}
+
+function submitRuleForm(ev){
+  ev.preventDefault();
+  var expr = $("ruleExpr").value.trim();
+  var action = $("ruleAction").value.trim();
+  if(!expr || !action) return;
+  showInline("rulesError", "rulesOk", "", "");
+  var call;
+  if(editingIndex !== null){
+    call = domainWrite(currentDomain, "UPDATE_RULE", {index: String(editingIndex), expression: expr, action: action});
+  } else {
+    call = domainWrite(currentDomain, "ADD_RULE", {expression: expr, action: action});
+  }
+  call.then(function(){
+    var wasEdit = editingIndex !== null;
+    resetRuleForm();
+    showInline("rulesError", "rulesOk", "", wasEdit ? "Rule saved to config.json." : "Rule added and saved to config.json.");
+    return loadRules(true);
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", "Could not save the rule: " + err.message, "");
   });
 }
 
@@ -523,12 +793,204 @@ function loadLogs(){
   });
 }
 
+function setField(id, value){
+  var el = $(id);
+  if(el) el.value = (value == null ? "" : String(value));
+}
+
+function loadSettings(){
+  return domainAction(currentDomain, "GET_DOMAIN_CONFIG").then(function(r){
+    setField("setBypassStage1", r.BYPASS_STAGE1);
+    setField("setBypassStage2", r.BYPASS_STAGE2);
+    setField("setDisableBypassStage3", r.DISABLE_BYPASS_STAGE3);
+    setField("setDisableRawStage3", r.DISABLE_RAW_STAGE3);
+    setField("setDisableBypassStage2", r.DISABLE_BYPASS_STAGE2);
+    setField("setDisableRawStage2", r.DISABLE_RAW_STAGE2);
+    setField("setStage2Difficulty", r.STAGE2_DIFFICULTY);
+    setField("setAdaptivePow", r.ADAPTIVE_POW ? "true" : "false");
+    setField("setPowMin", r.POW_DIFFICULTY_MIN);
+    setField("setPowMax", r.POW_DIFFICULTY_MAX);
+    setField("setWafMode", (r.WAF_MODE || "log").toLowerCase());
+    setField("setWafInspectBody", r.WAF_INSPECT_BODY ? "true" : "false");
+    setField("setWafWpLimit", r.WAF_WP_LOGIN_LIMIT);
+    setText("settingsProvider", r.CHALLENGE_PROVIDER || "none (proof-of-work)");
+    setText("settingsKeys", r.CHALLENGE_KEYS_CONFIGURED ? "yes" : "no");
+    showInline("settingsError", "settingsOk", "", "");
+  }).catch(function(err){
+    showInline("settingsError", "settingsOk", "Could not load settings: " + err.message, "");
+  });
+}
+
+function submitSettings(ev){
+  ev.preventDefault();
+  var params = {
+    bypassStage1: $("setBypassStage1").value,
+    bypassStage2: $("setBypassStage2").value,
+    disableBypassStage3: $("setDisableBypassStage3").value,
+    disableRawStage3: $("setDisableRawStage3").value,
+    disableBypassStage2: $("setDisableBypassStage2").value,
+    disableRawStage2: $("setDisableRawStage2").value,
+    stage2Difficulty: $("setStage2Difficulty").value,
+    adaptivePow: $("setAdaptivePow").value,
+    powDifficultyMin: $("setPowMin").value,
+    powDifficultyMax: $("setPowMax").value,
+    wafMode: $("setWafMode").value,
+    wafInspectBody: $("setWafInspectBody").value,
+    wafWpLoginLimit: $("setWafWpLimit").value
+  };
+  showInline("settingsError", "settingsOk", "", "");
+  domainWrite(currentDomain, "SET_DOMAIN_CONFIG", params).then(function(){
+    showInline("settingsError", "settingsOk", "", "Settings saved to config.json.");
+    return loadSettings();
+  }).catch(function(err){
+    showInline("settingsError", "settingsOk", "Could not save settings: " + err.message, "");
+  });
+}
+
+function loadProxyFeatures(){
+  return proxyAction("GET_PROXY_FEATURES").then(function(r){
+    var h = '<table><tbody>'
+      + "<tr><td>Quiet mode</td><td>" + (r.QUIET_MODE ? "on" : "off") + "</td></tr>"
+      + "<tr><td>Auto SSL</td><td>" + (r.AUTO_SSL ? "enabled" : "disabled") + (r.AUTO_SSL_ACTIVE ? " (active)" : "") + "</td></tr>"
+      + "<tr><td>GeoIP country database</td><td>" + (r.GEO_COUNTRY_LOADED ? "loaded" : "not loaded") + "</td></tr>"
+      + "<tr><td>GeoIP ASN database</td><td>" + (r.GEO_ASN_LOADED ? "loaded" : "not loaded") + "</td></tr>"
+      + "<tr><td>Reputation feed</td><td>" + (r.REPUTATION_FEED_CONFIGURED ? "configured" : "not configured") + "</td></tr>"
+      + "<tr><td>Reputation list size</td><td>" + num(r.REPUTATION_LOCAL_IPS) + " IPs, " + num(r.REPUTATION_LOCAL_NETWORKS) + " networks (local) · " + num(r.REPUTATION_FEED_IPS) + " IPs, " + num(r.REPUTATION_FEED_NETWORKS) + " networks (feed)</td></tr>"
+      + "</tbody></table>";
+    setHTML("proxyFeatures", h);
+  }).catch(function(){
+    setHTML("proxyFeatures", '<div class="state state-error"><strong>Could not load proxy features.</strong></div>');
+  });
+}
+
+function countTable(mapObj, keyLabel){
+  var rows = Object.keys(mapObj || {}).map(function(k){ return [k, Number(mapObj[k]) || 0]; });
+  rows.sort(function(a,b){ return b[1]-a[1]; });
+  if(!rows.length) return '<p class="small muted">None recorded.</p>';
+  var h = '<table><thead><tr><th>' + esc(keyLabel) + '</th><th>Count</th></tr></thead><tbody>';
+  rows.forEach(function(r){ h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td>" + num(r[1]) + "</td></tr>"; });
+  return h + "</tbody></table>";
+}
+
+function renderReport(rep){
+  var h = '<div class="cards">'
+    + '<div class="card"><div class="label">Total requests</div><div class="value">' + num(rep.total_requests) + '</div><div class="foot">since last reload</div></div>'
+    + '<div class="card"><div class="label">Bypassed</div><div class="value">' + num(rep.bypassed_requests) + '</div><div class="foot">passed to backend</div></div>'
+    + '<div class="card"><div class="label">Peak r/s</div><div class="value">' + num(rep.peak_requests_per_second) + '</div><div class="foot">peak bypassed: ' + num(rep.peak_bypassed_per_second) + '/s</div></div>'
+    + '<div class="card"><div class="label">Stage</div><div class="value">' + esc(String(rep.stage)) + '</div><div class="foot">' + (rep.stage_manually_set ? "locked" : "automatic") + (rep.raw_attack || rep.bypass_attack ? " · under attack" : "") + '</div></div>'
+    + '</div>';
+  h += '<div class="panel"><h2>Blocks by reason</h2>' + countTable(rep.blocks_by_reason, "Reason") + '</div>';
+  h += '<div class="panel"><h2>Challenges by stage</h2>' + countTable(rep.challenges_by_stage, "Stage") + '</div>';
+  h += '<div class="panel"><h2>WAF matches by rule</h2>' + countTable(rep.waf_matches_by_rule, "Rule") + '</div>';
+  h += '<div class="panel"><h2>Backend</h2><table><tbody>'
+    + "<tr><td>Requests OK</td><td>" + num(rep.backend_requests_ok) + "</td></tr>"
+    + "<tr><td>Requests failed</td><td>" + num(rep.backend_requests_failed) + "</td></tr>"
+    + "<tr><td>Average latency</td><td>" + (rep.backend_latency_avg_seconds != null ? rep.backend_latency_avg_seconds.toFixed(3) + " s" : "—") + "</td></tr>"
+    + "</tbody></table></div>";
+  var ipRows = function(list){
+    if(!list || !list.length) return '<p class="small muted">None in this window.</p>';
+    var t = '<table><thead><tr><th>IP</th><th>Requests</th><th>Country</th><th>ASN</th></tr></thead><tbody>';
+    list.forEach(function(e){ t += "<tr><td class='mono'>" + esc(e.ip) + "</td><td>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
+    return t + "</tbody></table>";
+  };
+  h += '<div class="panel"><h2>Top verified IPs (proxy-wide)</h2>' + ipRows(rep.top_verified_ips_proxy_wide) + '</div>';
+  h += '<div class="panel"><h2>Top unverified IPs (proxy-wide)</h2>' + ipRows(rep.top_unverified_ips_proxy_wide) + '</div>';
+  h += '<div class="panel"><h2>Top unknown fingerprints (proxy-wide)</h2>' + countTable((rep.top_unknown_fingerprints_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), "Fingerprint") + '</div>';
+  h += '<div class="panel"><h2>Countries (proxy-wide, top IPs only)</h2>' + countTable((rep.countries_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), "Country") + '</div>';
+  h += '<p class="small muted">Generated at ' + esc(rep.generated_at || "") + ' · window: ' + num(rep.window_seconds) + 's.</p>';
+  setHTML("reportBody", h);
+}
+
+function reportTopValue(){
+  var n = parseInt($("reportTop").value, 10);
+  if(isNaN(n) || n < 1) n = 1;
+  if(n > 50) n = 50;
+  return n;
+}
+
+function loadReport(){
+  showInline("reportError", null, "", "");
+  setHTML("reportBody", '<div class="state">Loading report…</div>');
+  return domainAction(currentDomain, "GET_ATTACK_REPORT?format=json&top=" + reportTopValue()).then(function(r){
+    renderReport(r.REPORT || {});
+  }).catch(function(err){
+    setHTML("reportBody", '<div class="state">No report loaded yet.</div>');
+    showInline("reportError", null, "Could not load the report: " + err.message, "");
+  });
+}
+
+function downloadReport(format){
+  showInline("reportError", null, "", "");
+  domainAction(currentDomain, "GET_ATTACK_REPORT?format=" + format + "&top=" + reportTopValue()).then(function(r){
+    var content, type, ext;
+    if(format === "csv"){
+      content = r.REPORT || "";
+      type = "text/csv";
+      ext = "csv";
+    } else {
+      content = JSON.stringify(r.REPORT || {}, null, 2);
+      type = "application/json";
+      ext = "json";
+    }
+    var blob = new Blob([content], {type: type});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "sonushield-report-" + currentDomain + "." + ext;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  }).catch(function(err){
+    showInline("reportError", null, "Could not export the report: " + err.message, "");
+  });
+}
+
+function changeStage(params, label){
+  showInline("stageError", "stageOk", "", "");
+  domainWrite(currentDomain, "SET_STAGE", params).then(function(){
+    showInline("stageError", "stageOk", "", label + " — applied immediately (runtime-only; a reload resets it).");
+    return loadStageState();
+  }).catch(function(err){
+    showInline("stageError", "stageOk", "Could not change the stage: " + err.message, "");
+  });
+}
+
+function clearLogs(all){
+  var label = all ? "all domains" : currentDomain;
+  if(!window.confirm("Clear logs for " + label + "? This cannot be undone.")) return;
+  showInline("logsError", null, "", "");
+  var call = all ? proxyWrite("CLEAR_LOGS", {}) : domainWrite(currentDomain, "CLEAR_LOGS", {});
+  call.then(function(){
+    setText("logsNote", "Logs cleared.");
+    return loadLogs();
+  }).catch(function(err){
+    showInline("logsError", null, "Could not clear logs: " + err.message, "");
+  });
+}
+
+function reloadConfig(){
+  if(!window.confirm("Reload the configuration from config.json?\n\nThe file is validated first: if it is invalid, nothing changes and the running proxy is untouched. A successful reload resets request counters and stage locks, like the terminal reload.")) return;
+  showBanner("");
+  proxyWrite("RELOAD", {}).then(function(){
+    showBanner("");
+    return refreshAll();
+  }).catch(function(err){
+    showBanner("Reload failed, running config untouched: " + err.message);
+  });
+}
+
 function refreshAll(){
   if(!connected) return Promise.resolve();
   showBanner("");
   var updating = $("updatingPill");
   updating.hidden = false;
-  return Promise.all([loadOverview(), loadDomainPanel(), loadRules(), loadLogs()]).then(function(){
+  var jobs = [loadOverview(), loadStageState()];
+  if(currentView === "domains"){ jobs.push(loadDomains(), loadDomainPanel()); }
+  else if(currentView === "rules"){ jobs.push(loadRules(false)); }
+  else if(currentView === "logs"){ jobs.push(loadLogs()); }
+  /* Settings and reports load on demand (view switch / buttons), so
+     polling never overwrites a form being edited or a report being read. */
+  return Promise.all(jobs).then(function(){
     updating.hidden = true;
   }).catch(function(err){
     updating.hidden = true;
@@ -549,6 +1011,7 @@ function setConnected(on){
     v.classList.toggle("active", on && v.id === "view-" + currentView);
   });
   $("refreshBtn").disabled = !on;
+  $("reloadBtn").disabled = !on;
   $("disconnectBtn").disabled = !on;
   var pill = $("connPill");
   pill.classList.toggle("ok", on);
@@ -590,6 +1053,13 @@ function showView(name){
       v.classList.toggle("active", v.id === "view-about");
     });
   }
+  if(!connected) return;
+  if(name === "settings"){ loadSettings(); loadProxyFeatures(); }
+  else if(name === "reports"){ loadReport(); }
+  else if(name === "domains"){ loadDomains(); loadDomainPanel(); }
+  else if(name === "rules"){ loadRules(true); }
+  else if(name === "stage"){ loadStageState(); }
+  else if(name === "logs"){ loadLogs(); }
 }
 
 document.querySelectorAll(".navbtn").forEach(function(b){
@@ -603,21 +1073,48 @@ $("authForm").addEventListener("submit", function(ev){
 });
 $("disconnectBtn").addEventListener("click", disconnect);
 $("refreshBtn").addEventListener("click", refreshAll);
+$("reloadBtn").addEventListener("click", reloadConfig);
 $("domainBtn").addEventListener("click", function(){
   var v = $("domainInput").value.trim();
   if(!v){ return; }
-  currentDomain = v;
-  setText("ovDomain", currentDomain);
-  setText("stageDomain", currentDomain);
-  refreshAll();
+  setDomain(v);
 });
 $("domainInput").addEventListener("keydown", function(ev){
   if(ev.key === "Enter"){ ev.preventDefault(); $("domainBtn").click(); }
 });
+$("ruleForm").addEventListener("submit", submitRuleForm);
+$("ruleCancel").addEventListener("click", function(){
+  resetRuleForm();
+  showInline("rulesError", "rulesOk", "", "");
+});
+document.querySelectorAll("[data-stage]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var s = btn.getAttribute("data-stage");
+    changeStage({stage: s}, s === "0" ? "Automatic switching restored" : "Stage " + s + " locked");
+  });
+});
+document.querySelectorAll("[data-underattack]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    changeStage({underAttack: "true"}, "Under-attack mode on (Stage 3 locked)");
+  });
+});
+$("clearLogsBtn").addEventListener("click", function(){ clearLogs(false); });
+$("clearAllLogsBtn").addEventListener("click", function(){ clearLogs(true); });
+$("settingsForm").addEventListener("submit", submitSettings);
+$("settingsReloadBtn").addEventListener("click", function(){ loadSettings(); });
+$("refreshFeedBtn").addEventListener("click", function(){
+  proxyWrite("REFRESH_REPUTATION_FEED", {}).then(function(){
+    return loadProxyFeatures();
+  }).catch(function(err){
+    showBanner("Could not refresh the reputation feed: " + err.message);
+  });
+});
+$("reportLoadBtn").addEventListener("click", loadReport);
+$("reportJsonBtn").addEventListener("click", function(){ downloadReport("json"); });
+$("reportCsvBtn").addEventListener("click", function(){ downloadReport("csv"); });
 
 setText("hostPill", "host: " + (hostDomain || "—"));
-setText("ovDomain", currentDomain);
-setText("stageDomain", currentDomain);
+syncDomainLabels();
 $("domainInput").value = currentDomain;
 setConnected(false);
 showView("overview");
