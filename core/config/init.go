@@ -63,6 +63,11 @@ func Load() {
 		panic("[ " + utils.PrimaryColor("!") + " ] [ API Secret Contains 'CHANGE_ME'. Refusing To Load ]")
 	}
 
+	// Additional API secrets mapped to roles (viewer/operator/
+	// admin). The main apisecret is always admin; invalid roles
+	// are ignored with a warning inside SetAPIRoles.
+	proxy.SetAPIRoles(domains.Config.Proxy.APIRoles)
+
 	// Check if the Proxy Timeout Config has been set otherwise use default values
 
 	if domains.Config.Proxy.Timeout.Idle != 0 {

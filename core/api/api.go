@@ -3,12 +3,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/proxy"
 	"sonushield/core/utils"
-	"io"
-	"net/http"
 	"strings"
 )
 
@@ -22,13 +22,24 @@ var ConfigReloader func() error
 
 func Process(writer http.ResponseWriter, request *http.Request, domainData domains.DomainData) bool {
 
-	if request.Header.Get("proxy-secret") != proxy.APISecret {
+	role, ok := proxy.RoleForSecret(request.Header.Get("proxy-secret"))
+	if !ok {
+		auditUnauthenticated(request, "", "")
 		return false
 	}
 
+	// The recorder captures the response so the deferred audit
+	// entry can report the real outcome on every return path.
+	recorder := &auditRecorder{ResponseWriter: writer}
+	var action, domain string
+	var params map[string]string
+	defer func() {
+		auditAction(request, role, action, domain, params, recorder.captured)
+	}()
+
 	reqBody, err := io.ReadAll(request.Body)
 	if err != nil {
-		APIResponse(writer, false, map[string]interface{}{
+		APIResponse(recorder, false, map[string]interface{}{
 			"ERROR": ERR_BODY_READ_FAILED,
 		})
 	}
@@ -38,27 +49,38 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	var apiRequest API_REQUEST
 	err = json.Unmarshal(reqBody, &apiRequest)
 	if err != nil {
-		APIResponse(writer, false, map[string]interface{}{
+		APIResponse(recorder, false, map[string]interface{}{
 			"ERROR": ERR_JSON_READ_FAILED,
 		})
 		return true
 	}
 
+	action, domain, params = apiRequest.Action, apiRequest.Domain, apiRequest.Params
+
+	// Roles: unknown actions fall through to the handlers, which
+	// answer ERR_ACTION_NOT_FOUND exactly as before.
+	if known, allowed := authorize(role, action); known && !allowed {
+		APIResponse(recorder, false, map[string]interface{}{
+			"ERROR": ERR_FORBIDDEN,
+		})
+		return true
+	}
+
 	if apiRequest.Domain == "" {
-		handleProxyActions(apiRequest.Action, writer)
+		handleProxyActions(apiRequest.Action, recorder)
 		return true
 	}
 
 	uncastedDomainSettings, ok := domains.DomainsMap.Load(apiRequest.Domain)
 	if !ok {
-		APIResponse(writer, false, map[string]interface{}{
+		APIResponse(recorder, false, map[string]interface{}{
 			"ERROR": ERR_DOMAIN_NOT_FOUND,
 		})
 		return true
 	}
 	domainSettings, _ := uncastedDomainSettings.(domains.DomainSettings)
 
-	handleDomainActions(apiRequest.Action, writer, &domainData, &domainSettings, apiRequest.Params)
+	handleDomainActions(apiRequest.Action, recorder, &domainData, &domainSettings, apiRequest.Params)
 	return true
 }
 
@@ -266,10 +288,6 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 
 func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 
-	if r.Header.Get("Proxy-Secret") != proxy.APISecret {
-		return false
-	}
-
 	path := strings.TrimPrefix(r.URL.Path, "/_bProxy/api/v2/")
 	parts := strings.Split(path, "/")
 
@@ -277,19 +295,55 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
+	// Best-effort action/domain for the audit entry on auth
+	// failure; the real dispatch below re-derives them.
+	auditDomain, auditActionName := "", parts[0]
+	if len(parts) > 1 {
+		auditDomain, auditActionName = parts[0], parts[1]
+	}
+
+	role, ok := proxy.RoleForSecret(r.Header.Get("Proxy-Secret"))
+	if !ok {
+		auditUnauthenticated(r, auditActionName, auditDomain)
+		return false
+	}
+
+	// The recorder captures the response so the deferred audit
+	// entry can report the real outcome on every return path.
+	recorder := &auditRecorder{ResponseWriter: w}
+	var action, domain string
+	var params map[string]string
+	defer func() {
+		auditAction(r, role, action, domain, params, recorder.captured)
+	}()
+
 	if len(parts) == 1 {
 
 		// /:action
 
-		handleProxyActions(parts[0], w)
+		action, params = parts[0], queryParams(r)
+		if known, allowed := authorize(role, action); known && !allowed {
+			APIResponse(recorder, false, map[string]interface{}{
+				"ERROR": ERR_FORBIDDEN,
+			})
+			return true
+		}
+		handleProxyActions(parts[0], recorder)
 		return true
 	} else {
 
 		//  /:domain/:action
 
+		action, domain, params = parts[1], parts[0], queryParams(r)
+		if known, allowed := authorize(role, action); known && !allowed {
+			APIResponse(recorder, false, map[string]interface{}{
+				"ERROR": ERR_FORBIDDEN,
+			})
+			return true
+		}
 		uncastedDomainSettingsdomain, ok := domains.DomainsMap.Load(parts[0])
 		if !ok {
-			APIResponse(w, false, map[string]interface{}{
+			APIResponse(recorder, false, map[string]interface{}{
 				"ERROR": ERR_DOMAIN_NOT_FOUND,
 			})
 			return true
@@ -300,7 +354,7 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		domainData := domains.DomainsData[parts[0]]
 		firewall.Mutex.RUnlock()
 
-		handleDomainActions(parts[1], w, &domainData, &domainSettingsdomain, queryParams(r))
+		handleDomainActions(parts[1], recorder, &domainData, &domainSettingsdomain, queryParams(r))
 		return true
 	}
 }

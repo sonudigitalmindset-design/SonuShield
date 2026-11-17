@@ -202,6 +202,15 @@ func Log(entry Entry) {
 	}
 	data = append(data, '\n')
 
+	writeLine(data)
+}
+
+// writeLine appends one serialized line to the log file, rotating
+// first when the size limit would be exceeded. It is shared by
+// Log and Audit so both use the same rotation and failure
+// handling. It silently drops the line when logging is disabled
+// or has failed.
+func writeLine(data []byte) {
 	mu.Lock()
 	defer mu.Unlock()
 	if file == nil || failed.Load() {
@@ -219,6 +228,60 @@ func Log(entry Entry) {
 		return
 	}
 	written += int64(n)
+}
+
+// AuditEntry is one control-plane audit record (Batch 4). Params
+// are scrubbed by the caller: secret-like keys are dropped and
+// values truncated, so secrets are never written here.
+type AuditEntry struct {
+	Timestamp time.Time         `json:"ts"`
+	Level     string            `json:"level"`
+	Event     string            `json:"event"`
+	Role      string            `json:"role"`
+	Action    string            `json:"action"`
+	Domain    string            `json:"domain,omitempty"`
+	IP        string            `json:"ip,omitempty"`
+	Params    map[string]string `json:"params,omitempty"`
+	Success   bool              `json:"success"`
+	Error     string            `json:"error,omitempty"`
+}
+
+// Audit records one control-plane action. When structured logging
+// is configured, the entry goes to the log file (same rotation
+// as request entries); otherwise a compact line is printed to
+// stdout, matching the existing warning output. Operators who
+// use the dashboard heavily should configure logFile to keep
+// stdout clean.
+func Audit(entry AuditEntry) {
+	entry.Event = "audit"
+	if entry.Timestamp.IsZero() {
+		entry.Timestamp = time.Now().UTC()
+	}
+	entry.Level = "info"
+	if !entry.Success {
+		entry.Level = "warn"
+	}
+	data, err := json.Marshal(entry)
+	if err != nil {
+		return
+	}
+	data = append(data, '\n')
+	if Enabled() {
+		writeLine(data)
+		return
+	}
+	params := ""
+	if len(entry.Params) > 0 {
+		parts := make([]string, 0, len(entry.Params))
+		for key, value := range entry.Params {
+			parts = append(parts, key+"="+value)
+		}
+		params = " params=" + strings.Join(parts, ",")
+		if len(params) > 500 {
+			params = params[:500]
+		}
+	}
+	fmt.Println("[ audit ] [ role=" + entry.Role + " action=" + entry.Action + " domain=" + entry.Domain + " ip=" + entry.IP + " success=" + fmt.Sprint(entry.Success) + " error=" + entry.Error + params + " ]")
 }
 
 // rotateLocked renames the current file aside and opens a fresh one.

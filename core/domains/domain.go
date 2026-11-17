@@ -179,6 +179,7 @@ type Proxy struct {
 	Cloudflare      bool              `json:"cloudflare"`
 	AdminSecret     string            `json:"adminsecret"`
 	APISecret       string            `json:"apisecret"`
+	APIRoles        map[string]string `json:"apiRoles"`
 	Secrets         map[string]string `json:"secrets"`
 	Timeout         TimeoutSettings   `json:"timeout"`
 	RatelimitWindow int               `json:"ratelimit_time"`

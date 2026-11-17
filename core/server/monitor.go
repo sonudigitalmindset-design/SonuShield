@@ -446,6 +446,10 @@ func reloadFromConfig(cfg *domains.Configuration) {
 	proxy.JSSecret = domains.Config.Proxy.Secrets["javascript"]
 	proxy.CaptchaSecret = domains.Config.Proxy.Secrets["captcha"]
 
+	// Role-mapped API secrets (Batch 4): a reload picks up role
+	// changes, like the other secrets above.
+	proxy.SetAPIRoles(domains.Config.Proxy.APIRoles)
+
 	// Check if the Proxy Timeout Config has been set otherwise use default values
 
 	if domains.Config.Proxy.Timeout.Idle != 0 {
