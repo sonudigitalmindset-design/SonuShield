@@ -204,6 +204,28 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "ADD_RULE", "UPDATE_RULE", "DELETE_RULE":
+		var response map[string]interface{}
+		var errCode, detail string
+		switch action {
+		case "ADD_RULE":
+			response, errCode, detail = addRule(domainSettings.Name, params)
+		case "UPDATE_RULE":
+			response, errCode, detail = updateRule(domainSettings.Name, params)
+		case "DELETE_RULE":
+			response, errCode, detail = deleteRule(domainSettings.Name, params)
+		}
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	default:
 		APIResponse(writer, false, map[string]interface{}{
 			"ERROR": ERR_ACTION_NOT_FOUND,
