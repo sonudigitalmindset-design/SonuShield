@@ -116,6 +116,10 @@ func Load() {
 	for i, domain := range domains.Config.Domains {
 		domains.Domains = append(domains.Domains, domain.Name)
 
+		if domain.ChallengeProvider != "" && ((domain.ChallengeProvider != "turnstile" && domain.ChallengeProvider != "hcaptcha") || domain.ChallengeSiteKey == "" || domain.ChallengeSecretKey == "") {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Challenge provider for " + domain.Name + " is misconfigured: need provider 'turnstile' or 'hcaptcha' plus site and secret keys. Falling back to proof-of-work challenges. ]")
+		}
+
 		firewallRules := []domains.Rule{}
 		rawFirewallRules := domains.Config.Domains[i].FirewallRules
 		for index, fwRule := range domains.Config.Domains[i].FirewallRules {
@@ -171,6 +175,9 @@ func Load() {
 			AdaptivePow:         domain.AdaptivePow,
 			PoWDifficultyMin:    domain.PoWDifficultyMin,
 			PoWDifficultyMax:    domain.PoWDifficultyMax,
+			ChallengeProvider:   domain.ChallengeProvider,
+			ChallengeSiteKey:    domain.ChallengeSiteKey,
+			ChallengeSecretKey:  domain.ChallengeSecretKey,
 		})
 
 		firewall.Mutex.Lock()

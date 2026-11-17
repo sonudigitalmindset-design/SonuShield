@@ -504,6 +504,9 @@ func ReloadConfig() {
 			AdaptivePow:         domain.AdaptivePow,
 			PoWDifficultyMin:    domain.PoWDifficultyMin,
 			PoWDifficultyMax:    domain.PoWDifficultyMax,
+			ChallengeProvider:   domain.ChallengeProvider,
+			ChallengeSiteKey:    domain.ChallengeSiteKey,
+			ChallengeSecretKey:  domain.ChallengeSecretKey,
 		})
 
 		if domain.Stage2Difficulty == 0 {

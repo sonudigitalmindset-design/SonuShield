@@ -157,6 +157,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Challenge-provider verification (Turnstile/hCaptcha). Handled before
+	//the cookie check below: the client has no verification cookie yet.
+	//A reserved /_bProxy/ path like /_bProxy/verified, not a management
+	//page; it only answers POSTs carrying a valid single-use nonce.
+	if HandleChallengeVerify(writer, request, ip, tlsFp) {
+		return
+	}
+
 	//Demonstration of how to use "susLv". Essentially allows you to challenge specific requests with a higher challenge
 
 	//SyncMap because semi-readonly
@@ -247,6 +255,16 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			http.Redirect(writer, request, request.URL.RequestURI(), http.StatusFound)
 			return
 		case 2:
+			//Challenge provider (Turnstile/hCaptcha) replaces the
+			//proof-of-work page when the operator configured one with
+			//their own keys. Falls back to proof-of-work when the
+			//provider is not configured or nonce generation fails.
+			if ChallengeProviderConfigured(domainSettings) {
+				if ServeProviderChallenge(writer, request, domainSettings, encryptedIP, ip, tlsFp, reqUa) {
+					return
+				}
+			}
+
 			//Adaptive PoW: scale the difficulty with current load so a
 			//legitimate visitor is barely delayed under normal conditions
 			//and bots face a harder puzzle during an attack. Disabled by
