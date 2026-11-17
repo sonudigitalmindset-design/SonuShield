@@ -233,6 +233,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		sharedRep = firewall.LookupSharedReputation(ip, tlsFp)
 	}
 
+	//Timing and velocity detection (Batch 5). Log-only by
+	//default: a flagged IP gets a rate-limited log entry and a
+	//risk-score contribution, but no outcome change. Enforcement
+	//(a suspicion bump) is opt-in per domain.
+	timingVerdict := firewall.ObserveTiming(ip)
+
 	//Composite risk score (Batch 5). A snapshot of the signals
 	//known at evaluation time; see firewall/risk.go for the
 	//weights. It is a firewall rule field (ip.risk), is carried in
@@ -246,6 +252,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		UnknownFingerprint: browser == "" && botFp == "" && tlsFp != "",
 		ReputationListed:   repListed,
 		SharedReputation:   sharedRep,
+		TimingAnomaly:      timingVerdict.Anomaly,
 		ChallengeFailures:  ipCountCookie,
 		Country:            geoCountry,
 		ASN:                geoASN,
@@ -262,6 +269,19 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 	domains.DomainsData[domainName] = domainData
 	firewall.Mutex.Unlock()
+
+	if timingVerdict.Anomaly {
+		if timingVerdict.LogThis {
+			logging.Log(logging.Entry{Event: "timing", Domain: domainName, IP: ip, Action: "timing_" + timingVerdict.Kind, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		}
+		if domainSettings.TimingEnforce {
+			timingBump := domainSettings.TimingSusLv
+			if timingBump <= 0 {
+				timingBump = 1
+			}
+			susLv += timingBump
+		}
+	}
 
 	if sharedRep {
 		susLv += firewall.SharedReputationBump(domainSettings.SharedReputationSusLv)
@@ -337,6 +357,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.reputation":         repValue,
 			"ip.searchbot":          searchBot,
 			"ip.risk":               riskScore,
+			"ip.timing":             timingVerdict.Kind,
 			"ip.http_requests":      ipCount,
 			"ip.challenge_requests": ipCountCookie,
 

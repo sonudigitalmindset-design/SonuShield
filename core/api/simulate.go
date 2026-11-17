@@ -87,6 +87,7 @@ func sampleVariables(sample string) (gofilter.Message, error) {
 		"ip.reputation":         "",
 		"ip.searchbot":          "",
 		"ip.risk":               0,
+		"ip.timing":             "",
 		"ip.http_requests":      0,
 		"ip.challenge_requests": 0,
 

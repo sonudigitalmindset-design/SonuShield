@@ -610,6 +610,8 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			RiskHighRiskASNs:    domain.RiskHighRiskASNs,
 			ShareReputation:     domain.ShareReputation,
 			SharedReputationSusLv: domain.SharedReputationSusLv,
+			TimingEnforce:         domain.TimingEnforce,
+			TimingSusLv:           domain.TimingSusLv,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
