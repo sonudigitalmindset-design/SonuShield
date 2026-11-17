@@ -1,0 +1,61 @@
+# Troubleshooting
+
+Common problems and how to fix them. If your issue is not listed here, check the [README](../README.md) and the relevant docs page first — most behavior is documented there.
+
+## The proxy refuses to start
+
+**Secrets still contain `CHANGE_ME`.** SonuShield refuses to start if any secret still contains `CHANGE_ME`. Replace every placeholder in `config.json` with real random values (for example, from `openssl rand -hex 20`).
+
+**Missing or invalid certificate or key.** Outside Cloudflare mode, every domain needs a valid TLS certificate and private key, loaded at startup. If either is missing or invalid, SonuShield refuses to start. Check the `certificate` and `key` paths in your configuration, or generate development certificates with `./scripts/generate-certs.sh` for local testing only. In Cloudflare mode, leave both empty — they are not loaded.
+
+**Version check failed.** At startup, SonuShield fetches version information from this repository over HTTPS. If the version check itself fails (for example, with no outbound network access), startup stops. Make sure the server has outbound HTTPS access to `raw.githubusercontent.com`. Fingerprint-list fetch failures do not stop startup, but leave the corresponding lists empty.
+
+**Port already in use / permission denied.** The proxy binds ports 80 and 443 (80 only in Cloudflare mode). Make sure nothing else is using those ports, and that the process has permission to bind them — run as `root`, or grant the binary the `cap_net_bind_service` capability (see [Installation](installation.md#as-a-systemd-service)).
+
+## The proxy runs, but my site is not protected
+
+**DNS points at the backend.** Make sure **no** DNS record points directly at your backend server — otherwise attackers can bypass the proxy entirely. See [DNS Setup](installation.md#dns-setup).
+
+**Cloudflare proxy status is wrong.** If you use SonuShield **with** Cloudflare, the DNS record's Proxy status must be **Proxied**. If you manage DNS in Cloudflare but do **not** use SonuShield with Cloudflare, it must be **DNS only**.
+
+**Check the header.** Open your website, open DevTools, go to the Network tab, and look at a response: you should see a `SonuShield: 1.5` header. If it is missing, requests are not going through the proxy.
+
+**Cloudflare mode enabled without Cloudflare.** Enabling Cloudflare mode without actually using Cloudflare will not work. The proxy listens on port 80 only and reads the client IP from the `Cf-Connecting-Ip` header, which only Cloudflare sends. Also confirm your Cloudflare SSL/TLS encryption mode is set to `Flexible`.
+
+## Visitors see challenges unexpectedly
+
+**Stage escalation.** When bypassing requests exceed your `bypassStage1` / `bypassStage2` thresholds, stronger challenges activate automatically. Check the current stage in the terminal HUD or the [dashboard](dashboard.md), and review your [stage thresholds](configuration.md#stage-thresholds).
+
+**A stage is locked.** If someone ran the `stage` terminal command, automatic switching is disabled until `stage 0` unlocks it. The HUD shows `Stage Locked: true` in that case.
+
+**Firewall rules.** A custom rule may be raising the suspicion level. Rules are evaluated top to bottom; review your domain's `firewallRules` and the [rule actions](firewall-rules.md#actions). Note that `http.user_agent` is always lowercased in rules.
+
+**Stage 2 never completes.** The proof-of-work challenge page loads its script from a public CDN. Visitors' browsers must be able to reach that CDN for Stage 2 challenges to complete.
+
+## No Discord alerts
+
+**Alerts need a webhook URL.** Leave `url` empty and alerts are disabled for that domain. Check the per-domain [`webhook`](configuration.md#webhook) settings.
+
+**Alerts are skipped while the stage is locked.** Alerts are only sent when the stage is not locked, when the first stage starts being bypassed, and when the attack ends.
+
+## API or dashboard problems
+
+**API returns no API response.** Requests with a missing or wrong API secret are passed through to normal proxy handling instead of receiving an API response. Check the `Proxy-Secret` / `proxy-secret` header value against your `apisecret`, and for v1, the `adminsecret` in the path. See [API Reference](api.md).
+
+**Dashboard page won't load.** The dashboard is served only on the exact admin-secret path. A wrong or missing secret never receives the page. If no admin secret is configured, the dashboard is not served at all. See [Dashboard](dashboard.md#authentication).
+
+**Dashboard shows the wrong domain's stage.** The stage comes from `/_bProxy/stats`, which always reflects the domain in the address bar — even when another domain is being inspected. This is a known v1 limitation.
+
+**`RELOAD` does nothing.** The API `RELOAD` action is currently a no-op. Use the `reload` terminal command to re-read `config.json`.
+
+## Rules behave unexpectedly
+
+**Unsupported field names.** Do not use `ip.country`, `ip.asn`, `ip.requests`, `http.headers`, or `http.body` in rules — these names are registered but never given values, so rules using them will not behave as expected. See the [field list](firewall-rules.md#fields).
+
+**Absolute actions stop further checks.** When a rule with an absolute action (e.g. `"3"`) matches, SonuShield stops checking further rules for that request. Use `+` / `-` actions when you want checks to stack. See [Adding Actions](firewall-rules.md#adding-actions).
+
+## After an update
+
+**Update notice and a 10-second wait.** If a newer stable version is published, the proxy prints an update notice and waits 10 seconds before starting. This is normal behavior from the startup version check.
+
+**My configuration stopped working.** After editing `config.json` by hand, run the `reload` terminal command (or restart) to apply changes. If you added a domain with the `add` command, the configuration is reloaded automatically.
