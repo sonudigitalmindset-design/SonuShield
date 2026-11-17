@@ -574,6 +574,22 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	//Per-session rate limit (Batch 5). Keyed to the challenge
+	//cookie, so one abusive session behind shared NAT is limited
+	//without punishing every user on that IP. Disabled (0) by
+	//default; requests without a session cookie are unaffected.
+	if domainSettings.SessionRatelimit > 0 {
+		if sessionKey := firewall.SessionKeyFromRequest(request); sessionKey != "" {
+			if !firewall.SessionCheck(sessionKey, domainSettings.SessionRatelimit, proxy.RatelimitWindow) {
+				writer.Header().Set("Content-Type", "text/plain")
+				metrics.ObserveBlock(domainName, "session_ratelimit")
+				logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "session_ratelimit", Rule: "R4", Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+				SendResponse(blockMessage("You have been ratelimited. (R4)"), buffer, writer)
+				return
+			}
+		}
+	}
+
 	//Access logs of clients that passed the challenge
 	firewall.Mutex.Lock()
 	utils.AddLogs(domains.DomainLog{

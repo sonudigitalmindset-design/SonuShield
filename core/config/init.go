@@ -255,6 +255,7 @@ func Load() {
 			SharedReputationSusLv: domain.SharedReputationSusLv,
 			TimingEnforce:         domain.TimingEnforce,
 			TimingSusLv:           domain.TimingSusLv,
+			SessionRatelimit:      domain.SessionRatelimit,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

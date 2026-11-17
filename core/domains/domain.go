@@ -77,6 +77,7 @@ type Domain struct {
 	SharedReputationSusLv int            `json:"sharedReputationSusLv"`
 	TimingEnforce       bool             `json:"timingEnforce"`
 	TimingSusLv         int              `json:"timingSusLv"`
+	SessionRatelimit    int              `json:"sessionRatelimit"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -144,6 +145,7 @@ type DomainSettings struct {
 	SharedReputationSusLv int
 	TimingEnforce         bool
 	TimingSusLv           int
+	SessionRatelimit      int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
