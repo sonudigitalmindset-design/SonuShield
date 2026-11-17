@@ -33,4 +33,9 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	if len(domain.APIKeyPaths) > 0 && settings.APIKeys == nil {
 		fmt.Println("[ ! ] [ apiKeyPaths set for " + domain.Name + " but no apiKeys configured; key-protected routes will reject all requests ]")
 	}
+	for _, route := range domain.BodyLimits {
+		if route.Prefix == "" || route.MaxBytes <= 0 {
+			fmt.Println("[ ! ] [ ignoring invalid bodyLimits entry for " + domain.Name + ": prefix must be non-empty and maxBytes positive ]")
+		}
+	}
 }

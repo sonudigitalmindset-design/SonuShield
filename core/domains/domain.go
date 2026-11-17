@@ -78,6 +78,8 @@ type Domain struct {
 	TimingEnforce       bool             `json:"timingEnforce"`
 	TimingSusLv         int              `json:"timingSusLv"`
 	SessionRatelimit    int              `json:"sessionRatelimit"`
+	MaxBodyBytes        int64           `json:"maxBodyBytes"`
+	BodyLimits          []BodyLimit     `json:"bodyLimits"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -146,6 +148,8 @@ type DomainSettings struct {
 	TimingEnforce         bool
 	TimingSusLv           int
 	SessionRatelimit      int
+	MaxBodyBytes          int64
+	BodyLimits            []BodyLimit
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
@@ -225,6 +229,7 @@ type Proxy struct {
 	LogMaxFiles     int               `json:"logMaxFiles"`
 	ConfigBackups   int               `json:"configBackups"`
 	MaxConnsPerIP   int               `json:"maxConnsPerIP"`
+	MaxRequestBody  int64            `json:"maxRequestBody"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

@@ -247,6 +247,26 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		sharedRep = firewall.LookupSharedReputation(ip, tlsFp)
 	}
 
+	//Payload size limit (Batch 5). Requests whose declared body
+	//exceeds the effective limit are rejected with a clean 413
+	//before any evaluation work; chunked bodies (unknown length)
+	//are capped with MaxBytesReader as a backstop and fail while
+	//being proxied. See domains.BodyLimitFor for the resolution
+	//order and the documented default.
+	if limit := domainSettings.BodyLimitFor(request.URL.Path); limit >= 0 {
+		if request.ContentLength > limit {
+			writer.Header().Set("Content-Type", "text/plain")
+			writer.WriteHeader(http.StatusRequestEntityTooLarge)
+			metrics.ObserveBlock(domainName, "payload")
+			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "payload_limit", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			SendResponse("Request entity too large.", buffer, writer)
+			return
+		}
+		if request.Body != nil && (request.ContentLength < 0 || len(request.TransferEncoding) > 0) {
+			request.Body = http.MaxBytesReader(writer, request.Body, limit)
+		}
+	}
+
 	//Timing and velocity detection (Batch 5). Log-only by
 	//default: a flagged IP gets a rate-limited log entry and a
 	//risk-score contribution, but no outcome change. Enforcement

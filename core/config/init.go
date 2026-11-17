@@ -260,6 +260,8 @@ func Load() {
 			TimingEnforce:         domain.TimingEnforce,
 			TimingSusLv:           domain.TimingSusLv,
 			SessionRatelimit:      domain.SessionRatelimit,
+			MaxBodyBytes:          domain.MaxBodyBytes,
+			BodyLimits:            domain.BodyLimits,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
