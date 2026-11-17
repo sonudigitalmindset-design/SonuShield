@@ -18,6 +18,7 @@ SonuShield is a lightweight HTTP anti-DDoS reverse proxy written in Go. It sits 
 - [Commands](#commands)
 - [Custom Firewall Rules](#custom-firewall-rules)
 - [API](#api)
+- [Dashboard](#dashboard)
 - [Startup Checks](#startup-checks)
 - [Roadmap](#roadmap)
 - [License](#license)
@@ -302,7 +303,7 @@ A fuller multi-domain example is available in [`examples/config.json`](examples/
 | Field | Type | Description |
 |-------|------|-------------|
 | `cloudflare` | Bool | Set to `true` to run behind Cloudflare. See [Cloudflare Mode](#cloudflare-mode). |
-| `adminsecret` | String | Secret used in the v1 API path. Must not contain `CHANGE_ME`. |
+| `adminsecret` | String | Secret used in the v1 API path and in the dashboard URL. Must not contain `CHANGE_ME`. |
 | `apisecret` | String | Secret sent in the `proxy-secret` / `Proxy-Secret` API header. Must not contain `CHANGE_ME`. |
 | `secrets` | Map[String]String | Challenge secrets with keys `cookie`, `javascript`, and `captcha`. Must not contain `CHANGE_ME`. Generate secure random values, for example with `openssl rand -hex 20` or [random.org](https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new). |
 | `timeout` | Object | Connection timeouts in seconds: `idle` (default 5), `read` (default 5), `write` (default 7), `read_header` (default 5). A value of `0` keeps the default. |
@@ -585,8 +586,44 @@ These paths are handled by the proxy itself and never forwarded to the backend:
 | `/_bProxy/fingerprint` | Plain-text details about the current request: IP, request counts, suspicion level, TLS fingerprint, and browser/bot identification. |
 | `/_bProxy/verified` | Used by the challenge pages to confirm a solved challenge. Returns `verified`. |
 | `/_bProxy/credits` | Attribution and license information. |
+| `/_bProxy/<adminsecret>/dashboard` | Web dashboard (v1, read-only monitoring). Served only on the exact admin-secret path. See [Dashboard](#dashboard). |
 
 The `/_bProxy/` path prefix and the challenge cookie names are kept unchanged from the original project for compatibility with existing integrations.
+
+## Dashboard
+
+SonuShield includes a read-only web dashboard, served by the proxy itself. Open it at:
+
+```text
+https://<your-domain>/_bProxy/<adminsecret>/dashboard
+```
+
+In Cloudflare mode, open the same path through your Cloudflare-fronted domain as usual (the proxy itself listens on port 80 only in that mode). As with any browser request, the first visit passes through the normal cookie challenge automatically.
+
+### Authentication
+
+Two secrets protect the dashboard, reusing the existing API mechanisms — no new authentication scheme is added:
+
+- The page itself is served only on the exact admin-secret path, following the v1 API pattern. A wrong or missing secret never receives the page; the request falls through to normal proxy handling, as with the v1 API. If no admin secret is configured, the dashboard is not served at all.
+- After the page loads, enter your `apisecret`. The dashboard sends it only as the `Proxy-Secret` header to the existing API v2 endpoints on the same host. The secret is kept in the browser tab's session storage and is cleared when you click "Forget secret" or close the tab. It is never placed in a URL or written to a log.
+
+### What It Shows
+
+- **Overview:** live total and bypassed requests per second, all-time totals, CPU/RAM usage, the current stage, and the top requesting IPs and unknown fingerprints in the current rate-limit window. Updates every 3 seconds.
+- **Domains:** live traffic for the domain in the address bar, or for a domain name you enter.
+- **Firewall rules:** the domain's rules in evaluation order, with a plain explanation of each action. Read-only.
+- **Stage:** the current stage and what each stage does. Read-only.
+- **Logs:** the most recent requests that passed the challenges, newest first.
+
+All data comes from the existing [API](#api) v2 actions and the `/_bProxy/stats` reserved path. The stage shown comes from `/_bProxy/stats` and therefore always reflects the domain in the address bar, even when another domain is being inspected.
+
+### What It Cannot Do
+
+The API exposes no actions for changing the stage, listing domains, reading backends or schemes, showing stage-locked or under-attack state, editing firewall rules, clearing logs, or reloading the configuration — so the dashboard does not offer them either. Those remain terminal-only (see [Commands](#commands)). The dashboard adds no privileged endpoints of its own.
+
+### Themes and Offline Use
+
+The dashboard has two themes sharing one layout: Premium Dark (default) and Official Classic Light, switched from the top bar. The choice is stored in the browser's local storage and is never sent to the server. The page is a single self-contained file embedded in the binary: no build step and no external resources (no CDN, fonts, or icon libraries), so it works fully offline and needs no extra files in Docker.
 
 ## Startup Checks
 
@@ -596,7 +633,7 @@ At startup, SonuShield fetches the TLS fingerprint lists and the version informa
 
 > **Planned, not yet implemented.** This section describes work planned for SonuShield. Nothing listed here exists in the current code yet.
 >
-> - A Cloudflare-style web dashboard for managing domains, firewall rules, stages, and logs from the browser.
+> - Dashboard management actions (stage control, firewall rule editing, domain management) from the browser. Dashboard v1 — read-only monitoring — already exists; see [Dashboard](#dashboard).
 > - Additional protection features and management improvements.
 
 ## License
