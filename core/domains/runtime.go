@@ -16,4 +16,5 @@ package domains
 // pseudo-domain, which has no runtime state.
 func InitRuntime(settings *DomainSettings, domain Domain) {
 	settings.Tarpit = NewTarpitLimiter(domain.TarpitDelayMs, domain.TarpitSusLv, domain.TarpitMaxConns)
+	settings.Cache = NewEdgeCache(domain.EdgeCache, domain.EdgeCacheTTL, domain.EdgeCacheMaxMB)
 }

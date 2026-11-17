@@ -681,7 +681,20 @@ function loadDomainPanel(){
         + "<tr><td>WAF mode</td><td>" + esc(cfg.WAF_MODE_EFFECTIVE || cfg.WAF_MODE || "—") + "</td></tr>"
         + "<tr><td>Alerts</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? "yes" : "no") + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? "yes" : "no") + " · Email: " + (cfg.EMAIL_CONFIGURED ? "yes" : "no") + "</td></tr>";
     }
-    setHTML("domBody", h + "</tbody></table>");
+    setHTML("domBody", h + "</tbody></table>"
+      + '<div class="btnrow" style="margin-top:12px"><button type="button" id="purgeCacheBtn">Purge edge cache</button><span class="small muted" id="purgeCacheNote"></span></div>');
+    var purgeBtn = $("purgeCacheBtn");
+    if(purgeBtn){
+      purgeBtn.addEventListener("click", function(){
+        if(!window.confirm("Purge the whole edge cache for " + dom + "? Cached responses will be fetched from the backend again.")) return;
+        setText("purgeCacheNote", "");
+        domainWrite(dom, "PURGE_CACHE", {}).then(function(r){
+          setText("purgeCacheNote", r.CACHE_ENABLED ? ("Purged " + num(r.PURGED) + " entries.") : "Edge cache is disabled for this domain.");
+        }).catch(function(err){
+          setText("purgeCacheNote", "Purge failed: " + err.message);
+        });
+      });
+    }
   });
 }
 

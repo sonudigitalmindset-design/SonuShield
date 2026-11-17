@@ -154,6 +154,7 @@ func Load() {
 			Host:   domain.Backend,
 		})
 		dProxy.Transport = &server.RoundTripper{}
+		dProxy.ModifyResponse = server.CacheModifyResponse
 
 		// With autoSSL enabled, a domain without certificate/key paths
 		// keeps the empty certificate here; domains.GetCertificate
@@ -224,6 +225,9 @@ func Load() {
 			TarpitDelayMs:       domain.TarpitDelayMs,
 			TarpitSusLv:         domain.TarpitSusLv,
 			TarpitMaxConns:      domain.TarpitMaxConns,
+			EdgeCache:           domain.EdgeCache,
+			EdgeCacheTTL:        domain.EdgeCacheTTL,
+			EdgeCacheMaxMB:      domain.EdgeCacheMaxMB,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

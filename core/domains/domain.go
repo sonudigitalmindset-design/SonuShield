@@ -49,6 +49,9 @@ type Domain struct {
 	TarpitDelayMs       int              `json:"tarpitDelayMs"`
 	TarpitSusLv         int              `json:"tarpitSusLv"`
 	TarpitMaxConns      int              `json:"tarpitMaxConns"`
+	EdgeCache           bool             `json:"edgeCache"`
+	EdgeCacheTTL        int              `json:"edgeCacheTTL"`
+	EdgeCacheMaxMB      int              `json:"edgeCacheMaxMB"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -91,10 +94,14 @@ type DomainSettings struct {
 	TarpitDelayMs       int
 	TarpitSusLv         int
 	TarpitMaxConns      int
+	EdgeCache           bool
+	EdgeCacheTTL        int
+	EdgeCacheMaxMB      int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
 	Tarpit *TarpitLimiter
+	Cache  *EdgeCache
 }
 
 type DomainLog struct {

@@ -548,6 +548,24 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	//Edge cache lookup. A fresh cached response is served with the
+	//standard Age header; a miss falls through to the backend
+	//exactly as before. Only plain GETs without Authorization are
+	//ever served from the cache.
+	if domainSettings.Cache != nil && request.Method == http.MethodGet && request.Header.Get("Authorization") == "" && !isUpgradeRequest(request) {
+		if status, cachedHeader, cachedBody, age, ok := domainSettings.Cache.Lookup(domains.CacheKey(request)); ok {
+			for name, values := range cachedHeader {
+				for _, value := range values {
+					writer.Header().Add(name, value)
+				}
+			}
+			writer.Header().Set("Age", strconv.Itoa(int(age.Seconds())))
+			writer.WriteHeader(status)
+			writer.Write(cachedBody)
+			return
+		}
+	}
+
 	//Allow backend to read client information
 	request.Header.Add("x-real-ip", ip)
 	request.Header.Add("proxy-real-ip", ip)
