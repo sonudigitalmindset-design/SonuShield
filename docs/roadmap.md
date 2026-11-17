@@ -2,7 +2,7 @@
 
 > **Planned, not yet implemented.** Everything on this page is planned work. None of it exists in the current code yet. For what SonuShield can do today, see [Features](features.md).
 
-Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
+Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → 7 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
 
 ## Batch 1 — Power Features
 
@@ -71,6 +71,26 @@ Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → sale-re
 - Public API and SDKs.
 - Outbound webhooks and SIEM export.
 - Full backup and one-click migration.
+
+## Batch 7 — Deeper Detection, Operations, and Trust
+
+- Passive OS fingerprinting from TCP behavior, a signal independent of TLS.
+- Mouse and scroll behavior checks to separate humans from bots.
+- Canary tokens: planted fake API keys whose use triggers an instant ban and alert.
+- Per-visitor invisible page markers for tracing leaked content.
+- Fair queuing so heavy users slow down without affecting light users.
+- Shadow mode: mirror live traffic to a test backend for rule testing.
+- Signed URLs and hotlink protection for images and files.
+- Form spam guard using hidden fields and submission velocity.
+- Backend latency and TTFB tracking (p50/p95/p99) with SLA history.
+- Attack timeline with automatic postmortem generation.
+- Security grade scan for the site's own headers and settings.
+- Certificate Transparency and dangling-subdomain alerts.
+- Scheduled rules and one-click maintenance mode.
+- Community rule packs (WordPress, API, gaming presets).
+- Cloudflare settings import.
+- Privacy mode: IP anonymization and log retention controls.
+- Two-person approval for dangerous actions.
 
 ## Sale-Readiness
 
