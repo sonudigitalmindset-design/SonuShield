@@ -12,6 +12,14 @@ import (
 	"strings"
 )
 
+// ConfigReloader, when set, performs a validated configuration
+// reload and reports success or failure without panicking. It is a
+// hook rather than a direct call because the server package (which
+// owns the reload) imports this package. The server package sets it
+// at init time; if it is unset, RELOAD reports the action as
+// unavailable instead of touching anything.
+var ConfigReloader func() error
+
 func Process(writer http.ResponseWriter, request *http.Request, domainData domains.DomainData) bool {
 
 	if request.Header.Get("proxy-secret") != proxy.APISecret {
@@ -108,8 +116,22 @@ func handleProxyActions(action string, writer http.ResponseWriter) {
 
 		APIResponse(writer, true, map[string]interface{}{})
 	case "RELOAD":
-		firewall.Mutex.Lock()
-		firewall.Mutex.Unlock()
+		if ConfigReloader == nil {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": ERR_ACTION_NOT_FOUND,
+			})
+			break
+		}
+		if err := ConfigReloader(); err != nil {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR":        ERR_RELOAD_FAILED,
+				"ERROR_DETAIL": err.Error(),
+			})
+			break
+		}
+		APIResponse(writer, true, map[string]interface{}{
+			"RELOADED": true,
+		})
 	case "GET_PROXY_FEATURES":
 		APIResponse(writer, true, proxyFeaturesResponse())
 	case "REFRESH_REPUTATION_FEED":

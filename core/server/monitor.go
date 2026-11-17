@@ -408,16 +408,37 @@ func commands() {
 }
 
 // This would ideally be in package config, however import cycles seem to not allow this.
+//
+// ReloadConfig re-reads config.json from disk and applies it. It is
+// the terminal "reload" path: an unreadable or malformed file panics,
+// exactly like the bad-rule and bad-certificate panics in the apply
+// step below. API callers must use SafeReload (reload.go) instead,
+// which validates first and never panics.
 func ReloadConfig() {
-
-	domains.Domains = []string{}
 
 	file, err := os.Open("config.json")
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
-	json.NewDecoder(file).Decode(&domains.Config)
+	var cfg domains.Configuration
+	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
+		panic(err)
+	}
+	reloadFromConfig(&cfg)
+}
+
+// reloadFromConfig applies an already-parsed configuration to the
+// running proxy: secrets, timeouts, GeoIP, reputation, logging,
+// per-domain proxies, certificates, firewall rules, and the auto-SSL
+// manager. It resets per-domain counters and stage state, exactly
+// like the terminal reload always has. Callers must validate cfg
+// first (ValidateConfig) unless a panic on bad input is acceptable:
+// an uncompilable rule or unloadable certificate below panics.
+func reloadFromConfig(cfg *domains.Configuration) {
+
+	domains.Config = cfg
+	domains.Domains = []string{}
 
 	proxy.Cloudflare = domains.Config.Proxy.Cloudflare
 

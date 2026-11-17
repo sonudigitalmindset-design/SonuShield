@@ -75,7 +75,6 @@ var (
 	// Numeric literals (1.2.3.4) and bare keywords (and, or, not,
 	// eq, contains, matches) never match this pattern.
 	ruleFieldToken = regexp.MustCompile(`[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+`)
-	ruleAction     = regexp.MustCompile(`^[+-]?[0-9]+$`)
 )
 
 // validateRuleExpression compiles the expression and checks every
@@ -101,7 +100,7 @@ func validateRuleExpression(expression string) error {
 // indexes the first byte and scans the rest as an integer, so
 // anything else would fail or crash at request time.
 func validateRuleAction(action string) error {
-	if !ruleAction.MatchString(action) {
+	if !domains.ValidRuleAction(action) {
 		return errors.New("action must be an integer, +N, or -N")
 	}
 	return nil
