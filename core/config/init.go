@@ -236,6 +236,7 @@ func Load() {
 			HealthCheckEnabled:  domain.HealthCheckEnabled,
 			HealthCheckPath:     domain.HealthCheckPath,
 			HealthCheckInterval: domain.HealthCheckInterval,
+			WebsocketIdleTimeout: domain.WebsocketIdleTimeout,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

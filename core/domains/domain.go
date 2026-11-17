@@ -60,6 +60,7 @@ type Domain struct {
 	HealthCheckEnabled  bool             `json:"healthCheckEnabled"`
 	HealthCheckPath     string           `json:"healthCheckPath"`
 	HealthCheckInterval int              `json:"healthCheckInterval"`
+	WebsocketIdleTimeout int             `json:"websocketIdleTimeout"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -113,6 +114,7 @@ type DomainSettings struct {
 	HealthCheckEnabled  bool
 	HealthCheckPath     string
 	HealthCheckInterval int
+	WebsocketIdleTimeout int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.

@@ -582,5 +582,16 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	request.Header.Add("proxy-tls-fp", tlsFp)
 	request.Header.Add("proxy-tls-name", browser+botFp)
 
+	//WebSocket upgrade with an idle timeout (Batch 4). Only when
+	//the operator configured websocketIdleTimeout; otherwise the
+	//upgrade flows through the normal reverse proxy exactly as
+	//before. Hijacking is unavailable on HTTP/2, where the normal
+	//path is used instead.
+	if domainSettings.WebsocketIdleTimeout > 0 && isUpgradeRequest(request) {
+		if proxyWebSocket(writer, request, domainSettings) {
+			return
+		}
+	}
+
 	domainSettings.DomainProxy.ServeHTTP(writer, request)
 }
