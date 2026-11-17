@@ -11,9 +11,13 @@ These fields can be used in rule expressions. Values reflect the current request
 | Field | Type | Description |
 |-------|------|-------------|
 | `ip.src` | IP | The client's IP address. |
+| `ip.country` | String | The client's ISO country code (e.g. `US`), from the configured GeoIP Country database. `""` when no database is configured or no record exists. In Cloudflare mode, from the `CF-IPCountry` header. |
+| `ip.asn` | Int | The client's autonomous system number, from the configured GeoIP ASN database. `0` when no database is configured or no record exists. |
 | `ip.engine` | String | The client's browser (`""` if it could not be identified). |
 | `ip.bot` | String | The bot's name (`""` if not applicable). |
 | `ip.fingerprint` | String | The client's raw TLS fingerprint (`Cloudflare` in Cloudflare mode). |
+| `ip.ja4` | String | The client's JA4 fingerprint, computed by SonuShield (`""` in Cloudflare mode). Only comparable with other SonuShield-computed JA4 values. |
+| `ip.reputation` | String | `"listed"` if the client IP is on the local blocklist or the fetched reputation feed, `""` otherwise. |
 | `ip.http_requests` | Int | The client's forwarded HTTP requests in the current rate-limit window. |
 | `ip.challenge_requests` | Int | The client's challenge attempts in the current rate-limit window. |
 | `http.host` | String | The hostname of the current domain. |
@@ -24,6 +28,7 @@ These fields can be used in rule expressions. Values reflect the current request
 | `http.path` | String | The path requested by the client (for example `/pictures/dogs`). |
 | `http.user_agent` | String | The user agent sent by the client. **Important:** always lowercased. |
 | `http.cookie` | String | The cookie string sent by the client. |
+| `http.fingerprint` | String | The `sh1` HTTP request fingerprint (sorted header names and other request properties). SonuShield's own format, comparable only within SonuShield. |
 | `proxy.stage` | Int | The stage the reverse proxy is currently in. |
 | `proxy.cloudflare` | Bool | `true` if the proxy is in Cloudflare mode. |
 | `proxy.stage_locked` | Bool | `true` if the stage is locked to a specific stage. |
@@ -32,7 +37,7 @@ These fields can be used in rule expressions. Values reflect the current request
 | `proxy.rps` | Int | Currently incoming requests per second. |
 | `proxy.rps_allowed` | Int | Currently incoming requests per second forwarded to the backend. |
 
-> **Do not use** `ip.country`, `ip.asn`, `ip.requests`, `http.headers`, or `http.body` in rules. These names are registered in the rule engine but are never given values, so rules using them will not behave as expected.
+> **Do not use** `ip.requests`, `http.headers`, or `http.body` in rules. These names are registered in the rule engine but are never given values, so rules using them will not behave as expected.
 
 ## Comparison Operators
 
@@ -105,6 +110,24 @@ An `action` can set the suspicion level to an exact number. When a rule with an 
 ```
 
 This example challenges requests whose host contains a `:` (typical of direct socket connections) with a captcha.
+
+```json
+{
+  "expression": "(ip.country eq \"XX\" and http.path eq \"/wp-login.php\")",
+  "action": "3"
+}
+```
+
+This example (with a GeoIP Country database configured) challenges login-page requests from one country with a captcha. Replace `"XX"` with a real ISO country code.
+
+```json
+{
+  "expression": "(ip.reputation eq \"listed\")",
+  "action": "+1"
+}
+```
+
+This example raises the suspicion level by `1` for IPs on the local blocklist or reputation feed — on top of the automatic reputation bump (see [IP Reputation](configuration.md#ip-reputation)).
 
 Prefixing the action with `+` or `-` instead adjusts the *current* suspicion level by that amount, and SonuShield keeps checking further rules. This lets you stack multiple checks and react less aggressively when not under attack:
 

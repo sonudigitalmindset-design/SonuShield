@@ -14,13 +14,20 @@
 | Capability | In short |
 |------------|----------|
 | TLS fingerprinting | Identify browsers and bots from the TLS handshake; whitelist, blacklist, or rate-limit by fingerprint. |
+| JA4 + HTTP fingerprinting | JA4 fingerprints alongside the legacy format, plus an HTTP request fingerprint — matchable in firewall rules. |
 | Staged challenges | Cookie → proof-of-work JS → custom captcha, escalating automatically when bypassed. |
+| Adaptive proof-of-work | Stage 2 difficulty scales with load within operator-set bounds. |
+| Turnstile / hCaptcha | Optional provider challenges instead of proof-of-work, with the operator's own keys. |
+| Geo / ASN rules + reputation | Country and ASN matching via operator-supplied GeoIP databases; local blocklist plus optional feed. |
+| WAF-lite | Conservative SQLi/XSS/traversal inspection plus WordPress login-flood protection, log-only by default. |
+| Automatic SSL | Let's Encrypt certificates for domains without certificate files, renewed automatically. |
+| Quiet mode | Generic visitor-facing output with no product identification. Attribution always stays. |
 | Custom firewall rules | Wireshark-style expressions that set each request's suspicion level: allow, challenge, captcha, or block. |
 | Rate limiting | Per-IP and per-fingerprint limits within a configurable window. |
 | Discord alerts | Attack start/end notifications with request rates and a traffic chart. |
 | Web dashboard | Read-only live monitoring in two themes, served by the proxy itself, zero external resources. |
 | Cloudflare mode | Run behind Cloudflare on port 80 with `Cf-Connecting-Ip` client IPs. |
-| HTTP API | Read stats, rules, and logs as JSON (v1 and v2). |
+| HTTP API | Read stats, rules, and logs as JSON (v1 and v2); adjust feature settings at runtime. |
 
 ![How requests flow through SonuShield](docs/assets/request-flow.svg)
 
@@ -33,7 +40,7 @@ go build -o main .
 ./main   # first run asks setup questions and writes config.json
 ```
 
-Point your domain's DNS at the server, check for the `SonuShield: 1.5` response header, and you're protected. Full details: [Installation](docs/installation.md).
+Point your domain's DNS at the server, check for the `SonuShield: 1.5` response header (unless `quietMode` is on), and you're protected. Full details: [Installation](docs/installation.md).
 
 ## Documentation
 
@@ -47,7 +54,7 @@ Point your domain's DNS at the server, check for the `SonuShield: 1.5` response 
 | [API Reference](docs/api.md) | API v1/v2, response format, error codes, actions, reserved paths. |
 | [Firewall Rules](docs/firewall-rules.md) | Custom gofilter rules: fields, operators, priority, and actions. |
 | [Troubleshooting](docs/troubleshooting.md) | FAQ and common issues: startup, DNS, challenges, alerts, API. |
-| [Roadmap](docs/roadmap.md) | Planned work, clearly marked — batches 1–6, sale-readiness, and heavy work last. |
+| [Roadmap](docs/roadmap.md) | Planned work, clearly marked — batches 1–8, sale-readiness, and heavy work last. |
 
 ## An Honest Note
 

@@ -10,6 +10,8 @@ TLS fingerprinting opens up a whole new range of ways to defend against maliciou
 
 In Cloudflare mode, TLS fingerprinting is not available: the fingerprint and browser are reported as `Cloudflare` instead. Details: [How It Works](how-it-works.md#tls-fingerprinting).
 
+Alongside the legacy fingerprint, SonuShield computes a JA4 fingerprint for every TLS connection and an `sh1` HTTP request fingerprint (sorted header names, cookie presence, and other request properties). JA4 values can be allow/block-listed like legacy fingerprints and matched in [firewall rules](firewall-rules.md) (`ip.ja4`, `http.fingerprint`). SonuShield JA4 values are computed from the fields Go's TLS stack exposes, so they are only comparable with other SonuShield-computed values — never with external JA4 databases. The built-in JA4 lists start empty; operators add values they observe themselves via `ja4_fingerprints.json` (see [Configuration](configuration.md#ja4-local-overrides)).
+
 ## Staged DDoS Mitigation
 
 ![Three challenge stages](assets/stages.svg)
@@ -54,11 +56,35 @@ While the proxy runs, the terminal shows a live HUD (CPU usage, watched domain, 
 
 Write your own rules with a Wireshark-style expression language (via gofilter): match on IP, browser, fingerprint, path, user agent, stage, request rates, and more, then set or adjust the request's suspicion level — allow, challenge, captcha, or block. Details: [Firewall Rules](firewall-rules.md).
 
+## Adaptive Proof-of-Work
+
+With `adaptivePow` enabled per domain, the Stage 2 puzzle difficulty scales with load — easy under normal traffic, progressively harder as an attack that bypasses Stage 1 grows — within operator-set bounds. Legitimate visitors under normal load notice nothing different. Details: [Configuration](configuration.md#adaptive-proof-of-work).
+
+## Turnstile / hCaptcha Challenges
+
+A domain can serve a Cloudflare Turnstile or hCaptcha challenge instead of the proof-of-work page, using the operator's own provider keys. The challenge uses the provider's invisible-mode widget with automatic execution, so legitimate visitors see only a brief verifying page. Without keys the feature is inert and proof-of-work is used. Details: [Configuration](configuration.md#challenge-providers).
+
+## Geo / ASN Rules and IP Reputation
+
+Firewall rules can match on country (`ip.country`) and ASN (`ip.asn`) using operator-supplied MaxMind DB files, and on IP reputation (`ip.reputation`) using a local blocklist plus an optional external feed. Both are fail-open: a missing database or a failed feed fetch never blocks anyone. Details: [Configuration](configuration.md#geo-and-asn-rules) and [IP Reputation](configuration.md#ip-reputation).
+
+## WAF-Lite
+
+Conservative inspection for common SQL injection, cross-site scripting, and path-traversal shapes, plus WordPress login-flood protection. Log-only by default — matches are logged and the request continues — with opt-in per-domain blocking that answers with a generic unbranded 403. Details: [Configuration](configuration.md#waf-lite).
+
+## Automatic SSL
+
+With `autoSSL` enabled, domains without certificate files get Let's Encrypt certificates automatically (ACME HTTP-01), cached on disk and renewed without operator action. Domains with explicit certificates keep using them. Details: [Configuration](configuration.md#automatic-ssl).
+
+## Quiet Mode
+
+With `quietMode` enabled, visitor-facing output carries no product identification: no `SonuShield` response header, generic block and error messages, and a generic unknown-host page. Attribution is unaffected — the credits endpoint, license, and docs credits always stay. Details: [Configuration](configuration.md#quiet-mode).
+
 ## HTTP API
 
 ![API schematic](assets/api.svg)
 
-Two API versions expose proxy statistics, firewall rules, and logs as JSON, authenticated with your `apisecret` (v1 additionally uses the `adminsecret` path). The dashboard itself is built on API v2. Details: [API Reference](api.md).
+Two API versions expose proxy statistics, firewall rules, and logs as JSON, authenticated with your `apisecret` (v1 additionally uses the `adminsecret` path). They also expose feature controls: read live feature settings, adjust adaptive proof-of-work and WAF-lite settings at runtime, and trigger a reputation-feed refresh. The dashboard itself is built on API v2. Details: [API Reference](api.md).
 
 ## Rate Limiting
 

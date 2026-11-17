@@ -1,18 +1,20 @@
 # Roadmap
 
-> **Planned, not yet implemented.** Everything on this page is planned work. None of it exists in the current code yet. For what SonuShield can do today, see [Features](features.md).
+> **Mostly planned, not yet implemented.** Batches 2, 4–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batch 1 is implemented** (see its section below). For what SonuShield can do today, see [Features](features.md).
 
-Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → 7 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
+Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → 7 → 8 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
 
-## Batch 1 — Power Features
+## Batch 1 — Power Features ✅ Implemented
 
 - Fresh TLS fingerprint lists and JA4 fingerprinting.
 - Adaptive proof-of-work difficulty.
-- Turnstile / hCaptcha challenge option (plumbing first; activation needs the operator's own keys).
+- Turnstile / hCaptcha challenge option (plumbing; activation needs the operator's own keys).
 - Geo and ASN firewall rules (needs the operator's own GeoIP database).
 - IP reputation and bad-bot feeds.
 - WAF-lite rules (SQLi, XSS, WordPress login flood).
-- Automatic SSL (Let's Encrypt) with backend health checks and a cached fallback page.
+- Automatic SSL (Let's Encrypt).
+
+Still planned from this batch's original scope: backend health checks and a cached fallback page.
 
 ## Batch 2 — Metrics, Alerts, Reports
 
@@ -92,6 +94,27 @@ Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → 7 → s
 - Privacy mode: IP anonymization and log retention controls.
 - Two-person approval for dangerous actions.
 
+## Batch 8 — Attestation, APIs, and Control Panel Depth
+
+- Mobile app attestation: Play Integrity / App Attest verification at the proxy.
+- Passkey challenge for visitors (prove humanity once, trusted for days).
+- Credential stuffing detection across distributed IPs.
+- Session hijack detection (re-challenge on mid-session IP/device change).
+- OpenAPI schema validation for APIs.
+- DLP scanning of responses (block leaked secrets, keys, and ID patterns).
+- CSP report collector with policy suggestions.
+- Opt-in threat-sharing network between SonuShield deployments.
+- BGP hijack alerts for the operator's prefixes.
+- Live log tail in the dashboard.
+- Synthetic checks from multiple regions.
+- Real-user monitoring (RUM) beacon.
+- On-call rotation and escalation policies.
+- Visual rule builder (no-code).
+- WordPress and hosting-panel (cPanel/Plesk) plugins.
+- Nginx/Apache config import.
+- Cache analytics with purge by tag.
+- Config validator with CI check.
+
 ## Sale-Readiness
 
 Quality work needed before the project can be evaluated seriously by a larger organization:
@@ -117,4 +140,4 @@ Quality work needed before the project can be evaluated seriously by a larger or
 
 ## Dashboard Management Actions
 
-Browser-based management — stage control, firewall rule editing, and domain management from the dashboard — is planned. Dashboard v1 (read-only monitoring) already exists; see [Dashboard](dashboard.md). These actions need new API endpoints first, which do not exist yet.
+Browser-based management — stage control, firewall rule editing, and domain management from the dashboard — is planned. Dashboard v1 (read-only monitoring) already exists; see [Dashboard](dashboard.md). Authenticated API actions for reading and adjusting feature settings (adaptive proof-of-work, WAF-lite, reputation feed) already exist — see [API Reference](api.md) — but the dashboard UI does not use them yet, and stage control, rule editing, and domain management still need new API endpoints first, which do not exist yet.

@@ -8,14 +8,15 @@ What SonuShield does to every request, how the staged challenges escalate, and h
 
 SonuShield sits in front of your web server as a reverse proxy. For each request:
 
-1. The TLS connection is fingerprinted (outside Cloudflare mode) and the browser/bot is identified.
-2. Your per-domain [firewall rules](firewall-rules.md) run, adjusting the request's suspicion level.
-3. Depending on the suspicion level and the domain's current stage, the request is allowed, challenged, or blocked.
-4. Passed requests are forwarded to your backend with extra headers (see below).
+1. The TLS connection is fingerprinted (outside Cloudflare mode) and the browser/bot is identified. A JA4 fingerprint is computed alongside the legacy fingerprint.
+2. Rate limits are checked, then WAF-lite inspection runs (log-only by default).
+3. Your per-domain [firewall rules](firewall-rules.md) run, adjusting the request's suspicion level; listed IPs then receive the reputation bump.
+4. Depending on the suspicion level and the domain's current stage, the request is allowed, challenged, or blocked.
+5. Passed requests are forwarded to your backend with extra headers (see below).
 
 Requests forwarded to your backend carry extra headers your backend can read: `x-real-ip`, `proxy-real-ip` (both the client IP), and `proxy-tls-fp` (the client's TLS fingerprint, or `Cloudflare` in Cloudflare mode).
 
-Outside Cloudflare mode, plain HTTP requests on port 80 are redirected to HTTPS (301), except for unknown hosts, which receive an error message. In Cloudflare mode the proxy serves plain HTTP on port 80 only.
+Outside Cloudflare mode, plain HTTP requests on port 80 are redirected to HTTPS (301), except for unknown hosts, which receive an error message (generic when `quietMode` is on), and Let's Encrypt HTTP-01 challenge requests, which are answered on port 80 when `autoSSL` is enabled. In Cloudflare mode the proxy serves plain HTTP on port 80 only.
 
 ## TLS Fingerprinting
 
@@ -23,7 +24,7 @@ Outside Cloudflare mode, plain HTTP requests on port 80 are redirected to HTTPS 
 
 TLS fingerprinting opens up a whole new range of ways to defend against malicious attacks. You can use it to whitelist specific fingerprints (for example, SEO bots), blacklist unwanted fingerprints (for example, WordPress exploit crawlers), rate-limit attackers that change IPs through proxies, or simply learn more about a visitor.
 
-At startup, SonuShield fetches three fingerprint lists from this repository: known fingerprints, bot fingerprints, and malicious fingerprints. In Cloudflare mode, TLS fingerprinting is not available: the fingerprint and browser are reported as `Cloudflare` instead.
+At startup, SonuShield fetches three legacy fingerprint lists from this repository: known fingerprints, bot fingerprints, and malicious fingerprints. It also fetches three JA4 lists (known, bot, malicious), which start empty, and merges an optional local `ja4_fingerprints.json` file over them (see [Configuration](configuration.md#ja4-local-overrides)). JA4 values are computed from the TLS fields Go's standard library exposes, which does not include the raw extension list — so SonuShield JA4 values are only comparable with other SonuShield-computed values, never with external JA4 databases. When the legacy fingerprint is unknown, the JA4 lists are consulted to fill in the browser/bot identification, and JA4 values in the malicious list block the request just like legacy forbidden fingerprints. In Cloudflare mode, TLS fingerprinting is not available: the fingerprint and browser are reported as `Cloudflare` instead.
 
 ## Staged DDoS Mitigation
 
@@ -57,7 +58,9 @@ Solve times measured by the original project:
 | 2 | ~0.215 seconds |
 | 1 | ~0.212 seconds |
 
-The difficulty is set per domain with `stage2Difficulty` (default `5` when unset). Note: the challenge page loads the `balooPow` proof-of-work script from a public CDN (the `41Baloo/balooPow` repository). Your visitors' browsers must be able to reach that CDN for Stage 2 challenges to complete.
+The difficulty is set per domain with `stage2Difficulty` (default `5` when unset). With `adaptivePow` enabled, the difficulty instead scales with the domain's bypassed requests per second between `bypassStage1` and `bypassStage2`, within the `powDifficultyMin`/`powDifficultyMax` bounds (see [Configuration](configuration.md#adaptive-proof-of-work)). Note: the challenge page loads the `balooPow` proof-of-work script from a public CDN (the `41Baloo/balooPow` repository). Your visitors' browsers must be able to reach that CDN for Stage 2 challenges to complete.
+
+A domain can alternatively serve a Cloudflare Turnstile or hCaptcha challenge at Stage 2 instead of the proof-of-work page, using the operator's own provider keys (`challengeProvider`, `challengeSiteKey`, `challengeSecretKey`). The provider page uses an invisible-mode widget with automatic execution and verifies the token server-side; on success the visitor receives the same clearance cookie as the proof-of-work flow. Without valid keys the domain falls back to proof-of-work (see [Configuration](configuration.md#challenge-providers)).
 
 ### Custom Captcha
 
@@ -71,7 +74,7 @@ Not everyone can afford expensive servers and a global CDN. SonuShield can run b
 
 ## Startup Checks
 
-At startup, SonuShield fetches the TLS fingerprint lists and the version information from this repository over HTTPS (`raw.githubusercontent.com`). The version check compares the published stable version against the built-in version (`1.5`); if a newer stable version exists, the proxy prints an update notice and waits 10 seconds before starting. If the version check itself fails (for example, with no outbound network access), startup stops. Fingerprint-list fetch failures do not stop startup, but leave the corresponding lists empty.
+At startup, SonuShield fetches the TLS fingerprint lists (three legacy lists plus three JA4 lists) and the version information from this repository over HTTPS (`raw.githubusercontent.com`). The version check compares the published stable version against the built-in version (`1.5`); if a newer stable version exists, the proxy prints an update notice and waits 10 seconds before starting. If the version check itself fails (for example, with no outbound network access), startup stops. Fingerprint-list fetch failures do not stop startup, but leave the corresponding lists empty.
 
 ## Terminal
 
