@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/metrics"
 	"sonushield/core/pnc"
 	"sonushield/core/proxy"
 	"io"
@@ -133,7 +134,9 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	transport := getTripperForDomain(req.Host)
 
 	//Use inbuild RoundTrip
+	backendStart := time.Now()
 	resp, err := transport.RoundTrip(req)
+	metrics.ObserveBackend(req.Host, time.Since(backendStart), err == nil)
 
 	//Connection to backend failed. Display error message
 	if err != nil {

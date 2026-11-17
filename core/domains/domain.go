@@ -126,6 +126,7 @@ type Proxy struct {
 	AutoSSLCacheDir string            `json:"autoSSLCacheDir"`
 	AutoSSLEmail    string            `json:"autoSSLEmail"`
 	QuietMode       bool              `json:"quietMode"`
+	MetricsEnabled  bool              `json:"metricsEnabled"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

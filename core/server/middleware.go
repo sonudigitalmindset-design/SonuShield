@@ -7,6 +7,7 @@ import (
 	"sonushield/core/dashboard"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/metrics"
 	"sonushield/core/proxy"
 	"sonushield/core/utils"
 	"image"
@@ -45,6 +46,16 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if !domainFound {
 		writer.Header().Set("Content-Type", "text/plain")
 		SendResponse("404 Not Found", buffer, writer)
+		return
+	}
+
+	// Prometheus metrics (Batch 2). Secret-gated like the dashboard and
+	// API, served only when metricsEnabled is set, and handled before
+	// any challenge or rate limiting so scrapes are neither challenged
+	// nor counted in request statistics. When disabled, the request
+	// falls through to the normal flow exactly as before.
+	if metrics.IsMetricsRequest(request) {
+		metrics.ServeMetrics(writer)
 		return
 	}
 
@@ -124,6 +135,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//Ratelimit faster if client repeatedly fails the verification challenge (feel free to play around with the threshhold)
 	if ipCountCookie > proxy.FailChallengeRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
+		metrics.ObserveBlock(domainName, "ratelimit")
 		SendResponse(blockMessage("You have been ratelimited. (R1)"), buffer, writer)
 		return
 	}
@@ -131,6 +143,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//Ratelimit spamming Ips (feel free to play around with the threshhold)
 	if ipCount > proxy.IPRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
+		metrics.ObserveBlock(domainName, "ratelimit")
 		SendResponse(blockMessage("You have been ratelimited. (R2)"), buffer, writer)
 		return
 	}
@@ -139,6 +152,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if browser == "" {
 		if fpCount > proxy.FPRatelimit {
 			writer.Header().Set("Content-Type", "text/plain")
+			metrics.ObserveBlock(domainName, "ratelimit")
 			SendResponse(blockMessage("You have been ratelimited. (R3)"), buffer, writer)
 			return
 		}
@@ -155,6 +169,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 	if forbiddenFp != "" {
 		writer.Header().Set("Content-Type", "text/plain")
+		metrics.ObserveBlock(domainName, "fingerprint")
 		SendResponse(blockMessage("Your browser "+forbiddenFp+" is not allowed."), buffer, writer)
 		return
 	}
@@ -179,7 +194,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//request continues); block mode answers with a generic unbranded
 	//403. Runs after the challenge-verify hook so verification POSTs
 	//are not scanned, and before firewall rules so blocks are cheap.
-	if wafBlocked, _ := firewall.CheckRequest(request, domainSettings.WAFMode, domainSettings.WAFInspectBody, domainSettings.WAFWpLoginLimit, ip); wafBlocked {
+	wafBlocked, wafRule := firewall.CheckRequest(request, domainSettings.WAFMode, domainSettings.WAFInspectBody, domainSettings.WAFWpLoginLimit, ip)
+	if wafRule != "" {
+		metrics.ObserveWAFMatch(domainName, wafRule)
+	}
+	if wafBlocked {
+		metrics.ObserveBlock(domainName, "waf")
 		writer.Header().Set("Content-Type", "text/plain")
 		writer.WriteHeader(http.StatusForbidden)
 		SendResponse("Forbidden.", buffer, writer)
@@ -267,6 +287,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			encryptedIP = utils.Encrypt(accessKey, proxy.CaptchaOTP)
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
+			metrics.ObserveBlock(domainName, "suspect")
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")"), buffer, writer)
 			return
 		}
@@ -291,10 +312,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		case 0:
 			//This request is not to be challenged (whitelist)
 		case 1:
+			metrics.ObserveChallenge(domainName, 1)
 			writer.Header().Set("Set-Cookie", "_1__bProxy_v="+encryptedIP+"; SameSite=Lax; path=/; Secure")
 			http.Redirect(writer, request, request.URL.RequestURI(), http.StatusFound)
 			return
 		case 2:
+			metrics.ObserveChallenge(domainName, 2)
 			//Challenge provider (Turnstile/hCaptcha) replaces the
 			//proof-of-work page when the operator configured one with
 			//their own keys. Falls back to proof-of-work when the
@@ -326,6 +349,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			SendResponse(`<!doctypehtml><html lang=en><meta charset=UTF-8><meta content="width=device-width,initial-scale=1"name=viewport><title>Completing challenge ...</title><style>body,html{height:100%;width:100%;margin:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:#f0f0f0;font-family:Arial,sans-serif}.loader{display:flex;justify-content:space-around;align-items:center;width:100px;height:100px}.loader div{width:20px;height:20px;background-color:#333;border-radius:50%;animation:bounce .6s infinite alternate}.loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}@keyframes bounce{to{transform:translateY(-30px)}}.message{text-align:center;margin-top:20px;color:#333}.subtext{text-align:center;color:#666;font-size:.9em;margin-top:5px}.placeholder-container{width:25%;text-align:center;margin:10px 0}.placeholder-label{font-weight:700;margin-bottom:5px}.placeholder{background-color:#e0e0e0;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;cursor:pointer;}</style><div class=loader><div></div><div></div><div></div></div><div class=message><p>Completing challenge ...<div class=subtext>The process is automatic and shouldn't take too long. Please be patient.</div></div><div class=placeholder-container><div class=placeholder-label>publicSalt:</div><div class=placeholder id=publicSalt onclick='ctc("publicSalt")'><span>`+publicSalt+`</span></div></div><div class=placeholder-container><div class=placeholder-label>challenge:</div><div class=placeholder id=challenge onclick='ctc("challenge")'><span>`+hashedEncryptedIP+`</span></div></div><script>function ctc(t){navigator.clipboard.writeText(document.getElementById(t).innerText)}</script><script src="https://cdn.jsdelivr.net/gh/41Baloo/balooPow@main/balooPow.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script><script>function solved(e){document.cookie="_2__bProxy_v=`+publicSalt+`"+e.solution+"; SameSite=Lax; path=/; Secure",location.href=location.href}new BalooPow("`+publicSalt+`",`+strconv.Itoa(difficulty)+`,"`+hashedEncryptedIP+`",!1).Solve().then(e=>{if(e.match == ""){solved(e)}else alert("Navigator Missmatch ("+e.match+"). Please contact @ddosmitigation")});</script>`, buffer, writer)
 			return
 		case 3:
+			metrics.ObserveChallenge(domainName, 3)
 			secretPart := encryptedIP[:6]
 			publicPart := encryptedIP[6:]
 
@@ -391,6 +415,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			return
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
+			metrics.ObserveBlock(domainName, "suspect")
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr), buffer, writer)
 			return
 		}
