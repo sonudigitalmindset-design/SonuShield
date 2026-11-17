@@ -14,9 +14,12 @@ package api
 //     formatting but never data.
 //   - Writes are atomic: the new content goes to a temporary file in
 //     the same directory, the previous config.json is copied to
-//     config.json.bak (one backup, overwritten each time), and the
-//     temporary file is then renamed over config.json. A failed edit
-//     leaves the previous file untouched.
+//     config.json.bak after rotating the backup set (config.json.bak
+//     is the newest backup, config.json.bak.1 the one before it,
+//     and so on up to the proxy.configBackups limit, default 5),
+//     and the temporary file is then renamed over config.json. A
+//     failed edit leaves the previous file untouched. Rotation is
+//     best-effort: a failed rename never blocks a save.
 //   - The whole read-modify-write is serialised by persistMutex, so
 //     two concurrent dashboard edits can never lose each other's
 //     changes. The mutex is held for file I/O only; applying the
@@ -42,10 +45,79 @@ import (
 )
 
 var (
-	configFilePath   = "config.json"
-	configBackupPath = "config.json.bak"
-	persistMutex     sync.Mutex
+	configFilePath = "config.json"
+	persistMutex   sync.Mutex
 )
+
+const (
+	defaultBackupLimit = 5
+	maxBackupLimit     = 20
+)
+
+// backupLimit returns the number of rotating config backups to
+// keep, from proxy.configBackups (default 5, clamped to 1-20).
+func backupLimit() int {
+	limit := defaultBackupLimit
+	if domains.Config != nil && domains.Config.Proxy.ConfigBackups != 0 {
+		limit = domains.Config.Proxy.ConfigBackups
+	}
+	if limit < 1 {
+		limit = 1
+	}
+	if limit > maxBackupLimit {
+		limit = maxBackupLimit
+	}
+	return limit
+}
+
+// backupPath returns the file path of backup index i: index 0 is
+// config.json.bak (newest), index 1 is config.json.bak.1, and so
+// on. Paths derive from configFilePath so tests can redirect them.
+func backupPath(index int) string {
+	if index <= 0 {
+		return configFilePath + ".bak"
+	}
+	return fmt.Sprintf("%s.bak.%d", configFilePath, index)
+}
+
+// rotateBackups shifts the backup set one generation older, so
+// index 0 becomes free for the backup about to be written.
+// Rotation is best-effort: failures are ignored, and backups
+// beyond the configured limit are pruned.
+func rotateBackups() {
+	limit := backupLimit()
+	for i := limit - 2; i >= 0; i-- {
+		_ = os.Rename(backupPath(i), backupPath(i+1))
+	}
+	for i := limit; i <= maxBackupLimit; i++ {
+		_ = os.Remove(backupPath(i))
+	}
+}
+
+// writeConfigBytesAtomic writes data to config.json via a
+// temporary file in the same directory, renamed over the target.
+func writeConfigBytesAtomic(data []byte) error {
+	dir := filepath.Dir(configFilePath)
+	tmp, err := os.CreateTemp(dir, ".config.json.*")
+	if err != nil {
+		return err
+	}
+	tmpName := tmp.Name()
+	defer os.Remove(tmpName)
+
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Chmod(0644); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmpName, configFilePath)
+}
 
 var errDomainNotInConfig = errors.New("domain not found in config.json")
 
@@ -66,10 +138,11 @@ func loadConfigDocument() (map[string]json.RawMessage, error) {
 	return doc, nil
 }
 
-// saveConfigDocument writes doc to config.json atomically, keeping one
-// backup of the previous file. The document is written indented for
-// readability; key order becomes alphabetical (Go map marshalling),
-// which changes formatting but never data.
+// saveConfigDocument writes doc to config.json atomically, rotating
+// the backup set and keeping the previous file as the newest
+// backup. The document is written indented for readability; key
+// order becomes alphabetical (Go map marshalling), which changes
+// formatting but never data.
 func saveConfigDocument(doc map[string]json.RawMessage) error {
 	data, err := json.MarshalIndent(doc, "", "  ")
 	if err != nil {
@@ -77,40 +150,18 @@ func saveConfigDocument(doc map[string]json.RawMessage) error {
 	}
 	data = append(data, '\n')
 
-	dir := filepath.Dir(configFilePath)
-	tmp, err := os.CreateTemp(dir, ".config.json.*")
-	if err != nil {
-		return err
-	}
-	tmpName := tmp.Name()
-	defer os.Remove(tmpName)
-
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Chmod(0644); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-
 	// Back up the previous file before replacing it. A missing
 	// previous file (fresh install mid-edit) is not an error.
 	if previous, err := os.ReadFile(configFilePath); err == nil {
-		if err := os.WriteFile(configBackupPath, previous, 0644); err != nil {
+		rotateBackups()
+		if err := os.WriteFile(backupPath(0), previous, 0644); err != nil {
 			return fmt.Errorf("could not write config backup: %w", err)
 		}
 	} else if !os.IsNotExist(err) {
 		return err
 	}
 
-	if err := os.Rename(tmpName, configFilePath); err != nil {
-		return err
-	}
-	return nil
+	return writeConfigBytesAtomic(data)
 }
 
 // updateConfigDomain loads config.json, lets mutate edit one domain

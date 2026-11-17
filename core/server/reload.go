@@ -48,6 +48,7 @@ import (
 
 func init() {
 	api.ConfigReloader = SafeReload
+	api.ConfigValidator = ValidateConfig
 }
 
 // ValidateConfig checks a parsed configuration against every input

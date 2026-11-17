@@ -67,7 +67,7 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	}
 
 	if apiRequest.Domain == "" {
-		handleProxyActions(apiRequest.Action, recorder)
+		handleProxyActions(apiRequest.Action, recorder, apiRequest.Params)
 		return true
 	}
 
@@ -84,7 +84,7 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	return true
 }
 
-func handleProxyActions(action string, writer http.ResponseWriter) {
+func handleProxyActions(action string, writer http.ResponseWriter, params map[string]string) {
 	switch action {
 	case "GET_PROXY_STATS":
 		APIResponse(writer, true, map[string]interface{}{
@@ -167,6 +167,21 @@ func handleProxyActions(action string, writer http.ResponseWriter) {
 		APIResponse(writer, true, domainsListResponse())
 	case "CLEAR_LOGS":
 		APIResponse(writer, true, clearAllLogsResponse())
+	case "LIST_CONFIG_BACKUPS":
+		APIResponse(writer, true, listBackupsResponse())
+	case "RESTORE_CONFIG_BACKUP":
+		response, errCode, detail := restoreBackupResponse(params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	default:
 		APIResponse(writer, false, map[string]interface{}{
 			"ERROR": ERR_ACTION_NOT_FOUND,
@@ -328,7 +343,7 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 			})
 			return true
 		}
-		handleProxyActions(parts[0], recorder)
+		handleProxyActions(parts[0], recorder, queryParams(r))
 		return true
 	} else {
 

@@ -199,6 +199,7 @@ type Proxy struct {
 	LogFile         string            `json:"logFile"`
 	LogMaxBytes     int64             `json:"logMaxBytes"`
 	LogMaxFiles     int               `json:"logMaxFiles"`
+	ConfigBackups   int               `json:"configBackups"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

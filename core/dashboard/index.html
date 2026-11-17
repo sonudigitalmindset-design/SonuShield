@@ -398,6 +398,12 @@ tr.selected td{background:var(--nav-active-bg)}
         <div id="proxyFeatures"><div class="state">No data yet. Connect to load live data.</div></div>
         <div class="btnrow"><button type="button" id="refreshFeedBtn">Refresh reputation feed</button></div>
       </div>
+      <div class="panel">
+        <h2>Configuration backups</h2>
+        <p class="small muted">Every saved change keeps the previous <code>config.json</code> as a backup, newest first. Restoring validates the backup first, backs up the current file, and reloads the proxy.</p>
+        <div id="backupList"><div class="state">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="backupsReloadBtn">Reload list</button></div>
+      </div>
     </section>
 
     <section id="view-reports" class="view">
@@ -876,6 +882,39 @@ function loadProxyFeatures(){
   });
 }
 
+function loadBackups(){
+  return proxyAction("LIST_CONFIG_BACKUPS").then(function(r){
+    var backups = r.BACKUPS || [];
+    if(!backups.length){
+      setHTML("backupList", '<div class="state">No configuration backups yet. Backups appear after the first saved change.</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>Backup</th><th>Size</th><th>Modified (UTC)</th><th>Actions</th></tr></thead><tbody>';
+    backups.forEach(function(b){
+      h += "<tr><td class='mono'>" + esc(b.NAME) + "</td><td>" + num(b.SIZE) + " bytes</td><td>" + esc(b.MODIFIED) + "</td>"
+        + '<td style="white-space:nowrap"><button type="button" class="small" data-backup-restore="' + esc(b.NAME) + '">Restore</button></td></tr>';
+    });
+    setHTML("backupList", h + "</tbody></table>");
+    document.querySelectorAll("[data-backup-restore]").forEach(function(btn){
+      btn.addEventListener("click", function(){ restoreBackup(btn.getAttribute("data-backup-restore")); });
+    });
+  }).catch(function(){
+    setHTML("backupList", '<div class="state state-error"><strong>Could not load backups.</strong></div>');
+  });
+}
+
+function restoreBackup(name){
+  if(!window.confirm("Restore " + name + "? The backup is validated first, the current config is backed up, and the proxy reloads. Reloading resets per-domain counters and stage state.")) return;
+  showInline("settingsError", "settingsOk", "", "");
+  proxyWrite("RESTORE_CONFIG_BACKUP", {backup: name}).then(function(){
+    showInline("settingsError", "settingsOk", "", "Backup restored and proxy reloaded.");
+    loadBackups();
+    return loadSettings();
+  }).catch(function(err){
+    showInline("settingsError", "settingsOk", "Could not restore the backup: " + err.message, "");
+  });
+}
+
 function countTable(mapObj, keyLabel){
   var rows = Object.keys(mapObj || {}).map(function(k){ return [k, Number(mapObj[k]) || 0]; });
   rows.sort(function(a,b){ return b[1]-a[1]; });
@@ -1067,7 +1106,7 @@ function showView(name){
     });
   }
   if(!connected) return;
-  if(name === "settings"){ loadSettings(); loadProxyFeatures(); }
+  if(name === "settings"){ loadSettings(); loadProxyFeatures(); loadBackups(); }
   else if(name === "reports"){ loadReport(); }
   else if(name === "domains"){ loadDomains(); loadDomainPanel(); }
   else if(name === "rules"){ loadRules(true); }
@@ -1115,6 +1154,7 @@ $("clearLogsBtn").addEventListener("click", function(){ clearLogs(false); });
 $("clearAllLogsBtn").addEventListener("click", function(){ clearLogs(true); });
 $("settingsForm").addEventListener("submit", submitSettings);
 $("settingsReloadBtn").addEventListener("click", function(){ loadSettings(); });
+$("backupsReloadBtn").addEventListener("click", function(){ loadBackups(); });
 $("refreshFeedBtn").addEventListener("click", function(){
   proxyWrite("REFRESH_REPUTATION_FEED", {}).then(function(){
     return loadProxyFeatures();
