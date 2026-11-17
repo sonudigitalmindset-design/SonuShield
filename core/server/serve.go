@@ -133,13 +133,66 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	//Use Proxy Read Timeout
 	transport := getTripperForDomain(req.Host)
 
-	//Use inbuild RoundTrip
+	//Backend selection (Batch 4): the pool picks one backend per
+	//attempt. A single-backend pool always picks the same backend,
+	//so single-backend configs behave exactly as before. On a
+	//transport error the request is retried on another backend
+	//when its body can be replayed; non-replayable bodies are
+	//never retried, so a POST is never duplicated by failover.
+	pool := backendPoolFor(req.Host)
+	attempts := 1
+	if pool != nil && pool.Size() > 1 {
+		attempts = pool.Size()
+	}
+
+	var resp *http.Response
+	var err error
 	backendStart := time.Now()
-	resp, err := transport.RoundTrip(req)
+	for attempt := 0; attempt < attempts; attempt++ {
+		var backend *domains.Backend
+		if pool != nil {
+			backend = pool.Pick()
+			if backend == nil {
+				err = errAllBackendsDown
+				break
+			}
+			req.URL.Scheme = pool.Scheme
+			req.URL.Host = backend.Addr
+			pool.TrackStart(backend)
+		}
+		resp, err = transport.RoundTrip(req)
+		if pool != nil && backend != nil {
+			pool.TrackEnd(backend)
+		}
+		if err == nil {
+			if pool != nil && backend != nil {
+				pool.MarkOK(backend)
+			}
+			break
+		}
+		if pool != nil && backend != nil {
+			pool.MarkFailed(backend)
+		}
+		if attempt+1 >= attempts || !requestReplayable(req) {
+			break
+		}
+		if req.GetBody != nil {
+			if body, bodyErr := req.GetBody(); bodyErr == nil {
+				req.Body = body
+			} else {
+				break
+			}
+		}
+	}
 	metrics.ObserveBackend(req.Host, time.Since(backendStart), err == nil)
 
-	//Connection to backend failed. Display error message
+	//Connection to backend failed. When every backend is down and
+	//the edge cache holds a stale copy, serve it clearly marked
+	//instead of the error page.
 	if err != nil {
+		if stale := staleFallbackResponse(req, pool); stale != nil {
+			return stale, nil
+		}
 		errStrs := strings.Split(err.Error(), " ")
 		errMsg := ""
 		for _, str := range errStrs {

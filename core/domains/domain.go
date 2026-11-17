@@ -55,6 +55,11 @@ type Domain struct {
 	WaitingRoom         bool             `json:"waitingRoom"`
 	WaitingRoomThreshold int              `json:"waitingRoomThreshold"`
 	WaitingRoomAdmit    int              `json:"waitingRoomAdmit"`
+	Backends            []string         `json:"backends"`
+	LBPolicy            string           `json:"lbPolicy"`
+	HealthCheckEnabled  bool             `json:"healthCheckEnabled"`
+	HealthCheckPath     string           `json:"healthCheckPath"`
+	HealthCheckInterval int              `json:"healthCheckInterval"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -103,12 +108,18 @@ type DomainSettings struct {
 	WaitingRoom         bool
 	WaitingRoomThreshold int
 	WaitingRoomAdmit    int
+	Backends            []string
+	LBPolicy            string
+	HealthCheckEnabled  bool
+	HealthCheckPath     string
+	HealthCheckInterval int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
 	Tarpit  *TarpitLimiter
 	Cache   *EdgeCache
 	Waiting *WaitingRoom
+	Pool    *BackendPool
 }
 
 type DomainLog struct {

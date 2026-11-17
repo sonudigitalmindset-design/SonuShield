@@ -231,6 +231,11 @@ func Load() {
 			WaitingRoom:         domain.WaitingRoom,
 			WaitingRoomThreshold: domain.WaitingRoomThreshold,
 			WaitingRoomAdmit:    domain.WaitingRoomAdmit,
+			Backends:            domain.Backends,
+			LBPolicy:            domain.LBPolicy,
+			HealthCheckEnabled:  domain.HealthCheckEnabled,
+			HealthCheckPath:     domain.HealthCheckPath,
+			HealthCheckInterval: domain.HealthCheckInterval,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
@@ -264,6 +269,10 @@ func Load() {
 		}
 		firewall.Mutex.Unlock()
 	}
+
+	// Backend health checks (Batch 4): one background loop for all
+	// domains. Pools without health checks enabled are skipped.
+	domains.StartHealthChecks()
 
 	// Auto SSL: build the Let's Encrypt manager from the final domain
 	// list. Disabled by default; in Cloudflare mode there is no TLS

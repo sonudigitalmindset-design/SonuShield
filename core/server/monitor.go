@@ -589,6 +589,11 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			WaitingRoom:          domain.WaitingRoom,
 			WaitingRoomThreshold: domain.WaitingRoomThreshold,
 			WaitingRoomAdmit:     domain.WaitingRoomAdmit,
+			Backends:             domain.Backends,
+			LBPolicy:             domain.LBPolicy,
+			HealthCheckEnabled:   domain.HealthCheckEnabled,
+			HealthCheckPath:      domain.HealthCheckPath,
+			HealthCheckInterval:  domain.HealthCheckInterval,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
