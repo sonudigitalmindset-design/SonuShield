@@ -94,7 +94,7 @@ func Serve() {
 
 			if !domainFound {
 				w.Header().Set("Content-Type", "text/plain")
-				fmt.Fprint(w, "SonuShield: "+r.Host+" does not exist. If you are the owner please check your config.json if you believe this is a mistake")
+				fmt.Fprint(w, unknownHostMessage(r.Host))
 				return
 			}
 

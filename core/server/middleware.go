@@ -114,7 +114,9 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	domains.DomainsData[domainName] = domainData
 	firewall.Mutex.Unlock()
 
-	writer.Header().Set("SonuShield", "1.5")
+	if !quietMode() {
+		writer.Header().Set("SonuShield", "1.5")
+	}
 
 	//Start the suspicious level where the stage currently is
 	susLv := domainData.Stage
@@ -122,14 +124,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//Ratelimit faster if client repeatedly fails the verification challenge (feel free to play around with the threshhold)
 	if ipCountCookie > proxy.FailChallengeRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
-		SendResponse("Blocked by SonuShield.\nYou have been ratelimited. (R1)", buffer, writer)
+		SendResponse(blockMessage("You have been ratelimited. (R1)"), buffer, writer)
 		return
 	}
 
 	//Ratelimit spamming Ips (feel free to play around with the threshhold)
 	if ipCount > proxy.IPRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
-		SendResponse("Blocked by SonuShield.\nYou have been ratelimited. (R2)", buffer, writer)
+		SendResponse(blockMessage("You have been ratelimited. (R2)"), buffer, writer)
 		return
 	}
 
@@ -137,7 +139,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if browser == "" {
 		if fpCount > proxy.FPRatelimit {
 			writer.Header().Set("Content-Type", "text/plain")
-			SendResponse("Blocked by SonuShield.\nYou have been ratelimited. (R3)", buffer, writer)
+			SendResponse(blockMessage("You have been ratelimited. (R3)"), buffer, writer)
 			return
 		}
 
@@ -153,7 +155,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 	if forbiddenFp != "" {
 		writer.Header().Set("Content-Type", "text/plain")
-		SendResponse("Blocked by SonuShield.\nYour browser "+forbiddenFp+" is not allowed.", buffer, writer)
+		SendResponse(blockMessage("Your browser "+forbiddenFp+" is not allowed."), buffer, writer)
 		return
 	}
 
@@ -265,7 +267,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			encryptedIP = utils.Encrypt(accessKey, proxy.CaptchaOTP)
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
-			SendResponse("Blocked by SonuShield.\nSuspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")", buffer, writer)
+			SendResponse(blockMessage("Suspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")"), buffer, writer)
 			return
 		}
 		firewall.CacheIps.Store(accessKey+susLvStr, encryptedIP)
@@ -365,11 +367,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 				var captchaBuf, maskBuf bytes.Buffer
 				if err := png.Encode(&captchaBuf, captchaImg); err != nil {
-					SendResponse("SonuShield Error: Failed to encode captcha: "+err.Error(), buffer, writer)
+					SendResponse(errorMessage("Failed to encode captcha: "+err.Error()), buffer, writer)
 					return
 				}
 				if err := png.Encode(&maskBuf, maskImg); err != nil {
-					SendResponse("SonuShield Error: Failed to encode captchaMask: "+err.Error(), buffer, writer)
+					SendResponse(errorMessage("Failed to encode captchaMask: "+err.Error()), buffer, writer)
 					return
 				}
 
@@ -389,7 +391,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			return
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
-			SendResponse("Blocked by SonuShield.\nSuspicious request of level "+susLvStr, buffer, writer)
+			SendResponse(blockMessage("Suspicious request of level "+susLvStr), buffer, writer)
 			return
 		}
 	}
