@@ -19,11 +19,11 @@ import (
 	"github.com/shirou/gopsutil/v4/cpu"
 	"golang.org/x/term"
 
-	"goProxy/core/domains"
-	"goProxy/core/firewall"
-	"goProxy/core/pnc"
-	"goProxy/core/proxy"
-	"goProxy/core/utils"
+	"sonushield/core/domains"
+	"sonushield/core/firewall"
+	"sonushield/core/pnc"
+	"sonushield/core/proxy"
+	"sonushield/core/utils"
 )
 
 var (
@@ -259,7 +259,7 @@ func printStats() {
 	} else if helpMode {
 		fmt.Println("[" + utils.PrimaryColor("Available Commands") + "]")
 		fmt.Println("")
-		fmt.Println("[" + utils.PrimaryColor("+") + "] [ " + utils.PrimaryColor("help") + " ]: " + utils.PrimaryColor("Displays all available commands. More detailed information can be found at ") + "https://github.com/41Baloo/balooProxy#commands")
+		fmt.Println("[" + utils.PrimaryColor("+") + "] [ " + utils.PrimaryColor("help") + " ]: " + utils.PrimaryColor("Displays all available commands. More detailed information can be found at ") + "https://github.com/sonudigitalmindset-design/SonuShield#commands")
 		fmt.Println("[" + utils.PrimaryColor("+") + "] [ " + utils.PrimaryColor("stage") + " ]: " + utils.PrimaryColor("Usage: ") + "stage [number] " + utils.PrimaryColor("Locks the stage to the specified number. Use ") + "stage 0 " + utils.PrimaryColor("to unlock the stage"))
 		fmt.Println("[" + utils.PrimaryColor("+") + "] [ " + utils.PrimaryColor("domain") + " ]: " + utils.PrimaryColor("Usage: ") + "domain [name] " + utils.PrimaryColor("Switch between your domains. Type only ") + "domain " + utils.PrimaryColor("to list all available domains"))
 		fmt.Println("[" + utils.PrimaryColor("+") + "] [ " + utils.PrimaryColor("add") + " ]: " + utils.PrimaryColor("Usage: ") + "add " + utils.PrimaryColor("Starts a dialouge to add another domain to the proxy"))

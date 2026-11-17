@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"goProxy/core/config"
-	"goProxy/core/pnc"
-	"goProxy/core/proxy"
-	"goProxy/core/server"
+	"sonushield/core/config"
+	"sonushield/core/pnc"
+	"sonushield/core/proxy"
+	"sonushield/core/server"
 	"io"
 	"log"
 	"os"

@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"goProxy/core/domains"
+	"sonushield/core/domains"
 	"io/ioutil"
 	"strings"
 )

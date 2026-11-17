@@ -32,7 +32,7 @@ RUN setcap 'cap_net_bind_service=+ep' /app/main \
 
 # The proxy reads config.json from its working directory and writes crash.log
 # there, so provide your config as a mounted file, e.g.:
-#   docker run -d -p 80:80 -p 443:443 -v /path/to/config.json:/app/config.json baloo-proxy
+#   docker run -d -p 80:80 -p 443:443 -v /path/to/config.json:/app/config.json sonushield
 USER appuser
 
 EXPOSE 80 443

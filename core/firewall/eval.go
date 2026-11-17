@@ -2,7 +2,7 @@ package firewall
 
 import (
 	"fmt"
-	"goProxy/core/domains"
+	"sonushield/core/domains"
 
 	"github.com/kor44/gofilter"
 )

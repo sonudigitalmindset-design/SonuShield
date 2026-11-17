@@ -5,10 +5,10 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"goProxy/core/domains"
-	"goProxy/core/firewall"
-	"goProxy/core/pnc"
-	"goProxy/core/proxy"
+	"sonushield/core/domains"
+	"sonushield/core/firewall"
+	"sonushield/core/pnc"
+	"sonushield/core/proxy"
 	"io"
 	"net"
 	"net/http"
@@ -86,7 +86,7 @@ func Serve() {
 
 			if !domainFound {
 				w.Header().Set("Content-Type", "text/plain")
-				fmt.Fprint(w, "balooProxy: "+r.Host+" does not exist. If you are the owner please check your config.json if you believe this is a mistake")
+				fmt.Fprint(w, "SonuShield: "+r.Host+" does not exist. If you are the owner please check your config.json if you believe this is a mistake")
 				return
 			}
 

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"goProxy/core/domains"
-	"goProxy/core/pnc"
-	"goProxy/core/proxy"
+	"sonushield/core/domains"
+	"sonushield/core/pnc"
+	"sonushield/core/proxy"
 	"net/http"
 	"strings"
 

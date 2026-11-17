@@ -1,4 +1,4 @@
-module goProxy
+module sonushield
 
 go 1.24.0
 
