@@ -186,6 +186,9 @@ func Load() {
 			ChallengeProvider:   domain.ChallengeProvider,
 			ChallengeSiteKey:    domain.ChallengeSiteKey,
 			ChallengeSecretKey:  domain.ChallengeSecretKey,
+			WAFMode:             domain.WAFMode,
+			WAFInspectBody:      domain.WAFInspectBody,
+			WAFWpLoginLimit:     domain.WAFWpLoginLimit,
 		})
 
 		firewall.Mutex.Lock()

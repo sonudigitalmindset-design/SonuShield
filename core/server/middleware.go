@@ -172,6 +172,18 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	domainSettings := settingsQuery.(domains.DomainSettings)
 
 	reqUa := request.UserAgent()
+
+	//WAF-lite inspection. Log-only by default (matches are logged, the
+	//request continues); block mode answers with a generic unbranded
+	//403. Runs after the challenge-verify hook so verification POSTs
+	//are not scanned, and before firewall rules so blocks are cheap.
+	if wafBlocked, _ := firewall.CheckRequest(request, domainSettings.WAFMode, domainSettings.WAFInspectBody, domainSettings.WAFWpLoginLimit, ip); wafBlocked {
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusForbidden)
+		SendResponse("Forbidden.", buffer, writer)
+		return
+	}
+
 	httpFp := firewall.ComputeHTTPFingerprint(request)
 	repListed := firewall.LookupReputation(ip)
 	repValue := ""

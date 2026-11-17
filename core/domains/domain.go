@@ -39,6 +39,9 @@ type Domain struct {
 	ChallengeProvider   string          `json:"challengeProvider"`
 	ChallengeSiteKey    string          `json:"challengeSiteKey"`
 	ChallengeSecretKey  string          `json:"challengeSecretKey"`
+	WAFMode             string          `json:"wafMode"`
+	WAFInspectBody      bool            `json:"wafInspectBody"`
+	WAFWpLoginLimit     int             `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int             `json:"disableBypassStage3"`
 	DisableRawStage3    int             `json:"disableRawStage3"`
 	DisableBypassStage2 int             `json:"disableBypassStage2"`
@@ -67,6 +70,9 @@ type DomainSettings struct {
 	ChallengeProvider   string
 	ChallengeSiteKey    string
 	ChallengeSecretKey  string
+	WAFMode             string
+	WAFInspectBody      bool
+	WAFWpLoginLimit     int
 }
 
 type DomainLog struct {
