@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>SonuShield Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script>(function(){try{var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="dark";}document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<style>
+/* SonuShield Dashboard — one layout, two color themes (Premium Dark / Official Classic Light).
+   Only color tokens change between themes; spacing, type, and components are shared. */
+:root, :root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0b1220; --surface:#0d1729; --panel:#111d33; --panel-2:#0e1829;
+  --border:#1e2c47; --border-strong:#2b3d61;
+  --text:#e6ebf2; --muted:#9aa7bc; --faint:#6b7a93;
+  --accent:#f6821f; --accent-hover:#ff9436; --accent-ink:#1a1206; --accent-text:#f9a55c;
+  --amber:#f59e0b; --info:#38bdf8;
+  --code-bg:#1a2742; --input-bg:#0d1729; --nav-active-bg:#1a2742;
+  --ok-bg:rgba(34,197,94,.12); --ok-text:#86efac; --ok-border:#14532d;
+  --warn-bg:rgba(245,158,11,.12); --warn-text:#fcd34d; --warn-border:#78350f;
+  --bad-bg:rgba(239,68,68,.12); --bad-text:#fca5a5; --bad-border:#7f1d1d;
+  --banner-bg:#2a1215; --banner-text:#fecaca; --banner-border:#7f1d1d;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow-md:0 8px 24px rgba(0,0,0,.35);
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f4f6f8; --surface:#ffffff; --panel:#ffffff; --panel-2:#f0f2f5;
+  --border:#e2e6eb; --border-strong:#cdd4db;
+  --text:#1c2733; --muted:#5b6878; --faint:#8a95a5;
+  --accent:#f6821f; --accent-hover:#e56f0d; --accent-ink:#1a1206; --accent-text:#b45309;
+  --amber:#b45309; --info:#0369a1;
+  --code-bg:#eef1f4; --input-bg:#ffffff; --nav-active-bg:#eef1f4;
+  --ok-bg:#e8f7ee; --ok-text:#157347; --ok-border:#bfe6cd;
+  --warn-bg:#fef6e0; --warn-text:#8a5a00; --warn-border:#f0dca4;
+  --bad-bg:#fdecea; --bad-text:#b42318; --bad-border:#f3c2bd;
+  --banner-bg:#fdecea; --banner-text:#7a271a; --banner-border:#f3c2bd;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --shadow-md:0 8px 24px rgba(16,24,40,.10);
+}
+:root{
+  --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
+  --radius:8px; --radius-lg:12px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-text)}
+code{font-family:var(--mono);font-size:.92em;background:var(--code-bg);padding:1px 6px;border-radius:4px;word-break:break-all}
+button,input{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-1) var(--space-3);background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap;min-height:56px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.brand svg{flex:none}
+.wordmark{font-size:17px;font-weight:700;letter-spacing:.1px;line-height:1.15}
+.wordmark small{display:block;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.topbar .spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted);background:var(--panel);white-space:nowrap}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.pill.ok{color:var(--ok-text);border-color:var(--ok-border)}
+.pill.ok .dot{background:var(--ok-text)}
+.pill.bad{color:var(--bad-text);border-color:var(--bad-border)}
+.pill.bad .dot{background:var(--bad-text)}
+.spinner{width:12px;height:12px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);animation:spin .7s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+.themeseg{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:2px;background:var(--panel);gap:2px}
+.themeseg button{border:none;background:transparent;color:var(--muted);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
+.themeseg button[aria-pressed="true"]{background:var(--nav-active-bg);color:var(--text);box-shadow:var(--shadow-sm)}
+button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:var(--radius);padding:8px 16px;font-weight:500;line-height:1.3}
+button:hover,.btn:hover{border-color:var(--faint)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+button:disabled{opacity:.5;cursor:default}
+input,select{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px 12px;line-height:1.3}
+
+/* Layout */
+.layout{display:flex;min-height:calc(100vh - 57px)}
+.sidebar{width:216px;flex:none;border-right:1px solid var(--border);background:var(--surface);padding:var(--space-2) var(--space-1)}
+.sidebar h3{margin:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--faint)}
+.navbtn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;margin:2px 0;padding:8px 12px;border:1px solid transparent;background:transparent;border-radius:var(--radius);color:var(--muted);font-size:14px}
+.navbtn svg{flex:none}
+.navbtn:hover{background:var(--panel-2);color:var(--text)}
+.navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+.navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
+.main{flex:1;padding:var(--space-3) var(--space-4) 40px;min-width:0}
+.main > section, .main > .banner{max-width:1180px}
+.view{display:none}
+.view.active{display:block}
+h1{font-size:22px;line-height:1.3;font-weight:650;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:15px;line-height:1.35;font-weight:600;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 var(--space-2)}
+.sub strong{color:var(--text);font-weight:600}
+
+/* Cards, panels, tables */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-2);margin-bottom:var(--space-2)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-2);box-shadow:var(--shadow-sm)}
+.card .label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
+.card .value{font-size:28px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums}
+.card .value small{font-size:13px;color:var(--muted);font-weight:400}
+.card .foot{font-size:12px;color:var(--faint);margin-top:4px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-2);box-shadow:var(--shadow-sm);margin-top:var(--space-2)}
+.panel > h2:first-child{margin-top:0}
+.panel p:last-child, .panel ul:last-child{margin-bottom:0}
+.panel ul{margin:8px 0;padding-left:20px}
+.panel li{margin:4px 0}
+#topIps,#topFps,#rulesBody,#logsBody,#domBody{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:8px}
+td{border-bottom:1px solid var(--border);padding:8px;vertical-align:top;word-break:break-word}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--panel-2)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.badge{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
+.badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg)}
+.badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg)}
+.badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg)}
+
+/* Notes, states, banner */
+.note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
+.note strong{color:var(--text)}
+.note.info{border-left-color:var(--info)}
+.state{border:1px dashed var(--border-strong);border-radius:var(--radius);padding:var(--space-3) var(--space-2);text-align:center;color:var(--muted);margin:8px 0}
+.state strong{color:var(--text)}
+.state-error{border-style:solid;border-color:var(--bad-border);background:var(--bad-bg);color:var(--bad-text)}
+.state-error strong{color:var(--bad-text)}
+.banner{display:none;border:1px solid var(--banner-border);background:var(--banner-bg);color:var(--banner-text);border-radius:var(--radius);padding:12px 16px;margin-bottom:var(--space-2)}
+.banner.show{display:block}
+.auth{max-width:460px;margin:40px auto}
+.auth .panel{padding:var(--space-3);box-shadow:var(--shadow-md)}
+.auth label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 8px}
+.auth label:first-of-type{margin-top:0}
+.auth input{width:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row .grow{flex:1;min-width:180px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 16px}
+.footer{margin-top:var(--space-4);color:var(--faint);font-size:12px}
+.kbd{font-family:var(--mono);background:var(--code-bg);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:4px;padding:1px 6px;font-size:12px;white-space:nowrap}
+@media (max-width:880px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);padding:8px;overflow-x:auto;white-space:nowrap}
+  .sidebar h3{display:none}
+  .navbtn{display:inline-flex;width:auto}
+  .navbtn .tag{display:none}
+  .main{padding:var(--space-2) var(--space-2) 32px}
+  .topbar{padding:8px 16px;gap:8px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="brand">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" fill="#f6821f"/><path d="M8.5 12l2.4 2.4 4.7-4.7" stroke="#1a1206" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="wordmark">SonuShield<small>Dashboard</small></span>
+  </span>
+  <span class="pill" id="hostPill" title="Domain in the address bar">host: —</span>
+  <div class="spacer"></div>
+  <span class="pill" id="updatingPill" hidden><span class="spinner" aria-hidden="true"></span>Updating</span>
+  <span class="themeseg" role="group" aria-label="Color theme">
+    <button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button>
+    <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+  </span>
+  <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
+  <button id="refreshBtn" type="button" disabled>Refresh</button>
+  <button id="disconnectBtn" type="button" disabled>Forget secret</button>
+</header>
+<div class="layout">
+  <nav class="sidebar" aria-label="Dashboard sections">
+    <h3>Monitor</h3>
+    <button class="navbtn active" type="button" data-view="overview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Overview</span></button>
+    <button class="navbtn" type="button" data-view="domains"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg><span>Domains</span></button>
+    <button class="navbtn" type="button" data-view="rules"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span>Firewall rules</span><span class="tag">Read-only</span></button>
+    <button class="navbtn" type="button" data-view="stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Stage</span><span class="tag">Read-only</span></button>
+    <button class="navbtn" type="button" data-view="logs"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="2.6"/></svg><span>Logs</span></button>
+    <h3>About</h3>
+    <button class="navbtn" type="button" data-view="about"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01" stroke-width="2.6"/></svg><span>About &amp; limits</span></button>
+  </nav>
+  <main class="main">
+    <noscript><div class="banner show">This dashboard needs JavaScript to call the SonuShield API. Enable JavaScript and reload the page.</div></noscript>
+    <div class="banner" id="banner" role="alert"></div>
+
+    <section id="authPanel" class="auth">
+      <div class="panel">
+        <h1>Connect to SonuShield</h1>
+        <p class="sub">Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>Proxy-Secret</code> header to this same host, and is never written to a URL or a log.</p>
+        <form id="authForm">
+          <label for="secretInput">API secret</label>
+          <input id="secretInput" type="password" autocomplete="off" spellcheck="false" placeholder="apisecret value" required>
+          <div style="margin-top:16px"><button class="primary" type="submit" style="width:100%">Connect</button></div>
+        </form>
+        <p class="small muted">Wrong secret? The API will not answer and this page will stay disconnected. The page itself is gated by the admin-secret path you used to open it.</p>
+      </div>
+    </section>
+
+    <section id="view-overview" class="view">
+      <h1>Overview</h1>
+      <p class="sub">Live traffic for <strong id="ovDomain">—</strong>. Updates every 3 seconds while connected.</p>
+      <div class="cards">
+        <div class="card"><div class="label">Total requests</div><div class="value" id="cTotalRps">—</div><div class="foot">per second, all requests</div></div>
+        <div class="card"><div class="label">Bypassed requests</div><div class="value" id="cBypassRps">—</div><div class="foot">per second, passed to backend</div></div>
+        <div class="card"><div class="label">Total (all time)</div><div class="value" id="cTotal">—</div><div class="foot">since last reload</div></div>
+        <div class="card"><div class="label">Bypassed (all time)</div><div class="value" id="cBypassed">—</div><div class="foot">since last reload</div></div>
+        <div class="card"><div class="label">CPU usage</div><div class="value" id="cCpu">—</div><div class="foot">server CPU, percent</div></div>
+        <div class="card"><div class="label">RAM usage</div><div class="value" id="cRam">—</div><div class="foot">proxy memory, percent</div></div>
+        <div class="card"><div class="label">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot">from /_bProxy/stats</div></div>
+        <div class="card"><div class="label">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot">not exposed by the API</div></div>
+      </div>
+      <div class="panel">
+        <h2>Top IPs by requests (current rate-limit window)</h2>
+        <div id="topIps"><div class="state">No data yet. Connect to load live data.</div></div>
+      </div>
+      <div class="panel">
+        <h2>Top unknown fingerprints (current rate-limit window)</h2>
+        <p class="small muted">Fingerprints the proxy could not match to a known browser. A small number of distinct fingerprints with very high counts usually means bots.</p>
+        <div id="topFps"><div class="state">No data yet. Connect to load live data.</div></div>
+      </div>
+    </section>
+
+    <section id="view-domains" class="view">
+      <h1>Domains</h1>
+      <p class="sub">Per-domain traffic from the API. The API has no domain-list endpoint, so enter a domain name to inspect it, or use the domain in the address bar.</p>
+      <div class="toolbar">
+        <label for="domainInput" class="muted">Domain</label>
+        <input id="domainInput" class="grow" type="text" spellcheck="false" autocomplete="off" placeholder="example.com" style="flex:1;min-width:180px">
+        <button id="domainBtn" type="button" class="primary">Inspect domain</button>
+      </div>
+      <div class="note info"><strong>Not available in v1:</strong> the API does not expose the configured domain list, backends, or schemes. Those live only in <code>config.json</code> on the server. This view therefore shows live traffic for the domain you name — it cannot list all domains or show backend addresses.</div>
+      <div class="panel">
+        <h2 id="domTitle">—</h2>
+        <div id="domBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      </div>
+    </section>
+
+    <section id="view-rules" class="view">
+      <h1>Firewall rules <span class="badge">read-only</span></h1>
+      <p class="sub">Rules for <strong id="rulesDomain">—</strong>, in evaluation order (top rule first). The API has no rule-edit endpoint, so rules can only be changed in <code>config.json</code> followed by the terminal <span class="kbd">reload</span> command.</p>
+      <div id="rulesBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      <div class="panel">
+        <h2>What the actions mean</h2>
+        <table>
+          <thead><tr><th>Action</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">0</td><td>Allow — request is whitelisted, never challenged.</td></tr>
+            <tr><td class="mono">1</td><td>Cookie challenge — invisible, passed automatically by most good bots.</td></tr>
+            <tr><td class="mono">2</td><td>JavaScript proof-of-work challenge — stops most bots, including good ones.</td></tr>
+            <tr><td class="mono">3</td><td>Captcha — visitor must solve a visual captcha.</td></tr>
+            <tr><td class="mono">4 or higher</td><td>Block — request is blocked outright.</td></tr>
+            <tr><td class="mono">+N / -N</td><td>Raise or lower the current suspicion level by N, then keep checking further rules.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="view-stage" class="view">
+      <h1>Stage <span class="badge">read-only</span></h1>
+      <p class="sub">The current challenge stage for <strong id="stageDomain">—</strong>. Stage control is terminal-only in v1: the API has no stage endpoint.</p>
+      <div class="cards">
+        <div class="card"><div class="label">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot">from /_bProxy/stats</div></div>
+        <div class="card"><div class="label">Stage locked</div><div class="value">Not exposed</div><div class="foot">only visible in the terminal HUD</div></div>
+        <div class="card"><div class="label">Under attack</div><div class="value">Not exposed</div><div class="foot">only visible in the terminal HUD</div></div>
+      </div>
+      <div class="panel">
+        <h2>What each stage does</h2>
+        <table>
+          <thead><tr><th>Stage</th><th>Challenge</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge stage1">Stage 1</span></td><td>Cookie challenge</td><td>Invisible; stops simple attacks.</td></tr>
+            <tr><td><span class="badge stage2">Stage 2</span></td><td>Proof-of-work JS challenge</td><td>Stops more advanced bots.</td></tr>
+            <tr><td><span class="badge stage3">Stage 3</span></td><td>Custom captcha</td><td>Last resort; stops most malicious requests and good bots too.</td></tr>
+            <tr><td><span class="badge block">Above 3</span></td><td>Block</td><td>All requests blocked (only when manually locked above 3).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><strong>To change the stage,</strong> use the proxy terminal on the server: <span class="kbd">stage 2</span> locks Stage 2, <span class="kbd">stage 0</span> unlocks and returns to automatic switching. There is deliberately no stage button here — the API exposes no stage action, and this dashboard adds none.</div>
+    </section>
+
+    <section id="view-logs" class="view">
+      <h1>Logs</h1>
+      <p class="sub">Most recent requests that passed the challenges, for <strong id="logsDomain">—</strong>. Newest first. Logs only include requests that passed; blocked and challenged requests are not logged here.</p>
+      <div id="logsBody"><div class="state">No data yet. Connect to load live data.</div></div>
+    </section>
+
+    <section id="view-about" class="view">
+      <h1>About &amp; limits</h1>
+      <p class="sub">SonuShield Dashboard v1 — a read-only monitoring page served by the proxy itself. No build step, no external resources: everything on this page is served from the single proxy binary and works offline.</p>
+      <div class="panel">
+        <h2>What this dashboard can do</h2>
+        <ul>
+          <li>Show live request rates, totals, CPU/RAM, and the current stage.</li>
+          <li>Show firewall rules and recent passed requests per domain.</li>
+          <li>Show top requesting IPs and unknown fingerprints for the current rate-limit window.</li>
+        </ul>
+        <h2>What it deliberately cannot do (API gaps)</h2>
+        <ul>
+          <li><strong>Change the stage</strong> — no API action exists; use the terminal <span class="kbd">stage</span> command.</li>
+          <li><strong>List domains or show backends/schemes</strong> — no API action exists; see <code>config.json</code>.</li>
+          <li><strong>Show stage-locked or under-attack state</strong> — not exposed by any API action or reserved path.</li>
+          <li><strong>Edit firewall rules</strong> — no API action exists; edit <code>config.json</code> and run <span class="kbd">reload</span> in the terminal.</li>
+          <li><strong>Clear logs or reload the configuration</strong> — terminal-only (<span class="kbd">clrlogs</span>, <span class="kbd">reload</span>). The API <code>RELOAD</code> action is a no-op.</li>
+        </ul>
+        <h2>Security notes</h2>
+        <ul>
+          <li>This page is only served on the admin-secret path. Anyone without the exact path never receives it.</li>
+          <li>All data comes from the existing API v2 endpoints with the <code>Proxy-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.</li>
+          <li>Your theme choice (Dark/Light) is stored in this browser's local storage and never sent to the server.</li>
+          <li>Keep both secrets out of screenshots, chat logs, and shared URLs. Rotate them in <code>config.json</code> if they ever leak.</li>
+        </ul>
+      </div>
+      <p class="footer">SonuShield — lightweight HTTP anti-DDoS reverse proxy. Originally balooProxy by 41Baloo, forked and rebuilt by Sonu Digital Mindset. Licensed under the GNU General Public License v3.0.</p>
+    </section>
+  </main>
+</div>
+<script>
+(function(){
+"use strict";
+var SECRET_KEY = "sonushield_api_secret";
+var THEME_KEY = "sonushield_theme";
+var hostDomain = window.location.hostname || "";
+var currentDomain = hostDomain;
+var apiSecret = null;
+var pollTimer = null;
+var connected = false;
+
+function $(id){ return document.getElementById(id); }
+function esc(v){
+  return String(v == null ? "" : v).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function num(v){
+  var n = Number(v);
+  return isFinite(n) ? n.toLocaleString("en-US") : "—";
+}
+function showBanner(msg){
+  var b = $("banner");
+  if(!msg){ b.classList.remove("show"); b.textContent = ""; return; }
+  b.textContent = msg;
+  b.classList.add("show");
+}
+
+/* Theme: Premium Dark (default) / Official Classic Light. Persisted in localStorage. */
+function applyTheme(theme){
+  if(theme !== "light" && theme !== "dark"){ theme = "dark"; }
+  document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
+    btn.setAttribute("aria-pressed", btn.getAttribute("data-theme-choice") === theme ? "true" : "false");
+  });
+  try { localStorage.setItem(THEME_KEY, theme); } catch(e){}
+}
+document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
+  btn.addEventListener("click", function(){ applyTheme(btn.getAttribute("data-theme-choice")); });
+});
+(function initTheme(){
+  var saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
+  if(saved === "light" || saved === "dark"){ applyTheme(saved); return; }
+  var current = document.documentElement.getAttribute("data-theme");
+  applyTheme(current === "light" ? "light" : "dark");
+})();
+
+function apiV2(path){
+  return fetch(path, {headers: {"Proxy-Secret": apiSecret}, credentials: "same-origin", cache: "no-store"})
+    .then(function(res){ return res.text().then(function(text){
+      var data;
+      try { data = JSON.parse(text); }
+      catch(e){ throw new Error("API did not return JSON (secret rejected or request fell through to the backend)."); }
+      if(!data || data.success !== true){
+        var code = (data && data.results && data.results.ERROR) ? data.results.ERROR : "unknown API error";
+        throw new Error("API error: " + code);
+      }
+      return data.results || {};
+    }); });
+}
+function proxyAction(action){ return apiV2("/_bProxy/api/v2/" + action); }
+function domainAction(domain, action){ return apiV2("/_bProxy/api/v2/" + encodeURIComponent(domain) + "/" + action); }
+function fetchStatsText(){
+  return fetch("/_bProxy/stats", {credentials: "same-origin", cache: "no-store"})
+    .then(function(res){ return res.text(); });
+}
+function parseStage(text){
+  var m = /^\s*Stage:\s*(\S+)/m.exec(text || "");
+  return m ? m[1] : null;
+}
+function stageBadge(stage){
+  if(stage === "1") return '<span class="badge stage1">Stage 1 · Cookie</span>';
+  if(stage === "2") return '<span class="badge stage2">Stage 2 · JS PoW</span>';
+  if(stage === "3") return '<span class="badge stage3">Stage 3 · Captcha</span>';
+  if(stage) return '<span class="badge block">Stage ' + esc(stage) + '</span>';
+  return "—";
+}
+function topTable(mapObj, keyLabel, valLabel, limit){
+  var rows = Object.keys(mapObj || {}).map(function(k){ return [k, Number(mapObj[k]) || 0]; });
+  rows.sort(function(a,b){ return b[1]-a[1]; });
+  rows = rows.slice(0, limit || 10);
+  if(!rows.length) return '<div class="state">No data in this window yet.</div>';
+  var h = '<table><thead><tr><th>' + esc(keyLabel) + '</th><th>' + esc(valLabel) + '</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td>" + num(r[1]) + "</td></tr>";
+  });
+  return h + "</tbody></table>";
+}
+function actionExplain(action){
+  var a = String(action == null ? "" : action);
+  if(a === "0") return "Allow";
+  if(a === "1") return "Cookie challenge";
+  if(a === "2") return "JS challenge";
+  if(a === "3") return "Captcha";
+  if(/^[+-]\d+$/.test(a)) return "Adjust suspicion by " + a;
+  var n = parseInt(a, 10);
+  if(!isNaN(n) && n >= 4) return "Block";
+  return "Unknown action";
+}
+
+function setText(id, text){ var el = $(id); if(el) el.textContent = text; }
+function setHTML(id, html){ var el = $(id); if(el) el.innerHTML = html; }
+
+function loadOverview(){
+  var dom = currentDomain;
+  var pStats = proxyAction("GET_PROXY_STATS").catch(function(){ return null; });
+  var pRps = domainAction(dom, "GET_TOTAL_REQUESTS_PER_SECOND").catch(function(){ return null; });
+  var pBrps = domainAction(dom, "GET_BYPASSED_REQUESTS_PER_SECOND").catch(function(){ return null; });
+  var pTot = domainAction(dom, "GET_TOTAL_REQUESTS").catch(function(){ return null; });
+  var pByp = domainAction(dom, "GET_BYPASSED_REQUESTS").catch(function(){ return null; });
+  var pIps = proxyAction("GET_IP_REQUESTS").catch(function(){ return null; });
+  var pFps = proxyAction("GET_FINGERPRINT_REQUESTS").catch(function(){ return null; });
+  var pStage = (dom === hostDomain) ? fetchStatsText().catch(function(){ return null; }) : Promise.resolve(null);
+  return Promise.all([pStats, pRps, pBrps, pTot, pByp, pIps, pFps, pStage]).then(function(r){
+    var stats = r[0], rps = r[1], brps = r[2], tot = r[3], byp = r[4], ips = r[5], fps = r[6], stageText = r[7];
+    if(stats){ setText("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setText("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); }
+    if(rps) setText("cTotalRps", num(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND));
+    if(brps) setText("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
+    if(tot) setText("cTotal", num(tot.TOTAL_REQUESTS));
+    if(byp) setText("cBypassed", num(byp.BYPASSED_REQUESTS));
+    if(ips){
+      setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, "IP address", "Requests"));
+    }
+    if(fps){
+      setHTML("topFps", topTable(fps.TOTAL_FINGERPRINT_REQUESTS, "TLS fingerprint", "Requests"));
+    }
+    if(stageText != null){
+      var st = parseStage(stageText);
+      setHTML("cStage", stageBadge(st));
+      setText("cStageFoot", "from /_bProxy/stats · " + hostDomain);
+      setHTML("stageBig", stageBadge(st));
+      setText("stageBigFoot", "from /_bProxy/stats · " + hostDomain);
+    } else if(dom !== hostDomain){
+      setText("cStage", "—");
+      setText("cStageFoot", "stage is only shown for " + hostDomain);
+      setHTML("stageBig", "—");
+      setText("stageBigFoot", "stage is only shown for " + hostDomain);
+    }
+    setText("cLocked", "Not exposed");
+  });
+}
+
+function loadDomainPanel(){
+  var dom = currentDomain;
+  setText("domTitle", dom);
+  var pRps = domainAction(dom, "GET_TOTAL_REQUESTS_PER_SECOND").catch(function(){ return null; });
+  var pBrps = domainAction(dom, "GET_BYPASSED_REQUESTS_PER_SECOND").catch(function(){ return null; });
+  var pTot = domainAction(dom, "GET_TOTAL_REQUESTS").catch(function(){ return null; });
+  var pByp = domainAction(dom, "GET_BYPASSED_REQUESTS").catch(function(){ return null; });
+  return Promise.all([pRps, pBrps, pTot, pByp]).then(function(r){
+    if(!r[0] && !r[1] && !r[2] && !r[3]){
+      setHTML("domBody", '<div class="state"><strong>No data.</strong><br>The domain may not exist in the proxy config, or the API secret was rejected.</div>');
+      return;
+    }
+    var h = '<table><tbody>'
+      + "<tr><td>Total requests / second</td><td>" + num(r[0] && r[0].TOTAL_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>Bypassed requests / second</td><td>" + num(r[1] && r[1].BYPASSED_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>Total requests (all time)</td><td>" + num(r[2] && r[2].TOTAL_REQUESTS) + "</td></tr>"
+      + "<tr><td>Bypassed requests (all time)</td><td>" + num(r[3] && r[3].BYPASSED_REQUESTS) + "</td></tr>"
+      + "</tbody></table>";
+    setHTML("domBody", h);
+  });
+}
+
+function loadRules(){
+  setText("rulesDomain", currentDomain);
+  return domainAction(currentDomain, "GET_FIREWALL_RULES").then(function(r){
+    var rules = r.FIREWALL_RULES || [];
+    if(!rules.length){
+      setHTML("rulesBody", '<div class="state">No firewall rules configured for this domain.</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>#</th><th>Expression</th><th>Action</th><th>Meaning</th></tr></thead><tbody>';
+    rules.forEach(function(rule, i){
+      h += "<tr><td>" + (i+1) + "</td><td class='mono'>" + esc(rule.expression) + "</td><td class='mono'>" + esc(rule.action) + "</td><td>" + esc(actionExplain(rule.action)) + "</td></tr>";
+    });
+    setHTML("rulesBody", h + "</tbody></table>");
+  }).catch(function(){
+    setHTML("rulesBody", '<div class="state state-error"><strong>Could not load rules.</strong><br>The domain may not exist, or the API secret was rejected.</div>');
+  });
+}
+
+function loadLogs(){
+  setText("logsDomain", currentDomain);
+  return domainAction(currentDomain, "GET_LOGS").then(function(r){
+    var logs = (r.LOGS || []).slice().reverse();
+    if(!logs.length){
+      setHTML("logsBody", '<div class="state">No passed requests logged yet.</div>');
+      return;
+    }
+    var shown = logs.slice(0, 100);
+    var h = '<table><thead><tr><th>Time</th><th>IP</th><th>Browser / bot</th><th>TLS fingerprint</th><th>User agent</th><th>Path</th></tr></thead><tbody>';
+    shown.forEach(function(l){
+      var who = (l.BrowserFP || "") + (l.BotFP || "");
+      if(!who) who = "unknown";
+      h += "<tr><td class='mono'>" + esc(l.Time) + "</td><td class='mono'>" + esc(l.IP) + "</td><td>" + esc(who) + "</td><td class='mono'>" + esc(String(l.TLSFP || "").slice(0, 48)) + "</td><td class='small'>" + esc(String(l.Useragent || "").slice(0, 80)) + "</td><td class='mono'>" + esc(l.Path) + "</td></tr>";
+    });
+    setHTML("logsBody", h + "</tbody></table>");
+  }).catch(function(){
+    setHTML("logsBody", '<div class="state state-error"><strong>Could not load logs.</strong><br>The domain may not exist, or the API secret was rejected.</div>');
+  });
+}
+
+function refreshAll(){
+  if(!connected) return Promise.resolve();
+  showBanner("");
+  var updating = $("updatingPill");
+  updating.hidden = false;
+  return Promise.all([loadOverview(), loadDomainPanel(), loadRules(), loadLogs()]).then(function(){
+    updating.hidden = true;
+  }).catch(function(err){
+    updating.hidden = true;
+    showBanner("Could not reach the API: " + (err && err.message ? err.message : err));
+  });
+}
+function startPolling(){
+  stopPolling();
+  pollTimer = setInterval(refreshAll, 3000);
+}
+function stopPolling(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+}
+function setConnected(on){
+  connected = on;
+  $("authPanel").style.display = on ? "none" : "";
+  document.querySelectorAll(".view").forEach(function(v){
+    v.classList.toggle("active", on && v.id === "view-" + currentView);
+  });
+  $("refreshBtn").disabled = !on;
+  $("disconnectBtn").disabled = !on;
+  var pill = $("connPill");
+  pill.classList.toggle("ok", on);
+  pill.classList.toggle("bad", false);
+  setText("connText", on ? "Connected" : "Not connected");
+  if(on){ startPolling(); } else { stopPolling(); }
+}
+function connect(secret){
+  apiSecret = secret;
+  return proxyAction("GET_PROXY_STATS").then(function(){
+    try { sessionStorage.setItem(SECRET_KEY, secret); } catch(e){}
+    setConnected(true);
+    showBanner("");
+    return refreshAll();
+  }).catch(function(err){
+    apiSecret = null;
+    setConnected(false);
+    showBanner("Connection failed: " + (err && err.message ? err.message : err) + " Check the API secret and try again.");
+  });
+}
+function disconnect(){
+  apiSecret = null;
+  try { sessionStorage.removeItem(SECRET_KEY); } catch(e){}
+  setConnected(false);
+  showBanner("");
+}
+
+var currentView = "overview";
+function showView(name){
+  currentView = name;
+  document.querySelectorAll(".navbtn").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("data-view") === name);
+  });
+  document.querySelectorAll(".view").forEach(function(v){
+    v.classList.toggle("active", connected && v.id === "view-" + name);
+  });
+  if(name === "about"){
+    document.querySelectorAll(".view").forEach(function(v){
+      v.classList.toggle("active", v.id === "view-about");
+    });
+  }
+}
+
+document.querySelectorAll(".navbtn").forEach(function(b){
+  b.addEventListener("click", function(){ showView(b.getAttribute("data-view")); });
+});
+$("authForm").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  var v = $("secretInput").value;
+  if(!v){ return; }
+  connect(v).then(function(){ $("secretInput").value = ""; });
+});
+$("disconnectBtn").addEventListener("click", disconnect);
+$("refreshBtn").addEventListener("click", refreshAll);
+$("domainBtn").addEventListener("click", function(){
+  var v = $("domainInput").value.trim();
+  if(!v){ return; }
+  currentDomain = v;
+  setText("ovDomain", currentDomain);
+  setText("stageDomain", currentDomain);
+  refreshAll();
+});
+$("domainInput").addEventListener("keydown", function(ev){
+  if(ev.key === "Enter"){ ev.preventDefault(); $("domainBtn").click(); }
+});
+
+setText("hostPill", "host: " + (hostDomain || "—"));
+setText("ovDomain", currentDomain);
+setText("stageDomain", currentDomain);
+$("domainInput").value = currentDomain;
+setConnected(false);
+showView("overview");
+
+var saved = null;
+try { saved = sessionStorage.getItem(SECRET_KEY); } catch(e){}
+if(saved){ connect(saved); }
+})();
+</script>
+</body>
+</html>

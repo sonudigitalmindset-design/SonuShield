@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"sonushield/core/api"
+	"sonushield/core/dashboard"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/proxy"
@@ -339,6 +340,18 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		if result {
 			return
 		}
+
+	case "/_bProxy/" + proxy.AdminSecret + "/dashboard":
+		// Dashboard page, gated by the admin-secret path exactly like the
+		// v1 API route above. Refuse to serve it when no admin secret is
+		// configured, so the page can never become unauthenticated.
+		if proxy.AdminSecret == "" {
+			writer.Header().Set("Content-Type", "text/plain")
+			SendResponse("404 Not Found", buffer, writer)
+			return
+		}
+		dashboard.Serve(writer)
+		return
 
 	//Do not remove or modify this. It is required by the license
 	case "/_bProxy/credits":
