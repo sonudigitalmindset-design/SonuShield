@@ -80,6 +80,7 @@ type Domain struct {
 	SessionRatelimit    int              `json:"sessionRatelimit"`
 	MaxBodyBytes        int64           `json:"maxBodyBytes"`
 	BodyLimits          []BodyLimit     `json:"bodyLimits"`
+	OriginLockSecret    string          `json:"originLockSecret"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -150,6 +151,7 @@ type DomainSettings struct {
 	SessionRatelimit      int
 	MaxBodyBytes          int64
 	BodyLimits            []BodyLimit
+	OriginLockSecret      string
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.

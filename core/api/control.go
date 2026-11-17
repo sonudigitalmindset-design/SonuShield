@@ -226,6 +226,10 @@ func domainConfigResponse(domainSettings *domains.DomainSettings) map[string]int
 
 		"RULES_DRY_RUN": domainSettings.RulesDryRun,
 
+		// Origin lock: configured-bool only. The secret itself is
+		// config-file-only and is never accepted or returned.
+		"ORIGIN_LOCK_CONFIGURED": domainSettings.OriginLockSecret != "",
+
 		"WEBHOOK_CONFIGURED":  domainSettings.DomainWebhooks.URL != "",
 		"TELEGRAM_CONFIGURED": domainSettings.DomainTelegram.BotToken != "" && domainSettings.DomainTelegram.ChatID != "",
 		"TELEGRAM_CHAT_ID":    domainSettings.DomainTelegram.ChatID,

@@ -722,6 +722,17 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	//Allow backend to read client information
+	//Origin lock (Batch 5). Any client-sent lock header is
+	//stripped first so it can never be spoofed; the proxy then
+	//adds its own shared-secret header on every backend request
+	//when the domain configures one. The secret is
+	//config-file-only: it is never logged and never returned by
+	//the API (only an ORIGIN_LOCK_CONFIGURED bool is exposed).
+	request.Header.Del("X-SonuShield-Origin")
+	if domainSettings.OriginLockSecret != "" {
+		request.Header.Set("X-SonuShield-Origin", domainSettings.OriginLockSecret)
+	}
+
 	request.Header.Add("x-real-ip", ip)
 	request.Header.Add("proxy-real-ip", ip)
 	request.Header.Add("proxy-tls-fp", tlsFp)

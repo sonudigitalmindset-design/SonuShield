@@ -619,6 +619,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			SessionRatelimit:      domain.SessionRatelimit,
 			MaxBodyBytes:          domain.MaxBodyBytes,
 			BodyLimits:            domain.BodyLimits,
+			OriginLockSecret:      domain.OriginLockSecret,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
