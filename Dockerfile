@@ -22,9 +22,12 @@ RUN apk add --no-cache ca-certificates libcap \
 WORKDIR /app
 
 COPY --from=builder /out/main ./main
-# Default certificate/key paths in examples/config.json point under assets/.
-# Challenge pages are generated inline by the binary and fingerprint lists
-# are fetched over HTTPS at startup, so no other repo files are needed here.
+# The assets/ directory is copied for convention: examples/config.json uses
+# certificate paths under assets/server/, but no certificate or key is
+# committed to this repository. Provide your own certificates by mounting
+# them into the container (see README.md). Challenge pages are generated
+# inline by the binary and fingerprint lists are fetched over HTTPS at
+# startup, so no other repo files are needed here.
 COPY assets/ ./assets/
 
 RUN setcap 'cap_net_bind_service=+ep' /app/main \

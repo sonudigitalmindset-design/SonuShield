@@ -52,3 +52,9 @@ go.work
 
 # Build artifacts accidentally committed in the past; never commit binaries.
 oryxBuildBinary
+
+# Locally generated TLS certificates/keys (scripts/generate-certs.sh).
+# Never commit private keys.
+assets/server/
+*.crt
+*.key
