@@ -50,6 +50,20 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Request-smuggling guard (Batch 5, defence in depth). Go's
+	//server rejects or normalises ambiguous framing (duplicate
+	//Content-Length, Content-Length together with
+	//Transfer-Encoding) before handlers run, so this check is
+	//expected never to fire; if both forms somehow survive
+	//parsing, the request is rejected rather than proxied with
+	//an ambiguous body length.
+	if len(request.TransferEncoding) > 0 && request.ContentLength > 0 {
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusBadRequest)
+		SendResponse("Bad request.", buffer, writer)
+		return
+	}
+
 	// Prometheus metrics (Batch 2). Secret-gated like the dashboard and
 	// API, served only when metricsEnabled is set, and handled before
 	// any challenge or rate limiting so scrapes are neither challenged

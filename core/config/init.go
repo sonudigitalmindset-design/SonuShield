@@ -108,6 +108,10 @@ func Load() {
 
 	firewall.InitReputation(domains.Config.Proxy.ReputationList, domains.Config.Proxy.ReputationFeed, domains.Config.Proxy.ReputationIntvl, domains.Config.Proxy.ReputationSusLv)
 
+	// Per-IP connection cap (Batch 5, slowloris guard). Disabled
+	// (0) by default; see firewall/conntrack.go.
+	firewall.SetMaxConnsPerIP(domains.Config.Proxy.MaxConnsPerIP)
+
 	// Structured JSON logging (Batch 2). Disabled unless logFormat
 	// is "json" and logFile is set; Configure warns and disables
 	// itself on any problem, so a bad log config never stops the proxy.

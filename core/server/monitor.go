@@ -484,6 +484,10 @@ func reloadFromConfig(cfg *domains.Configuration) {
 
 	firewall.InitReputation(domains.Config.Proxy.ReputationList, domains.Config.Proxy.ReputationFeed, domains.Config.Proxy.ReputationIntvl, domains.Config.Proxy.ReputationSusLv)
 
+	// Per-IP connection cap (Batch 5, slowloris guard). Re-applied
+	// on reload so cap changes take effect without a restart.
+	firewall.SetMaxConnsPerIP(domains.Config.Proxy.MaxConnsPerIP)
+
 	// Structured JSON logging (Batch 2). Re-applied on reload so new
 	// log settings take effect without a restart.
 	logging.Configure(domains.Config.Proxy.LogFormat, domains.Config.Proxy.LogFile, domains.Config.Proxy.LogMaxBytes, domains.Config.Proxy.LogMaxFiles)

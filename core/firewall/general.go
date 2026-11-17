@@ -45,7 +45,15 @@ func OnStateChange(conn net.Conn, state http.ConnState) {
 
 	switch state {
 	case http.StateNew:
+		//Per-IP connection cap (Batch 5, slowloris guard).
+		//ConnOpened reports false only when the cap is
+		//configured and exceeded; the connection is closed
+		//immediately and never counted.
+		if !ConnOpened(remoteAddr, conn) {
+			conn.Close()
+		}
 	case http.StateHijacked, http.StateClosed:
+		ConnClosed(remoteAddr)
 		//Remove connection from list of fingerprints as it's no longer needed
 		Mutex.Lock()
 		delete(Connections, remoteAddr)
