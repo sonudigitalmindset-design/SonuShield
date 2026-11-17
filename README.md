@@ -50,7 +50,7 @@ Point your domain's DNS at the server, check for the `SonuShield: 1.5` response 
 | [How It Works](docs/how-it-works.md) | Architecture, fingerprinting, the 3 challenge stages, Cloudflare mode, startup checks, terminal HUD. |
 | [Installation](docs/installation.md) | Requirements, building, certificates, running, Docker, DNS setup. |
 | [Configuration](docs/configuration.md) | Full `config.json` reference: proxy settings, domains, rate limits, webhooks, stage thresholds. |
-| [Dashboard](docs/dashboard.md) | The read-only web dashboard: access, authentication, themes, limits. |
+| [Dashboard](docs/dashboard.md) | The web dashboard and control panel: access, authentication, themes, management. |
 | [API Reference](docs/api.md) | API v1/v2, response format, error codes, actions, reserved paths. |
 | [Firewall Rules](docs/firewall-rules.md) | Custom gofilter rules: fields, operators, priority, and actions. |
 | [Troubleshooting](docs/troubleshooting.md) | FAQ and common issues: startup, DNS, challenges, alerts, API. |

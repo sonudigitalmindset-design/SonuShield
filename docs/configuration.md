@@ -348,9 +348,11 @@ The automatic stage system watches two numbers per domain: total requests per se
 
 ## Applying Changes
 
-After editing `config.json` by hand, run the `reload` terminal command (or restart the proxy) to apply the changes. The `add` terminal command can add a domain interactively and reloads the configuration for you.
+After editing `config.json` by hand, apply it with the Reload config button in the [dashboard](dashboard.md) or the `reload` terminal command (or restart the proxy). The dashboard/API reload validates the file first: secrets present and without `CHANGE_ME` placeholders, at least one named domain, every firewall rule compiling with a usable action, and every certificate pair loading. An invalid file is rejected and the running proxy is untouched. A successful reload resets request counters and stage locks, like the terminal reload; admin/API secret changes still need a restart. The `add` terminal command can add a domain interactively and reloads the configuration for you.
 
-Two settings can also be adjusted at runtime without editing the file, via the authenticated [`SET_DOMAIN_FEATURES`](api.md#domain-actions) API action: the adaptive proof-of-work toggle and bounds, and the WAF-lite mode, body inspection, and WordPress login limit. Runtime changes are not written back to `config.json` — a reload or restart restores the file's values.
+Some settings can also be changed from the dashboard without editing the file, via the authenticated API actions, and are written back to `config.json` immediately (atomically, with the previous file kept as `config.json.bak`): firewall rules ([`ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE`](api.md#domain-actions)) and the domain settings in [`SET_DOMAIN_FEATURES`](api.md#domain-actions) plus stage thresholds ([`SET_DOMAIN_CONFIG`](api.md#domain-actions)). Keys the proxy does not know about are preserved in the file; only the edited keys change, and the file is re-indented.
+
+Two settings can also be adjusted at runtime without editing the file or persisting, via [`SET_DOMAIN_FEATURES`](api.md#domain-actions): the adaptive proof-of-work toggle and bounds, and the WAF-lite mode, body inspection, and WordPress login limit. Runtime changes are not written back to `config.json` — a reload or restart restores the file's values. Stage changes ([`SET_STAGE`](api.md#domain-actions)) are likewise runtime-only.
 
 ## Next Steps
 

@@ -1,8 +1,8 @@
 # Roadmap
 
-> **Mostly planned, not yet implemented.** Batches 4–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1 and 2 are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
+> **Mostly planned, not yet implemented.** Batches 4–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1 and 2 and the control panel are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
 
-Work is planned in batches, in this order: 1 → 2 → 4 → 5 → 6 → 7 → 8 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
+Work is planned in batches, in this order: 1 → 2 → control panel → 4 → 5 → 6 → 7 → 8 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
 
 ## Batch 1 — Power Features ✅ Implemented
 
@@ -22,6 +22,18 @@ Still planned from this batch's original scope: backend health checks and a cach
 - Telegram / email alerts alongside Discord (activation needs the operator's own bot token / SMTP credentials).
 - Attack reports with JSON/CSV export: `GET_ATTACK_REPORT` API action plus optional per-attack files in an operator-configured directory.
 - Structured logs: optional JSON logging with rotation and privacy redaction; the default text output is unchanged.
+
+## Control Panel ✅ Implemented
+
+Browser-based management with zero terminal interaction needed for day-to-day operation:
+
+- Stage control: `GET_STAGE` / `SET_STAGE` API actions (stage value, stage-lock, under-attack mode) and dashboard controls. Runtime-only, like the terminal `stage` command.
+- Domain list and configuration: `GET_DOMAINS`, `GET_DOMAIN_CONFIG`, `SET_DOMAIN_CONFIG`. Secrets are never accepted or returned; structural settings stay config-file-only.
+- Firewall rule editing: `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE` with server-side validation (compiles, documented fields only, usable actions). Invalid rules change nothing.
+- Log clearing per domain and proxy-wide (`CLEAR_LOGS`).
+- Validated safe reload: the API `RELOAD` action validates `config.json` before applying it and never runs the panicking reload path on invalid input.
+- Persistence: rule and domain-config changes are written to `config.json` atomically (temporary file, one `config.json.bak` backup, rename) and survive restarts; unknown keys in the file are preserved.
+- Dashboard UI for all of the above, plus attack reports with export and the Batch 1/2 feature controls, in both themes.
 
 ## Batch 4 — Extra Protection and Management
 
@@ -137,7 +149,3 @@ Quality work needed before the project can be evaluated seriously by a larger or
 - Forking or vendoring the `balooPow` proof-of-work script so Stage 2 no longer depends on the original project's CDN.
 - Validating the Docker image build (no Docker available in the development environment yet).
 - A future Go toolchain decision: the newest `golang.org/x/*` packages and gopsutil v4.26.x require Go 1.26.
-
-## Dashboard Management Actions
-
-Browser-based management — stage control, firewall rule editing, and domain management from the dashboard — is planned. Dashboard v1 (read-only monitoring) already exists; see [Dashboard](dashboard.md). Authenticated API actions for reading and adjusting feature settings (adaptive proof-of-work, WAF-lite, reputation feed) already exist — see [API Reference](api.md) — but the dashboard UI does not use them yet, and stage control, rule editing, and domain management still need new API endpoints first, which do not exist yet.

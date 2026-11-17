@@ -44,9 +44,9 @@ Common problems and how to fix them. If your issue is not listed here, check the
 
 **Dashboard page won't load.** The dashboard is served only on the exact admin-secret path. A wrong or missing secret never receives the page. If no admin secret is configured, the dashboard is not served at all. See [Dashboard](dashboard.md#authentication).
 
-**Dashboard shows the wrong domain's stage.** The stage comes from `/_bProxy/stats`, which always reflects the domain in the address bar — even when another domain is being inspected. This is a known v1 limitation.
+**Dashboard shows the wrong domain's stage.** Fixed: the stage now comes from the `GET_STAGE` API action and always reflects the domain being inspected. If you are running an older binary, upgrade — the old dashboard read `/_bProxy/stats`, which always reflects the domain in the address bar.
 
-**`RELOAD` does nothing.** The API `RELOAD` action is currently a no-op. Use the `reload` terminal command to re-read `config.json`. (Adaptive proof-of-work and WAF-lite settings can be adjusted at runtime without a reload via the [`SET_DOMAIN_FEATURES`](api.md#domain-actions) action, but those changes are not persisted to the config file.)
+**`RELOAD` fails with `ERR_RELOAD_FAILED`.** The reload validates `config.json` before applying it, and rejects the file when secrets are missing or contain `CHANGE_ME`, no domain is configured, a firewall rule does not compile or has an unusable action, or a certificate pair cannot be loaded. The `ERROR_DETAIL` field names the problem; the running proxy is untouched. Fix the file and reload again. (A successful reload resets request counters and stage locks, like the terminal `reload` command.)
 
 ## Rules behave unexpectedly
 

@@ -25,7 +25,7 @@
       <text x="450" y="118" text-anchor="middle" font-size="12" font-family="ui-monospace,monospace" fill="#dbe7f3">/_bProxy/api/v2/</text>
       <text x="450" y="136" text-anchor="middle" font-size="12" font-family="ui-monospace,monospace" fill="#dbe7f3">&lt;ACTION&gt;</text>
       <text x="450" y="164" text-anchor="middle" font-size="12" fill="#8fa6bd">stats · rules · logs</text>
-      <text x="450" y="182" text-anchor="middle" font-size="12" fill="#8fa6bd">read-only</text>
+      <text x="450" y="182" text-anchor="middle" font-size="12" fill="#8fa6bd">monitor + manage</text>
     </g>
     <g>
       <rect x="636" y="60" width="234" height="140" rx="10" fill="#0d1b2e"/>

@@ -42,7 +42,7 @@ SonuShield can run behind Cloudflare: set `cloudflare` to `true` in your configu
 
 ![Dashboard schematic](assets/dashboard.svg)
 
-A read-only monitoring dashboard served by the proxy itself: live request rates, totals, CPU/RAM, stage, top IPs, firewall rules, and recent logs — in two themes (Premium Dark and Official Classic Light), with no external resources. Details: [Dashboard](dashboard.md).
+A web dashboard and control panel served by the proxy itself: live request rates, totals, CPU/RAM, stage, top IPs, firewall rules, and recent logs — plus stage control, rule editing, domain settings, log clearing, attack reports, and validated config reload, with no terminal interaction needed. Two themes (Premium Dark and Official Classic Light), no external resources. Details: [Dashboard](dashboard.md).
 
 ## Terminal HUD and Commands
 

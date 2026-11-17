@@ -1,6 +1,6 @@
 # API Reference
 
-SonuShield exposes an HTTP API for reading proxy statistics, firewall rules, and logs. Both API versions authenticate with the `apisecret` from your configuration. The v1 path additionally contains your `adminsecret`.
+SonuShield exposes an HTTP API for reading proxy statistics, firewall rules, and logs — and for managing the proxy: stage control, domain configuration, firewall rule editing, log clearing, and configuration reload. Both API versions authenticate with the `apisecret` from your configuration. The v1 path additionally contains your `adminsecret`.
 
 ![API schematic](assets/api.svg)
 
@@ -16,7 +16,7 @@ Header: proxy-secret: <apisecret>
 Body:   {"domain": "<domain name or empty>", "action": "<ACTION>", "params": {"<key>": "<value>"}}
 ```
 
-With an empty `domain`, proxy-level actions are executed. With a domain name, domain-level actions are executed for that domain. The optional `params` object carries parameters for actions that take them (currently `SET_DOMAIN_FEATURES` and `GET_ATTACK_REPORT`); other actions ignore it.
+With an empty `domain`, proxy-level actions are executed. With a domain name, domain-level actions are executed for that domain. The optional `params` object carries parameters for actions that take them (`SET_DOMAIN_FEATURES`, `GET_ATTACK_REPORT`, `SET_STAGE`, `SET_DOMAIN_CONFIG`, `ADD_RULE`, `UPDATE_RULE`, `DELETE_RULE`); other actions ignore it.
 
 ## Version 2
 
@@ -49,6 +49,10 @@ Failures return `"success": false` with an error code in `results.ERROR`:
 | `ERR_JSON_READ_FAILED` | The request body is not valid JSON. |
 | `ERR_INVALID_PARAM` | A parameter name or value is invalid, or parameters contradict each other. Nothing was changed. |
 | `ERR_PARAMS_REQUIRED` | The action needs parameters, but none were supplied. |
+| `ERR_CONFIG_WRITE_FAILED` | A change was valid but could not be written to `config.json`. Nothing was changed; see `results.ERROR_DETAIL` for the reason. |
+| `ERR_RELOAD_FAILED` | The configuration could not be reloaded (invalid file or failed validation). The running config is untouched; see `results.ERROR_DETAIL` for the reason. |
+
+Actions that validate a rule, a config write, or a reload also return a human-readable `results.ERROR_DETAIL` alongside the error code. Detail messages never contain secret values.
 
 Requests with a missing or wrong API secret are passed through to the normal request handling instead of receiving an API response.
 
@@ -63,7 +67,9 @@ Requests with a missing or wrong API secret are passed through to the normal req
 | `GET_FINGERPRINT_REQUESTS` | `TOTAL_FINGERPRINT_REQUESTS` (unknown fingerprints only) |
 | `GET_IP_CACHE` | `IP_CACHE` |
 | `FILL_IP_CACHE` | Diagnostic action: fills the IP cache with test entries. |
-| `RELOAD` | Accepted, but currently a no-op. Use the `reload` terminal command to reload the configuration. |
+| `RELOAD` | Validates `config.json` and, only if it is valid, reloads it into the running proxy. Returns `RELOADED`. On an invalid file returns `ERR_RELOAD_FAILED` and the running config is untouched. A successful reload resets request counters and stage locks, like the terminal `reload` command; admin/API secret changes still need a restart. |
+| `GET_DOMAINS` | `DOMAINS`: one summary per configured domain (`NAME`, `BACKEND`, `SCHEME`, `STAGE`, `STAGE_LOCKED`, `UNDER_ATTACK`, `TOTAL_RPS`, `BYPASSED_RPS`, `TOTAL_REQUESTS`, `BYPASSED_REQUESTS`, `RULE_COUNT`). |
+| `CLEAR_LOGS` | Clears the in-memory recent-request logs for all domains. Returns `LOGS_CLEARED` and `DOMAINS_CLEARED`. |
 | `GET_PROXY_FEATURES` | `QUIET_MODE`, `AUTO_SSL`, `AUTO_SSL_ACTIVE`, `GEO_COUNTRY_LOADED`, `GEO_ASN_LOADED`, `REPUTATION_FEED_CONFIGURED`, `REPUTATION_FEED_INTERVAL_MINUTES`, `REPUTATION_LOCAL_IPS`, `REPUTATION_LOCAL_NETWORKS`, `REPUTATION_FEED_IPS`, `REPUTATION_FEED_NETWORKS`, `REPUTATION_BUMP`, `REPUTATION_FEED_LAST_SUCCESS` (unix time, `0` = never), `REPUTATION_FEED_LAST_ERROR` (`""` = none). |
 | `REFRESH_REPUTATION_FEED` | Triggers a background reputation-feed refresh. Returns `REFRESH_STARTED` and `FEED_CONFIGURED`. Fail-open like the scheduled refresh; a refresh already running is not duplicated. |
 
@@ -77,6 +83,12 @@ Requests with a missing or wrong API secret are passed through to the normal req
 | `GET_BYPASSED_REQUESTS_PER_SECOND` | `BYPASSED_REQUESTS_REQUESTS_PER_SECOND` |
 | `GET_FIREWALL_RULES` | `FIREWALL_RULES` |
 | `GET_LOGS` | `LOGS` |
+| `CLEAR_LOGS` | Clears the in-memory recent-request logs for this domain. Returns `LOGS_CLEARED` and `DOMAIN`. |
+| `GET_STAGE` | `STAGE`, `STAGE_LOCKED`, `UNDER_ATTACK`, `RAW_ATTACK`, `BYPASS_ATTACK`, `BUFFER_COOLDOWN`, `STAGE2_DIFFICULTY`. |
+| `SET_STAGE` | Sets the stage (see below). Returns the same fields as `GET_STAGE`. Runtime-only: a reload or restart resets it. |
+| `GET_DOMAIN_CONFIG` | The domain's non-secret settings (see below). Secrets are never returned. |
+| `SET_DOMAIN_CONFIG` | Adjusts and persists domain settings (see below). Returns the same fields as `GET_DOMAIN_CONFIG`. |
+| `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE` | Add, change, or remove one firewall rule (see below). Returns the updated `FIREWALL_RULES` list. Changes persist to `config.json`. |
 | `GET_DOMAIN_FEATURES` | `ADAPTIVE_POW`, `POW_DIFFICULTY_MIN`, `POW_DIFFICULTY_MAX`, `CHALLENGE_PROVIDER`, `CHALLENGE_KEYS_CONFIGURED` (bool — keys themselves are never returned), `WAF_MODE`, `WAF_MODE_EFFECTIVE`, `WAF_INSPECT_BODY`, `WAF_WP_LOGIN_LIMIT`. |
 | `GET_ATTACK_REPORT` | Attack summary for the domain (see below). Returns `REPORT` (JSON object) or, with `format=csv`, `REPORT_FORMAT` and `REPORT` (CSV string). |
 | `SET_DOMAIN_FEATURES` | Adjusts runtime-tunable feature settings (see below). Returns the same fields as `GET_DOMAIN_FEATURES`. |
@@ -92,7 +104,41 @@ Requests with a missing or wrong API secret are passed through to the normal req
 | `wafInspectBody` | `true` / `false`. |
 | `wafWpLoginLimit` | Integer `>= 0` (`0` = default of 20/minute). |
 
-Changes apply to the running proxy only and are **not** written back to `config.json` — a reload or restart restores the file's values. Challenge provider and keys cannot be set through the API; they live in `config.json` only.
+Changes apply to the running proxy only and are **not** written back to `config.json` — a reload or restart restores the file's values. For the same settings with persistence, use [`SET_DOMAIN_CONFIG`](#domain-actions), which validates, writes `config.json` atomically, and then applies. Challenge provider and keys cannot be set through the API; they live in `config.json` only.
+
+`SET_STAGE` accepts exactly one of these parameters (v1 `params` object or v2 query string). Unknown parameters are rejected, and validation is all-or-nothing:
+
+| Parameter | Values |
+|-----------|--------|
+| `stage` | Integer `>= 0`. `0` unlocks and returns to automatic switching from Stage 1 (terminal `stage 0` parity); `1`–`3` (or higher) locks that stage. |
+| `underAttack` | `true` locks Stage 3 (under-attack mode); `false` unlocks back to automatic switching. |
+
+`GET_DOMAIN_CONFIG` returns the domain's settings without secrets: `NAME`, `BACKEND`, `SCHEME`, `CERTIFICATE` and `KEY` (file paths, read-only), the six stage thresholds, `STAGE2_DIFFICULTY` (live value), the adaptive proof-of-work and WAF-lite fields (same as `GET_DOMAIN_FEATURES`), `WEBHOOK_CONFIGURED`, `TELEGRAM_CONFIGURED` and `TELEGRAM_CHAT_ID`, `EMAIL_CONFIGURED` plus SMTP host/port/username/from/to/TLS, and `RULE_COUNT`. Challenge keys, the Telegram bot token, the email password, and webhook URLs (which embed a token) are never returned — only whether each is configured.
+
+`SET_DOMAIN_CONFIG` accepts these parameters (v1 `params` object or v2 query string). Only supplied parameters change; unknown parameters are rejected, and validation is all-or-nothing — on any error, nothing changes:
+
+| Parameter | Values |
+|-----------|--------|
+| `bypassStage1`, `bypassStage2` | Integer `>= 0`. |
+| `disableBypassStage3`, `disableRawStage3`, `disableBypassStage2`, `disableRawStage2` | Integer `>= 0`. |
+| `stage2Difficulty` | `0` (default = 5) or `1`–`16`. |
+| `adaptivePow` | `true` / `false`. |
+| `powDifficultyMin`, `powDifficultyMax` | `0` (default) or `1`–`16`. Must not contradict each other (see `SET_DOMAIN_FEATURES`). |
+| `wafMode` | `off`, `log`, or `block`. |
+| `wafInspectBody` | `true` / `false`. |
+| `wafWpLoginLimit` | Integer `>= 0` (`0` = default of 20/minute). |
+
+`SET_DOMAIN_CONFIG` persists to `config.json` before applying: the file is written atomically (temporary file, one backup at `config.json.bak`, then rename), unknown keys in the file are preserved, and a failed write leaves the running proxy untouched. Names, backends, schemes, certificate/key paths, webhooks, alert credentials, and challenge keys are deliberately not settable — change them in `config.json` and reload.
+
+Firewall rule actions take these parameters (v1 `params` object or v2 query string). `index` is 0-based, in the evaluation order `GET_FIREWALL_RULES` returns:
+
+| Action | Parameters |
+|--------|-----------|
+| `ADD_RULE` | `expression`, `action` (both required). |
+| `UPDATE_RULE` | `index` (required), plus `expression` and/or `action` (at least one; omitted fields keep their value). |
+| `DELETE_RULE` | `index` (required). |
+
+Every rule is validated before anything changes: the expression must compile in the rule engine and use only documented, populated field names (see [Firewall Rules](firewall-rules.md)), and the action must be an integer, `+N`, or `-N`. An invalid rule is rejected with `ERR_INVALID_PARAM` and a human-readable `ERROR_DETAIL`, and neither the running proxy nor `config.json` changes. Valid changes persist to `config.json` (same atomic write and backup as `SET_DOMAIN_CONFIG`) and take effect immediately, without a reload.
 
 `GET_ATTACK_REPORT` accepts these parameters (v1 `params` object or v2 query string). Unknown parameters are rejected with `ERR_INVALID_PARAM`:
 
@@ -114,7 +160,7 @@ These paths are handled by the proxy itself and never forwarded to the backend:
 | `/_bProxy/verified` | Used by the challenge pages to confirm a solved challenge. Returns `verified`. |
 | `/_bProxy/challenge-verify` | `POST` only. Receives provider challenge tokens (Turnstile / hCaptcha) from the challenge page and verifies them server-side. Other methods receive a plain 404. |
 | `/_bProxy/credits` | Attribution and license information. |
-| `/_bProxy/<adminsecret>/dashboard` | Web dashboard (v1, read-only monitoring). Served only on the exact admin-secret path. See [Dashboard](dashboard.md). |
+| `/_bProxy/<adminsecret>/dashboard` | Web dashboard and control panel. Served only on the exact admin-secret path. See [Dashboard](dashboard.md). |
 | `/_bProxy/<adminsecret>/metrics` | Prometheus metrics. Served only when `metricsEnabled` is set, and only on the exact admin-secret path; scrapes are neither challenged nor counted. See [Configuration](configuration.md#prometheus-metrics). |
 
 The `/_bProxy/` path prefix and the challenge cookie names are kept unchanged from the original project for compatibility with existing integrations.
