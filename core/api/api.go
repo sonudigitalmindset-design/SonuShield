@@ -154,6 +154,15 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 		})
 	case "GET_DOMAIN_FEATURES":
 		APIResponse(writer, true, domainFeaturesResponse(domainSettings))
+	case "GET_ATTACK_REPORT":
+		response, errCode := attackReportResponse(domainSettings.Name, domainData, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "SET_DOMAIN_FEATURES":
 		response, errCode := applyDomainFeatures(domainSettings, params)
 		if errCode != "" {

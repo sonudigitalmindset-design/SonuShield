@@ -23,6 +23,7 @@ import (
 	"sonushield/core/firewall"
 	"sonushield/core/pnc"
 	"sonushield/core/proxy"
+	"sonushield/core/reports"
 	"sonushield/core/utils"
 )
 
@@ -137,6 +138,11 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 
 			if domainData.BufferCooldown == 0 {
 				go utils.SendAlerts(domainData, domainSettings, int(1))
+				// Snapshot the finished attack BEFORE the peaks and
+				// request logger below are reset. The export copies
+				// the firewall tallies from a goroutine, so it never
+				// takes the write lock held by this loop.
+				reports.ExportOnAttackEnd(domainName, domainData)
 				domainData.PeakRequestsPerSecond = 0
 				domainData.PeakRequestsBypassedPerSecond = 0
 				domainData.RequestLogger = []domains.RequestLog{}
