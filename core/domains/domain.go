@@ -73,6 +73,8 @@ type Domain struct {
 	RulesDryRun         bool             `json:"rulesDryRun"`
 	RiskHighRiskCountries []string       `json:"riskHighRiskCountries"`
 	RiskHighRiskASNs    []int            `json:"riskHighRiskASNs"`
+	ShareReputation     bool             `json:"shareReputation"`
+	SharedReputationSusLv int            `json:"sharedReputationSusLv"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -136,6 +138,8 @@ type DomainSettings struct {
 	RulesDryRun         bool
 	RiskHighRiskCountries []string
 	RiskHighRiskASNs      []int
+	ShareReputation       bool
+	SharedReputationSusLv int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.

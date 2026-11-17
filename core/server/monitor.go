@@ -608,6 +608,8 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			RulesDryRun:          domain.RulesDryRun,
 			RiskHighRiskCountries: domain.RiskHighRiskCountries,
 			RiskHighRiskASNs:    domain.RiskHighRiskASNs,
+			ShareReputation:     domain.ShareReputation,
+			SharedReputationSusLv: domain.SharedReputationSusLv,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
@@ -640,6 +642,18 @@ func reloadFromConfig(cfg *domains.Configuration) {
 		}
 		firewall.Mutex.Unlock()
 	}
+
+	// Cross-domain reputation sharing (Batch 5): enabled proxy-wide
+	// when at least one domain opted in, re-evaluated on every
+	// reload like the other proxy-wide switches above.
+	sharedRepEnabled := false
+	for _, domain := range domains.Config.Domains {
+		if domain.ShareReputation {
+			sharedRepEnabled = true
+			break
+		}
+	}
+	firewall.SetSharedReputationEnabled(sharedRepEnabled)
 
 	// Auto SSL: build the Let's Encrypt manager from the final domain
 	// list. Disabled by default; in Cloudflare mode there is no TLS

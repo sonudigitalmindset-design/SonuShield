@@ -223,6 +223,16 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//one result.
 	repListed := firewall.LookupReputation(ip)
 
+	//Cross-domain reputation (Batch 5). Opted-in domains share
+	//recent blocks: a client blocked on another opted-in domain is
+	//looked up here, feeds the risk score below, and gets its
+	//suspicion bumped after the score is computed. Skipped for
+	//domains that did not opt in.
+	sharedRep := false
+	if domainSettings.ShareReputation {
+		sharedRep = firewall.LookupSharedReputation(ip, tlsFp)
+	}
+
 	//Composite risk score (Batch 5). A snapshot of the signals
 	//known at evaluation time; see firewall/risk.go for the
 	//weights. It is a firewall rule field (ip.risk), is carried in
@@ -235,6 +245,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		BotListed:          botFp != "",
 		UnknownFingerprint: browser == "" && botFp == "" && tlsFp != "",
 		ReputationListed:   repListed,
+		SharedReputation:   sharedRep,
 		ChallengeFailures:  ipCountCookie,
 		Country:            geoCountry,
 		ASN:                geoASN,
@@ -252,6 +263,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	domains.DomainsData[domainName] = domainData
 	firewall.Mutex.Unlock()
 
+	if sharedRep {
+		susLv += firewall.SharedReputationBump(domainSettings.SharedReputationSusLv)
+		logging.Log(logging.Entry{Event: "sharedrep", Domain: domainName, IP: ip, Action: "shared_reputation", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+	}
+
 	//WAF-lite inspection. Log-only by default (matches are logged, the
 	//request continues); block mode answers with a generic unbranded
 	//403. Runs after the challenge-verify hook so verification POSTs
@@ -266,6 +282,9 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		logging.Log(logging.Entry{Event: wafEvent, Domain: domainName, IP: ip, Action: wafAction, Rule: wafRule, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 	if wafBlocked {
+		if domainSettings.ShareReputation {
+			firewall.RecordSharedReputation(ip, tlsFp, domainName)
+		}
 		metrics.ObserveBlock(domainName, "waf")
 		writer.Header().Set("Content-Type", "text/plain")
 		writer.WriteHeader(http.StatusForbidden)
@@ -389,6 +408,9 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
 			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			if domainSettings.ShareReputation {
+				firewall.RecordSharedReputation(ip, tlsFp, domainName)
+			}
 			domainSettings.Tarpit.Apply(susLv)
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")"), buffer, writer)
 			return
@@ -522,6 +544,9 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
 			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			if domainSettings.ShareReputation {
+				firewall.RecordSharedReputation(ip, tlsFp, domainName)
+			}
 			domainSettings.Tarpit.Apply(susLv)
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr), buffer, writer)
 			return

@@ -251,6 +251,8 @@ func Load() {
 			RulesDryRun:         domain.RulesDryRun,
 			RiskHighRiskCountries: domain.RiskHighRiskCountries,
 			RiskHighRiskASNs:    domain.RiskHighRiskASNs,
+			ShareReputation:     domain.ShareReputation,
+			SharedReputationSusLv: domain.SharedReputationSusLv,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
@@ -284,6 +286,18 @@ func Load() {
 		}
 		firewall.Mutex.Unlock()
 	}
+
+	// Cross-domain reputation sharing (Batch 5): enabled proxy-wide
+	// when at least one domain opted in. Recording and lookup are
+	// both skipped when no domain opted in.
+	sharedRepEnabled := false
+	for _, domain := range domains.Config.Domains {
+		if domain.ShareReputation {
+			sharedRepEnabled = true
+			break
+		}
+	}
+	firewall.SetSharedReputationEnabled(sharedRepEnabled)
 
 	// Backend health checks (Batch 4): one background loop for all
 	// domains. Pools without health checks enabled are skipped.
