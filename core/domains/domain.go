@@ -112,6 +112,10 @@ type Proxy struct {
 	RatelimitWindow int               `json:"ratelimit_time"`
 	GeoIPCountryDB  string            `json:"geoipCountryDatabase"`
 	GeoIPASNDB      string            `json:"geoipASNDatabase"`
+	ReputationList  []string          `json:"reputationBlocklist"`
+	ReputationFeed  string            `json:"reputationFeedURL"`
+	ReputationIntvl int               `json:"reputationFeedInterval"`
+	ReputationSusLv int               `json:"reputationSusLv"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

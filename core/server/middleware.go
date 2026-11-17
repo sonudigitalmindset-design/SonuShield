@@ -173,6 +173,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	reqUa := request.UserAgent()
 	httpFp := firewall.ComputeHTTPFingerprint(request)
+	repListed := firewall.LookupReputation(ip)
+	repValue := ""
+	if repListed {
+		repValue = "listed"
+	}
 
 	if len(domainSettings.CustomRules) != 0 {
 		//Geo/ASN lookup. Zero values when no database is configured, so
@@ -194,6 +199,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.bot":                botFp,
 			"ip.fingerprint":        tlsFp,
 			"ip.ja4":                ja4Fp,
+			"ip.reputation":         repValue,
 			"ip.http_requests":      ipCount,
 			"ip.challenge_requests": ipCountCookie,
 
@@ -217,6 +223,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		susLv = firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
+	}
+
+	//IP reputation applies after firewall rules, whether or not the domain
+	//has rules. Listed IPs get a harder challenge; unlisted IPs are
+	//unaffected and nothing is configured by default.
+	if repListed {
+		susLv += firewall.ReputationBump()
 	}
 
 	//Check if encryption-result is already "cached" to prevent load on reverse proxy
