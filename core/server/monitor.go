@@ -501,13 +501,21 @@ func ReloadConfig() {
 			DisableRawStage3:    domain.DisableRawStage3,
 			DisableBypassStage2: domain.DisableBypassStage2,
 			DisableRawStage2:    domain.DisableRawStage2,
+			AdaptivePow:         domain.AdaptivePow,
+			PoWDifficultyMin:    domain.PoWDifficultyMin,
+			PoWDifficultyMax:    domain.PoWDifficultyMax,
 		})
+
+		if domain.Stage2Difficulty == 0 {
+			domain.Stage2Difficulty = 5
+		}
 
 		firewall.Mutex.Lock()
 		domains.DomainsData[domain.Name] = domains.DomainData{
 			Name:             domain.Name,
 			Stage:            1,
 			StageManuallySet: false,
+			Stage2Difficulty: domain.Stage2Difficulty,
 			RawAttack:        false,
 			BypassAttack:     false,
 			LastLogs:         []domains.DomainLog{},

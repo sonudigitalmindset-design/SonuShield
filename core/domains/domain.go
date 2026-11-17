@@ -33,6 +33,9 @@ type Domain struct {
 	BypassStage1        int             `json:"bypassStage1"`
 	BypassStage2        int             `json:"bypassStage2"`
 	Stage2Difficulty    int             `json:"stage2Difficulty"`
+	AdaptivePow         bool            `json:"adaptivePow"`
+	PoWDifficultyMin    int             `json:"powDifficultyMin"`
+	PoWDifficultyMax    int             `json:"powDifficultyMax"`
 	DisableBypassStage3 int             `json:"disableBypassStage3"`
 	DisableRawStage3    int             `json:"disableRawStage3"`
 	DisableBypassStage2 int             `json:"disableBypassStage2"`
@@ -55,6 +58,9 @@ type DomainSettings struct {
 	DisableRawStage3    int
 	DisableBypassStage2 int
 	DisableRawStage2    int
+	AdaptivePow         bool
+	PoWDifficultyMin    int
+	PoWDifficultyMax    int
 }
 
 type DomainLog struct {

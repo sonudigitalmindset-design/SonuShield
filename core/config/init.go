@@ -168,6 +168,9 @@ func Load() {
 			DisableRawStage3:    domain.DisableRawStage3,
 			DisableBypassStage2: domain.DisableBypassStage2,
 			DisableRawStage2:    domain.DisableRawStage2,
+			AdaptivePow:         domain.AdaptivePow,
+			PoWDifficultyMin:    domain.PoWDifficultyMin,
+			PoWDifficultyMax:    domain.PoWDifficultyMax,
 		})
 
 		firewall.Mutex.Lock()
