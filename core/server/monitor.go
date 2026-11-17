@@ -575,6 +575,8 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			WAFMode:             domain.WAFMode,
 			WAFInspectBody:      domain.WAFInspectBody,
 			WAFWpLoginLimit:     domain.WAFWpLoginLimit,
+			HoneypotPaths:       domain.HoneypotPaths,
+			HoneypotSusLv:       domain.HoneypotSusLv,
 		})
 
 		if domain.Stage2Difficulty == 0 {

@@ -42,6 +42,8 @@ type Domain struct {
 	ChallengeSiteKey    string           `json:"challengeSiteKey"`
 	ChallengeSecretKey  string           `json:"challengeSecretKey"`
 	WAFMode             string           `json:"wafMode"`
+	HoneypotPaths       []string         `json:"honeypotPaths"`
+	HoneypotSusLv       int              `json:"honeypotSusLv"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -77,6 +79,8 @@ type DomainSettings struct {
 	WAFMode             string
 	WAFInspectBody      bool
 	WAFWpLoginLimit     int
+	HoneypotPaths       []string
+	HoneypotSusLv       int
 }
 
 type DomainLog struct {

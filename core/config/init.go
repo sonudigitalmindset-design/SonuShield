@@ -217,6 +217,8 @@ func Load() {
 			WAFMode:             domain.WAFMode,
 			WAFInspectBody:      domain.WAFInspectBody,
 			WAFWpLoginLimit:     domain.WAFWpLoginLimit,
+			HoneypotPaths:       domain.HoneypotPaths,
+			HoneypotSusLv:       domain.HoneypotSusLv,
 		})
 
 		firewall.Mutex.Lock()

@@ -226,6 +226,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Honeypot endpoints. A request for an operator-configured decoy
+	//path raises suspicion; legitimate visitors never request these
+	//paths, and with no paths configured this is a no-op.
+	if firewall.HoneypotHit(domainSettings.HoneypotPaths, request.URL.Path) {
+		susLv += firewall.HoneypotBump(domainSettings.HoneypotSusLv)
+		logging.Log(logging.Entry{Event: "honeypot", Domain: domainName, IP: ip, Action: "honeypot", Rule: logPath, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+	}
+
 	httpFp := firewall.ComputeHTTPFingerprint(request)
 	h2Fp := firewall.ComputeHTTP2Fingerprint(request)
 	repListed := firewall.LookupReputation(ip)
