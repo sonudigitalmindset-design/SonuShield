@@ -87,6 +87,8 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `logFile` | String | Path of the JSON log file. Required when `logFormat` is `"json"`; without it, JSON logging stays disabled with a startup warning. |
 | `logMaxBytes` | Int | Maximum size of the current log file in bytes before rotation (default `10485760`, 10 MiB; values below 64 KiB use the default). |
 | `logMaxFiles` | Int | Total log files kept including the current one (default `5`; clamped to `1`–`100`). |
+| `apiRoles` | Map[String]String | Additional API secrets mapped to roles (`viewer`, `operator`, `admin`). The main `apisecret` is always admin. See [API Roles and Audit Log](#api-roles-and-audit-log). |
+| `configBackups` | Int | Number of rotating `config.json` backups kept (default `5`; clamped to `1`–`20`). See [Configuration Backups and Rollback](#configuration-backups-and-rollback). |
 
 Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 
@@ -126,6 +128,35 @@ Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 | `disableRawStage3` | Int | Total requests per second low enough to disable Stage 3 (bypassing requests must also be low enough). |
 | `disableBypassStage2` | Int | Bypassing requests per second low enough to disable Stage 2. |
 | `disableRawStage2` | Int | Total requests per second low enough to disable Stage 2 (bypassing requests must also be low enough). |
+| `honeypotPaths` | Array[String] | Decoy paths that legitimate visitors never request (exact, case-sensitive match). Hitting one raises suspicion. Empty (default) disables the honeypot. See [Honeypot Endpoints](#honeypot-endpoints). |
+| `honeypotSusLv` | Int | Suspicion-level bump for honeypot hits (default `2`). |
+| `fakeBotCheck` | Bool | `true` verifies claimed Googlebot/Bingbot user-agents by reverse+forward DNS. Default `false`. See [Fake Search-Bot Verification](#fake-search-bot-verification). |
+| `fakeBotSusLv` | Int | Suspicion-level bump for failed search-bot verification (default `3`). |
+| `tarpitDelayMs` | Int | Delay in milliseconds applied to confirmed-bad (blocked) requests. `0` (default) disables the tarpit. See [Tarpit](#tarpit). |
+| `tarpitSusLv` | Int | Minimum suspicion level the tarpit applies to (default `4`, i.e. blocked requests only). |
+| `tarpitMaxConns` | Int | Maximum simultaneous tarpitted connections (default `64`, clamped to `1`–`1024`). |
+| `edgeCache` | Bool | `true` enables the in-memory edge cache for safe GET responses. Default `false`. See [Edge Caching](#edge-caching). |
+| `edgeCacheTTL` | Int | Maximum cache lifetime in seconds (default `60`). Responses are also bound by their own `Cache-Control`/`Expires` headers. |
+| `edgeCacheMaxMB` | Int | Maximum cache size in megabytes (default `64`). |
+| `waitingRoom` | Bool | `true` enables the waiting room when bypassed traffic crosses the threshold. Default `false`. See [Waiting Room](#waiting-room). |
+| `waitingRoomThreshold` | Int | Bypassed requests per second above which excess visitors are queued (default `0`, i.e. never queues unless set). |
+| `waitingRoomAdmit` | Int | Visitors admitted from the queue per second (default `20`). |
+| `backends` | Array[String] | Additional backend addresses for load balancing. Empty (default) uses the single `backend`. See [Load Balancing and Failover](#load-balancing-and-failover). |
+| `lbPolicy` | String | `round-robin` (default) or `least-connections`. Unknown values warn at startup and use round-robin. |
+| `healthCheckEnabled` | Bool | `true` probes backends on an interval and excludes failing ones. Default `false`. See [Load Balancing and Failover](#load-balancing-and-failover). |
+| `healthCheckPath` | String | Path probed by health checks (default `/`). |
+| `healthCheckInterval` | Int | Seconds between health-check probes per backend (default `10`, minimum `5`). |
+| `websocketIdleTimeout` | Int | Idle timeout in seconds for WebSocket connections on the dedicated upgrade path. `0` (default) keeps Go's built-in reverse-proxy upgrade handling. See [WebSocket Support](#websocket-support). |
+| `jwtSecret` | String | Shared secret for HS256 JWT validation on protected routes. Empty (default) disables HS256. See [API Protection](#api-protection). |
+| `jwtJWKSURL` | String | JWKS endpoint URL for RS256/ES256 JWT validation. Empty (default) disables JWKS. |
+| `jwtProtectedPaths` | Array[String] | Route prefixes that require a valid JWT bearer token. Empty (default) disables JWT checks. |
+| `apiKeys` | Array[Object] | API keys with per-key rate limits: `{"key": "…", "name": "…", "limitPerMinute": 60}`. Empty (default) disables API-key checks. |
+| `apiKeyHeader` | String | Header carrying the API key (default `X-API-Key`). |
+| `apiKeyPaths` | Array[String] | Route prefixes that require a valid API key. Empty (default) disables API-key checks. |
+| `graphqlPath` | String | Exact path of the GraphQL endpoint (e.g. `/graphql`). Empty (default) disables GraphQL limits. |
+| `graphqlMaxDepth` | Int | Maximum GraphQL query nesting depth (`0` = no limit). |
+| `graphqlMaxFields` | Int | Maximum GraphQL field count (`0` = no limit). |
+| `rulesDryRun` | Bool | `true` logs rule matches without enforcing them. Default `false`. See [Firewall Rules](firewall-rules.md#testing-rules-before-enforcing-them). |
 
 ## Geo and ASN Rules
 
@@ -181,6 +212,73 @@ A conservative request-inspection layer: 15 patterns covering common SQL injecti
 
 The default mode is log-only: matches are logged with the rule name, IP, method, and a truncated path — never the request body — and the request continues, so legitimate visitors notice nothing. Set `wafMode: "block"` per domain to answer matches with a generic unbranded 403, or `"off"` to disable inspection. Patterns are deliberately narrow, but no pattern set is false-positive free, which is why blocking is opt-in per domain.
 
+## Honeypot Endpoints
+
+`honeypotPaths` lists decoy paths that legitimate visitors never request — for example, an old admin URL or a path only scanners probe. Matching is exact and case-sensitive (no prefix matching), so a decoy can never catch a real page that merely shares a prefix. A request that hits a decoy path has its suspicion level raised by `honeypotSusLv` (default `2`) and is logged as a `honeypot` event in the structured log. With no paths configured, the honeypot is fully disabled and costs nothing. Choose paths that appear in no link, sitemap, or redirect on your site; a path real users can reach will raise suspicion on real users.
+
+```json
+"honeypotPaths": ["/wp-admin/install.php", "/.env.bak"],
+"honeypotSusLv": 2
+```
+
+## Fake Search-Bot Verification
+
+With `fakeBotCheck: true`, requests whose user-agent claims to be Googlebot or Bingbot are verified by reverse DNS (the IP must resolve to a hostname under `googlebot.com`, `google.com`, or `search.msn.com`) followed by forward DNS (that hostname must resolve back to the same IP). A failed verification raises suspicion by `fakeBotSusLv` (default `3`), is logged as a `fakebot` event, and sets the `ip.searchbot` rule field to `"fake"`; a verified bot sets it to `"verified"`. DNS failures and timeouts fail open: the field becomes `"unchecked"`, nothing is bumped, and nobody is flagged on a DNS error alone. Results are cached (1 hour for verified/fake, 5 minutes for unchecked). The check is off by default and only runs for user-agents that claim to be a search bot.
+
+## Tarpit
+
+With `tarpitDelayMs` set, requests that reach the block decision (suspicion level at or above `tarpitSusLv`, default `4`) wait for the configured delay before the block response is sent, wasting the attacker's time and connection slots. The delay is capped at 30 seconds, and at most `tarpitMaxConns` (default `64`) connections are tarpitted at once — when the slots are full, further blocked requests answer immediately instead of queuing, so tarpitting can never exhaust the proxy. The tarpit never applies to allowed or challenged requests, only to requests already decided as blocks. `0` (default) disables it entirely.
+
+## Edge Caching
+
+With `edgeCache: true`, safe GET responses are cached in memory per domain and served to later identical requests without touching the backend. Only responses that are safe to share are stored: status `200`, `203`, `301`, or `308`, with an explicit positive `s-maxage`/`max-age` or a future `Expires`, and without `Cache-Control: no-store`/`no-cache`/`private`, `Set-Cookie`, `Vary`, or `Content-Encoding`. Requests with an `Authorization` header are never served from or stored in the cache, and upgrade (WebSocket) requests bypass it. Entries are capped at 1 MB each, the whole cache at `edgeCacheMaxMB` (default `64`), and lifetimes at `edgeCacheTTL` (default `60` seconds, further bound by the response's own headers); expired entries are evicted first, then the oldest. Served cache hits carry the standard `Age` header. The cache is per-process memory: a reload or restart empties it.
+
+The [`PURGE_CACHE`](api.md#domain-actions) API action (and the dashboard's domain panel) clears the whole cache or one path. When every backend is down and the cache holds a stale copy of a GET response, the stale copy is served with a `Warning: 110 - "Response is stale"` header instead of the backend error page — see [Load Balancing and Failover](#load-balancing-and-failover).
+
+## Waiting Room
+
+With `waitingRoom: true`, when a domain's bypassed requests per second cross `waitingRoomThreshold`, excess visitors are queued fairly (first-come, first-served) instead of being dropped. Queued visitors see a plain waiting page showing their position, refreshing every few seconds, and are admitted at `waitingRoomAdmit` (default `20`) per second via signed, IP-bound queue cookies. The queue holds 5,000 entries; beyond that, excess visitors get a `503` with `Retry-After`. Reserved paths (`/_bProxy/...`) and cached responses are never queued. Off by default, and with the threshold unset it never activates — normal traffic is never queued. The waiting room is per-process memory: a reload or restart clears the queue.
+
+## Load Balancing and Failover
+
+A domain can list several backends in `backends` (same `scheme` for all). Requests are distributed by `lbPolicy`: `round-robin` (default) or `least-connections` (fewest in-flight backend requests). With `backends` empty, the single `backend` is used exactly as before — single-backend configs behave identically, with no extra probing.
+
+Failover works two ways. First, transport failures mark a backend down after 2 consecutive failures for a 30-second cooldown, whether or not health checks are enabled; a request that fails is retried on another backend when its body can be replayed (GET/HEAD, or any request with a replayable body) — requests whose bodies cannot be replayed are never retried, so an operation is never duplicated. Second, with `healthCheckEnabled: true`, each backend is probed with a `GET` to `healthCheckPath` (default `/`) every `healthCheckInterval` seconds (default `10`, minimum `5`); a `2xx`/`3xx` answer marks it up, anything else marks it down until a probe passes. Probes send the domain name as the `Host` header, follow no redirects, and skip TLS verification for `https` backends, like the proxy itself.
+
+When every backend is down, plain GET requests without `Authorization` are answered from the edge cache's stale copy when one exists (marked with the `Warning: 110` stale header and `Cache-Control: no-store`); otherwise the usual backend error page is shown. Stale fallback needs `edgeCache` enabled and a previously cached response — without it, there is nothing stale to serve.
+
+```json
+"backends": ["10.0.0.1:8080", "10.0.0.2:8080"],
+"lbPolicy": "round-robin",
+"healthCheckEnabled": true,
+"healthCheckPath": "/healthz",
+"healthCheckInterval": 10
+```
+
+## WebSocket Support
+
+WebSocket upgrades proxy through the normal reverse-proxy path by default. Setting `websocketIdleTimeout` (seconds) switches upgrades for that domain to a dedicated path that dials the backend through the domain's backend pool (so load balancing and failover apply) and closes the connection after the configured idle time, instead of letting silent connections linger. The timeout is capped at 1 hour. HTTP/2 connections cannot be hijacked, so upgrades arriving over HTTP/2 keep using the normal reverse-proxy path. WebSocket over HTTP/2 (RFC 8441 extended CONNECT) is not supported.
+
+## API Protection
+
+Three optional, independent guards for API routes. All are inert unless configured, and all run after the normal challenge flow — API clients must still pass rate limits, WAF-lite, and firewall rules. Rejections are plain status codes, logged as `block` events with actions `api_jwt`, `api_key`, or `api_graphql`, and counted under the `api` metrics reason. Tokens and keys are never logged.
+
+**JWT validation.** `jwtProtectedPaths` lists route prefixes that require a valid `Authorization: Bearer` token. Tokens are validated against `jwtSecret` (HS256) or the keys fetched from `jwtJWKSURL` (RS256/ES256). `exp` is required and must be in the future; `nbf` is honored when present; `alg: none` and algorithm confusion between the two modes are rejected. JWKS keys are fetched at startup and refreshed at most hourly; a failed refresh keeps the previous keys, and a failed initial fetch fails closed for protected routes with a startup warning. If protected paths are configured with neither a secret nor a JWKS URL, protected routes reject all requests (fail closed) with a startup warning. Missing or invalid tokens get `401`.
+
+**API keys.** `apiKeyPaths` lists route prefixes that require a key in the `apiKeyHeader` header (default `X-API-Key`). `apiKeys` maps keys to per-key per-minute budgets; a limit of `0` means unlimited. Keys are compared in constant time. Unknown or missing keys get `401`; a known key over its budget gets `429` with `Retry-After: 60`. If key paths are configured with no keys, those routes reject all requests (fail closed) with a startup warning.
+
+**GraphQL limits.** `graphqlPath` is the exact GraphQL endpoint path. JSON `POST` requests there have their `query` measured for brace-nesting depth and field count (an approximation: strings and comments are stripped first, then nesting and identifiers are counted — not a full GraphQL parser). Queries over `graphqlMaxDepth` or `graphqlMaxFields` (either `0` means no limit on that axis) get `400`. Non-JSON bodies, bodies without a `query` string, and bodies over 1 MB pass through untouched for the backend to handle.
+
+```json
+"jwtProtectedPaths": ["/api/private/"],
+"jwtSecret": "your-hs256-secret",
+"apiKeys": [{"key": "key-for-service-a", "name": "service-a", "limitPerMinute": 120}],
+"apiKeyPaths": ["/api/keys/"],
+"graphqlPath": "/graphql",
+"graphqlMaxDepth": 8,
+"graphqlMaxFields": 200
+```
+
 ## Adaptive Proof-of-Work
 
 With `adaptivePow: true`, the Stage 2 difficulty scales linearly with the domain's bypassed requests per second between `bypassStage1` (minimum applies) and `bypassStage2` (maximum applies). Under normal load visitors get the minimum difficulty; as an attack that bypasses Stage 1 grows, the puzzle gets progressively harder. Bounds default to the base difficulty and base `+3`, and the result is always clamped to `1`–`16` (each `+1` multiplies client work roughly 16×). Disabled by default; the fixed `stage2Difficulty` behavior is unchanged when off. The bounds and the toggle can also be adjusted at runtime via the `SET_DOMAIN_FEATURES` [API action](api.md#domain-actions) (runtime-only, not persisted to `config.json`).
@@ -215,7 +313,7 @@ Exported series (all per domain, except the info and aggregate gauges):
 | `sonushield_stage{domain}` | Current challenge stage (1–3). |
 | `sonushield_stage_locked{domain}` | `1` when the stage is manually locked, else `0`. |
 | `sonushield_attack_raw{domain}` / `sonushield_attack_bypass{domain}` | `1` while the respective attack state is active. |
-| `sonushield_blocks_total{domain,reason}` | Blocks by reason: `ratelimit`, `fingerprint`, `waf`, `suspect`. |
+| `sonushield_blocks_total{domain,reason}` | Blocks by reason: `ratelimit`, `fingerprint`, `waf`, `suspect`, `api`. |
 | `sonushield_challenges_total{domain,stage}` | Challenges served, by stage. |
 | `sonushield_waf_matches_total{domain,rule}` | WAF-lite matches, by rule name. |
 | `sonushield_backend_requests_total{domain,result}` | Backend round trips: `ok` or `error`. |
@@ -244,7 +342,7 @@ With `reportDirectory` set, the proxy additionally writes one JSON file and one 
 
 ## Structured Logs
 
-With `logFormat: "json"` and `logFile` set, the proxy appends one JSON object per line to the log file for these events: `allow` (request passed the challenges), `block` (ratelimit, fingerprint, WAF, or suspect block), `challenge` (stage 1/2/3 served), `waf` (WAF-lite match in log-only mode), and `attack_start` / `attack_end`. Every entry carries `ts`, `level`, `event`, and `domain`; request entries add `ip`, `action`, `rule` and/or matched firewall-rule `rules`, fingerprints (`fingerprint`, `ja4`, `http_fingerprint`), `stage`, `sus_level`, `method`, `path`, truncated `user_agent`, and fail-open `country` / `asn` when a GeoIP database is loaded.
+With `logFormat: "json"` and `logFile` set, the proxy appends one JSON object per line to the log file for these events: `allow` (request passed the challenges), `block` (ratelimit, fingerprint, WAF, suspect, or API-protection block), `challenge` (stage 1/2/3 served), `waf` (WAF-lite match in log-only mode), `honeypot` (decoy path hit), `fakebot` (failed search-bot verification), `dryrun` (firewall-rule match in dry-run mode, with `would_be_sus_level`), `audit` (control-plane API action; see below), and `attack_start` / `attack_end`. Every entry carries `ts`, `level`, `event`, and `domain`; request entries add `ip`, `action`, `rule` and/or matched firewall-rule `rules`, fingerprints (`fingerprint`, `ja4`, `http_fingerprint`), `stage`, `sus_level`, `method`, `path`, truncated `user_agent`, and fail-open `country` / `asn` when a GeoIP database is loaded.
 
 Privacy rules, enforced in the logger itself:
 
@@ -346,11 +444,36 @@ Credentials are sent only to the configured SMTP server, and only over an encryp
 
 The automatic stage system watches two numbers per domain: total requests per second and bypassing requests per second (requests that passed the current challenge). When bypassing requests exceed `bypassStage1`, Stage 2 activates; when they exceed `bypassStage2`, Stage 3 activates. Stages step back down when both the bypassing and total request rates fall below the matching `disable*` thresholds. Locking a stage with the [`stage`](how-it-works.md#commands) command disables automatic switching until you unlock it with `stage 0`.
 
+## API Roles and Audit Log
+
+The main `apisecret` always authenticates as **admin**. `apiRoles` adds further API secrets mapped to roles, so read-only or limited operators get their own secret instead of sharing the admin one:
+
+```json
+"apiRoles": {
+  "a-long-random-viewer-secret": "viewer",
+  "a-long-random-operator-secret": "operator"
+}
+```
+
+| Role | May run |
+|------|---------|
+| `viewer` | Read-only actions: all `GET_*`, `GET_DOMAINS`, `GET_PROXY_FEATURES`, `GET_ATTACK_REPORT`, `LIST_CONFIG_BACKUPS`, `SIMULATE_RULE`, `EXPORT_RULES`. |
+| `operator` | Everything a viewer can, plus `SET_STAGE`, `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE`, `CLEAR_LOGS`, `REFRESH_REPUTATION_FEED`, `PURGE_CACHE`, `IMPORT_RULES`. |
+| `admin` | Everything, including `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, and `FILL_IP_CACHE`. |
+
+Unknown role names are ignored with a startup warning; empty secrets never match. A role calling an action above its level gets `ERR_FORBIDDEN`; unknown actions still get `ERR_ACTION_NOT_FOUND` for every role. Role changes take effect on reload (unlike `apisecret` itself, which needs a restart).
+
+Every control-plane API call is written to the audit log: role, action, domain, scrubbed parameters, peer IP, and the result. When structured JSON logging is configured, audit entries go to the log file with `event: "audit"`; otherwise a compact line is printed to stdout (operators using the dashboard heavily should configure `logFile` to keep stdout clean). Parameters whose names look secret-like (`secret`, `token`, `password`, `key`) are dropped and values are truncated, and presented secrets are never logged — including for rejected calls, which are audited as role `unauthenticated`. See the [API Reference](api.md#roles-and-audit-log).
+
+## Configuration Backups and Rollback
+
+Every write to `config.json` (dashboard/API edits) rotates the backup set first: the previous file becomes `config.json.bak`, the older backups shift to `config.json.bak.1`, `.bak.2`, and so on, up to `configBackups` (default `5`). The [`LIST_CONFIG_BACKUPS` / `RESTORE_CONFIG_BACKUP`](api.md#proxy-actions) API actions (and the dashboard's Settings view) list and restore them. A restore validates the backup with the same checks as a reload, backs up the current file, swaps the backup in atomically, and reloads; if the reload fails, the previous file is written back and reloaded again, so a restore can never leave the running proxy disagreeing with the file. Backup names are validated strictly, so no path outside the backup set can be restored. Restoring is an admin-only action.
+
 ## Applying Changes
 
 After editing `config.json` by hand, apply it with the Reload config button in the [dashboard](dashboard.md) or the `reload` terminal command (or restart the proxy). The dashboard/API reload validates the file first: secrets present and without `CHANGE_ME` placeholders, at least one named domain, every firewall rule compiling with a usable action, and every certificate pair loading. An invalid file is rejected and the running proxy is untouched. A successful reload resets request counters and stage locks, like the terminal reload; admin/API secret changes still need a restart. The `add` terminal command can add a domain interactively and reloads the configuration for you.
 
-Some settings can also be changed from the dashboard without editing the file, via the authenticated API actions, and are written back to `config.json` immediately (atomically, with the previous file kept as `config.json.bak`): firewall rules ([`ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE`](api.md#domain-actions)) and the domain settings in [`SET_DOMAIN_FEATURES`](api.md#domain-actions) plus stage thresholds ([`SET_DOMAIN_CONFIG`](api.md#domain-actions)). Keys the proxy does not know about are preserved in the file; only the edited keys change, and the file is re-indented.
+Some settings can also be changed from the dashboard without editing the file, via the authenticated API actions, and are written back to `config.json` immediately (atomically, with the previous file kept in the [rotating backup set](#configuration-backups-and-rollback)): firewall rules ([`ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE`](api.md#domain-actions)) and the domain settings in [`SET_DOMAIN_FEATURES`](api.md#domain-actions) plus stage thresholds ([`SET_DOMAIN_CONFIG`](api.md#domain-actions)). Keys the proxy does not know about are preserved in the file; only the edited keys change, and the file is re-indented.
 
 Two settings can also be adjusted at runtime without editing the file or persisting, via [`SET_DOMAIN_FEATURES`](api.md#domain-actions): the adaptive proof-of-work toggle and bounds, and the WAF-lite mode, body inspection, and WordPress login limit. Runtime changes are not written back to `config.json` — a reload or restart restores the file's values. Stage changes ([`SET_STAGE`](api.md#domain-actions)) are likewise runtime-only.
 

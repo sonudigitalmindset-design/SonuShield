@@ -8,11 +8,11 @@ What SonuShield does to every request, how the staged challenges escalate, and h
 
 SonuShield sits in front of your web server as a reverse proxy. For each request:
 
-1. The TLS connection is fingerprinted (outside Cloudflare mode) and the browser/bot is identified. A JA4 fingerprint is computed alongside the legacy fingerprint.
-2. Rate limits are checked, then WAF-lite inspection runs (log-only by default).
-3. Your per-domain [firewall rules](firewall-rules.md) run, adjusting the request's suspicion level; listed IPs then receive the reputation bump.
-4. Depending on the suspicion level and the domain's current stage, the request is allowed, challenged, or blocked.
-5. Passed requests are forwarded to your backend with extra headers (see below).
+1. The TLS connection is fingerprinted (outside Cloudflare mode) and the browser/bot is identified. A JA4 fingerprint is computed alongside the legacy fingerprint, and an HTTP/2 fingerprint from the signals Go's stack exposes.
+2. Rate limits are checked, then WAF-lite inspection runs (log-only by default), followed by the honeypot check and fake search-bot verification when configured.
+3. Your per-domain [firewall rules](firewall-rules.md) run, adjusting the request's suspicion level; listed IPs then receive the reputation bump. In dry-run mode, rule matches are only logged.
+4. Depending on the suspicion level and the domain's current stage, the request is allowed, challenged, or blocked. Confirmed-bad requests may be tarpitted when configured.
+5. Passed requests check the edge cache (when enabled) and the waiting room (when enabled and loaded), then the API-protection gate (JWT, API keys, GraphQL limits when configured), and are forwarded to your backend — distributed across backends when several are configured — with extra headers (see below). When every backend is down, a stale cached copy is served, clearly marked, when one exists.
 
 Requests forwarded to your backend carry extra headers your backend can read: `x-real-ip`, `proxy-real-ip` (both the client IP), and `proxy-tls-fp` (the client's TLS fingerprint, or `Cloudflare` in Cloudflare mode).
 

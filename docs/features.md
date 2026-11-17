@@ -96,7 +96,43 @@ With `logFormat: "json"` and a `logFile` path, the proxy writes one JSON line pe
 
 ![API schematic](assets/api.svg)
 
-Two API versions expose proxy statistics, firewall rules, and logs as JSON, authenticated with your `apisecret` (v1 additionally uses the `adminsecret` path). They also expose feature controls: read live feature settings, adjust adaptive proof-of-work and WAF-lite settings at runtime, and trigger a reputation-feed refresh. The dashboard itself is built on API v2. Details: [API Reference](api.md).
+Two API versions expose proxy statistics, firewall rules, and logs as JSON, authenticated with your `apisecret` (v1 additionally uses the `adminsecret` path). They also expose feature controls: read live feature settings, adjust adaptive proof-of-work and WAF-lite settings at runtime, and trigger a reputation-feed refresh. The dashboard itself is built on API v2. Role-mapped secrets (`viewer`, `operator`, `admin`) limit what each caller may do, and every call is audit-logged. Details: [API Reference](api.md).
+
+## HTTP/2 Fingerprinting
+
+For HTTP/2 connections, SonuShield builds an additional fingerprint from the signals Go's stack exposes — protocol version, TLS version/cipher, ALPN, a hash of the sorted header names, and presence flags for common headers — available as the `http.http2` rule field and on `/_bProxy/fingerprint`. HTTP/2 SETTINGS frames, WINDOW_UPDATE, and PRIORITY frames are not observable through Go's `net/http`, and HTTP/1 header order is not preserved by Go, so neither is claimed. Details: [Firewall Rules](firewall-rules.md).
+
+## Honeypot Endpoints and Fake Search-Bot Verification
+
+Operator-configured decoy paths (exact, case-sensitive) raise suspicion on requests that hit them — paths no legitimate visitor ever requests. Claimed Googlebot/Bingbot user-agents can be verified by reverse+forward DNS, with fail-open on DNS errors and results cached; failures raise suspicion and set the `ip.searchbot` rule field. Both are off unless configured. Details: [Configuration](configuration.md#honeypot-endpoints).
+
+## Tarpit
+
+Blocked requests can be answered after a configurable delay, wasting attackers' connection slots, with capped concurrency so tarpitted connections can never exhaust the proxy. It never applies to allowed or challenged requests. Off by default. Details: [Configuration](configuration.md#tarpit).
+
+## Edge Caching and Waiting Room
+
+Safe, cacheable GET responses can be cached in memory per domain (bounded size and lifetime, honoring `Cache-Control: private`/`no-store`, never caching `Set-Cookie` or authorized responses), with purge via the API or dashboard. When load crosses a threshold, a waiting room queues excess visitors fairly instead of dropping them. Both are off by default. Details: [Configuration](configuration.md#edge-caching).
+
+## Load Balancing, Failover, and Health Checks
+
+A domain can list several backends with round-robin or least-connections distribution, failover away from failing backends (with replay-safe retries), and optional active health checks. When every backend is down, a stale cached copy is served, clearly marked, instead of the error page. Single-backend configs behave exactly as before. Details: [Configuration](configuration.md#load-balancing-and-failover).
+
+## WebSocket Support
+
+WebSocket upgrades proxy bidirectionally, with an optional per-domain idle timeout on a dedicated upgrade path that also honors load balancing and failover. Details: [Configuration](configuration.md#websocket-support).
+
+## API Protection
+
+API routes can require JWT bearer tokens (HS256 secret or RS256/ES256 via JWKS), per-API-key rate limits, and GraphQL query depth/field limits. All are off unless configured; invalid configuration fails closed for the affected route only. Tokens and keys are never logged. Details: [Configuration](configuration.md#api-protection).
+
+## Roles, Audit Log, and Config Rollback
+
+Additional API secrets map to `viewer`, `operator`, and `admin` roles, and every control-plane action is audit-logged with its role, parameters (scrubbed), and result. Config writes keep rotating backups, and an admin can list and restore a previous version through the API or dashboard, with the same validation as a reload. Details: [Configuration](configuration.md#api-roles-and-audit-log).
+
+## Rule Simulator, Dry-Run, and Export/Import
+
+A rule expression can be evaluated against sample request fields without enforcing anything, and a domain can run its rules in dry-run mode — matches logged, no action taken. Rule sets export as JSON and import with full validation (invalid imports change nothing). All three are in the dashboard's Firewall rules view. Details: [API Reference](api.md#domain-actions).
 
 ## Rate Limiting
 

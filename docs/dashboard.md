@@ -24,11 +24,11 @@ Two secrets protect the dashboard, reusing the existing API mechanisms — no ne
 ## What It Shows and Does
 
 - **Overview:** live total and bypassed requests per second, all-time totals, CPU/RAM usage, the current stage and stage-lock state, and the top requesting IPs and unknown fingerprints in the current rate-limit window. Updates every 3 seconds.
-- **Domains:** the configured domain list with backends, schemes, live summaries, and rule counts. Select a domain to manage it everywhere in the dashboard; a detail panel shows its configuration summary and traffic.
-- **Firewall rules:** the domain's rules in evaluation order, with a plain explanation of each action — plus add, edit, and delete. Changes are validated, saved to `config.json` immediately (with a `config.json.bak` backup), and take effect without a reload.
+- **Domains:** the configured domain list with backends, schemes, live summaries, and rule counts. Select a domain to manage it everywhere in the dashboard; a detail panel shows its configuration summary and traffic, plus an edge-cache purge button when caching is enabled.
+- **Firewall rules:** the domain's rules in evaluation order, with a plain explanation of each action — plus add, edit, and delete. Changes are validated, saved to `config.json` immediately (with a rotating backup), and take effect without a reload. A rule simulator evaluates expressions against sample request fields without enforcing anything, and rule sets can be exported as JSON or imported with full validation.
 - **Stage:** the current stage, stage-lock, and under-attack state — plus controls to return to automatic switching, lock a stage, or switch under-attack mode on and off. Stage changes are runtime-only: a reload or restart resets them.
 - **Logs:** the most recent requests that passed the challenges, newest first, with clearing per domain or for all domains.
-- **Settings:** domain thresholds, proof-of-work, and WAF-lite settings, saved to `config.json` immediately; plus a read-only proxy-features panel and a reputation-feed refresh button.
+- **Settings:** domain thresholds, proof-of-work, WAF-lite, and rules dry-run settings, saved to `config.json` immediately; plus a read-only proxy-features panel, a reputation-feed refresh button, and a configuration-backups panel for listing and restoring previous `config.json` versions (validated first, admin role only for restore).
 - **Reports:** attack summaries from live counters, with JSON and CSV export.
 - **Reload config** (top bar): validates `config.json` and reloads it into the running proxy. An invalid file is rejected with the reason shown, and the running proxy is untouched.
 

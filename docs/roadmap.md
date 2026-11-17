@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Mostly planned, not yet implemented.** Batches 4–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1 and 2 and the control panel are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
+> **Mostly planned, not yet implemented.** Batches 5–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1, 2, and 4 and the control panel are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
 
 Work is planned in batches, in this order: 1 → 2 → control panel → 4 → 5 → 6 → 7 → 8 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
 
@@ -14,7 +14,7 @@ Work is planned in batches, in this order: 1 → 2 → control panel → 4 → 5
 - WAF-lite rules (SQLi, XSS, WordPress login flood).
 - Automatic SSL (Let's Encrypt).
 
-Still planned from this batch's original scope: backend health checks and a cached fallback page.
+Still planned from this batch's original scope: nothing — backend health checks and the cached fallback page were implemented in Batch 4.
 
 ## Batch 2 — Metrics, Alerts, Reports ✅ Implemented
 
@@ -32,22 +32,24 @@ Browser-based management with zero terminal interaction needed for day-to-day op
 - Firewall rule editing: `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE` with server-side validation (compiles, documented fields only, usable actions). Invalid rules change nothing.
 - Log clearing per domain and proxy-wide (`CLEAR_LOGS`).
 - Validated safe reload: the API `RELOAD` action validates `config.json` before applying it and never runs the panicking reload path on invalid input.
-- Persistence: rule and domain-config changes are written to `config.json` atomically (temporary file, one `config.json.bak` backup, rename) and survive restarts; unknown keys in the file are preserved.
+- Persistence: rule and domain-config changes are written to `config.json` atomically (temporary file, rotating `config.json.bak` backups, rename) and survive restarts; unknown keys in the file are preserved.
 - Dashboard UI for all of the above, plus attack reports with export and the Batch 1/2 feature controls, in both themes.
 
-## Batch 4 — Extra Protection and Management
+## Batch 4 — Extra Protection and Management ✅ Implemented
 
-- HTTP/2 fingerprinting and header-order checks.
-- Honeypot traps and fake-Googlebot verification.
-- Tarpit responses for abusive clients.
-- Edge caching and a waiting room for traffic spikes.
-- Load balancing and backend failover.
-- WebSocket protection.
-- API key / JWT protection with per-key limits and GraphQL depth limits.
-- Dashboard roles and audit log.
-- Configuration rollback.
-- Rule simulator / dry-run mode.
-- Firewall-level block export (nftables / fail2ban).
+- HTTP/2 fingerprinting from the signals Go's stack exposes (protocol/TLS/ALPN/header-hash/presence flags) as the `http.http2` rule field. Honest limit: HTTP/2 SETTINGS order/values, WINDOW_UPDATE, and PRIORITY frames are not observable via Go's `net/http`, and HTTP/1 header order is not preserved by Go — neither is claimed.
+- Honeypot decoy endpoints (exact, case-sensitive match; configurable suspicion bump) and fake-Googlebot/Bingbot verification by reverse+forward DNS (fail-open on DNS errors, cached).
+- Tarpit responses for confirmed-bad requests (configurable delay, capped concurrency).
+- Edge caching (bounded, honors `private`/`no-store`, never caches `Set-Cookie` or authorized responses) with API purge, and a fair cookie-based waiting room for traffic spikes.
+- Load balancing (round-robin / least-connections) and failover with replay-safe retries, backend health checks, and a clearly-marked stale-cache fallback when all backends are down. This closes the Batch 1 gap (health checks + cached fallback page).
+- WebSocket proxying with a configurable idle timeout on a dedicated upgrade path.
+- API protection: per-route JWT validation (HS256 secret or RS256/ES256 via JWKS, tokens never logged), per-API-key rate limits, and GraphQL depth/field limits — all off unless configured, failing closed per route on bad config.
+- Dashboard roles (viewer/operator/admin via additional API secrets) and an audit log for every control-plane action (structured-log file when configured, else stdout; secrets never logged).
+- Configuration rollback: rotating `config.json` backups with list/restore API actions and dashboard UI; restores validate like a reload and roll the file back if the reload fails.
+- Rule simulator (match/no-match + fields used, nothing enforced) and per-domain dry-run mode (matches logged, no action taken), with dashboard UI.
+- Firewall rule export/import as JSON with full validation (invalid imports change nothing), with dashboard UI.
+
+Still planned from this batch's original scope: firewall-level block export (nftables / fail2ban). The JSON rule export/import above covers rule-set portability, not firewall-level blocklists.
 
 ## Batch 5 — Detection, Management, Business
 

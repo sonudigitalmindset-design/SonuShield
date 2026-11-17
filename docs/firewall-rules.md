@@ -18,6 +18,7 @@ These fields can be used in rule expressions. Values reflect the current request
 | `ip.fingerprint` | String | The client's raw TLS fingerprint (`Cloudflare` in Cloudflare mode). |
 | `ip.ja4` | String | The client's JA4 fingerprint, computed by SonuShield (`""` in Cloudflare mode). Only comparable with other SonuShield-computed JA4 values. |
 | `ip.reputation` | String | `"listed"` if the client IP is on the local blocklist or the fetched reputation feed, `""` otherwise. |
+| `ip.searchbot` | String | Search-bot verification result for the request: `"verified"` (claimed Googlebot/Bingbot and reverse+forward DNS confirmed it), `"fake"` (claimed it and verification failed), `"unchecked"` (DNS lookup failed, fail-open), or `""` (no search-bot user-agent claimed, or the check is disabled). See [Fake Search-Bot Verification](configuration.md#fake-search-bot-verification). |
 | `ip.http_requests` | Int | The client's forwarded HTTP requests in the current rate-limit window. |
 | `ip.challenge_requests` | Int | The client's challenge attempts in the current rate-limit window. |
 | `http.host` | String | The hostname of the current domain. |
@@ -29,6 +30,7 @@ These fields can be used in rule expressions. Values reflect the current request
 | `http.user_agent` | String | The user agent sent by the client. **Important:** always lowercased. |
 | `http.cookie` | String | The cookie string sent by the client. |
 | `http.fingerprint` | String | The `sh1` HTTP request fingerprint (sorted header names and other request properties). SonuShield's own format, comparable only within SonuShield. |
+| `http.http2` | String | The HTTP/2 connection fingerprint (`""` for HTTP/1.x requests). Built only from signals Go's stack exposes: protocol version, TLS version/cipher, ALPN, a hash of the sorted header names, and presence flags for common headers. HTTP/2 SETTINGS order/values, WINDOW_UPDATE, and PRIORITY frames are not observable through Go's `net/http` and are not included; HTTP/1 header order is not preserved by Go either, so no header-order fingerprinting is claimed for HTTP/1. See `/_bProxy/fingerprint` for the current request's value. |
 | `proxy.stage` | Int | The stage the reverse proxy is currently in. |
 | `proxy.cloudflare` | Bool | `true` if the proxy is in Cloudflare mode. |
 | `proxy.stage_locked` | Bool | `true` if the stage is locked to a specific stage. |
@@ -38,6 +40,8 @@ These fields can be used in rule expressions. Values reflect the current request
 | `proxy.rps_allowed` | Int | Currently incoming requests per second forwarded to the backend. |
 
 > **Do not use** `ip.requests`, `http.headers`, or `http.body` in rules. These names are registered in the rule engine but are never given values, so rules using them will not behave as expected.
+
+> **Bool fields cannot be compared.** The rule engine's equality test has no boolean case, so `eq`/`ne` on `proxy.cloudflare`, `proxy.stage_locked`, `proxy.attack`, and `proxy.bypass_attack` never match — this is a pre-existing limitation of the gofilter engine, not a configuration problem. The fields are listed for completeness; do not build rules that depend on comparing them. (A bare field name only tests whether the field exists, which is always true, since every field is always populated.)
 
 ## Comparison Operators
 
@@ -62,8 +66,10 @@ These fields can be used in rule expressions. Values reflect the current request
 
 ```text
 (http.user_agent contains "chrome")                          field contains value
-(http.user_agent matches "(?=.*\d)(?=.*[a-z])(?=.*[A-Z])")   field matches a regex
+(http.user_agent matches "(?i)bot|crawler|spider")           field matches a regex (case-insensitive)
 ```
+
+Patterns use Go's `regexp` (RE2) syntax: lookahead, lookbehind, and backreferences are **not** supported, and a pattern using them fails to compile — the rule is then rejected with a compile error.
 
 ## Structure
 
@@ -139,6 +145,13 @@ Prefixing the action with `+` or `-` instead adjusts the *current* suspicion lev
 ```
 
 This example raises the suspicion level by `1` for requests from an unknown browser engine. A `-1` action would lower it by `1`.
+
+## Testing Rules Before Enforcing Them
+
+Two tools help you check rules without affecting visitors:
+
+- The **rule simulator** ([`SIMULATE_RULE`](api.md#domain-actions), also in the dashboard's Firewall rules view) evaluates one expression against sample request fields you supply and reports match/no-match plus which fields the expression used. It enforces nothing. It evaluates with the same engine and the same field types as live traffic, so its answer matches what the live proxy would do — including the bool-comparison limitation above.
+- **Dry-run mode** (`rulesDryRun` per domain, also settable in the dashboard's Settings view) evaluates the domain's rules on live traffic and logs matches as `dryrun` entries (with the suspicion level the rules *would* have set) but leaves the suspicion level unchanged, so no request is challenged or blocked by rules. Dry-run entries appear in the structured log when JSON logging is enabled; see [Structured Logs](configuration.md#structured-logs).
 
 ## Next Steps
 
