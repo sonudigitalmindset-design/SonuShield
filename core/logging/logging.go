@@ -72,6 +72,10 @@ type Entry struct {
 
 	Stage    int `json:"stage,omitempty"`
 	SusLevel int `json:"sus_level,omitempty"`
+	// WouldBeSusLevel is set only on "dryrun" entries: the
+	// suspicion level the rules would have produced had dry-run
+	// mode been off. SusLevel stays the level actually applied.
+	WouldBeSusLevel int `json:"would_be_sus_level,omitempty"`
 
 	Method    string `json:"method,omitempty"`
 	Path      string `json:"path,omitempty"`

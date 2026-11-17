@@ -79,7 +79,7 @@ button:hover,.btn:hover{border-color:var(--faint)}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 button:disabled{opacity:.5;cursor:default}
-input,select{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px 12px;line-height:1.3}
+input,select,textarea{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px 12px;line-height:1.3}
 
 /* Layout */
 .layout{display:flex;min-height:calc(100vh - 57px)}
@@ -148,7 +148,7 @@ tbody tr:hover td{background:var(--panel-2)}
 /* Forms and controls */
 .formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px;margin:8px 0}
 .field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 6px}
-.field input,.field select{width:100%}
+.field input,.field select,.field textarea{width:100%}
 .field .hint{font-size:12px;color:var(--faint);margin-top:4px}
 button.danger{border-color:var(--bad-border);color:var(--bad-text)}
 button.danger:hover{border-color:var(--bad-text)}
@@ -290,6 +290,27 @@ tr.selected td{background:var(--nav-active-bg)}
         </form>
       </div>
       <div class="panel">
+        <h2>Rule simulator</h2>
+        <p class="small muted">Evaluate an expression against sample request fields, without enforcing anything. Leave the sample empty to test against zero values.</p>
+        <form id="simForm">
+          <div class="formgrid">
+            <div class="field" style="grid-column:1/-1">
+              <label for="simExpr">Expression</label>
+              <input id="simExpr" type="text" spellcheck="false" autocomplete="off" placeholder='(http.path eq "/wp-login.php")' required>
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label for="simSample">Sample request fields (JSON object)</label>
+              <textarea id="simSample" rows="4" spellcheck="false" autocomplete="off" placeholder='{"http.path": "/wp-login.php", "http.method": "POST", "ip.country": "US"}'></textarea>
+              <div class="hint">Field names are the same as in rules. Unknown fields are rejected. Values use the request types: <code>ip.src</code> an IP string, counters and <code>proxy.stage</code> integers, <code>proxy.*</code> flags booleans, the rest strings.</div>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit">Simulate</button>
+          </div>
+        </form>
+        <div id="simResult" style="margin-top:12px"></div>
+      </div>
+      <div class="panel">
         <h2>What the actions mean</h2>
         <table>
           <thead><tr><th>Action</th><th>Meaning</th></tr></thead>
@@ -386,6 +407,12 @@ tr.selected td{background:var(--nav-active-bg)}
             <div class="field"><label for="setWafMode">WAF mode</label><select id="setWafMode"><option value="off">Off</option><option value="log">Log only</option><option value="block">Block</option></select><div class="hint">Block mode answers matches with a generic 403.</div></div>
             <div class="field"><label for="setWafInspectBody">Inspect request bodies</label><select id="setWafInspectBody"><option value="true">Yes</option><option value="false">No</option></select></div>
             <div class="field"><label for="setWafWpLimit">WordPress login limit (per min/IP)</label><input id="setWafWpLimit" type="number" min="0" step="1"><div class="hint">0 uses the default of 20/minute.</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Firewall rules</h2>
+          <div class="formgrid">
+            <div class="field"><label for="setRulesDryRun">Rules dry-run mode</label><select id="setRulesDryRun"><option value="false">Off — rules enforced</option><option value="true">On — log matches, take no action</option></select><div class="hint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
           </div>
         </div>
         <div class="btnrow">
@@ -791,6 +818,20 @@ function submitRuleForm(ev){
   });
 }
 
+function simulateRule(){
+  var expr = $("simExpr").value.trim();
+  if(!expr) return;
+  showInline("rulesError", "rulesOk", "", "");
+  setHTML("simResult", '<div class="state">Simulating…</div>');
+  domainWrite(currentDomain, "SIMULATE_RULE", {expression: expr, sample: $("simSample").value}).then(function(r){
+    var fields = (r.FIELDS_USED || []).map(function(f){ return esc(f); }).join(", ") || "none";
+    setHTML("simResult", '<div class="state">' + (r.MATCH ? "<strong>Match.</strong> The expression matches this sample." : "<strong>No match.</strong> The expression does not match this sample.")
+      + "<br>Fields used: <span class='mono'>" + fields + "</span></div>");
+  }).catch(function(err){
+    setHTML("simResult", '<div class="state state-error"><strong>Could not simulate:</strong> ' + esc(err.message) + "</div>");
+  });
+}
+
 function loadLogs(){
   setText("logsDomain", currentDomain);
   return domainAction(currentDomain, "GET_LOGS").then(function(r){
@@ -832,6 +873,7 @@ function loadSettings(){
     setField("setWafMode", (r.WAF_MODE || "log").toLowerCase());
     setField("setWafInspectBody", r.WAF_INSPECT_BODY ? "true" : "false");
     setField("setWafWpLimit", r.WAF_WP_LOGIN_LIMIT);
+    setField("setRulesDryRun", r.RULES_DRY_RUN ? "true" : "false");
     setText("settingsProvider", r.CHALLENGE_PROVIDER || "none (proof-of-work)");
     setText("settingsKeys", r.CHALLENGE_KEYS_CONFIGURED ? "yes" : "no");
     showInline("settingsError", "settingsOk", "", "");
@@ -855,7 +897,8 @@ function submitSettings(ev){
     powDifficultyMax: $("setPowMax").value,
     wafMode: $("setWafMode").value,
     wafInspectBody: $("setWafInspectBody").value,
-    wafWpLoginLimit: $("setWafWpLimit").value
+    wafWpLoginLimit: $("setWafWpLimit").value,
+    rulesDryRun: $("setRulesDryRun").value
   };
   showInline("settingsError", "settingsOk", "", "");
   domainWrite(currentDomain, "SET_DOMAIN_CONFIG", params).then(function(){
@@ -1135,6 +1178,10 @@ $("domainInput").addEventListener("keydown", function(ev){
   if(ev.key === "Enter"){ ev.preventDefault(); $("domainBtn").click(); }
 });
 $("ruleForm").addEventListener("submit", submitRuleForm);
+$("simForm").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  simulateRule();
+});
 $("ruleCancel").addEventListener("click", function(){
   resetRuleForm();
   showInline("rulesError", "rulesOk", "", "");

@@ -248,6 +248,7 @@ func Load() {
 			GraphQLPath:         domain.GraphQLPath,
 			GraphQLMaxDepth:     domain.GraphQLMaxDepth,
 			GraphQLMaxFields:    domain.GraphQLMaxFields,
+			RulesDryRun:         domain.RulesDryRun,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

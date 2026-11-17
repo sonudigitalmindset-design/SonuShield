@@ -70,6 +70,7 @@ type Domain struct {
 	GraphQLPath         string           `json:"graphqlPath"`
 	GraphQLMaxDepth     int              `json:"graphqlMaxDepth"`
 	GraphQLMaxFields    int              `json:"graphqlMaxFields"`
+	RulesDryRun         bool             `json:"rulesDryRun"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -130,6 +131,7 @@ type DomainSettings struct {
 	GraphQLPath         string
 	GraphQLMaxDepth     int
 	GraphQLMaxFields    int
+	RulesDryRun         bool
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.

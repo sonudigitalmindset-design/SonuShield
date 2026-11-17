@@ -224,6 +224,8 @@ func domainConfigResponse(domainSettings *domains.DomainSettings) map[string]int
 		"WAF_INSPECT_BODY":   domainSettings.WAFInspectBody,
 		"WAF_WP_LOGIN_LIMIT": domainSettings.WAFWpLoginLimit,
 
+		"RULES_DRY_RUN": domainSettings.RulesDryRun,
+
 		"WEBHOOK_CONFIGURED":  domainSettings.DomainWebhooks.URL != "",
 		"TELEGRAM_CONFIGURED": domainSettings.DomainTelegram.BotToken != "" && domainSettings.DomainTelegram.ChatID != "",
 		"TELEGRAM_CHAT_ID":    domainSettings.DomainTelegram.ChatID,
@@ -337,6 +339,13 @@ func applyDomainConfig(domainSettings *domains.DomainSettings, params map[string
 			}
 			updated.WAFWpLoginLimit = parsed
 			pending[key] = parsed
+		case "rulesDryRun":
+			parsed, err := strconv.ParseBool(value)
+			if err != nil {
+				return nil, ERR_INVALID_PARAM, ""
+			}
+			updated.RulesDryRun = parsed
+			pending[key] = parsed
 		default:
 			// Unknown keys are rejected: names, backends,
 			// schemes, certificate paths, webhooks, alert
@@ -394,6 +403,7 @@ func applyDomainConfig(domainSettings *domains.DomainSettings, params map[string
 		domain.WAFMode = updated.WAFMode
 		domain.WAFInspectBody = updated.WAFInspectBody
 		domain.WAFWpLoginLimit = updated.WAFWpLoginLimit
+		domain.RulesDryRun = updated.RulesDryRun
 	})
 
 	return domainConfigResponse(&updated), "", ""

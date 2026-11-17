@@ -294,6 +294,19 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "SIMULATE_RULE":
+		response, errCode, detail := simulateRule(params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	default:
 		APIResponse(writer, false, map[string]interface{}{
 			"ERROR": ERR_ACTION_NOT_FOUND,

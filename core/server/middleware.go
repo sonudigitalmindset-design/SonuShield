@@ -304,9 +304,21 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"proxy.rps_allowed":   domainData.RequestsBypassedPerSecond,
 		}
 
-		susLv = firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
-		if logging.Enabled() {
-			matchedRules = firewall.MatchedRules(domainSettings, requestVariables)
+		if domainSettings.RulesDryRun {
+			//Dry-run mode (Batch 4): rules are evaluated and
+			//matches logged, but susLv is left unchanged, so
+			//no request is challenged or blocked by rules.
+			wouldBe := firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
+			dryMatched := firewall.MatchedRules(domainSettings, requestVariables)
+			if len(dryMatched) > 0 {
+				logging.Log(logging.Entry{Event: "dryrun", Domain: domainName, IP: ip, Action: "dryrun", Rules: dryMatched, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, WouldBeSusLevel: wouldBe, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			}
+			matchedRules = dryMatched
+		} else {
+			susLv = firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
+			if logging.Enabled() {
+				matchedRules = firewall.MatchedRules(domainSettings, requestVariables)
+			}
 		}
 	}
 
