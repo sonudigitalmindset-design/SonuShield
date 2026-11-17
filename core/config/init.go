@@ -178,6 +178,23 @@ func Load() {
 				AttackStartMsg: domain.Webhook.AttackStartMsg,
 				AttackStopMsg:  domain.Webhook.AttackStopMsg,
 			},
+			DomainTelegram: domains.TelegramSettings{
+				BotToken:       domain.Telegram.BotToken,
+				ChatID:         domain.Telegram.ChatID,
+				AttackStartMsg: domain.Telegram.AttackStartMsg,
+				AttackStopMsg:  domain.Telegram.AttackStopMsg,
+			},
+			DomainEmail: domains.EmailSettings{
+				SMTPHost:       domain.Email.SMTPHost,
+				SMTPPort:       domain.Email.SMTPPort,
+				Username:       domain.Email.Username,
+				Password:       domain.Email.Password,
+				From:           domain.Email.From,
+				To:             domain.Email.To,
+				UseTLS:         domain.Email.UseTLS,
+				AttackStartMsg: domain.Email.AttackStartMsg,
+				AttackStopMsg:  domain.Email.AttackStopMsg,
+			},
 
 			BypassStage1:        domain.BypassStage1,
 			BypassStage2:        domain.BypassStage2,

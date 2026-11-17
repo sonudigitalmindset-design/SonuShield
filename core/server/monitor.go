@@ -136,7 +136,7 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 			domainData.BufferCooldown--
 
 			if domainData.BufferCooldown == 0 {
-				go utils.SendWebhook(domainData, domainSettings, int(1))
+				go utils.SendAlerts(domainData, domainSettings, int(1))
 				domainData.PeakRequestsPerSecond = 0
 				domainData.PeakRequestsBypassedPerSecond = 0
 				domainData.RequestLogger = []domains.RequestLog{}
@@ -158,7 +158,7 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 						Total:    domainData.RequestsPerSecond,
 						CpuUsage: proxy.CpuUsage,
 					})
-					go utils.SendWebhook(domainData, domainSettings, int(0))
+					go utils.SendAlerts(domainData, domainSettings, int(0))
 				}
 				// Start/Set cooldown
 				domainData.BufferCooldown = 10
@@ -194,7 +194,7 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 					Total:    domainData.RequestsPerSecond,
 					CpuUsage: proxy.CpuUsage,
 				})
-				go utils.SendWebhook(domainData, domainSettings, int(0))
+				go utils.SendAlerts(domainData, domainSettings, int(0))
 			}
 
 			//Set/Start cooldown
@@ -506,6 +506,23 @@ func ReloadConfig() {
 				Avatar:         domain.Webhook.Avatar,
 				AttackStartMsg: domain.Webhook.AttackStartMsg,
 				AttackStopMsg:  domain.Webhook.AttackStopMsg,
+			},
+			DomainTelegram: domains.TelegramSettings{
+				BotToken:       domain.Telegram.BotToken,
+				ChatID:         domain.Telegram.ChatID,
+				AttackStartMsg: domain.Telegram.AttackStartMsg,
+				AttackStopMsg:  domain.Telegram.AttackStopMsg,
+			},
+			DomainEmail: domains.EmailSettings{
+				SMTPHost:       domain.Email.SMTPHost,
+				SMTPPort:       domain.Email.SMTPPort,
+				Username:       domain.Email.Username,
+				Password:       domain.Email.Password,
+				From:           domain.Email.From,
+				To:             domain.Email.To,
+				UseTLS:         domain.Email.UseTLS,
+				AttackStartMsg: domain.Email.AttackStartMsg,
+				AttackStopMsg:  domain.Email.AttackStopMsg,
 			},
 
 			BypassStage1:        domain.BypassStage1,

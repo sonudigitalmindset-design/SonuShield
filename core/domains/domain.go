@@ -23,29 +23,31 @@ type Configuration struct {
 }
 
 type Domain struct {
-	Name                string          `json:"name"`
-	Backend             string          `json:"backend"`
-	Scheme              string          `json:"scheme"`
-	Certificate         string          `json:"certificate"`
-	Key                 string          `json:"key"`
-	Webhook             WebhookSettings `json:"webhook"`
-	FirewallRules       []JsonRule      `json:"firewallRules"`
-	BypassStage1        int             `json:"bypassStage1"`
-	BypassStage2        int             `json:"bypassStage2"`
-	Stage2Difficulty    int             `json:"stage2Difficulty"`
-	AdaptivePow         bool            `json:"adaptivePow"`
-	PoWDifficultyMin    int             `json:"powDifficultyMin"`
-	PoWDifficultyMax    int             `json:"powDifficultyMax"`
-	ChallengeProvider   string          `json:"challengeProvider"`
-	ChallengeSiteKey    string          `json:"challengeSiteKey"`
-	ChallengeSecretKey  string          `json:"challengeSecretKey"`
-	WAFMode             string          `json:"wafMode"`
-	WAFInspectBody      bool            `json:"wafInspectBody"`
-	WAFWpLoginLimit     int             `json:"wafWpLoginLimit"`
-	DisableBypassStage3 int             `json:"disableBypassStage3"`
-	DisableRawStage3    int             `json:"disableRawStage3"`
-	DisableBypassStage2 int             `json:"disableBypassStage2"`
-	DisableRawStage2    int             `json:"disableRawStage2"`
+	Name                string           `json:"name"`
+	Backend             string           `json:"backend"`
+	Scheme              string           `json:"scheme"`
+	Certificate         string           `json:"certificate"`
+	Key                 string           `json:"key"`
+	Webhook             WebhookSettings  `json:"webhook"`
+	Telegram            TelegramSettings `json:"telegram"`
+	Email               EmailSettings    `json:"email"`
+	FirewallRules       []JsonRule       `json:"firewallRules"`
+	BypassStage1        int              `json:"bypassStage1"`
+	BypassStage2        int              `json:"bypassStage2"`
+	Stage2Difficulty    int              `json:"stage2Difficulty"`
+	AdaptivePow         bool             `json:"adaptivePow"`
+	PoWDifficultyMin    int              `json:"powDifficultyMin"`
+	PoWDifficultyMax    int              `json:"powDifficultyMax"`
+	ChallengeProvider   string           `json:"challengeProvider"`
+	ChallengeSiteKey    string           `json:"challengeSiteKey"`
+	ChallengeSecretKey  string           `json:"challengeSecretKey"`
+	WAFMode             string           `json:"wafMode"`
+	WAFInspectBody      bool             `json:"wafInspectBody"`
+	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
+	DisableBypassStage3 int              `json:"disableBypassStage3"`
+	DisableRawStage3    int              `json:"disableRawStage3"`
+	DisableBypassStage2 int              `json:"disableBypassStage2"`
+	DisableRawStage2    int              `json:"disableRawStage2"`
 }
 
 type DomainSettings struct {
@@ -57,6 +59,8 @@ type DomainSettings struct {
 	DomainProxy        *httputil.ReverseProxy
 	DomainCertificates tls.Certificate
 	DomainWebhooks     WebhookSettings
+	DomainTelegram     TelegramSettings
+	DomainEmail        EmailSettings
 
 	BypassStage1        int
 	BypassStage2        int
@@ -142,6 +146,25 @@ type WebhookSettings struct {
 	URL            string `json:"url"`
 	Name           string `json:"name"`
 	Avatar         string `json:"avatar"`
+	AttackStartMsg string `json:"attack_start_msg"`
+	AttackStopMsg  string `json:"attack_stop_msg"`
+}
+
+type TelegramSettings struct {
+	BotToken       string `json:"botToken"`
+	ChatID         string `json:"chatId"`
+	AttackStartMsg string `json:"attack_start_msg"`
+	AttackStopMsg  string `json:"attack_stop_msg"`
+}
+
+type EmailSettings struct {
+	SMTPHost       string `json:"smtpHost"`
+	SMTPPort       int    `json:"smtpPort"`
+	Username       string `json:"username"`
+	Password       string `json:"password"`
+	From           string `json:"from"`
+	To             string `json:"to"`
+	UseTLS         bool   `json:"useTLS"`
 	AttackStartMsg string `json:"attack_start_msg"`
 	AttackStopMsg  string `json:"attack_stop_msg"`
 }
