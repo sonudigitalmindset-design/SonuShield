@@ -247,6 +247,15 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		sharedRep = firewall.LookupSharedReputation(ip, tlsFp)
 	}
 
+	//CORS preflight (Batch 5). Answered directly, without
+	//challenge, when the domain configures CORS: browsers send
+	//preflights without credentials, so challenging them would
+	//break cross-origin access entirely. Unconfigured domains
+	//are unaffected.
+	if HandlePreflight(writer, request, domainSettings.CORS) {
+		return
+	}
+
 	//Payload size limit (Batch 5). Requests whose declared body
 	//exceeds the effective limit are rejected with a clean 413
 	//before any evaluation work; chunked bodies (unknown length)
@@ -704,6 +713,10 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 					writer.Header().Add(name, value)
 				}
 			}
+			//CORS headers are per-request (they depend on the
+			//request's Origin) and are never stored in the cache,
+			//so they are applied again here at serve time.
+			ApplyCORSHeaders(writer.Header(), domainSettings.CORS, request)
 			writer.Header().Set("Age", strconv.Itoa(int(age.Seconds())))
 			writer.WriteHeader(status)
 			writer.Write(cachedBody)

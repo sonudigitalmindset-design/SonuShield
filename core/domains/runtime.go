@@ -38,4 +38,14 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 			fmt.Println("[ ! ] [ ignoring invalid bodyLimits entry for " + domain.Name + ": prefix must be non-empty and maxBytes positive ]")
 		}
 	}
+	// CORS is validated here (Load and reload both run
+	// InitRuntime): an invalid policy is disabled with a warning
+	// and fails closed. Security-header entries are validated
+	// the same way; invalid ones are skipped at apply time.
+	settings.CORS = ValidateCORS(domain.Name, domain.CORS)
+	for name, value := range domain.SecurityHeaders {
+		if !ValidSecurityHeader(name, value) {
+			fmt.Println("[ ! ] [ ignoring invalid securityHeaders entry for " + domain.Name + ": " + name + " ]")
+		}
+	}
 }

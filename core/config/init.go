@@ -263,6 +263,8 @@ func Load() {
 			MaxBodyBytes:          domain.MaxBodyBytes,
 			BodyLimits:            domain.BodyLimits,
 			OriginLockSecret:      domain.OriginLockSecret,
+			SecurityHeaders:     domain.SecurityHeaders,
+			CORS:                domain.CORS,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

@@ -81,6 +81,8 @@ type Domain struct {
 	MaxBodyBytes        int64           `json:"maxBodyBytes"`
 	BodyLimits          []BodyLimit     `json:"bodyLimits"`
 	OriginLockSecret    string          `json:"originLockSecret"`
+	SecurityHeaders     map[string]string `json:"securityHeaders"`
+	CORS                *CORSConfig     `json:"cors"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -152,6 +154,8 @@ type DomainSettings struct {
 	MaxBodyBytes          int64
 	BodyLimits            []BodyLimit
 	OriginLockSecret      string
+	SecurityHeaders     map[string]string
+	CORS                *CORSConfig
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.

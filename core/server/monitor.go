@@ -520,7 +520,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			Host:   domain.Backend,
 		})
 		dProxy.Transport = &RoundTripper{}
-		dProxy.ModifyResponse = CacheModifyResponse
+		dProxy.ModifyResponse = ModifyResponseHook
 
 		// With autoSSL enabled, a domain without certificate/key paths
 		// keeps the empty certificate here; domains.GetCertificate
@@ -620,6 +620,8 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			MaxBodyBytes:          domain.MaxBodyBytes,
 			BodyLimits:            domain.BodyLimits,
 			OriginLockSecret:      domain.OriginLockSecret,
+			SecurityHeaders:     domain.SecurityHeaders,
+			CORS:                domain.CORS,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)
