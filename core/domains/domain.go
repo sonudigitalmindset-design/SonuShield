@@ -110,6 +110,8 @@ type Proxy struct {
 	Secrets         map[string]string `json:"secrets"`
 	Timeout         TimeoutSettings   `json:"timeout"`
 	RatelimitWindow int               `json:"ratelimit_time"`
+	GeoIPCountryDB  string            `json:"geoipCountryDatabase"`
+	GeoIPASNDB      string            `json:"geoipASNDatabase"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

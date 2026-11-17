@@ -175,8 +175,21 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	httpFp := firewall.ComputeHTTPFingerprint(request)
 
 	if len(domainSettings.CustomRules) != 0 {
+		//Geo/ASN lookup. Zero values when no database is configured, so
+		//rules simply do not match on these fields. In Cloudflare mode
+		//the CF-IPCountry header is authoritative and wins over the
+		//database for the country; the ASN still comes from the database.
+		geoCountry, geoASN := firewall.LookupGeo(ip)
+		if domains.Config.Proxy.Cloudflare {
+			if cfCountry := request.Header.Get("CF-IPCountry"); cfCountry != "" {
+				geoCountry = cfCountry
+			}
+		}
+
 		requestVariables := gofilter.Message{
 			"ip.src":                net.ParseIP(ip),
+			"ip.country":            geoCountry,
+			"ip.asn":                geoASN,
 			"ip.engine":             browser,
 			"ip.bot":                botFp,
 			"ip.fingerprint":        tlsFp,

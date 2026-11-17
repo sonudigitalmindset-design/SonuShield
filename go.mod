@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/kor44/gofilter v0.0.0-20171111115139-75787865c72c
+	github.com/oschwald/geoip2-golang v1.13.0
 	github.com/shirou/gopsutil/v4 v4.25.12
 	github.com/zeebo/blake3 v0.2.4
 	golang.org/x/image v0.36.0
@@ -14,6 +15,7 @@ require (
 	github.com/ebitengine/purego v0.9.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
+	github.com/oschwald/maxminddb-golang v1.13.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	golang.org/x/text v0.34.0 // indirect
 )

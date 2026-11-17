@@ -58,3 +58,7 @@ oryxBuildBinary
 assets/server/
 *.crt
 *.key
+
+# Local GeoIP databases (MaxMind DB files supplied by the operator).
+# Never commit downloaded databases.
+*.mmdb

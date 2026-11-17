@@ -94,6 +94,12 @@ func Load() {
 	}
 	proxy.RatelimitWindow = domains.Config.Proxy.RatelimitWindow
 
+	if domains.Config.Proxy.GeoIPCountryDB != "" || domains.Config.Proxy.GeoIPASNDB != "" {
+		if geoErr := firewall.InitGeoIP(domains.Config.Proxy.GeoIPCountryDB, domains.Config.Proxy.GeoIPASNDB); geoErr != nil {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Failed to open GeoIP database, Geo/ASN rules will not match: " + geoErr.Error() + " ]")
+		}
+	}
+
 	proxy.IPRatelimit = domains.Config.Proxy.Ratelimits["requests"]
 	proxy.FPRatelimit = domains.Config.Proxy.Ratelimits["unknownFingerprint"]
 	proxy.FailChallengeRatelimit = domains.Config.Proxy.Ratelimits["challengeFailures"]
