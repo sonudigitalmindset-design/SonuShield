@@ -340,6 +340,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
 			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			domainSettings.Tarpit.Apply(susLv)
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")"), buffer, writer)
 			return
 		}
@@ -472,6 +473,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
 			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			domainSettings.Tarpit.Apply(susLv)
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr), buffer, writer)
 			return
 		}

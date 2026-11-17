@@ -46,6 +46,9 @@ type Domain struct {
 	HoneypotSusLv       int              `json:"honeypotSusLv"`
 	FakeBotCheck        bool             `json:"fakeBotCheck"`
 	FakeBotSusLv        int              `json:"fakeBotSusLv"`
+	TarpitDelayMs       int              `json:"tarpitDelayMs"`
+	TarpitSusLv         int              `json:"tarpitSusLv"`
+	TarpitMaxConns      int              `json:"tarpitMaxConns"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -85,6 +88,13 @@ type DomainSettings struct {
 	HoneypotSusLv       int
 	FakeBotCheck        bool
 	FakeBotSusLv        int
+	TarpitDelayMs       int
+	TarpitSusLv         int
+	TarpitMaxConns      int
+
+	//Runtime state, built by InitRuntime. Nil when the feature is
+	//disabled; every object is safe to use through a nil pointer.
+	Tarpit *TarpitLimiter
 }
 
 type DomainLog struct {

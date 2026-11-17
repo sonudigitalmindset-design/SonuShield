@@ -169,7 +169,7 @@ func Load() {
 			}
 		}
 
-		domains.DomainsMap.Store(domain.Name, domains.DomainSettings{
+		settings := domains.DomainSettings{
 			Name: domain.Name,
 
 			CustomRules:    firewallRules,
@@ -221,7 +221,12 @@ func Load() {
 			HoneypotSusLv:       domain.HoneypotSusLv,
 			FakeBotCheck:        domain.FakeBotCheck,
 			FakeBotSusLv:        domain.FakeBotSusLv,
-		})
+			TarpitDelayMs:       domain.TarpitDelayMs,
+			TarpitSusLv:         domain.TarpitSusLv,
+			TarpitMaxConns:      domain.TarpitMaxConns,
+		}
+		domains.InitRuntime(&settings, domain)
+		domains.DomainsMap.Store(domain.Name, settings)
 
 		firewall.Mutex.Lock()
 

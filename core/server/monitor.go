@@ -527,7 +527,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			}
 		}
 
-		domains.DomainsMap.Store(domain.Name, domains.DomainSettings{
+		settings := domains.DomainSettings{
 			Name: domain.Name,
 
 			CustomRules:    firewallRules,
@@ -579,7 +579,12 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			HoneypotSusLv:       domain.HoneypotSusLv,
 			FakeBotCheck:        domain.FakeBotCheck,
 			FakeBotSusLv:        domain.FakeBotSusLv,
-		})
+			TarpitDelayMs:       domain.TarpitDelayMs,
+			TarpitSusLv:         domain.TarpitSusLv,
+			TarpitMaxConns:      domain.TarpitMaxConns,
+		}
+		domains.InitRuntime(&settings, domain)
+		domains.DomainsMap.Store(domain.Name, settings)
 
 		if domain.Stage2Difficulty == 0 {
 			domain.Stage2Difficulty = 5
