@@ -71,6 +71,8 @@ type Domain struct {
 	GraphQLMaxDepth     int              `json:"graphqlMaxDepth"`
 	GraphQLMaxFields    int              `json:"graphqlMaxFields"`
 	RulesDryRun         bool             `json:"rulesDryRun"`
+	RiskHighRiskCountries []string       `json:"riskHighRiskCountries"`
+	RiskHighRiskASNs    []int            `json:"riskHighRiskASNs"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -132,6 +134,8 @@ type DomainSettings struct {
 	GraphQLMaxDepth     int
 	GraphQLMaxFields    int
 	RulesDryRun         bool
+	RiskHighRiskCountries []string
+	RiskHighRiskASNs      []int
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
@@ -175,6 +179,14 @@ type DomainData struct {
 	PeakRequestsPerSecond         int
 	PeakRequestsBypassedPerSecond int
 	RequestLogger                 []RequestLog
+
+	// Risk-score aggregates (Batch 5): every evaluated request
+	// contributes its composite score, so attack reports can
+	// summarise average and peak risk. Reset by reload, like the
+	// other counters.
+	RiskSum   int64
+	RiskCount int64
+	RiskMax   int
 }
 
 type Proxy struct {

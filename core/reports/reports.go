@@ -86,6 +86,13 @@ type Report struct {
 	BackendRequestsError int64            `json:"backend_requests_failed"`
 	BackendLatencyAvg    *float64         `json:"backend_latency_avg_seconds,omitempty"`
 
+	// Risk-score summary (Batch 5): average and peak composite
+	// score over the evaluated requests, and how many requests
+	// were scored. RiskAvg is nil when nothing was scored yet.
+	RiskAvg     *float64 `json:"risk_avg,omitempty"`
+	RiskMax     int      `json:"risk_max"`
+	RiskSamples int64    `json:"risk_samples"`
+
 	TopLimit               int          `json:"top_limit"`
 	TopVerifiedIPs         []IPEntry    `json:"top_verified_ips_proxy_wide"`
 	TopUnverifiedIPs       []IPEntry    `json:"top_unverified_ips_proxy_wide"`
@@ -161,6 +168,13 @@ func Build(domain string, data domains.DomainData, snap metrics.Snapshot, verifi
 	if snap.LatencyCount > 0 {
 		avg := snap.LatencySum / float64(snap.LatencyCount)
 		report.BackendLatencyAvg = &avg
+	}
+
+	if data.RiskCount > 0 {
+		riskAvg := float64(data.RiskSum) / float64(data.RiskCount)
+		report.RiskAvg = &riskAvg
+		report.RiskMax = data.RiskMax
+		report.RiskSamples = data.RiskCount
 	}
 
 	report.TopVerifiedIPs = topIPs(verified, top)

@@ -72,6 +72,12 @@ type Entry struct {
 
 	Stage    int `json:"stage,omitempty"`
 	SusLevel int `json:"sus_level,omitempty"`
+	// RiskScore is the composite 0-100 risk score for the request
+	// (Batch 5), computed from the signals known at evaluation
+	// time. See firewall/risk.go for the weights. It is 0 (and
+	// omitted) for entries logged before evaluation, such as the
+	// early rate-limit blocks.
+	RiskScore int `json:"risk_score,omitempty"`
 	// WouldBeSusLevel is set only on "dryrun" entries: the
 	// suspicion level the rules would have produced had dry-run
 	// mode been off. SusLevel stays the level actually applied.

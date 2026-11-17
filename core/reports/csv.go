@@ -70,6 +70,9 @@ func ToCSV(report Report) string {
 	row("summary", "backend_requests_ok", strconv.FormatInt(report.BackendRequestsOK, 10), "")
 	row("summary", "backend_requests_failed", strconv.FormatInt(report.BackendRequestsError, 10), "")
 	row("summary", "backend_latency_avg_seconds", formatFloat(report.BackendLatencyAvg), "")
+	row("summary", "risk_avg", formatFloat(report.RiskAvg), "")
+	row("summary", "risk_max", strconv.Itoa(report.RiskMax), "")
+	row("summary", "risk_samples", strconv.FormatInt(report.RiskSamples, 10), "")
 	row("summary", "top_limit", strconv.Itoa(report.TopLimit), "")
 
 	writeCountMap := func(section string, values map[string]int64) {

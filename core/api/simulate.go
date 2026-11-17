@@ -32,7 +32,7 @@ const (
 )
 
 var simulateIntFields = map[string]bool{
-	"ip.asn": true, "ip.http_requests": true, "ip.challenge_requests": true,
+	"ip.asn": true, "ip.risk": true, "ip.http_requests": true, "ip.challenge_requests": true,
 	"proxy.stage": true, "proxy.rps": true, "proxy.rps_allowed": true,
 }
 
@@ -86,6 +86,7 @@ func sampleVariables(sample string) (gofilter.Message, error) {
 		"ip.ja4":                "",
 		"ip.reputation":         "",
 		"ip.searchbot":          "",
+		"ip.risk":               0,
 		"ip.http_requests":      0,
 		"ip.challenge_requests": 0,
 

@@ -55,7 +55,7 @@ var ruleFields = map[string]bool{
 	"ip.src": true, "ip.country": true, "ip.asn": true,
 	"ip.engine": true, "ip.bot": true, "ip.fingerprint": true,
 	"ip.ja4": true, "ip.reputation": true, "ip.searchbot": true,
-	"ip.http_requests": true, "ip.challenge_requests": true,
+	"ip.risk": true, "ip.http_requests": true, "ip.challenge_requests": true,
 	"http.host": true, "http.version": true, "http.method": true,
 	"http.url": true, "http.query": true, "http.path": true,
 	"http.user_agent": true, "http.cookie": true,

@@ -205,6 +205,53 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	reqUa := request.UserAgent()
 
+	//Geo/ASN lookup, hoisted here so the risk score and the firewall
+	//rules share one result. Zero values when no database is
+	//configured, so rules simply do not match on these fields. In
+	//Cloudflare mode the CF-IPCountry header is authoritative and
+	//wins over the database for the country; the ASN still comes
+	//from the database.
+	geoCountry, geoASN := firewall.LookupGeo(ip)
+	if domains.Config.Proxy.Cloudflare {
+		if cfCountry := request.Header.Get("CF-IPCountry"); cfCountry != "" {
+			geoCountry = cfCountry
+		}
+	}
+
+	//IP reputation lookup, hoisted for the same reason: the risk
+	//score, the firewall rules, and the post-rule bump all use this
+	//one result.
+	repListed := firewall.LookupReputation(ip)
+
+	//Composite risk score (Batch 5). A snapshot of the signals
+	//known at evaluation time; see firewall/risk.go for the
+	//weights. It is a firewall rule field (ip.risk), is carried in
+	//structured logs, and feeds the per-domain aggregates used by
+	//attack reports. Same-request honeypot and fake-bot hits raise
+	//susLv after this point and are not reflected in it.
+	riskScore := firewall.ComputeRiskScore(firewall.RiskInputs{
+		SusLevel:           susLv,
+		KnownBrowser:       browser != "",
+		BotListed:          botFp != "",
+		UnknownFingerprint: browser == "" && botFp == "" && tlsFp != "",
+		ReputationListed:   repListed,
+		ChallengeFailures:  ipCountCookie,
+		Country:            geoCountry,
+		ASN:                geoASN,
+		HighRiskCountries:  domainSettings.RiskHighRiskCountries,
+		HighRiskASNs:       domainSettings.RiskHighRiskASNs,
+	})
+
+	firewall.Mutex.Lock()
+	domainData = domains.DomainsData[domainName]
+	domainData.RiskSum += int64(riskScore)
+	domainData.RiskCount++
+	if riskScore > domainData.RiskMax {
+		domainData.RiskMax = riskScore
+	}
+	domains.DomainsData[domainName] = domainData
+	firewall.Mutex.Unlock()
+
 	//WAF-lite inspection. Log-only by default (matches are logged, the
 	//request continues); block mode answers with a generic unbranded
 	//403. Runs after the challenge-verify hook so verification POSTs
@@ -216,7 +263,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		if wafBlocked {
 			wafEvent, wafAction = "block", "waf"
 		}
-		logging.Log(logging.Entry{Event: wafEvent, Domain: domainName, IP: ip, Action: wafAction, Rule: wafRule, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		logging.Log(logging.Entry{Event: wafEvent, Domain: domainName, IP: ip, Action: wafAction, Rule: wafRule, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 	if wafBlocked {
 		metrics.ObserveBlock(domainName, "waf")
@@ -231,7 +278,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//paths, and with no paths configured this is a no-op.
 	if firewall.HoneypotHit(domainSettings.HoneypotPaths, request.URL.Path) {
 		susLv += firewall.HoneypotBump(domainSettings.HoneypotSusLv)
-		logging.Log(logging.Entry{Event: "honeypot", Domain: domainName, IP: ip, Action: "honeypot", Rule: logPath, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		logging.Log(logging.Entry{Event: "honeypot", Domain: domainName, IP: ip, Action: "honeypot", Rule: logPath, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 
 	//Fake search-bot verification. Only when the operator enabled
@@ -243,13 +290,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		searchBot = firewall.ClassifySearchBot(ip, reqUa)
 		if searchBot == "fake" {
 			susLv += firewall.FakeBotBump(domainSettings.FakeBotSusLv)
-			logging.Log(logging.Entry{Event: "fakebot", Domain: domainName, IP: ip, Action: "fake_bot", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			logging.Log(logging.Entry{Event: "fakebot", Domain: domainName, IP: ip, Action: "fake_bot", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 		}
 	}
 
 	httpFp := firewall.ComputeHTTPFingerprint(request)
 	h2Fp := firewall.ComputeHTTP2Fingerprint(request)
-	repListed := firewall.LookupReputation(ip)
+	//repListed was computed above, next to the risk score.
 	repValue := ""
 	if repListed {
 		repValue = "listed"
@@ -260,17 +307,6 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	matchedRules := []string{}
 
 	if len(domainSettings.CustomRules) != 0 {
-		//Geo/ASN lookup. Zero values when no database is configured, so
-		//rules simply do not match on these fields. In Cloudflare mode
-		//the CF-IPCountry header is authoritative and wins over the
-		//database for the country; the ASN still comes from the database.
-		geoCountry, geoASN := firewall.LookupGeo(ip)
-		if domains.Config.Proxy.Cloudflare {
-			if cfCountry := request.Header.Get("CF-IPCountry"); cfCountry != "" {
-				geoCountry = cfCountry
-			}
-		}
-
 		requestVariables := gofilter.Message{
 			"ip.src":                net.ParseIP(ip),
 			"ip.country":            geoCountry,
@@ -281,6 +317,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.ja4":                ja4Fp,
 			"ip.reputation":         repValue,
 			"ip.searchbot":          searchBot,
+			"ip.risk":               riskScore,
 			"ip.http_requests":      ipCount,
 			"ip.challenge_requests": ipCountCookie,
 
@@ -311,7 +348,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			wouldBe := firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
 			dryMatched := firewall.MatchedRules(domainSettings, requestVariables)
 			if len(dryMatched) > 0 {
-				logging.Log(logging.Entry{Event: "dryrun", Domain: domainName, IP: ip, Action: "dryrun", Rules: dryMatched, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, WouldBeSusLevel: wouldBe, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+				logging.Log(logging.Entry{Event: "dryrun", Domain: domainName, IP: ip, Action: "dryrun", Rules: dryMatched, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, WouldBeSusLevel: wouldBe, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			}
 			matchedRules = dryMatched
 		} else {
@@ -351,7 +388,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
-			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			domainSettings.Tarpit.Apply(susLv)
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")"), buffer, writer)
 			return
@@ -378,13 +415,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			//This request is not to be challenged (whitelist)
 		case 1:
 			metrics.ObserveChallenge(domainName, 1)
-			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			writer.Header().Set("Set-Cookie", "_1__bProxy_v="+encryptedIP+"; SameSite=Lax; path=/; Secure")
 			http.Redirect(writer, request, request.URL.RequestURI(), http.StatusFound)
 			return
 		case 2:
 			metrics.ObserveChallenge(domainName, 2)
-			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			//Challenge provider (Turnstile/hCaptcha) replaces the
 			//proof-of-work page when the operator configured one with
 			//their own keys. Falls back to proof-of-work when the
@@ -417,7 +454,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			return
 		case 3:
 			metrics.ObserveChallenge(domainName, 3)
-			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			secretPart := encryptedIP[:6]
 			publicPart := encryptedIP[6:]
 
@@ -484,7 +521,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "suspect")
-			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "suspect", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			domainSettings.Tarpit.Apply(susLv)
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr), buffer, writer)
 			return
@@ -511,7 +548,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	// Structured log for requests that passed the challenge. Logged
 	// after the mutex is released; nothing here takes the firewall
 	// lock, so the log write can never stall request handling on it.
-	logging.Log(logging.Entry{Event: "allow", Domain: domainName, IP: ip, Action: "allow", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent(), RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
+	logging.Log(logging.Entry{Event: "allow", Domain: domainName, IP: ip, Action: "allow", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent(), RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 
 	//Reserved proxy-paths
 
