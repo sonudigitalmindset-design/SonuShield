@@ -32,6 +32,11 @@ const maxCSPReportBytes = 64 << 10
 
 // cspReportBody is the wire shape of one report body, in
 // either format. Only the stored subset of fields is decoded.
+// The legacy report-uri format uses kebab-case field names
+// ("document-uri", "violated-directive", ...); the Reporting
+// API (report-to) format uses camelCase ("documentURL",
+// "violatedDirective", ...). Both spellings are accepted:
+// kebab-case wins when both are present.
 type cspReportBody struct {
 	DocumentURI        string `json:"document-uri"`
 	BlockedURI         string `json:"blocked-uri"`
@@ -42,6 +47,63 @@ type cspReportBody struct {
 	ColumnNumber       int    `json:"column-number"`
 	StatusCode         int    `json:"status-code"`
 	Disposition        string `json:"disposition"`
+}
+
+// cspReportBodyCamel is the Reporting API spelling of the same
+// fields. It exists only for decoding; see UnmarshalJSON.
+type cspReportBodyCamel struct {
+	DocumentURI        string `json:"documentURL"`
+	BlockedURI         string `json:"blockedURL"`
+	ViolatedDirective  string `json:"violatedDirective"`
+	EffectiveDirective string `json:"effectiveDirective"`
+	SourceFile         string `json:"sourceFile"`
+	LineNumber         int    `json:"lineNumber"`
+	ColumnNumber       int    `json:"columnNumber"`
+	StatusCode         int    `json:"statusCode"`
+	Disposition        string `json:"disposition"`
+}
+
+// UnmarshalJSON decodes either field spelling, preferring the
+// kebab-case value when both spellings carry a field.
+func (b *cspReportBody) UnmarshalJSON(data []byte) error {
+	type kebab cspReportBody
+	var k kebab
+	if err := json.Unmarshal(data, &k); err != nil {
+		return err
+	}
+	var c cspReportBodyCamel
+	if err := json.Unmarshal(data, &c); err != nil {
+		return err
+	}
+	*b = cspReportBody(k)
+	if b.DocumentURI == "" {
+		b.DocumentURI = c.DocumentURI
+	}
+	if b.BlockedURI == "" {
+		b.BlockedURI = c.BlockedURI
+	}
+	if b.ViolatedDirective == "" {
+		b.ViolatedDirective = c.ViolatedDirective
+	}
+	if b.EffectiveDirective == "" {
+		b.EffectiveDirective = c.EffectiveDirective
+	}
+	if b.SourceFile == "" {
+		b.SourceFile = c.SourceFile
+	}
+	if b.LineNumber == 0 {
+		b.LineNumber = c.LineNumber
+	}
+	if b.ColumnNumber == 0 {
+		b.ColumnNumber = c.ColumnNumber
+	}
+	if b.StatusCode == 0 {
+		b.StatusCode = c.StatusCode
+	}
+	if b.Disposition == "" {
+		b.Disposition = c.Disposition
+	}
+	return nil
 }
 
 // stripURIQuery removes the query string and fragment from a
