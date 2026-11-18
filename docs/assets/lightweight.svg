@@ -1,58 +1,73 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="240" viewBox="0 0 900 240" role="img" aria-label="Lightweight: a single static binary with small CPU and memory use on a small server">
-  <defs>
-    <marker id="arrow5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#57606a"/>
-    </marker>
-  </defs>
-  <rect width="900" height="240" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
-  <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+ <defs>
+  <marker id="arrow5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+   <path d="M0 0 L10 5 L0 10 z" fill="#57606a"/>
+  </marker>
+  <clipPath id="cmdClip"><rect x="70" y="100" width="0" height="34"><animate attributeName="width" values="0;170" dur="0.6s" begin="0.6s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></rect></clipPath>
+  <clipPath id="barClips">
+   <rect x="672" y="80" width="168" height="14" rx="7"/>
+   <rect x="672" y="116" width="168" height="14" rx="7"/>
+  </clipPath>
+ </defs>
+ <rect width="900" height="240" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+ <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
     <g opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
-      <rect x="40" y="55" width="230" height="130" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-      <text x="155" y="86" text-anchor="middle" font-size="15" font-weight="700" fill="#14263f">One static binary</text>
-      <rect x="70" y="100" width="170" height="34" rx="6" fill="#14263f"/>
-      <text x="155" y="122" text-anchor="middle" font-size="14" font-family="ui-monospace,monospace" fill="#f59e0b">$ ./main</text>
-      <text x="155" y="162" text-anchor="middle" font-size="12" fill="#57606a">no runtime, no database,</text>
-      <text x="155" y="178" text-anchor="middle" font-size="12" fill="#57606a">no extra services</text>
-    </g>
-    <line x1="272" y1="120" x2="332" y2="120" stroke="#57606a" stroke-width="2" marker-end="url(#arrow5)" opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.3s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-    </line>
-    <g opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
-      <rect x="340" y="35" width="230" height="170" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-      <text x="455" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#14263f">Small server</text>
-      <rect x="368" y="76" width="174" height="26" rx="5" fill="#eef1f4"/>
-      <rect x="368" y="76" width="174" height="26" rx="5" fill="#eef1f4"/>
-      <circle cx="382" cy="89" r="4" fill="#22c55e"><animate attributeName="opacity" values="1;0.3;1" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="2.4s" repeatCount="indefinite"/></circle>
-      <rect x="368" y="108" width="174" height="26" rx="5" fill="#eef1f4"/>
-      <circle cx="382" cy="121" r="4" fill="#22c55e"><animate attributeName="opacity" values="1;0.3;1" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="2.4s" begin="0.3s" repeatCount="indefinite"/></circle>
-      <rect x="368" y="140" width="174" height="26" rx="5" fill="#eef1f4"/>
-      <circle cx="382" cy="153" r="4" fill="#22c55e"><animate attributeName="opacity" values="1;0.3;1" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="2.4s" begin="0.6s" repeatCount="indefinite"/></circle>
-      <text x="455" y="190" text-anchor="middle" font-size="12" fill="#57606a">runs smoothly with</text>
-      <text x="455" y="206" text-anchor="middle" font-size="12" fill="#57606a">minimal resources</text>
-    </g>
-    <g opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
-      <rect x="610" y="35" width="250" height="170" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-      <text x="735" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#14263f">Stays light under load</text>
-      <text x="630" y="92" font-size="12" fill="#57606a">CPU</text>
-      <rect x="672" y="80" width="168" height="14" rx="7" fill="#eef1f4"/>
-      <rect x="672" y="80" width="52" height="14" rx="7" fill="#22c55e">
-        <animate attributeName="width" values="52;84;60;52" keyTimes="0;0.33;0.66;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" dur="6s" repeatCount="indefinite"/>
-      </rect>
-      <text x="630" y="128" font-size="12" fill="#57606a">RAM</text>
-      <rect x="672" y="116" width="168" height="14" rx="7" fill="#eef1f4"/>
-      <rect x="672" y="116" width="40" height="14" rx="7" fill="#4f7fb8">
-        <animate attributeName="width" values="40;64;48;40" keyTimes="0;0.33;0.66;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" dur="6s" begin="0.6s" repeatCount="indefinite"/>
-      </rect>
-      <text x="735" y="168" text-anchor="middle" font-size="12" fill="#57606a">Honest limit: one server cannot</text>
-      <text x="735" y="184" text-anchor="middle" font-size="12" fill="#57606a">absorb link-saturating floods alone.</text>
-      <text x="735" y="200" text-anchor="middle" font-size="12" fill="#57606a">Pair with upstream protection.</text>
-    </g>
-    <text x="450" y="230" text-anchor="middle" font-size="12" fill="#57606a" opacity="0">Bars are illustrative, not measured figures.<animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.55s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/></text>
+   <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.1s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   <animateTransform attributeName="transform" type="translate" values="-24 0;0 0" dur="0.7s" begin="0.1s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
+   <rect x="40" y="55" width="230" height="130" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="155" y="86" text-anchor="middle" font-size="15" font-weight="700" fill="#14263f">One static binary</text>
+   <rect x="70" y="100" width="170" height="34" rx="6" fill="#14263f"/>
+   <g clip-path="url(#cmdClip)">
+    <text x="155" y="122" text-anchor="middle" font-size="14" font-family="ui-monospace,monospace" fill="#f59e0b">$ ./main</text>
+   </g>
+   <rect x="192" y="108" width="8" height="18" fill="#f59e0b"><animate attributeName="opacity" values="1;0" calcMode="discrete" dur="1.06s" repeatCount="indefinite"/></rect>
+   <text x="155" y="162" text-anchor="middle" font-size="12" fill="#57606a">no runtime, no database,</text>
+   <text x="155" y="178" text-anchor="middle" font-size="12" fill="#57606a">no extra services</text>
   </g>
+  <line x1="272" y1="120" x2="332" y2="120" stroke="#57606a" stroke-width="2" marker-end="url(#arrow5)" stroke-dasharray="60" stroke-dashoffset="60" opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.2s" begin="0.5s" fill="freeze"/>
+   <animate attributeName="stroke-dashoffset" values="60;0" dur="0.4s" begin="0.5s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+  </line>
+    <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.22s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   <animateTransform attributeName="transform" type="translate" values="0 16;0 0" dur="0.7s" begin="0.22s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
+   <rect x="340" y="35" width="230" height="170" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="455" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#14263f">Small server</text>
+   <rect x="368" y="76" width="174" height="26" rx="5" fill="#eef1f4"/>
+   <rect x="368" y="76" width="174" height="26" rx="5" fill="#22c55e" opacity="0"><animate attributeName="opacity" values="0.14;0.14;0;0;0.14" keyTimes="0;0.28;0.36;0.94;1" dur="4s" begin="1.2s" repeatCount="indefinite"/></rect>
+   <circle cx="382" cy="89" r="4" fill="#22c55e"><animate attributeName="opacity" values="1;0.3;1" keyTimes="0;0.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" dur="2.4s" repeatCount="indefinite"/></circle>
+   <rect x="368" y="108" width="174" height="26" rx="5" fill="#eef1f4"/>
+   <rect x="368" y="108" width="174" height="26" rx="5" fill="#22c55e" opacity="0"><animate attributeName="opacity" values="0;0;0.14;0.14;0;0" keyTimes="0;0.3;0.38;0.62;0.7;1" dur="4s" begin="1.2s" repeatCount="indefinite"/></rect>
+   <circle cx="382" cy="121" r="4" fill="#22c55e"><animate attributeName="opacity" values="1;0.3;1" keyTimes="0;0.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" dur="2.4s" begin="0.3s" repeatCount="indefinite"/></circle>
+   <rect x="368" y="140" width="174" height="26" rx="5" fill="#eef1f4"/>
+   <rect x="368" y="140" width="174" height="26" rx="5" fill="#22c55e" opacity="0"><animate attributeName="opacity" values="0;0;0;0.14;0.14;0" keyTimes="0;0.62;0.7;0.78;0.94;1" dur="4s" begin="1.2s" repeatCount="indefinite"/></rect>
+   <circle cx="382" cy="153" r="4" fill="#22c55e"><animate attributeName="opacity" values="1;0.3;1" keyTimes="0;0.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" dur="2.4s" begin="0.6s" repeatCount="indefinite"/></circle>
+   <text x="455" y="190" text-anchor="middle" font-size="12" fill="#57606a">runs smoothly with</text>
+   <text x="455" y="206" text-anchor="middle" font-size="12" fill="#57606a">minimal resources</text>
+  </g>
+    <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.34s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   <animateTransform attributeName="transform" type="translate" values="24 0;0 0" dur="0.7s" begin="0.34s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
+   <rect x="610" y="35" width="250" height="170" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="735" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#14263f">Stays light under load</text>
+   <text x="630" y="92" font-size="12" fill="#57606a">CPU</text>
+   <rect x="672" y="80" width="168" height="14" rx="7" fill="#eef1f4"/>
+   <rect x="672" y="80" width="52" height="14" rx="7" fill="#22c55e">
+    <animate attributeName="width" values="52;84;60;52" keyTimes="0;0.33;0.66;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1" dur="6s" begin="1.2s" repeatCount="indefinite"/>
+   </rect>
+   <text x="630" y="128" font-size="12" fill="#57606a">RAM</text>
+   <rect x="672" y="116" width="168" height="14" rx="7" fill="#eef1f4"/>
+   <rect x="672" y="116" width="40" height="14" rx="7" fill="#4f7fb8">
+    <animate attributeName="width" values="40;64;48;40" keyTimes="0;0.33;0.66;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1" dur="6s" begin="1.8s" repeatCount="indefinite"/>
+   </rect>
+   <g clip-path="url(#barClips)">
+    <rect x="632" y="80" width="40" height="14" fill="#ffffff" opacity="0.35"><animate attributeName="x" values="632;840" dur="3s" begin="1.4s" repeatCount="indefinite"/></rect>
+    <rect x="632" y="116" width="40" height="14" fill="#ffffff" opacity="0.35"><animate attributeName="x" values="632;840" dur="3s" begin="2.2s" repeatCount="indefinite"/></rect>
+   </g>
+   <text x="735" y="168" text-anchor="middle" font-size="12" fill="#57606a">Honest limit: one server cannot</text>
+   <text x="735" y="184" text-anchor="middle" font-size="12" fill="#57606a">absorb link-saturating floods alone.</text>
+   <text x="735" y="200" text-anchor="middle" font-size="12" fill="#57606a">Pair with upstream protection.</text>
+  </g>
+  <text x="450" y="230" text-anchor="middle" font-size="12" fill="#57606a" opacity="0">Bars are illustrative, not measured figures.<animate attributeName="opacity" values="0;1" dur="0.7s" begin="1s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
+ </g>
 </svg>

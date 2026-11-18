@@ -1,66 +1,99 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" role="img" aria-label="Three challenge stages: cookie challenge, proof-of-work JavaScript challenge, custom captcha, then block">
-  <defs>
-    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#57606a"/>
-    </marker>
-  </defs>
-  <rect width="900" height="300" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
-  <text x="450" y="36" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="17" font-weight="700" fill="#14263f" opacity="0">Automatic escalation — weakest challenge first, stronger only if bypassed<animate attributeName="opacity" values="0;1" dur="0.8s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/></text>
-  <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
-    <g opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
-      <rect x="30" y="60" width="250" height="180" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-      <rect x="30" y="60" width="250" height="180" rx="10" fill="none" stroke="#f59e0b" stroke-width="3">
-        <animate attributeName="opacity" values="1;0.05;0.05;1" keyTimes="0;0.33;0.66;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" dur="6s" repeatCount="indefinite"/>
-      </rect>
-      <text x="155" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#f59e0b">STAGE 1</text>
-      <text x="155" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#14263f">Cookie challenge</text>
-      <text x="155" y="142" text-anchor="middle" font-size="13" fill="#57606a">Completely invisible</text>
-      <text x="155" y="162" text-anchor="middle" font-size="13" fill="#57606a">Stops simple attacks</text>
-      <text x="155" y="196" text-anchor="middle" font-size="13" fill="#57606a">Every browser + most</text>
-      <text x="155" y="216" text-anchor="middle" font-size="13" fill="#57606a">HTTP libraries pass it</text>
-    </g>
-    <g opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
-      <rect x="325" y="60" width="250" height="180" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-      <rect x="325" y="60" width="250" height="180" rx="10" fill="none" stroke="#f59e0b" stroke-width="3">
-        <animate attributeName="opacity" values="0.05;1;0.05;0.05" keyTimes="0;0.33;0.66;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" dur="6s" repeatCount="indefinite"/>
-      </rect>
-      <text x="450" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#f59e0b">STAGE 2</text>
-      <text x="450" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#14263f">Proof-of-work JS</text>
-      <text x="450" y="142" text-anchor="middle" font-size="13" fill="#57606a">Browser solves a small</text>
-      <text x="450" y="162" text-anchor="middle" font-size="13" fill="#57606a">puzzle automatically</text>
-      <g>
-        <circle cx="424" cy="196" r="6" fill="#14263f"><animate attributeName="cy" values="196;186;196" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="1.6s" repeatCount="indefinite"/></circle>
-        <circle cx="450" cy="196" r="6" fill="#14263f"><animate attributeName="cy" values="196;186;196" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="1.6s" begin="0.2s" repeatCount="indefinite"/></circle>
-        <circle cx="476" cy="196" r="6" fill="#14263f"><animate attributeName="cy" values="196;186;196" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="1.6s" begin="0.4s" repeatCount="indefinite"/></circle>
-      </g>
-      <text x="450" y="222" text-anchor="middle" font-size="13" fill="#57606a">“Completing challenge …”</text>
-    </g>
-    <g opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
-      <rect x="620" y="60" width="250" height="180" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-      <rect x="620" y="60" width="250" height="180" rx="10" fill="none" stroke="#f59e0b" stroke-width="3">
-        <animate attributeName="opacity" values="0.05;0.05;1;0.05" keyTimes="0;0.33;0.66;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" dur="6s" repeatCount="indefinite"/>
-      </rect>
-      <text x="745" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#f59e0b">STAGE 3</text>
-      <text x="745" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#14263f">Custom captcha</text>
-      <text x="745" y="142" text-anchor="middle" font-size="13" fill="#57606a">Drag the slider, reveal</text>
-      <text x="745" y="162" text-anchor="middle" font-size="13" fill="#57606a">green text, type it in</text>
-      <rect x="690" y="182" width="110" height="26" rx="5" fill="#e8f5e9" stroke="#4caf50"/>
-      <text x="745" y="200" text-anchor="middle" font-size="14" font-weight="700" fill="#2e7d32" letter-spacing="3">A7K2Q9</text>
-      <text x="745" y="228" text-anchor="middle" font-size="13" fill="#57606a">Last resort — stops good bots too</text>
-    </g>
-    <g opacity="0">
-      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.5s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
-      <line x1="282" y1="150" x2="318" y2="150" stroke="#57606a" stroke-width="2" marker-end="url(#arrow2)"/>
-      <line x1="577" y1="150" x2="613" y2="150" stroke="#57606a" stroke-width="2" marker-end="url(#arrow2)"/>
-      <text x="300" y="132" text-anchor="middle" font-size="11" fill="#57606a">bypassed</text>
-      <text x="595" y="132" text-anchor="middle" font-size="11" fill="#57606a">bypassed</text>
-    </g>
-    <text x="450" y="272" text-anchor="middle" font-size="13" fill="#57606a" opacity="0">Switching is automatic, driven by per-domain RPS thresholds — or lock a stage with the <tspan font-family="ui-monospace,monospace">stage</tspan> terminal command. Suspicion level 4+ blocks outright.<animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.65s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/></text>
+ <defs>
+  <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+   <path d="M0 0 L10 5 L0 10 z" fill="#57606a"/>
+  </marker>
+ </defs>
+ <rect width="900" height="300" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+ <text x="450" y="36" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="17" font-weight="700" fill="#14263f" opacity="0">Automatic escalation — weakest challenge first, stronger only if bypassed<animate attributeName="opacity" values="0;1" dur="0.8s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="0 -8;0 0" dur="0.8s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
+ <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+    <g>
+   <rect x="30" y="60" width="250" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" opacity="0"><animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.35s" fill="freeze"/></rect>
+   <rect x="30" y="60" width="250" height="180" rx="10" fill="none" stroke="#14263f" stroke-width="2" stroke-dasharray="860" stroke-dashoffset="860">
+    <animate attributeName="stroke-dashoffset" values="860;0" dur="0.9s" begin="0.1s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+    <animate attributeName="opacity" values="1;0" dur="0.4s" begin="1s" fill="freeze"/>
+   </rect>
+   <rect x="30" y="60" width="250" height="180" rx="10" fill="none" stroke="#f59e0b" stroke-width="3" opacity="0.05">
+    <animate attributeName="opacity" values="1;1;0.05;0.05;1" keyTimes="0;0.25;0.36;0.9;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" dur="9s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.45s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+    <text x="155" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#f59e0b">STAGE 1</text>
+    <text x="155" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#14263f">Cookie challenge</text>
+    <text x="155" y="142" text-anchor="middle" font-size="13" fill="#57606a">Completely invisible</text>
+    <text x="155" y="162" text-anchor="middle" font-size="13" fill="#57606a">Stops simple attacks</text>
+    <text x="155" y="196" text-anchor="middle" font-size="13" fill="#57606a">Every browser + most</text>
+    <text x="155" y="216" text-anchor="middle" font-size="13" fill="#57606a">HTTP libraries pass it</text>
+   </g>
   </g>
+    <g>
+   <rect x="325" y="60" width="250" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" opacity="0"><animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.6s" fill="freeze"/></rect>
+   <rect x="325" y="60" width="250" height="180" rx="10" fill="none" stroke="#14263f" stroke-width="2" stroke-dasharray="860" stroke-dashoffset="860">
+    <animate attributeName="stroke-dashoffset" values="860;0" dur="0.9s" begin="0.35s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+    <animate attributeName="opacity" values="1;0" dur="0.4s" begin="1.25s" fill="freeze"/>
+   </rect>
+   <rect x="325" y="60" width="250" height="180" rx="10" fill="none" stroke="#f59e0b" stroke-width="3" opacity="0.05">
+    <animate attributeName="opacity" values="0.05;0.05;1;1;0.05;0.05" keyTimes="0;0.28;0.36;0.58;0.66;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" dur="9s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.7s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+    <text x="450" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#f59e0b">STAGE 2</text>
+    <text x="450" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#14263f">Proof-of-work JS</text>
+    <text x="450" y="142" text-anchor="middle" font-size="13" fill="#57606a">Browser solves a small</text>
+    <text x="450" y="162" text-anchor="middle" font-size="13" fill="#57606a">puzzle automatically</text>
+    <text x="450" y="222" text-anchor="middle" font-size="13" fill="#57606a">“Completing challenge …”</text>
+   </g>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.85s" fill="freeze"/>
+    <circle cx="450" cy="192" r="13" fill="none" stroke="#d0d7de" stroke-width="3"/>
+    <circle cx="450" cy="192" r="13" fill="none" stroke="#14263f" stroke-width="3" stroke-linecap="round" stroke-dasharray="24 58">
+     <animateTransform attributeName="transform" type="rotate" values="0 450 192;360 450 192" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="450" cy="192" r="3.5" fill="#f59e0b"><animate attributeName="opacity" values="1;0.35;1" keyTimes="0;0.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" dur="1.6s" repeatCount="indefinite"/></circle>
+   </g>
+  </g>
+    <g>
+   <rect x="620" y="60" width="250" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" opacity="0"><animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.85s" fill="freeze"/></rect>
+   <rect x="620" y="60" width="250" height="180" rx="10" fill="none" stroke="#14263f" stroke-width="2" stroke-dasharray="860" stroke-dashoffset="860">
+    <animate attributeName="stroke-dashoffset" values="860;0" dur="0.9s" begin="0.6s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+    <animate attributeName="opacity" values="1;0" dur="0.4s" begin="1.5s" fill="freeze"/>
+   </rect>
+   <rect x="620" y="60" width="250" height="180" rx="10" fill="none" stroke="#f59e0b" stroke-width="3" opacity="0.05">
+    <animate attributeName="opacity" values="0.05;0.05;1;1;0.05" keyTimes="0;0.6;0.68;0.88;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1;.45 0 .55 1" dur="9s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.95s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+    <text x="745" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#f59e0b">STAGE 3</text>
+    <text x="745" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#14263f">Custom captcha</text>
+    <text x="745" y="142" text-anchor="middle" font-size="13" fill="#57606a">Drag the slider, reveal</text>
+    <text x="745" y="162" text-anchor="middle" font-size="13" fill="#57606a">green text, type it in</text>
+    <rect x="690" y="182" width="110" height="26" rx="5" fill="#e8f5e9" stroke="#4caf50"/>
+    <text x="745" y="228" text-anchor="middle" font-size="13" fill="#57606a">Last resort — stops good bots too</text>
+   </g>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="1.1s" fill="freeze"/>
+    <text x="745" y="200" text-anchor="middle" font-size="14" font-weight="700" fill="#2e7d32" letter-spacing="3">A7K2Q9<animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.42;0.5;0.92;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></text>
+    <text x="745" y="200" text-anchor="middle" font-size="14" font-weight="700" fill="#2e7d32" letter-spacing="3" opacity="0">••••••<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.42;0.5;0.92;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></text>
+   </g>
+  </g>
+    <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.3s" begin="1.15s" fill="freeze"/>
+   <line x1="282" y1="150" x2="318" y2="150" stroke="#57606a" stroke-width="2" marker-end="url(#arrow2)" stroke-dasharray="36" stroke-dashoffset="36"><animate attributeName="stroke-dashoffset" values="36;0" dur="0.4s" begin="1.15s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></line>
+   <line x1="577" y1="150" x2="613" y2="150" stroke="#57606a" stroke-width="2" marker-end="url(#arrow2)" stroke-dasharray="36" stroke-dashoffset="36"><animate attributeName="stroke-dashoffset" values="36;0" dur="0.4s" begin="1.3s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></line>
+   <text x="300" y="132" text-anchor="middle" font-size="11" fill="#57606a">bypassed</text>
+   <text x="595" y="132" text-anchor="middle" font-size="11" fill="#57606a">bypassed</text>
+  </g>
+  <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.4s" fill="freeze"/>
+   <circle cy="150" r="11" fill="#f59e0b" opacity="0.25">
+    <animate attributeName="cx" values="155;155;450;450;745;745;155" keyTimes="0;0.22;0.33;0.55;0.66;0.88;1" dur="9s" begin="1.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.25;0.25;0.25;0.25;0.25;0;0" keyTimes="0;0.22;0.33;0.55;0.66;0.88;1" dur="9s" begin="1.4s" repeatCount="indefinite"/>
+   </circle>
+   <circle cy="150" r="6" fill="#14263f" stroke="#ffffff" stroke-width="2">
+    <animate attributeName="cx" values="155;155;450;450;745;745;155" keyTimes="0;0.22;0.33;0.55;0.66;0.88;1" dur="9s" begin="1.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;1;1;1;1;0;0" keyTimes="0;0.22;0.33;0.55;0.66;0.88;1" dur="9s" begin="1.4s" repeatCount="indefinite"/>
+   </circle>
+  </g>
+  <text x="450" y="272" text-anchor="middle" font-size="13" fill="#57606a" opacity="0">Switching is automatic, driven by per-domain RPS thresholds — or lock a stage with the <tspan font-family="ui-monospace,monospace">stage</tspan> terminal command. Suspicion level 4+ blocks outright.<animate attributeName="opacity" values="0;1" dur="0.8s" begin="1.55s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
+ </g>
 </svg>
