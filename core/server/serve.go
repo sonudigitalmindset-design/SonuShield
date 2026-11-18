@@ -77,6 +77,7 @@ func Serve() {
 				GetConfigForClient: firewall.Fingerprint,
 				GetCertificate:     domains.GetCertificate,
 				Renegotiation:      tls.RenegotiateOnceAsClient,
+				CurvePreferences:   tlsCurvePreferences(),
 			},
 			MaxHeaderBytes: 1 << 20,
 		}

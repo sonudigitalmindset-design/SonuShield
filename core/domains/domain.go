@@ -245,6 +245,7 @@ type Proxy struct {
 	AutoSSLCacheDir string            `json:"autoSSLCacheDir"`
 	AutoSSLEmail    string            `json:"autoSSLEmail"`
 	QuietMode       bool              `json:"quietMode"`
+	TLSDisablePostQuantum bool      `json:"tlsDisablePostQuantum"`
 	MetricsEnabled  bool              `json:"metricsEnabled"`
 	ReportDirectory string            `json:"reportDirectory"`
 	LogFormat       string            `json:"logFormat"`
