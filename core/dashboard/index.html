@@ -296,7 +296,8 @@ tr.selected td{background:var(--nav-active-bg)}
         <p class="sub" data-i18n="authSub">Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>Proxy-Secret</code> header to this same host, and is never written to a URL or a log.</p>
         <form id="authForm">
           <label for="secretInput" data-i18n="authLabel">API secret</label>
-          <input id="secretInput" type="password" autocomplete="off" spellcheck="false" placeholder="apisecret value" required>
+          <!-- Visible text field, deliberately not password: a masked field hides paste mistakes and invites password-manager autofill, both of which caused real failed connects. The value is cleared after every attempt. -->
+          <input id="secretInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="apisecret value" required>
           <div style="margin-top:16px"><button class="primary" type="submit" style="width:100%" data-i18n="authConnect">Connect</button></div>
         </form>
         <div id="ssoBox" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
@@ -1538,6 +1539,8 @@ connectedSso: "Connected via SSO",
 connected: "Connected",
 notConnected: "Not connected",
 errConnect: "Connection failed: {0} Check the API secret and try again.",
+errSecretLen: "The secret sent had {0} characters.",
+errSecretPaste: "The pasted secret contains spaces or line breaks — paste only the secret itself, with nothing before or after it.",
 errRefreshFeed: "Could not refresh the reputation feed: {0}",
 navInsights: "Insights",
 navApprovals: "Approvals",
@@ -2284,6 +2287,8 @@ connectedSso: "SSO से connected",
 connected: "Connected",
 notConnected: "Not connected",
 errConnect: "Connection fail हो गया: {0} API secret जाँचें और फिर कोशिश करें।",
+errSecretLen: "Bheja gaya secret {0} aksharon ka tha.",
+errSecretPaste: "Paste kiye gaye secret me space ya line break hai — sirf secret paste karein, uske aage-peeche kuch nahi.",
 errRefreshFeed: "Reputation feed refresh नहीं हो पाया: {0}",
 navInsights: "Insights",
 navApprovals: "Approvals",
@@ -3857,7 +3862,7 @@ function connect(secret){
   }).catch(function(err){
     apiSecret = null;
     setConnected(false);
-    showBanner(t("errConnect", err && err.message ? err.message : err));
+    showBanner(t("errConnect", err && err.message ? err.message : err) + " " + t("errSecretLen", secret.length));
   });
 }
 function connectSSO(){
@@ -4287,8 +4292,12 @@ document.querySelectorAll(".navbtn").forEach(function(b){
 });
 $("authForm").addEventListener("submit", function(ev){
   ev.preventDefault();
-  var v = $("secretInput").value;
+  var v = $("secretInput").value.trim();
   if(!v){ return; }
+  // A pasted secret must be one unbroken token: interior whitespace
+  // (a label, a wrapped line, a stray newline) can never match a
+  // real secret, so warn here instead of sending a doomed request.
+  if(/\s/.test(v)){ showBanner(t("errSecretPaste")); return; }
   connect(v).then(function(){ $("secretInput").value = ""; });
 });
 $("ssoBtn").addEventListener("click", function(){

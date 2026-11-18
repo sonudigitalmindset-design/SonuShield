@@ -260,6 +260,12 @@ names, or challenge flow semantics.
 - Release workflow fix (`5f3a25e`, separate commit): `contents: write`
   permission + maintained release action; the release job is green
   again.
+- Dashboard connect fix: the API-secret field is a visible text field
+  (not password-masked) so paste mistakes are visible and password
+  managers stop interfering; pasted values are trimmed, interior
+  whitespace is rejected with a specific hint, and a failed connect
+  now reports how many characters were sent. Service-worker shell
+  version bumped to v2 so browsers pick up the new shell.
 
 ## Known limitations (carried forward)
 
