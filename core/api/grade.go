@@ -24,15 +24,13 @@ package api
 // sane.
 
 import (
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"net/url"
-	"os"
 	"sort"
 	"strings"
 	"time"
 
+	"sonushield/core/certmon"
 	"sonushield/core/domains"
 )
 
@@ -408,19 +406,11 @@ func certificateCheck(cfg *domains.Configuration) gradeCheck {
 // file cannot be read or parsed. Negative values mean the
 // certificate already expired.
 func certDaysRemaining(path string) (int, error) {
-	data, err := os.ReadFile(path)
+	cert, err := certmon.ReadLeafCert(path)
 	if err != nil {
 		return 0, err
 	}
-	block, _ := pem.Decode(data)
-	if block == nil {
-		return 0, fmt.Errorf("no PEM block found")
-	}
-	cert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return 0, err
-	}
-	return int(time.Until(cert.NotAfter).Hours() / 24), nil
+	return certmon.DaysRemaining(cert, time.Now()), nil
 }
 
 // gradeScore converts check outcomes to a 0-100 score and a

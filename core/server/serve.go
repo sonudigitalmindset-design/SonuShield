@@ -39,6 +39,11 @@ func Serve() {
 	//operator enables proxy.gitops.
 	StartGitOpsWatcher()
 
+	//Certificate + subdomain monitoring (Batch 7). Started
+	//once; inert unless proxy.certAlerts or
+	//proxy.subdomainMonitor is enabled.
+	StartCertMonitor()
+
 	//Stripe usage reporter (Batch 6). Started once; inert without
 	//a valid key and a report interval in proxy.stripe.
 	billing.StartReporter()

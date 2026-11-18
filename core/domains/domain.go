@@ -336,6 +336,27 @@ type Proxy struct {
 	EventWebhooks   []EventWebhookConfig `json:"eventWebhooks"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
+	// Certificate + subdomain alerts (Batch 7). CertAlerts
+	// enables hourly expiry checks; CertAlertDays is the
+	// warning threshold (<= 0 means 14). SubdomainMonitor
+	// watches operator-supplied names via DNS; nil or
+	// disabled means no monitoring.
+	CertAlerts       bool                    `json:"certAlerts"`
+	CertAlertDays    int                     `json:"certAlertDays"`
+	SubdomainMonitor *SubdomainMonitorConfig `json:"subdomainMonitor"`
+}
+
+// SubdomainMonitorConfig watches operator-supplied domain
+// names by resolving them periodically. IntervalMinutes
+// defaults to 60 and is clamped to a minimum of 5.
+// FailureThreshold defaults to 3 and is clamped to a
+// minimum of 1: that many consecutive resolution failures
+// trigger one alert.
+type SubdomainMonitorConfig struct {
+	Enabled          bool     `json:"enabled"`
+	Domains          []string `json:"domains"`
+	IntervalMinutes  int      `json:"intervalMinutes"`
+	FailureThreshold int      `json:"failureThreshold"`
 }
 
 type TimeoutSettings struct {

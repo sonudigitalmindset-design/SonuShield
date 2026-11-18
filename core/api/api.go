@@ -236,6 +236,24 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			return
 		}
 		APIResponse(writer, true, response)
+	case "GET_CERT_STATUS":
+		response, errCode := certStatusResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "GET_SUBDOMAIN_STATUS":
+		response, errCode := subdomainStatusResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "GET_IP_REQUESTS":
 		firewall.Mutex.RLock()
 		ipsAll := firewall.AccessIps
