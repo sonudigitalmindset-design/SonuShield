@@ -37,6 +37,14 @@ func EvalFirewallRule(currDomain domains.DomainSettings, variables gofilter.Mess
 // continues). Shared by EvalFirewallRule and the edge rules
 // engine (EvalEdgeRules) so both apply actions identically.
 func applyRuleAction(action string, index, result int) (int, bool) {
+	//An empty action is rejected by config and API validation
+	//before it reaches here, but never panic on it: treat it
+	//like any other malformed action (level unchanged, the
+	//evaluation continues).
+	if action == "" {
+		fmt.Printf("[ ! ] [ Error Evaluating Rule %d : empty action ]\n", index)
+		return result, false
+	}
 	//Check if we want to statically set susLv or add to it
 	switch action[:1] {
 	case "+":

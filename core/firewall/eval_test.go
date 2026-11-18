@@ -74,11 +74,12 @@ func TestApplyRuleActionMalformed(t *testing.T) {
 	if got, stop := applyRuleAction("-y", 0, 2); got != 2 || stop {
 		t.Fatalf("malformed -y: (%d, %v), want (2, false)", got, stop)
 	}
-	// NOTE: an empty action string would panic on action[:1].
-	// Config and API validation reject empty actions before
-	// they reach here (ValidRuleAction), so this is a latent
-	// robustness gap, not a reachable path — flagged in the
-	// sale-readiness report rather than tested here.
+	// An empty action no longer panics on action[:1] (Batch 3
+	// hardening): it is treated like any other malformed
+	// action — level unchanged, evaluation continues.
+	if got, stop := applyRuleAction("", 0, 2); got != 2 || stop {
+		t.Fatalf("empty action: (%d, %v), want (2, false)", got, stop)
+	}
 }
 
 func TestCompileEdgeRule(t *testing.T) {
