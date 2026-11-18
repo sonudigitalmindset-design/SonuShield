@@ -255,6 +255,7 @@ type Proxy struct {
 	MaxConnsPerIP   int               `json:"maxConnsPerIP"`
 	MaxRequestBody  int64            `json:"maxRequestBody"`
 	StatusPage      bool             `json:"statusPage"`
+	GitOps          GitOpsConfig     `json:"gitops"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

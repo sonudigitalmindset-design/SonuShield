@@ -33,6 +33,10 @@ func Serve() {
 
 	defer pnc.PanicHndl()
 
+	//GitOps sync loop (Batch 5). Started once; inert unless the
+	//operator enables proxy.gitops.
+	StartGitOpsWatcher()
+
 	if domains.Config.Proxy.Cloudflare {
 
 		service := &http.Server{
