@@ -49,6 +49,10 @@ func Serve() {
 	//and expected origins.
 	StartBGPMonitor()
 
+	//Synthetic self-checks (Batch 8). Started once; inert
+	//unless proxy.synthetic is enabled with checks.
+	StartSyntheticChecks()
+
 	//Stripe usage reporter (Batch 6). Started once; inert without
 	//a valid key and a report interval in proxy.stripe.
 	billing.StartReporter()

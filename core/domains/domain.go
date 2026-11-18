@@ -367,6 +367,7 @@ type Proxy struct {
 	GitOps          GitOpsConfig     `json:"gitops"`
 	ThreatSharing   ThreatSharingConfig `json:"threatSharing"`
 	BGPMonitor      BGPMonitorConfig  `json:"bgpMonitor"`
+	Synthetic       SyntheticConfig   `json:"synthetic"`
 	SSO             *SSOConfig      `json:"sso"`
 	Stripe          StripeConfig    `json:"stripe"`
 	PublicAPIKeys   []PublicAPIKey  `json:"publicApiKeys"`
