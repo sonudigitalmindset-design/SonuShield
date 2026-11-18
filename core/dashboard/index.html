@@ -216,6 +216,8 @@ tr.selected td{background:var(--nav-active-bg)}
     <h3 data-i18n="navManage">Manage</h3>
     <button class="navbtn" type="button" data-view="settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="navSettings">Settings</span></button>
     <button class="navbtn" type="button" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13h6M9 17h4"/></svg><span data-i18n="navReports">Reports</span></button>
+    <button class="navbtn" type="button" data-view="insights"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span data-i18n="navInsights">Insights</span></button>
+    <button class="navbtn" type="button" data-view="approvals"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span data-i18n="navApprovals">Approvals</span></button>
     <h3 data-i18n="navAboutH">About</h3>
     <button class="navbtn" type="button" data-view="about"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01" stroke-width="2.6"/></svg><span data-i18n="navAbout">About &amp; limits</span></button>
   </nav>
@@ -366,6 +368,11 @@ tr.selected td{background:var(--nav-active-bg)}
               <input id="ruleAction" type="text" spellcheck="false" autocomplete="off" placeholder="4" required>
               <div class="hint" data-i18n="ruleActionHint"><code>0</code> allow, <code>1</code>–<code>3</code> challenge, <code>4+</code> block, <code>+N</code>/<code>-N</code> adjust and continue.</div>
             </div>
+            <div class="field">
+              <label for="ruleSchedule" data-i18n="ruleScheduleLabel">Schedule (optional cron)</label>
+              <input id="ruleSchedule" type="text" spellcheck="false" autocomplete="off" placeholder="0 9-17 * * 1-5">
+              <div class="hint" data-i18n="ruleScheduleHint">5-field cron (minute hour day month weekday). Empty means always active. Evaluated in the domain's schedule timezone (UTC by default). Invalid schedules are rejected.</div>
+            </div>
           </div>
           <div class="btnrow">
             <button class="primary" type="submit" id="ruleSubmit" data-i18n="ruleSubmitAdd">Add rule</button>
@@ -415,6 +422,38 @@ tr.selected td{background:var(--nav-active-bg)}
             <button class="primary" type="submit" data-i18n="importBtn2">Import rules</button>
           </div>
         </form>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="packTitle">Rule packs</h2>
+        <p class="small muted" data-i18n="packNote">Import a rule pack — a JSON document with pack metadata plus a rules array — from a file path on the server or a URL. Every rule is validated first and the import is all-or-nothing. Packs are operator-chosen: SonuShield ships no bundled packs and endorses none.</p>
+        <form id="packForm">
+          <div class="formgrid">
+            <div class="field" style="grid-column:1/-1">
+              <label for="packSource" data-i18n="packSourceLabel">Pack source (file path or URL)</label>
+              <input id="packSource" type="text" spellcheck="false" autocomplete="off" placeholder="/etc/sonushield/packs/bots.json or https://example.com/pack.json" required>
+            </div>
+            <div class="field">
+              <label for="packMode" data-i18n="importModeLabel">Mode</label>
+              <select id="packMode"><option value="replace" data-i18n="importModeReplace">Replace all rules</option><option value="append" data-i18n="importModeAppend">Append to existing rules</option></select>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" data-i18n="packImportBtn">Import rule pack</button>
+            <button type="button" id="packListBtn" data-i18n="packListBtn">Reload imported packs</button>
+          </div>
+        </form>
+        <div id="packList" style="margin-top:12px"><div class="state" data-i18n="packNoList">No pack list loaded yet.</div></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="cfTitle">Cloudflare import</h2>
+        <p class="small muted" data-i18n="cfNote">Import firewall rules from the Cloudflare API using the token and zone ID configured for this domain in <code>config.json</code> (config-only — the token is never shown or sent from this page). Preview first: it shows exactly what would change before anything is applied. Only the documented expression subset is translated; the rest is listed as skipped with a reason.</p>
+        <div class="btnrow">
+          <button type="button" id="cfPreviewBtn" class="primary" data-i18n="cfPreviewBtn">Preview Cloudflare import</button>
+          <label for="cfMode" class="muted" data-i18n="importModeLabel">Mode</label>
+          <select id="cfMode"><option value="append" data-i18n="importModeAppend">Append to existing rules</option><option value="replace" data-i18n="importModeReplace">Replace all rules</option></select>
+          <button type="button" id="cfApplyBtn" data-i18n="cfApplyBtn">Apply Cloudflare import</button>
+        </div>
+        <div id="cfPlan" style="margin-top:12px"><div class="state" data-i18n="cfNoPlan">No preview loaded yet.</div></div>
       </div>
       <div class="panel">
         <h2 data-i18n="actionsTitle">What the actions mean</h2>
@@ -487,6 +526,31 @@ tr.selected td{background:var(--nav-active-bg)}
           <button type="button" data-underattack="true" class="danger" data-i18n="stageBtnAttack">Under-attack mode</button>
         </div>
         <p class="small muted" data-i18n="stageChangeNote">Stage changes apply immediately and are <strong>runtime-only</strong>: a config reload or restart returns the domain to automatic switching. Under-attack mode locks Stage 3; Automatic turns it off.</p>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="maintTitle">Maintenance mode</h2>
+        <p class="small muted" data-i18n="maintNote">Serve a plain 503 maintenance page for ordinary traffic. Control-plane paths (<code>/_bProxy/</code>) keep working. The override is in-memory: it survives config reloads but not a restart. Scheduled windows from <code>config.json</code> apply independently.</p>
+        <div id="maintState" style="margin-bottom:12px"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <form id="maintForm">
+          <div class="formgrid">
+            <div class="field">
+              <label for="maintEnabled" data-i18n="maintEnabledLabel">Maintenance override</label>
+              <select id="maintEnabled"><option value="false" data-i18n="maintOff">Off</option><option value="true" data-i18n="maintOn">On — serve the maintenance page</option></select>
+            </div>
+            <div class="field">
+              <label for="maintDuration" data-i18n="maintDurationLabel">Duration (minutes, 0 = until disabled)</label>
+              <input id="maintDuration" type="number" min="0" step="1" value="0">
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label for="maintMessage" data-i18n="maintMessageLabel">Message (optional)</label>
+              <input id="maintMessage" type="text" autocomplete="off" maxlength="500" placeholder="This site is under maintenance. Please try again shortly.">
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" data-i18n="maintSaveBtn">Save maintenance setting</button>
+            <button type="button" id="maintReloadBtn" data-i18n="maintReloadBtn">Reload status</button>
+          </div>
+        </form>
       </div>
       <div class="panel">
         <h2 data-i18n="stageWhatTitle">What each stage does</h2>
@@ -620,6 +684,60 @@ tr.selected td{background:var(--nav-active-bg)}
         </div>
         <div id="mapBody"><div class="state" data-i18n="mapNoMap">No map loaded yet.</div></div>
       </div>
+    </section>
+
+    <section id="view-insights" class="view">
+      <h1 data-i18n="insTitle">Insights</h1>
+      <p class="sub"><span data-i18n="insSubPre">Latency, attacks, configuration grade, and shadow evaluation for </span><strong id="insightsDomain">—</strong><span data-i18n="insSubPost">. All figures come from live proxy state — nothing is sampled from a third party.</span></p>
+      <div class="panel">
+        <h2 data-i18n="latTitle">Latency &amp; SLA</h2>
+        <p class="small muted" data-i18n="latNote">Proxy latency is measured from middleware entry to the first backend attempt; TTFB from the first attempt to response headers; total until the body is fully read. The window holds the last 512 sampled requests per domain. Uptime here is the origin success rate over that window, not wall-clock uptime.</p>
+        <div id="latBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="latReloadBtn" data-i18n="latReloadBtn">Reload latency</button></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="pmTitle">Attack timeline &amp; postmortem</h2>
+        <p class="small muted" data-i18n="pmNote">Built from the attack timeline and the live counters already kept by the proxy. IP and fingerprint tallies are proxy-wide and labelled as such in the report.</p>
+        <div class="toolbar">
+          <label for="pmWhich" class="muted" data-i18n="pmWhichLabel">Attack</label>
+          <select id="pmWhich"><option value="last" data-i18n="pmWhichLast">Last finished attack</option><option value="current" data-i18n="pmWhichCurrent">Current attack</option></select>
+          <label for="pmTop" class="muted" data-i18n="repTopLabel">Show top</label>
+          <input id="pmTop" type="number" min="1" max="50" value="10" style="width:80px">
+          <button id="pmLoadBtn" type="button" class="primary" data-i18n="pmLoadBtn">Load postmortem</button>
+          <button id="pmTextBtn" type="button" data-i18n="pmTextBtn">Show as text</button>
+        </div>
+        <div id="pmBody"><div class="state" data-i18n="pmNoReport">No postmortem loaded yet.</div></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="gradeTitle">Security grade</h2>
+        <p class="small muted" data-i18n="gradeNote">A configuration audit of the running proxy — TLS settings, header config, challenge coverage, and secret hygiene. It is not a penetration test: it makes no network probes and never prints a secret.</p>
+        <div id="gradeBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="gradeReloadBtn" data-i18n="gradeReloadBtn">Re-run grade scan</button></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="shadowTitle">Shadow report</h2>
+        <p class="small muted" data-i18n="shadowNote">What the shadow rules and shadow WAF <em>would</em> have decided, had they been enforced. Shadow decisions never affect traffic. Empty until shadow rules or shadow WAF are configured for the domain.</p>
+        <div id="shadowBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="shadowReloadBtn" data-i18n="shadowReloadBtn">Reload shadow report</button></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="certTitle">Certificates &amp; subdomains</h2>
+        <p class="small muted" data-i18n="certNote">Expiry for every configured certificate file, and the last DNS results for operator-listed subdomains. No certificate or subdomain data leaves the proxy.</p>
+        <div id="certBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="certReloadBtn" data-i18n="certReloadBtn">Reload certificates</button></div>
+      </div>
+    </section>
+
+    <section id="view-approvals" class="view">
+      <h1 data-i18n="apprTitle">Approvals</h1>
+      <p class="sub" data-i18n="apprSub">Sensitive control actions that are waiting for a second approver. When two-person approval is enabled, an action is only executed after a different operator approves it. Pending requests expire automatically.</p>
+      <div class="inline-err" id="approvalsError" role="alert"></div>
+      <div class="inline-ok" id="approvalsOk" role="status"></div>
+      <div class="toolbar">
+        <button id="approvalsReloadBtn" type="button" class="primary" data-i18n="apprReloadBtn">Reload pending approvals</button>
+        <span class="small muted" id="approvalsNote"></span>
+      </div>
+      <div id="approvalsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
     </section>
 
     <section id="view-about" class="view">
@@ -1175,7 +1293,183 @@ connectedSso: "Connected via SSO",
 connected: "Connected",
 notConnected: "Not connected",
 errConnect: "Connection failed: {0} Check the API secret and try again.",
-errRefreshFeed: "Could not refresh the reputation feed: {0}"
+errRefreshFeed: "Could not refresh the reputation feed: {0}",
+navInsights: "Insights",
+navApprovals: "Approvals",
+ruleScheduleLabel: "Schedule (optional cron)",
+ruleScheduleHint: "5-field cron (minute hour day month weekday). Empty means always active. Evaluated in the domain's schedule timezone (UTC by default). Invalid schedules are rejected.",
+scheduleAlways: "always",
+packTitle: "Rule packs",
+packNote: "Import a rule pack — a JSON document with pack metadata plus a rules array — from a file path on the server or a URL. Every rule is validated first and the import is all-or-nothing. Packs are operator-chosen: SonuShield ships no bundled packs and endorses none.",
+packSourceLabel: "Pack source (file path or URL)",
+packImportBtn: "Import rule pack",
+packListBtn: "Reload imported packs",
+packNoList: "No pack list loaded yet.",
+packImported: "Pack imported: {0} rule(s) applied.",
+errPackImport: "Could not import the rule pack: {0}",
+errLoadPacks: "Could not load imported packs.",
+noPacks: "No rule packs have been imported yet.",
+colPackName: "Pack",
+colVersion: "Version",
+colSource: "Source",
+colDomain: "Domain",
+colRuleCount: "Rules",
+colMode: "Mode",
+colImportedAt: "Imported",
+cfTitle: "Cloudflare import",
+cfNote: "Import firewall rules from the Cloudflare API using the token and zone ID configured for this domain in <code>config.json</code> (config-only — the token is never shown or sent from this page). Preview first: it shows exactly what would change before anything is applied. Only the documented expression subset is translated; the rest is listed as skipped with a reason.",
+cfPreviewBtn: "Preview Cloudflare import",
+cfApplyBtn: "Apply Cloudflare import",
+cfNoPlan: "No preview loaded yet.",
+cfCounts: "{0} rule(s) translated, {1} skipped.",
+cfNoTranslated: "No Cloudflare rules could be translated.",
+cfSkipped: "Skipped rules",
+cfNotImported: "Settings that are not imported (no SonuShield equivalent):",
+cfApplied: "Cloudflare import applied: {0} rule(s).",
+cfAppliedDetail: "Applied {0} rule(s); {1} rule(s) skipped. Preview again to see the current plan.",
+errCfPreview: "Could not preview the Cloudflare import: {0}",
+errCfApply: "Could not apply the Cloudflare import: {0}",
+confirmCfApply: "Apply the translated Cloudflare rules to this domain?",
+colCfDesc: "Cloudflare description",
+colCfExpr: "Cloudflare expression",
+colCfAction: "Cloudflare action",
+colNotes: "Notes",
+colReason: "Reason",
+maintTitle: "Maintenance mode",
+maintNote: "Serve a plain 503 maintenance page for ordinary traffic. Control-plane paths (<code>/_bProxy/</code>) keep working. The override is in-memory: it survives config reloads but not a restart. Scheduled windows from <code>config.json</code> apply independently.",
+maintEnabledLabel: "Maintenance override",
+maintOff: "Off",
+maintOn: "On — serve the maintenance page",
+maintDurationLabel: "Duration (minutes, 0 = until disabled)",
+maintMessageLabel: "Message (optional)",
+maintSaveBtn: "Save maintenance setting",
+maintReloadBtn: "Reload status",
+maintEffective: "Maintenance page active",
+maintActive: "Active",
+maintInactive: "Inactive",
+maintOverrideRow: "Manual override",
+maintScheduledRow: "Scheduled windows",
+maintWindowCount: "{0} window(s) configured",
+maintSaved: "Maintenance setting saved.",
+errMaintLoad: "Could not load the maintenance status.",
+errMaintSave: "Could not save the maintenance setting: {0}",
+insTitle: "Insights",
+insSubPre: "Latency, attacks, configuration grade, and shadow evaluation for ",
+insSubPost: ". All figures come from live proxy state — nothing is sampled from a third party.",
+latTitle: "Latency & SLA",
+latNote: "Proxy latency is measured from middleware entry to the first backend attempt; TTFB from the first attempt to response headers; total until the body is fully read. The window holds the last 512 sampled requests per domain. Uptime here is the origin success rate over that window, not wall-clock uptime.",
+latReloadBtn: "Reload latency",
+latCardTtfb: "TTFB",
+latCardTotal: "Total",
+latCardProxy: "Proxy latency",
+latCardUptime: "Origin success rate",
+latP95: "p95 over the retained window",
+latMean: "mean over the retained window",
+latSlaTarget: "SLA target {0}",
+latTtfbRow: "TTFB p50 / p95 / p99",
+latTotalRow: "Total p50 / p95 / p99",
+latSamples: "Samples in window",
+latErrors: "Transport errors",
+lat5xx: "{0} responses with 5xx status",
+latBudget: "Error budget remaining",
+latWindow: "Window",
+errLoadLatency: "Could not load latency data.",
+pmTitle: "Attack timeline & postmortem",
+pmNote: "Built from the attack timeline and the live counters already kept by the proxy. IP and fingerprint tallies are proxy-wide and labelled as such in the report.",
+pmWhichLabel: "Attack",
+pmWhichLast: "Last finished attack",
+pmWhichCurrent: "Current attack",
+pmLoadBtn: "Load postmortem",
+pmTextBtn: "Show as text",
+pmNoReport: "No postmortem loaded yet.",
+pmDuration: "Duration",
+pmPeakRps: "Peak requests/s",
+pmPeakAllowed: "peak allowed {0}/s",
+pmMaxStage: "Highest stage",
+pmFinished: "attack finished",
+pmOngoing: "attack in progress",
+pmTime: "Time",
+pmKind: "Event",
+pmDetail: "Detail",
+pmStageCol: "Stage",
+pmRps: "Requests/s",
+pmRpsAllowed: "Allowed/s",
+pmLatencySamples: "Latency samples in window: {0}.",
+errLoadPm: "Could not load the postmortem.",
+gradeTitle: "Security grade",
+gradeNote: "A configuration audit of the running proxy — TLS settings, header config, challenge coverage, and secret hygiene. It is not a penetration test: it makes no network probes and never prints a secret.",
+gradeReloadBtn: "Re-run grade scan",
+gradeScore: "score {0} / 100",
+gradePass: "Pass",
+gradeWarn: "Warning",
+gradeFail: "Fail",
+gradeInfo: "Info",
+gradeCheck: "Check",
+gradeSeverity: "Severity",
+gradeStatus: "Status",
+gradeDetail: "Detail",
+gradeGuidance: "Fix guidance",
+errLoadGrade: "Could not run the grade scan.",
+shadowTitle: "Shadow report",
+shadowNote: "What the shadow rules and shadow WAF <em>would</em> have decided, had they been enforced. Shadow decisions never affect traffic. Empty until shadow rules or shadow WAF are configured for the domain.",
+shadowReloadBtn: "Reload shadow report",
+shadowEnabled: "Shadow evaluation enabled",
+shadowRules: "Shadow rules",
+shadowWaf: "Shadow WAF",
+shadowEvaluated: "Requests evaluated",
+shadowOutcomes: "Shadow outcomes",
+shadowOutcomeCounts: "{0} would block · {1} would challenge · {2} would allow",
+shadowDisagree: "Disagreements with live outcome",
+shadowRuleMatches: "Matches per shadow rule",
+shadowNone: "No shadow decisions recorded yet.",
+shadowLive: "Live outcome",
+shadowOutcome: "Shadow outcome",
+shadowSus: "Live / shadow level",
+shadowMatched: "Matched rules",
+shadowWafRule: "WAF rule",
+errLoadShadow: "Could not load the shadow report.",
+certTitle: "Certificates & subdomains",
+certNote: "Expiry for every configured certificate file, and the last DNS results for operator-listed subdomains. No certificate or subdomain data leaves the proxy.",
+certReloadBtn: "Reload certificates",
+certAlertsLine: "Certificate alerts: {0} · warn {1} days before expiry",
+certNone: "No domains configured.",
+certDomain: "Domain",
+certStatus: "Status",
+certExpires: "Expires",
+certDays: "Days remaining",
+certLastAlert: "Last alert",
+errLoadCerts: "Could not load certificate status.",
+subTitle: "Subdomain monitoring",
+subLine: "Monitoring: {0} · check every {1} minute(s) · alert after {2} consecutive failures",
+subNone: "No subdomains are listed for monitoring.",
+subName: "Subdomain",
+subBaseline: "Baseline set",
+subAddresses: "Addresses",
+subFailures: "Consecutive failures",
+subLastChecked: "Last checked",
+subLastError: "Last error",
+errLoadSubdomains: "Could not load subdomain status.",
+apprTitle: "Approvals",
+apprSub: "Sensitive control actions that are waiting for a second approver. When two-person approval is enabled, an action is only executed after a different operator approves it. Pending requests expire automatically.",
+apprReloadBtn: "Reload pending approvals",
+apprEnabled: "Two-person approval is enabled.",
+apprDisabled: "Two-person approval is disabled: sensitive actions execute immediately.",
+apprNone: "No pending approvals.",
+apprAction: "Action",
+apprDomain: "Domain",
+apprRole: "Requester role",
+apprTenant: "Tenant",
+apprCreated: "Requested",
+apprExpires: "Expires",
+apprApprove: "Approve",
+apprReject: "Reject",
+apprApproved: "Action approved and executed.",
+apprRejected: "Action rejected.",
+errLoadApprovals: "Could not load pending approvals.",
+errApprove: "Could not approve the action: {0}",
+errReject: "Could not reject the action: {0}",
+confirmApprove: "Approve and execute this action?",
+confirmReject: "Reject this action?"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -1633,7 +1927,183 @@ connectedSso: "SSO से connected",
 connected: "Connected",
 notConnected: "Not connected",
 errConnect: "Connection fail हो गया: {0} API secret जाँचें और फिर कोशिश करें।",
-errRefreshFeed: "Reputation feed refresh नहीं हो पाया: {0}"
+errRefreshFeed: "Reputation feed refresh नहीं हो पाया: {0}",
+navInsights: "Insights",
+navApprovals: "Approvals",
+ruleScheduleLabel: "Schedule (optional cron)",
+ruleScheduleHint: "5-field cron (minute hour day month weekday)। खाली मतलब हमेशा active। Domain के schedule timezone में evaluate होता है (default UTC)। गलत schedule reject हो जाता है।",
+scheduleAlways: "हमेशा",
+packTitle: "Rule packs",
+packNote: "Rule pack import करें — pack metadata + rules array वाला JSON document — server पर file path या URL से। हर rule पहले validate होता है और import all-or-nothing है। Packs operator की पसंद हैं: SonuShield कोई bundled pack नहीं देता और किसी की endorsement नहीं करता।",
+packSourceLabel: "Pack source (file path या URL)",
+packImportBtn: "Rule pack import करें",
+packListBtn: "Imported packs reload करें",
+packNoList: "Pack list अभी load नहीं हुई।",
+packImported: "Pack import हो गया: {0} rule(s) apply हुए।",
+errPackImport: "Rule pack import नहीं हो पाया: {0}",
+errLoadPacks: "Imported packs load नहीं हो पाए।",
+noPacks: "अभी कोई rule pack import नहीं हुआ।",
+colPackName: "Pack",
+colVersion: "Version",
+colSource: "Source",
+colDomain: "Domain",
+colRuleCount: "Rules",
+colMode: "Mode",
+colImportedAt: "Imported",
+cfTitle: "Cloudflare import",
+cfNote: "Cloudflare API से firewall rules import करें, इस domain के लिए <code>config.json</code> में configured token और zone ID से (config-only — token इस page पर कभी दिखता या भेजा नहीं जाता)। पहले Preview करें: apply करने से पहले ठीक-ठीक दिखेगा क्या बदलेगा। सिर्फ documented expression subset translate होता है; बाकी skipped के रूप में reason के साथ list होते हैं।",
+cfPreviewBtn: "Cloudflare import preview करें",
+cfApplyBtn: "Cloudflare import apply करें",
+cfNoPlan: "Preview अभी load नहीं हुआ।",
+cfCounts: "{0} rule(s) translate हुए, {1} skip हुए।",
+cfNoTranslated: "कोई Cloudflare rule translate नहीं हो पाया।",
+cfSkipped: "Skipped rules",
+cfNotImported: "Settings जो import नहीं होतीं (कोई SonuShield equivalent नहीं):",
+cfApplied: "Cloudflare import apply हो गया: {0} rule(s)।",
+cfAppliedDetail: "{0} rule(s) apply हुए; {1} rule(s) skip हुए। Current plan देखने के लिए फिर preview करें।",
+errCfPreview: "Cloudflare import preview नहीं हो पाया: {0}",
+errCfApply: "Cloudflare import apply नहीं हो पाया: {0}",
+confirmCfApply: "Translated Cloudflare rules इस domain पर apply करें?",
+colCfDesc: "Cloudflare description",
+colCfExpr: "Cloudflare expression",
+colCfAction: "Cloudflare action",
+colNotes: "Notes",
+colReason: "Reason",
+maintTitle: "Maintenance mode",
+maintNote: "आम traffic के लिए plain 503 maintenance page दिखाएँ। Control-plane paths (<code>/_bProxy/</code>) चलते रहते हैं। Override in-memory है: config reload पर रहता है, restart पर नहीं। <code>config.json</code> की scheduled windows अलग से apply होती हैं।",
+maintEnabledLabel: "Maintenance override",
+maintOff: "Off",
+maintOn: "On — maintenance page दिखाएँ",
+maintDurationLabel: "Duration (minutes, 0 = बंद करने तक)",
+maintMessageLabel: "Message (optional)",
+maintSaveBtn: "Maintenance setting save करें",
+maintReloadBtn: "Status reload करें",
+maintEffective: "Maintenance page active है",
+maintActive: "Active",
+maintInactive: "Inactive",
+maintOverrideRow: "Manual override",
+maintScheduledRow: "Scheduled windows",
+maintWindowCount: "{0} window(s) configured",
+maintSaved: "Maintenance setting save हो गई।",
+errMaintLoad: "Maintenance status load नहीं हो पाया।",
+errMaintSave: "Maintenance setting save नहीं हो पाई: {0}",
+insTitle: "Insights",
+insSubPre: "Latency, attacks, configuration grade, और shadow evaluation — ",
+insSubPost: " के लिए। सारे figures live proxy state से हैं — किसी third party से कुछ sample नहीं होता।",
+latTitle: "Latency & SLA",
+latNote: "Proxy latency middleware entry से पहले backend attempt तक मापी जाती है; TTFB पहले attempt से response headers तक; total, body पूरी पढ़ी जाने तक। Window में per domain आखिरी 512 sampled requests रहते हैं। यहाँ uptime उस window का origin success rate है, wall-clock uptime नहीं।",
+latReloadBtn: "Latency reload करें",
+latCardTtfb: "TTFB",
+latCardTotal: "Total",
+latCardProxy: "Proxy latency",
+latCardUptime: "Origin success rate",
+latP95: "retained window का p95",
+latMean: "retained window का mean",
+latSlaTarget: "SLA target {0}",
+latTtfbRow: "TTFB p50 / p95 / p99",
+latTotalRow: "Total p50 / p95 / p99",
+latSamples: "Window में samples",
+latErrors: "Transport errors",
+lat5xx: "{0} responses 5xx status के साथ",
+latBudget: "Error budget बाकी",
+latWindow: "Window",
+errLoadLatency: "Latency data load नहीं हो पाया।",
+pmTitle: "Attack timeline & postmortem",
+pmNote: "Attack timeline और proxy के पहले से रखे live counters से बना। IP और fingerprint tallies proxy-wide हैं और report में वैसे ही label हैं।",
+pmWhichLabel: "Attack",
+pmWhichLast: "आखिरी finished attack",
+pmWhichCurrent: "Current attack",
+pmLoadBtn: "Postmortem load करें",
+pmTextBtn: "Text में दिखाएँ",
+pmNoReport: "Postmortem अभी load नहीं हुआ।",
+pmDuration: "Duration",
+pmPeakRps: "Peak requests/s",
+pmPeakAllowed: "peak allowed {0}/s",
+pmMaxStage: "Highest stage",
+pmFinished: "attack खत्म",
+pmOngoing: "attack चल रहा है",
+pmTime: "Time",
+pmKind: "Event",
+pmDetail: "Detail",
+pmStageCol: "Stage",
+pmRps: "Requests/s",
+pmRpsAllowed: "Allowed/s",
+pmLatencySamples: "Window में latency samples: {0}।",
+errLoadPm: "Postmortem load नहीं हो पाया।",
+gradeTitle: "Security grade",
+gradeNote: "चलते हुए proxy का configuration audit — TLS settings, header config, challenge coverage, और secret hygiene। यह penetration test नहीं है: कोई network probe नहीं होता और कोई secret print नहीं होता।",
+gradeReloadBtn: "Grade scan फिर चलाएँ",
+gradeScore: "score {0} / 100",
+gradePass: "Pass",
+gradeWarn: "Warning",
+gradeFail: "Fail",
+gradeInfo: "Info",
+gradeCheck: "Check",
+gradeSeverity: "Severity",
+gradeStatus: "Status",
+gradeDetail: "Detail",
+gradeGuidance: "Fix guidance",
+errLoadGrade: "Grade scan नहीं चल पाया।",
+shadowTitle: "Shadow report",
+shadowNote: "Shadow rules और shadow WAF ने क्या <em>decide किया होता</em>, अगर enforce होते। Shadow decisions traffic को कभी affect नहीं करते। Domain के लिए shadow rules या shadow WAF configure होने तक खाली रहता है।",
+shadowReloadBtn: "Shadow report reload करें",
+shadowEnabled: "Shadow evaluation enabled है",
+shadowRules: "Shadow rules",
+shadowWaf: "Shadow WAF",
+shadowEvaluated: "Requests evaluated",
+shadowOutcomes: "Shadow outcomes",
+shadowOutcomeCounts: "{0} block होता · {1} challenge होता · {2} allow होता",
+shadowDisagree: "Live outcome से disagreements",
+shadowRuleMatches: "Per shadow rule matches",
+shadowNone: "अभी कोई shadow decision record नहीं हुआ।",
+shadowLive: "Live outcome",
+shadowOutcome: "Shadow outcome",
+shadowSus: "Live / shadow level",
+shadowMatched: "Matched rules",
+shadowWafRule: "WAF rule",
+errLoadShadow: "Shadow report load नहीं हो पाया।",
+certTitle: "Certificates & subdomains",
+certNote: "हर configured certificate file की expiry, और operator-listed subdomains के आखिरी DNS results। कोई certificate या subdomain data proxy से बाहर नहीं जाता।",
+certReloadBtn: "Certificates reload करें",
+certAlertsLine: "Certificate alerts: {0} · expiry से {1} दिन पहले warn",
+certNone: "कोई domain configure नहीं है।",
+certDomain: "Domain",
+certStatus: "Status",
+certExpires: "Expires",
+certDays: "Days बाकी",
+certLastAlert: "Last alert",
+errLoadCerts: "Certificate status load नहीं हो पाया।",
+subTitle: "Subdomain monitoring",
+subLine: "Monitoring: {0} · हर {1} minute(s) में check · {2} consecutive failures पर alert",
+subNone: "Monitoring के लिए कोई subdomain list नहीं है।",
+subName: "Subdomain",
+subBaseline: "Baseline set",
+subAddresses: "Addresses",
+subFailures: "Consecutive failures",
+subLastChecked: "Last checked",
+subLastError: "Last error",
+errLoadSubdomains: "Subdomain status load नहीं हो पाया।",
+apprTitle: "Approvals",
+apprSub: "Sensitive control actions जो दूसरे approver का इंतज़ार कर रहे हैं। Two-person approval enabled होने पर कोई action सिर्फ तब execute होता है जब कोई अलग operator approve करे। Pending requests अपने आप expire हो जाते हैं।",
+apprReloadBtn: "Pending approvals reload करें",
+apprEnabled: "Two-person approval enabled है।",
+apprDisabled: "Two-person approval disabled है: sensitive actions तुरंत execute होते हैं।",
+apprNone: "कोई pending approval नहीं।",
+apprAction: "Action",
+apprDomain: "Domain",
+apprRole: "Requester role",
+apprTenant: "Tenant",
+apprCreated: "Requested",
+apprExpires: "Expires",
+apprApprove: "Approve",
+apprReject: "Reject",
+apprApproved: "Action approve होकर execute हो गया।",
+apprRejected: "Action reject हो गया।",
+errLoadApprovals: "Pending approvals load नहीं हो पाए।",
+errApprove: "Action approve नहीं हो पाया: {0}",
+errReject: "Action reject नहीं हो पाया: {0}",
+confirmApprove: "इस action को approve करके execute करें?",
+confirmReject: "इस action को reject करें?"
 }
 };
 function t(key){
@@ -1673,6 +2143,8 @@ function applyLang(newLang, skipRefresh){
      discard unsaved form edits. */
   if(currentView === "settings"){ loadProxyFeatures(); loadBackups(); }
   else if(currentView === "reports"){ loadReport(); loadAttackMap(); }
+  else if(currentView === "insights"){ loadLatency(); loadGrade(); loadShadow(); loadCerts(); }
+  else if(currentView === "approvals"){ loadApprovals(); }
 }
 document.querySelectorAll("[data-lang-choice]").forEach(function(btn){
   btn.addEventListener("click", function(){ applyLang(btn.getAttribute("data-lang-choice")); });
@@ -1934,6 +2406,7 @@ function syncDomainLabels(){
   setText("stageDomain", currentDomain);
   setText("settingsDomain", currentDomain);
   setText("reportDomain", currentDomain);
+  setText("insightsDomain", currentDomain);
 }
 
 function loadDomainPanel(){
@@ -1992,9 +2465,9 @@ function loadRules(force){
       setHTML("rulesBody", '<div class="state">' + t("noRules") + '</div>');
       return;
     }
-    var h = '<table><thead><tr><th>' + t("colNum") + '</th><th>' + t("ruleExprLabel") + '</th><th>' + t("ruleActionLabel") + '</th><th>' + t("colMeaning") + '</th><th>' + t("colActions") + '</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("colNum") + '</th><th>' + t("ruleExprLabel") + '</th><th>' + t("ruleActionLabel") + '</th><th>' + t("ruleScheduleLabel") + '</th><th>' + t("colMeaning") + '</th><th>' + t("colActions") + '</th></tr></thead><tbody>';
     rules.forEach(function(rule, i){
-      h += "<tr><td>" + (i+1) + "</td><td class='mono'>" + esc(rule.expression) + "</td><td class='mono'>" + esc(rule.action) + "</td><td>" + esc(actionExplain(rule.action)) + "</td>"
+      h += "<tr><td>" + (i+1) + "</td><td class='mono'>" + esc(rule.expression) + "</td><td class='mono'>" + esc(rule.action) + "</td><td class='mono'>" + esc(rule.schedule || t("scheduleAlways")) + "</td><td>" + esc(actionExplain(rule.action)) + "</td>"
         + '<td style="white-space:nowrap"><button type="button" class="small" data-rule-edit="' + i + '">' + t("editBtn") + '</button> '
         + '<button type="button" class="small danger" data-rule-del="' + i + '">' + t("deleteBtn") + '</button></td></tr>';
     });
@@ -2025,6 +2498,7 @@ function startRuleEdit(index){
     editingIndex = index;
     $("ruleExpr").value = rules[index].expression || "";
     $("ruleAction").value = rules[index].action || "";
+    $("ruleSchedule").value = rules[index].schedule || "";
     setText("ruleFormTitle", t("ruleFormEdit", index + 1));
     $("ruleSubmit").textContent = t("ruleSave");
     $("ruleCancel").hidden = false;
@@ -2050,13 +2524,14 @@ function submitRuleForm(ev){
   ev.preventDefault();
   var expr = $("ruleExpr").value.trim();
   var action = $("ruleAction").value.trim();
+  var schedule = $("ruleSchedule").value.trim();
   if(!expr || !action) return;
   showInline("rulesError", "rulesOk", "", "");
   var call;
   if(editingIndex !== null){
-    call = domainWrite(currentDomain, "UPDATE_RULE", {index: String(editingIndex), expression: expr, action: action});
+    call = domainWrite(currentDomain, "UPDATE_RULE", {index: String(editingIndex), expression: expr, action: action, schedule: schedule});
   } else {
-    call = domainWrite(currentDomain, "ADD_RULE", {expression: expr, action: action});
+    call = domainWrite(currentDomain, "ADD_RULE", {expression: expr, action: action, schedule: schedule});
   }
   call.then(function(){
     var wasEdit = editingIndex !== null;
@@ -2602,6 +3077,341 @@ function disconnect(){
   }
 }
 
+/* ---- Batch 7: insights, approvals, maintenance, rule packs, Cloudflare ---- */
+
+function fmtMs(v){ return (v == null || isNaN(Number(v))) ? "—" : Number(v).toFixed(1) + " ms"; }
+function fmtPct(v){ return (v == null || isNaN(Number(v))) ? "—" : Number(v).toFixed(2) + "%"; }
+function fmtWhen(v){ return v ? new Date(v).toLocaleString() : "—"; }
+function gradeBadge(status){
+  if(status === "pass") return '<span class="badge stage1">' + t("gradePass") + '</span>';
+  if(status === "warn") return '<span class="badge stage2">' + t("gradeWarn") + '</span>';
+  if(status === "fail") return '<span class="badge stage3">' + t("gradeFail") + '</span>';
+  return '<span class="badge">' + t("gradeInfo") + '</span>';
+}
+
+function loadLatency(){
+  return domainAction(currentDomain, "GET_LATENCY").then(function(r){
+    var h = '<div class="cards">'
+      + '<div class="card"><div class="label">' + t("latCardTtfb") + '</div><div class="value">' + fmtMs(r.TTFB_P95_MS) + '</div><div class="foot">' + t("latP95") + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardTotal") + '</div><div class="value">' + fmtMs(r.TOTAL_P95_MS) + '</div><div class="foot">' + t("latP95") + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardProxy") + '</div><div class="value">' + fmtMs(r.PROXY_MEAN_MS) + '</div><div class="foot">' + t("latMean") + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardUptime") + '</div><div class="value">' + fmtPct(r.UPTIME_PCT) + '</div><div class="foot">' + t("latSlaTarget", fmtPct(r.SLA_TARGET_PCT)) + '</div></div>'
+      + '</div>';
+    h += '<table><tbody>'
+      + "<tr><td>" + t("latTtfbRow") + "</td><td>" + fmtMs(r.TTFB_P50_MS) + " / " + fmtMs(r.TTFB_P95_MS) + " / " + fmtMs(r.TTFB_P99_MS) + "</td></tr>"
+      + "<tr><td>" + t("latTotalRow") + "</td><td>" + fmtMs(r.TOTAL_P50_MS) + " / " + fmtMs(r.TOTAL_P95_MS) + " / " + fmtMs(r.TOTAL_P99_MS) + "</td></tr>"
+      + "<tr><td>" + t("latSamples") + "</td><td>" + num(r.SAMPLES) + "</td></tr>"
+      + "<tr><td>" + t("latErrors") + "</td><td>" + num(r.ERRORS) + " · " + t("lat5xx", num(r.STATUS_5XX)) + "</td></tr>"
+      + "<tr><td>" + t("latBudget") + "</td><td>" + fmtPct(r.ERROR_BUDGET_REMAINING_PCT) + "</td></tr>"
+      + "<tr><td>" + t("latWindow") + "</td><td>" + esc(fmtWhen(r.WINDOW_START)) + " — " + esc(fmtWhen(r.WINDOW_END)) + "</td></tr>"
+      + "</tbody></table>";
+    setHTML("latBody", h);
+  }).catch(function(err){
+    setHTML("latBody", '<div class="state state-error"><strong>' + t("errLoadLatency") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
+function pmTopValue(){
+  var n = parseInt($("pmTop").value, 10);
+  if(isNaN(n) || n < 1) n = 1;
+  if(n > 50) n = 50;
+  return n;
+}
+
+function renderPostmortem(r){
+  if(!r.FOUND){
+    setHTML("pmBody", '<div class="state">' + esc(r.NOTE || t("pmNoReport")) + '</div>');
+    return;
+  }
+  var h = '<div class="cards">'
+    + '<div class="card"><div class="label">' + t("pmDuration") + '</div><div class="value">' + esc(String(r.DURATION || "—")) + '</div><div class="foot">' + esc(fmtWhen(r.START)) + (r.END ? " — " + esc(fmtWhen(r.END)) : "") + '</div></div>'
+    + '<div class="card"><div class="label">' + t("pmPeakRps") + '</div><div class="value">' + num(r.PEAK_RPS) + '</div><div class="foot">' + t("pmPeakAllowed", num(r.PEAK_RPS_ALLOWED)) + '</div></div>'
+    + '<div class="card"><div class="label">' + t("pmMaxStage") + '</div><div class="value">' + esc(String(r.MAX_STAGE)) + '</div><div class="foot">' + (r.FINISHED ? t("pmFinished") : t("pmOngoing")) + '</div></div>'
+    + '</div>';
+  var events = r.TIMELINE || [];
+  if(events.length){
+    h += '<table><thead><tr><th>' + t("pmTime") + '</th><th>' + t("pmKind") + '</th><th>' + t("pmDetail") + '</th><th>' + t("pmStageCol") + '</th><th>' + t("pmRps") + '</th><th>' + t("pmRpsAllowed") + '</th></tr></thead><tbody>';
+    events.forEach(function(e){
+      h += "<tr><td class='mono'>" + esc(fmtWhen(e.TIME)) + "</td><td>" + esc(e.KIND) + "</td><td>" + esc(e.DETAIL || "") + "</td><td>" + esc(String(e.STAGE)) + "</td><td>" + num(e.RPS) + "</td><td>" + num(e.RPS_ALLOWED) + "</td></tr>";
+    });
+    h += "</tbody></table>";
+  }
+  var ipRows = function(list){
+    if(!list || !list.length) return '<p class="small muted">' + t("noneInWindow") + '</p>';
+    var tbl = '<table><thead><tr><th>' + t("lsIpLabel") + '</th><th>' + t("colRequests") + '</th><th>' + t("colCountry") + '</th><th>' + t("colAsn") + '</th></tr></thead><tbody>';
+    list.forEach(function(e){ tbl += "<tr><td class='mono'>" + esc(e.ip) + "</td><td>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
+    return tbl + "</tbody></table>";
+  };
+  h += '<div class="panel"><h2>' + t("repTopVerified") + '</h2>' + ipRows(r.TOP_VERIFIED_IPS_PROXY_WIDE) + '</div>';
+  h += '<div class="panel"><h2>' + t("repTopUnverified") + '</h2>' + ipRows(r.TOP_UNVERIFIED_IPS_PROXY_WIDE) + '</div>';
+  h += '<div class="panel"><h2>' + t("repTopFps") + '</h2>' + countTable((r.TOP_FINGERPRINTS_PROXY_WIDE || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("repFingerprint")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repCountries") + '</h2>' + countTable((r.COUNTRIES_PROXY_WIDE || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("colCountry")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repBlocks") + '</h2>' + countTable(r.BLOCKS_BY_REASON, t("repReason")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repChallenges") + '</h2>' + countTable(r.CHALLENGES_BY_STAGE, t("stageTitle")) + '</div>';
+  h += '<p class="small muted">' + t("pmLatencySamples", num(r.LATENCY_SAMPLES)) + ' ' + esc(r.NOTE || "") + '</p>';
+  setHTML("pmBody", h);
+}
+
+function loadPostmortem(format){
+  var q = buildQuery({which: $("pmWhich").value, format: format || "json", top: String(pmTopValue())});
+  setHTML("pmBody", '<div class="state">' + t("loadingReport") + '</div>');
+  return domainAction(currentDomain, "GET_POSTMORTEM?" + q).then(function(r){
+    if(format === "text"){
+      setHTML("pmBody", "<pre>" + esc(r.REPORT_TEXT || "") + "</pre>");
+      return;
+    }
+    renderPostmortem(r);
+  }).catch(function(err){
+    setHTML("pmBody", '<div class="state state-error"><strong>' + t("errLoadPm") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
+function loadGrade(){
+  return proxyAction("GET_SECURITY_GRADE").then(function(r){
+    var h = '<div class="cards"><div class="card"><div class="label">' + t("gradeTitle") + '</div><div class="value">' + esc(String(r.GRADE || "—")) + '</div><div class="foot">' + t("gradeScore", num(r.SCORE)) + '</div></div></div>';
+    var checks = r.CHECKS || [];
+    h += '<table><thead><tr><th>' + t("gradeCheck") + '</th><th>' + t("gradeSeverity") + '</th><th>' + t("gradeStatus") + '</th><th>' + t("gradeDetail") + '</th><th>' + t("gradeGuidance") + '</th></tr></thead><tbody>';
+    checks.forEach(function(c){
+      h += "<tr><td>" + esc(c.title) + "</td><td>" + esc(c.severity) + "</td><td>" + gradeBadge(c.status) + "</td><td>" + esc(c.detail) + "</td><td>" + esc(c.guidance) + "</td></tr>";
+    });
+    h += "</tbody></table>";
+    h += '<p class="small muted">' + esc(r.DISCLAIMER || "") + '</p>';
+    setHTML("gradeBody", h);
+  }).catch(function(err){
+    setHTML("gradeBody", '<div class="state state-error"><strong>' + t("errLoadGrade") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
+function loadShadow(){
+  return domainAction(currentDomain, "GET_SHADOW_REPORT").then(function(r){
+    var h = '<table><tbody>'
+      + "<tr><td>" + t("shadowEnabled") + "</td><td>" + (r.SHADOW_ENABLED ? t("yes") : t("no")) + "</td></tr>"
+      + "<tr><td>" + t("shadowRules") + "</td><td>" + num(r.SHADOW_RULES) + " · " + t("shadowWaf") + ": " + (r.SHADOW_WAF ? t("yes") : t("no")) + "</td></tr>"
+      + "<tr><td>" + t("shadowEvaluated") + "</td><td>" + num(r.EVALUATED) + "</td></tr>"
+      + "<tr><td>" + t("shadowOutcomes") + "</td><td>" + t("shadowOutcomeCounts", num(r.WOULD_BLOCK), num(r.WOULD_CHALLENGE), num(r.WOULD_ALLOW)) + "</td></tr>"
+      + "<tr><td>" + t("shadowDisagree") + "</td><td>" + num(r.DISAGREEMENTS) + "</td></tr>"
+      + "</tbody></table>";
+    h += '<div class="panel"><h2>' + t("shadowRuleMatches") + '</h2>' + countTable(r.RULE_MATCHES, t("colRule")) + '</div>';
+    var recent = r.RECENT || [];
+    if(!recent.length){
+      h += '<div class="state">' + t("shadowNone") + '</div>';
+    } else {
+      h += '<table><thead><tr><th>' + t("pmTime") + '</th><th>' + t("lsIpLabel") + '</th><th>' + t("shadowLive") + '</th><th>' + t("shadowOutcome") + '</th><th>' + t("shadowSus") + '</th><th>' + t("shadowMatched") + '</th><th>' + t("shadowWafRule") + '</th></tr></thead><tbody>';
+      recent.forEach(function(d){
+        h += "<tr><td class='mono'>" + esc(fmtWhen(d.TIME)) + "</td><td class='mono'>" + esc(d.IP) + "</td><td>" + esc(d.LIVE_OUTCOME) + "</td><td>" + esc(d.SHADOW_OUTCOME) + "</td><td>" + esc(String(d.LIVE_SUS_LV)) + " / " + esc(String(d.SHADOW_SUS_LV)) + "</td><td class='mono'>" + esc((d.MATCHED || []).join(", ")) + "</td><td>" + esc(d.WAF_RULE || "") + "</td></tr>";
+      });
+      h += "</tbody></table>";
+    }
+    setHTML("shadowBody", h);
+  }).catch(function(err){
+    setHTML("shadowBody", '<div class="state state-error"><strong>' + t("errLoadShadow") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
+function loadCerts(){
+  var pCert = proxyAction("GET_CERT_STATUS").catch(function(){ return null; });
+  var pSub = proxyAction("GET_SUBDOMAIN_STATUS").catch(function(){ return null; });
+  return Promise.all([pCert, pSub]).then(function(pair){
+    var h = "";
+    var cert = pair[0], sub = pair[1];
+    if(!cert){
+      h += '<div class="state state-error"><strong>' + t("errLoadCerts") + '</strong></div>';
+    } else {
+      h += '<p class="small muted">' + t("certAlertsLine", cert.ENABLED ? t("enabledWord") : t("disabledWord"), num(cert.ALERT_DAYS)) + '</p>';
+      var entries = cert.DOMAINS || [];
+      if(!entries.length){
+        h += '<div class="state">' + t("certNone") + '</div>';
+      } else {
+        h += '<table><thead><tr><th>' + t("certDomain") + '</th><th>' + t("certStatus") + '</th><th>' + t("certExpires") + '</th><th>' + t("certDays") + '</th><th>' + t("certLastAlert") + '</th></tr></thead><tbody>';
+        entries.forEach(function(e){
+          var badge = e.STATUS === "ok" ? '<span class="badge stage1">' + t("gradePass") + '</span>'
+            : e.STATUS === "expiring" ? '<span class="badge stage2">' + esc(e.STATUS) + '</span>'
+            : e.STATUS === "expired" || e.STATUS === "unreadable" ? '<span class="badge stage3">' + esc(e.STATUS) + '</span>'
+            : '<span class="badge">' + esc(e.STATUS) + '</span>';
+          h += "<tr><td class='mono'>" + esc(e.DOMAIN) + "</td><td>" + badge + "</td><td>" + esc(fmtWhen(e.EXPIRES)) + "</td><td>" + (e.DAYS_REMAINING != null ? num(e.DAYS_REMAINING) : "—") + "</td><td>" + esc(fmtWhen(e.LAST_ALERT)) + "</td></tr>";
+        });
+        h += "</tbody></table>";
+      }
+    }
+    if(!sub){
+      h += '<div class="state state-error"><strong>' + t("errLoadSubdomains") + '</strong></div>';
+    } else {
+      h += '<h2 style="margin-top:16px">' + t("subTitle") + '</h2>';
+      h += '<p class="small muted">' + t("subLine", sub.ENABLED ? t("enabledWord") : t("disabledWord"), num(sub.INTERVAL_MINUTES), num(sub.FAILURE_THRESHOLD)) + '</p>';
+      var domains = sub.DOMAINS || [];
+      if(!domains.length){
+        h += '<div class="state">' + t("subNone") + '</div>';
+      } else {
+        h += '<table><thead><tr><th>' + t("subName") + '</th><th>' + t("subBaseline") + '</th><th>' + t("subAddresses") + '</th><th>' + t("subFailures") + '</th><th>' + t("subLastChecked") + '</th><th>' + t("subLastError") + '</th></tr></thead><tbody>';
+        domains.forEach(function(e){
+          h += "<tr><td class='mono'>" + esc(e.NAME) + "</td><td>" + (e.BASELINE_SET ? t("yes") : t("no")) + "</td><td class='mono'>" + esc((e.ADDRESSES || []).join(", ")) + "</td><td>" + num(e.CONSECUTIVE_FAILURES) + "</td><td>" + esc(fmtWhen(e.LAST_CHECKED)) + "</td><td>" + esc(e.LAST_ERROR || e.NOTE || "") + "</td></tr>";
+        });
+        h += "</tbody></table>";
+      }
+    }
+    setHTML("certBody", h);
+  });
+}
+
+function loadInsights(){
+  setText("insightsDomain", currentDomain);
+  loadLatency();
+  loadGrade();
+  loadShadow();
+  loadCerts();
+  /* The postmortem loads on demand (button) so opening the view
+     never overwrites a report being read. */
+}
+
+function loadApprovals(){
+  return proxyAction("LIST_APPROVALS").then(function(r){
+    setText("approvalsNote", r.ENABLED ? t("apprEnabled") : t("apprDisabled"));
+    var list = r.APPROVALS || [];
+    if(!list.length){
+      setHTML("approvalsBody", '<div class="state">' + t("apprNone") + '</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>' + t("apprAction") + '</th><th>' + t("apprDomain") + '</th><th>' + t("apprRole") + '</th><th>' + t("apprTenant") + '</th><th>' + t("apprCreated") + '</th><th>' + t("apprExpires") + '</th><th>' + t("colActions") + '</th></tr></thead><tbody>';
+    list.forEach(function(a){
+      h += "<tr><td class='mono'>" + esc(a.ACTION) + "</td><td class='mono'>" + esc(a.DOMAIN || "—") + "</td><td>" + esc(a.REQUESTER_ROLE) + "</td><td>" + esc(a.TENANT || "—") + "</td><td>" + esc(fmtWhen(a.CREATED_AT)) + "</td><td>" + esc(fmtWhen(a.EXPIRES_AT)) + "</td>"
+        + '<td style="white-space:nowrap"><button type="button" class="small" data-appr-approve="' + esc(a.APPROVAL_ID) + '">' + t("apprApprove") + '</button> '
+        + '<button type="button" class="small danger" data-appr-reject="' + esc(a.APPROVAL_ID) + '">' + t("apprReject") + '</button></td></tr>';
+    });
+    setHTML("approvalsBody", h + "</tbody></table>");
+    document.querySelectorAll("[data-appr-approve]").forEach(function(btn){
+      btn.addEventListener("click", function(){ decideApproval(btn.getAttribute("data-appr-approve"), true); });
+    });
+    document.querySelectorAll("[data-appr-reject]").forEach(function(btn){
+      btn.addEventListener("click", function(){ decideApproval(btn.getAttribute("data-appr-reject"), false); });
+    });
+  }).catch(function(err){
+    setHTML("approvalsBody", '<div class="state state-error"><strong>' + t("errLoadApprovals") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
+function decideApproval(id, approve){
+  if(!window.confirm(approve ? t("confirmApprove") : t("confirmReject"))) return;
+  showInline("approvalsError", "approvalsOk", "", "");
+  proxyWrite(approve ? "APPROVE_ACTION" : "REJECT_ACTION", {APPROVAL_ID: id}).then(function(){
+    showInline("approvalsError", "approvalsOk", "", approve ? t("apprApproved") : t("apprRejected"));
+    return loadApprovals();
+  }).catch(function(err){
+    showInline("approvalsError", "approvalsOk", t(approve ? "errApprove" : "errReject", err.message), "");
+  });
+}
+
+function loadMaintenance(){
+  return domainAction(currentDomain, "GET_MAINTENANCE").then(function(r){
+    var h = '<table><tbody>'
+      + "<tr><td>" + t("maintEffective") + "</td><td>" + (r.EFFECTIVE_ACTIVE ? '<span class="badge stage2">' + t("maintActive") + '</span>' : '<span class="badge stage1">' + t("maintInactive") + '</span>') + "</td></tr>"
+      + "<tr><td>" + t("maintOverrideRow") + "</td><td>" + (r.OVERRIDE_ACTIVE ? t("maintOn") : t("maintOff")) + (r.OVERRIDE_MESSAGE ? " — " + esc(r.OVERRIDE_MESSAGE) : "") + "</td></tr>"
+      + "<tr><td>" + t("maintScheduledRow") + "</td><td>" + (r.SCHEDULED_ACTIVE ? t("maintActive") : t("maintInactive")) + " · " + t("maintWindowCount", num((r.SCHEDULED_WINDOWS || []).length)) + "</td></tr>"
+      + (r.EFFECTIVE_MESSAGE ? "<tr><td>" + t("maintMessageLabel") + "</td><td>" + esc(r.EFFECTIVE_MESSAGE) + "</td></tr>" : "")
+      + "</tbody></table>";
+    setHTML("maintState", h);
+    setField("maintEnabled", r.OVERRIDE_ENABLED ? "true" : "false");
+    if(!$("maintMessage").value) $("maintMessage").value = r.OVERRIDE_MESSAGE || "";
+  }).catch(function(err){
+    setHTML("maintState", '<div class="state state-error"><strong>' + t("errMaintLoad") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
+function submitMaintenance(ev){
+  ev.preventDefault();
+  showInline("stageError", "stageOk", "", "");
+  domainWrite(currentDomain, "SET_MAINTENANCE", {
+    ENABLED: $("maintEnabled").value,
+    MESSAGE: $("maintMessage").value,
+    DURATION_MINUTES: $("maintDuration").value
+  }).then(function(){
+    showInline("stageError", "stageOk", "", t("maintSaved"));
+    return loadMaintenance();
+  }).catch(function(err){
+    showInline("stageError", "stageOk", t("errMaintSave", err.message), "");
+  });
+}
+
+function loadPackList(){
+  return proxyAction("LIST_RULE_PACKS").then(function(r){
+    var packs = r.PACKS || [];
+    if(!packs.length){
+      setHTML("packList", '<div class="state">' + t("noPacks") + '</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>' + t("colPackName") + '</th><th>' + t("colVersion") + '</th><th>' + t("colSource") + '</th><th>' + t("colDomain") + '</th><th>' + t("colRuleCount") + '</th><th>' + t("colMode") + '</th><th>' + t("colImportedAt") + '</th></tr></thead><tbody>';
+    packs.forEach(function(p){
+      h += "<tr><td>" + esc(p.name) + "</td><td>" + esc(p.version) + "</td><td class='mono'>" + esc(p.source) + "</td><td class='mono'>" + esc(p.domain) + "</td><td>" + num(p.ruleCount) + "</td><td>" + esc(p.mode) + "</td><td>" + esc(fmtWhen(p.importedAt)) + "</td></tr>";
+    });
+    setHTML("packList", h + "</tbody></table>");
+  }).catch(function(err){
+    setHTML("packList", '<div class="state state-error"><strong>' + t("errLoadPacks") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
+function importPack(ev){
+  ev.preventDefault();
+  var source = $("packSource").value.trim();
+  if(!source) return;
+  showInline("rulesError", "rulesOk", "", "");
+  domainWrite(currentDomain, "IMPORT_RULE_PACK", {SOURCE: source, MODE: $("packMode").value}).then(function(r){
+    var msg = t("packImported", num(r.IMPORTED));
+    if(r.REGISTRY_WARNING) msg += " " + r.REGISTRY_WARNING;
+    showInline("rulesError", "rulesOk", "", msg);
+    loadPackList();
+    return loadRules(true);
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", t("errPackImport", err.message), "");
+  });
+}
+
+function renderCfPlan(r){
+  var h = '<p class="small muted">' + t("cfCounts", num(r.TRANSLATED_COUNT), num(r.SKIPPED_COUNT)) + ' ' + esc(r.NOTE || "") + '</p>';
+  var translated = r.TRANSLATED || [];
+  if(!translated.length){
+    h += '<div class="state">' + t("cfNoTranslated") + '</div>';
+  } else {
+    h += '<table><thead><tr><th>' + t("colCfDesc") + '</th><th>' + t("colCfExpr") + '</th><th>' + t("colCfAction") + '</th><th>' + t("ruleExprLabel") + '</th><th>' + t("ruleActionLabel") + '</th><th>' + t("colNotes") + '</th></tr></thead><tbody>';
+    translated.forEach(function(x){
+      h += "<tr><td>" + esc(x.cf_description) + "</td><td class='mono'>" + esc(x.cf_expression) + "</td><td>" + esc(x.cf_action) + "</td><td class='mono'>" + esc(x.expression) + "</td><td class='mono'>" + esc(x.action) + "</td><td>" + esc((x.notes || []).join("; ")) + "</td></tr>";
+    });
+    h += "</tbody></table>";
+  }
+  var skipped = r.SKIPPED || [];
+  if(skipped.length){
+    h += '<h2 style="margin-top:16px">' + t("cfSkipped") + '</h2><table><thead><tr><th>' + t("colCfDesc") + '</th><th>' + t("colCfExpr") + '</th><th>' + t("colCfAction") + '</th><th>' + t("colReason") + '</th></tr></thead><tbody>';
+    skipped.forEach(function(x){
+      h += "<tr><td>" + esc(x.cf_description) + "</td><td class='mono'>" + esc(x.cf_expression) + "</td><td>" + esc(x.cf_action) + "</td><td>" + esc(x.reason) + "</td></tr>";
+    });
+    h += "</tbody></table>";
+  }
+  var settings = r.NOT_IMPORTED_SETTINGS || [];
+  if(settings.length){
+    h += '<p class="small muted">' + t("cfNotImported") + ' ' + esc(settings.join(", ")) + '.</p>';
+  }
+  setHTML("cfPlan", h);
+}
+
+function cfPreview(){
+  showInline("rulesError", "rulesOk", "", "");
+  domainAction(currentDomain, "CF_PREVIEW_IMPORT").then(function(r){
+    renderCfPlan(r);
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", t("errCfPreview", err.message), "");
+  });
+}
+
+function cfApply(){
+  if(!window.confirm(t("confirmCfApply"))) return;
+  showInline("rulesError", "rulesOk", "", "");
+  domainWrite(currentDomain, "CF_APPLY_IMPORT", {MODE: $("cfMode").value}).then(function(r){
+    showInline("rulesError", "rulesOk", "", t("cfApplied", num(r.APPLIED)));
+    setHTML("cfPlan", '<div class="state">' + t("cfAppliedDetail", num(r.APPLIED), num(r.SKIPPED_COUNT)) + '</div>');
+    return loadRules(true);
+  }).catch(function(err){
+    showInline("rulesError", "rulesOk", t("errCfApply", err.message), "");
+  });
+}
+
 var currentView = "overview";
 function showView(name){
   currentView = name;
@@ -2622,8 +3432,10 @@ function showView(name){
   else if(name === "domains"){ loadDomains(); loadDomainPanel(); loadTenants(); loadTemplates(); }
   else if(name === "rules"){ loadRules(true); }
   else if(name === "iplists"){ loadIPLists(); }
-  else if(name === "stage"){ loadStageState(); }
+  else if(name === "stage"){ loadStageState(); loadMaintenance(); }
   else if(name === "logs"){ loadLogs(); }
+  else if(name === "insights"){ loadInsights(); }
+  else if(name === "approvals"){ loadApprovals(); }
 }
 
 document.querySelectorAll(".navbtn").forEach(function(b){
@@ -2702,6 +3514,19 @@ $("lsNext").addEventListener("click", function(){
 });
 $("reportJsonBtn").addEventListener("click", function(){ downloadReport("json"); });
 $("reportCsvBtn").addEventListener("click", function(){ downloadReport("csv"); });
+$("maintForm").addEventListener("submit", submitMaintenance);
+$("maintReloadBtn").addEventListener("click", function(){ loadMaintenance(); });
+$("packForm").addEventListener("submit", importPack);
+$("packListBtn").addEventListener("click", function(){ loadPackList(); });
+$("cfPreviewBtn").addEventListener("click", function(){ cfPreview(); });
+$("cfApplyBtn").addEventListener("click", function(){ cfApply(); });
+$("latReloadBtn").addEventListener("click", function(){ loadLatency(); });
+$("pmLoadBtn").addEventListener("click", function(){ loadPostmortem("json"); });
+$("pmTextBtn").addEventListener("click", function(){ loadPostmortem("text"); });
+$("gradeReloadBtn").addEventListener("click", function(){ loadGrade(); });
+$("shadowReloadBtn").addEventListener("click", function(){ loadShadow(); });
+$("certReloadBtn").addEventListener("click", function(){ loadCerts(); });
+$("approvalsReloadBtn").addEventListener("click", function(){ loadApprovals(); });
 
 (function initLang(){
   var savedLang = null;

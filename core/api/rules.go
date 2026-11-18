@@ -182,19 +182,20 @@ func loadFreshSettings(domainName string) (domains.DomainSettings, bool) {
 	return settings, true
 }
 
-// addRule appends one validated rule. Params: expression, action.
+// addRule appends one validated rule. Params: expression, action,
+// schedule (optional cron expression; empty means always active).
 func addRule(domainName string, params map[string]string) (map[string]interface{}, string, string) {
 	expression, hasExpression := params["expression"]
 	action, hasAction := params["action"]
 	for key := range params {
-		if key != "expression" && key != "action" {
+		if key != "expression" && key != "action" && key != "schedule" {
 			return nil, ERR_INVALID_PARAM, ""
 		}
 	}
 	if !hasExpression || !hasAction {
 		return nil, ERR_PARAMS_REQUIRED, ""
 	}
-	rule := domains.JsonRule{Expression: expression, Action: action}
+	rule := domains.JsonRule{Expression: expression, Action: action, Schedule: params["schedule"]}
 	if err := validateRule(rule); err != nil {
 		return nil, ERR_INVALID_PARAM, err.Error()
 	}
@@ -212,18 +213,20 @@ func addRule(domainName string, params map[string]string) (map[string]interface{
 }
 
 // updateRule changes one rule. Params: index (0-based), plus
-// expression and/or action. At least one of expression/action is
-// required; omitted fields keep their current value.
+// expression, action, and/or schedule. At least one of
+// expression/action/schedule is required; omitted fields keep
+// their current value. An empty schedule clears the schedule.
 func updateRule(domainName string, params map[string]string) (map[string]interface{}, string, string) {
 	indexRaw, hasIndex := params["index"]
 	_, hasExpression := params["expression"]
 	_, hasAction := params["action"]
+	_, hasSchedule := params["schedule"]
 	for key := range params {
-		if key != "index" && key != "expression" && key != "action" {
+		if key != "index" && key != "expression" && key != "action" && key != "schedule" {
 			return nil, ERR_INVALID_PARAM, ""
 		}
 	}
-	if !hasIndex || (!hasExpression && !hasAction) {
+	if !hasIndex || (!hasExpression && !hasAction && !hasSchedule) {
 		return nil, ERR_PARAMS_REQUIRED, ""
 	}
 	index, err := strconv.Atoi(indexRaw)
@@ -246,6 +249,9 @@ func updateRule(domainName string, params map[string]string) (map[string]interfa
 	}
 	if hasAction {
 		updated.Action = params["action"]
+	}
+	if hasSchedule {
+		updated.Schedule = params["schedule"]
 	}
 	if err := validateRule(updated); err != nil {
 		return nil, ERR_INVALID_PARAM, err.Error()
