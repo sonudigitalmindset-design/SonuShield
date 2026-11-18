@@ -50,6 +50,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sonushield/core/backup"
+	"sonushield/core/controlplane"
 	"sonushield/core/domains"
 	"sonushield/core/server"
 	"sort"
@@ -88,6 +89,17 @@ Usage:
       Validate a backup envelope and write it as the config
       (keeping a .bak copy). A bad backup changes nothing.
       Encrypted backups need SONUSHIELD_BACKUP_PASSPHRASE.
+  sonushield control [--config PATH]
+      Run the control plane: the management UI and API on a
+      separate host, managing proxy nodes through their
+      control API v2. Reads the "controlPlane" section of
+      the config file (default config.json). It never
+      proxies visitor traffic.
+  sonushield control-setup [--config PATH]
+      Print a one-time setup token for creating the first
+      owner account on the control plane. The token works
+      once, expires after one hour, and is refused when an
+      owner already exists.
   sonushield version
       Print version information.
   sonushield help
@@ -116,6 +128,10 @@ func cliDispatch() (bool, int) {
 		return true, runBackup(os.Stdout, os.Stderr, args[1:])
 	case "restore":
 		return true, runRestore(os.Stdout, os.Stderr, args[1:])
+	case "control":
+		return true, runControl(os.Stdout, os.Stderr, args[1:])
+	case "control-setup":
+		return true, runControlSetup(os.Stdout, os.Stderr, args[1:])
 	case "version", "--version", "-version":
 		fmt.Fprintf(os.Stdout, "SonuShield %s (go %s)\n", version, runtime.Version())
 		return true, 0
@@ -456,5 +472,61 @@ func runRestore(stdout, stderr io.Writer, args []string) int {
 		return 1
 	}
 	fmt.Fprintf(stdout, "%s restored: %d domain(s). Restart the proxy to apply it.\n", *configPath, len(cfg.Domains))
+	return 0
+}
+
+// runControl serves the control plane until the process ends.
+// It returns 1 when the config cannot be loaded or the server
+// fails to start; a clean shutdown is not expected (the
+// process runs until stopped).
+func runControl(stdout, stderr io.Writer, args []string) int {
+	fs := flag.NewFlagSet("control", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	configPath := fs.String("config", "config.json", "config file holding the controlPlane section")
+	fs.Usage = func() {
+		fmt.Fprintln(stderr, "Usage: sonushield control [--config PATH]")
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	if fs.NArg() != 0 {
+		fs.Usage()
+		return 2
+	}
+	_ = stdout
+	if err := controlplane.Run(*configPath); err != nil {
+		fmt.Fprintln(stderr, "control: "+err.Error())
+		return 1
+	}
+	return 0
+}
+
+// runControlSetup prints a one-time setup token for creating
+// the first owner account. The token is printed exactly once,
+// to stdout only, so it can be captured without mixing with
+// diagnostics on stderr.
+func runControlSetup(stdout, stderr io.Writer, args []string) int {
+	fs := flag.NewFlagSet("control-setup", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	configPath := fs.String("config", "config.json", "config file holding the controlPlane section")
+	fs.Usage = func() {
+		fmt.Fprintln(stderr, "Usage: sonushield control-setup [--config PATH]")
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	if fs.NArg() != 0 {
+		fs.Usage()
+		return 2
+	}
+	token, err := controlplane.GenerateSetupTokenForCLI(*configPath)
+	if err != nil {
+		fmt.Fprintln(stderr, "control-setup: "+err.Error())
+		return 1
+	}
+	fmt.Fprintln(stdout, token)
+	fmt.Fprintln(stderr, "One-time setup token (valid 1 hour, single use). Open the control plane /setup page and enter it to create the owner account. It will not be shown again.")
 	return 0
 }
