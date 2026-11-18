@@ -677,6 +677,15 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "GET_CACHE_STATS":
+		response, errCode := cacheStatsResponse(domainSettings, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "SET_DOMAIN_FEATURES":
 		response, errCode := applyDomainFeatures(domainSettings, params)
 		if errCode != "" {

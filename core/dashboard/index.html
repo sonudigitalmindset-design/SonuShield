@@ -1605,7 +1605,22 @@ srvImportNone: "No importable domains found in the pasted configuration.",
 srvImportSkipped: "Skipped",
 srvImportWarnings: "Warnings",
 srvImportNotImported: "Not imported (no equivalent)",
-srvImportConfirm: "Create {0} domain(s) from this configuration? This reloads the proxy configuration."
+srvImportConfirm: "Create {0} domain(s) from this configuration? This reloads the proxy configuration.",
+cacheRowTitle: "Edge cache",
+cacheRowHits: "Cache hits",
+cacheRowMisses: "misses",
+cacheRowBytes: "Bytes served from cache",
+cacheRowStores: "Stores",
+cacheRowEvictions: "evictions",
+cacheRowPurges: "purges",
+cacheRowStale: "stale serves",
+cacheRowEntries: "Cached entries",
+cacheRowBytesUnit: "bytes stored",
+purgeSelectorPath: "Exact path",
+purgeSelectorPrefix: "Path prefix",
+purgeSelectorTag: "Cache tag",
+purgeValuePlaceholder: "/page or prefix or tag",
+purgeSelectiveBtn: "Purge selected"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2299,7 +2314,22 @@ srvImportNone: "Paste किए गए configuration में कोई importa
 srvImportSkipped: "छोड़े गए",
 srvImportWarnings: "चेतावनियाँ",
 srvImportNotImported: "Import नहीं हुआ (कोई समकक्ष नहीं)",
-srvImportConfirm: "इस configuration से {0} domain बनाएँ? इससे proxy configuration reload होगी।"
+srvImportConfirm: "इस configuration से {0} domain बनाएँ? इससे proxy configuration reload होगी।",
+cacheRowTitle: "Edge cache",
+cacheRowHits: "Cache hits",
+cacheRowMisses: "misses",
+cacheRowBytes: "Cache से serve किए गए bytes",
+cacheRowStores: "Stores",
+cacheRowEvictions: "evictions",
+cacheRowPurges: "purges",
+cacheRowStale: "stale serves",
+cacheRowEntries: "Cached entries",
+cacheRowBytesUnit: "bytes stored",
+purgeSelectorPath: "Exact path",
+purgeSelectorPrefix: "Path prefix",
+purgeSelectorTag: "Cache tag",
+purgeValuePlaceholder: "/page या prefix या tag",
+purgeSelectiveBtn: "चुना हुआ purge करें"
 }
 };
 function t(key){
@@ -2669,7 +2699,8 @@ function loadDomainPanel(){
   var pBrps = domainAction(dom, "GET_BYPASSED_REQUESTS_PER_SECOND").catch(function(){ return null; });
   var pTot = domainAction(dom, "GET_TOTAL_REQUESTS").catch(function(){ return null; });
   var pByp = domainAction(dom, "GET_BYPASSED_REQUESTS").catch(function(){ return null; });
-  return Promise.all([pCfg, pRps, pBrps, pTot, pByp]).then(function(r){
+  var pCache = domainAction(dom, "GET_CACHE_STATS").catch(function(){ return null; });
+  return Promise.all([pCfg, pRps, pBrps, pTot, pByp, pCache]).then(function(r){
     var cfg = r[0];
     if(!cfg && !r[1] && !r[2] && !r[3] && !r[4]){
       setHTML("domBody", '<div class="state"><strong>' + t("noData") + '</strong><br>' + t("errDomainMissing") + '</div>');
@@ -2689,14 +2720,42 @@ function loadDomainPanel(){
         + "<tr><td>" + t("setWafModeLabel") + "</td><td>" + esc(cfg.WAF_MODE_EFFECTIVE || cfg.WAF_MODE || "—") + "</td></tr>"
         + "<tr><td>" + t("domRowAlerts") + "</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? t("yes") : t("no")) + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? t("yes") : t("no")) + " · Email: " + (cfg.EMAIL_CONFIGURED ? t("yes") : t("no")) + " · Twilio: " + (cfg.TWILIO_CONFIGURED ? t("yes") : t("no")) + "</td></tr>";
     }
+    var cache = r[5];
+    if(cache && cache.CACHE_ENABLED){
+      h += "<tr><td>" + t("cacheRowHits") + "</td><td>" + num(cache.HITS) + " / " + t("cacheRowMisses") + " " + num(cache.MISSES) + "</td></tr>"
+        + "<tr><td>" + t("cacheRowBytes") + "</td><td>" + num(cache.BYTES_SERVED) + "</td></tr>"
+        + "<tr><td>" + t("cacheRowStores") + "</td><td>" + num(cache.STORES) + " · " + t("cacheRowEvictions") + " " + num(cache.EVICTIONS) + " · " + t("cacheRowPurges") + " " + num(cache.PURGES) + " · " + t("cacheRowStale") + " " + num(cache.STALE_SERVES) + "</td></tr>"
+        + "<tr><td>" + t("cacheRowEntries") + "</td><td>" + num(cache.ENTRIES) + " · " + num(cache.BYTES) + " " + t("cacheRowBytesUnit") + "</td></tr>";
+    } else {
+      h += "<tr><td>" + t("cacheRowTitle") + "</td><td>" + t("cacheDisabled") + "</td></tr>";
+    }
     setHTML("domBody", h + "</tbody></table>"
-      + '<div class="btnrow" style="margin-top:12px"><button type="button" id="purgeCacheBtn">' + t("purgeCacheBtn") + '</button><span class="small muted" id="purgeCacheNote"></span></div>');
+      + '<div class="btnrow" style="margin-top:12px"><button type="button" id="purgeCacheBtn">' + t("purgeCacheBtn") + '</button>'
+      + '<select id="purgeCacheSel"><option value="path">' + t("purgeSelectorPath") + '</option><option value="prefix">' + t("purgeSelectorPrefix") + '</option><option value="tag">' + t("purgeSelectorTag") + '</option></select>'
+      + '<input id="purgeCacheVal" type="text" spellcheck="false" autocomplete="off" style="width:220px" placeholder="' + t("purgeValuePlaceholder") + '">'
+      + '<button type="button" id="purgeCacheSelBtn">' + t("purgeSelectiveBtn") + '</button><span class="small muted" id="purgeCacheNote"></span></div>');
     var purgeBtn = $("purgeCacheBtn");
     if(purgeBtn){
       purgeBtn.addEventListener("click", function(){
         if(!window.confirm(t("confirmPurgeCache", dom))) return;
         setText("purgeCacheNote", "");
         domainWrite(dom, "PURGE_CACHE", {}).then(function(r){
+          setText("purgeCacheNote", r.CACHE_ENABLED ? t("purgedEntries", num(r.PURGED)) : t("cacheDisabled"));
+        }).catch(function(err){
+          setText("purgeCacheNote", t("errPurge", err.message));
+        });
+      });
+    }
+    var purgeSelBtn = $("purgeCacheSelBtn");
+    if(purgeSelBtn){
+      purgeSelBtn.addEventListener("click", function(){
+        var sel = $("purgeCacheSel").value;
+        var val = $("purgeCacheVal").value.trim();
+        if(!val) return;
+        var params = {};
+        params[sel] = val;
+        setText("purgeCacheNote", "");
+        domainWrite(dom, "PURGE_CACHE", params).then(function(r){
           setText("purgeCacheNote", r.CACHE_ENABLED ? t("purgedEntries", num(r.PURGED)) : t("cacheDisabled"));
         }).catch(function(err){
           setText("purgeCacheNote", t("errPurge", err.message));

@@ -121,6 +121,7 @@ var actionMinRole = map[string]string{
 	"ACK_ALERT":                        proxy.RoleOperator,
 	"PREVIEW_SERVER_IMPORT":            proxy.RoleOperator,
 	"APPLY_SERVER_IMPORT":              proxy.RoleAdmin,
+	"GET_CACHE_STATS":                  proxy.RoleViewer,
 }
 
 func roleLevel(role string) int {

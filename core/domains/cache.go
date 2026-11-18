@@ -61,6 +61,9 @@ type cacheEntry struct {
 	body     []byte
 	storedAt time.Time
 	lifetime time.Duration
+	// tags are the Cache-Tag values recorded at store time
+	// (Batch 8), used by PurgeTag. At most 10, each capped.
+	tags []string
 }
 
 type EdgeCache struct {
@@ -69,6 +72,15 @@ type EdgeCache struct {
 	bytes    int64
 	maxBytes int64
 	ttlCap   time.Duration
+	// Analytics counters (Batch 8): counters only, guarded by
+	// the same mutex as the entries. A reload resets them.
+	hits        int64
+	misses      int64
+	bytesServed int64
+	stores      int64
+	evictions   int64
+	purges      int64
+	staleServes int64
 }
 
 // NewEdgeCache builds a cache from the domain config, or nil when
@@ -115,6 +127,7 @@ func (c *EdgeCache) Lookup(key string) (status int, header http.Header, body []b
 	defer c.mu.Unlock()
 	entry, exists := c.entries[key]
 	if !exists {
+		c.misses++
 		return 0, nil, nil, 0, false
 	}
 	if now.After(entry.storedAt.Add(entry.lifetime)) {
@@ -122,8 +135,11 @@ func (c *EdgeCache) Lookup(key string) (status int, header http.Header, body []b
 			delete(c.entries, key)
 			c.bytes -= int64(len(entry.body))
 		}
+		c.misses++
 		return 0, nil, nil, 0, false
 	}
+	c.hits++
+	c.bytesServed += int64(len(entry.body))
 	return entry.status, entry.header, entry.body, now.Sub(entry.storedAt), true
 }
 
@@ -147,6 +163,10 @@ func (c *EdgeCache) LookupStale(key string) (status int, header http.Header, bod
 		c.bytes -= int64(len(entry.body))
 		return 0, nil, nil, false
 	}
+	// Stale serves count separately from fresh hits: the
+	// normal Lookup already counted this key as a miss.
+	c.staleServes++
+	c.bytesServed += int64(len(entry.body))
 	return entry.status, entry.header, entry.body, true
 }
 
@@ -178,8 +198,34 @@ func (c *EdgeCache) Store(key string, status int, header http.Header, body []byt
 	for k, v := range header {
 		cloned[k] = append([]string(nil), v...)
 	}
-	c.entries[key] = &cacheEntry{status: status, header: cloned, body: body, storedAt: time.Now(), lifetime: lifetime}
+	c.entries[key] = &cacheEntry{status: status, header: cloned, body: body, storedAt: time.Now(), lifetime: lifetime, tags: parseCacheTags(header)}
 	c.bytes += size
+	c.stores++
+}
+
+// parseCacheTags splits a Cache-Tag header value into tags:
+// comma-separated, trimmed, at most 10 tags of at most 64
+// characters each. Empty values yield no tags.
+func parseCacheTags(header http.Header) []string {
+	raw := header.Get("Cache-Tag")
+	if raw == "" {
+		return nil
+	}
+	var tags []string
+	for _, tag := range strings.Split(raw, ",") {
+		tag = strings.TrimSpace(tag)
+		if tag == "" {
+			continue
+		}
+		if len(tag) > 64 {
+			tag = tag[:64]
+		}
+		tags = append(tags, tag)
+		if len(tags) >= 10 {
+			break
+		}
+	}
+	return tags
 }
 
 // evictOneLocked removes one entry: an expired entry first, else
@@ -191,6 +237,7 @@ func (c *EdgeCache) evictOneLocked() bool {
 		if now.After(entry.storedAt.Add(entry.lifetime)) {
 			delete(c.entries, key)
 			c.bytes -= int64(len(entry.body))
+			c.evictions++
 			return true
 		}
 	}
@@ -206,6 +253,7 @@ func (c *EdgeCache) evictOneLocked() bool {
 	}
 	c.bytes -= int64(len(c.entries[oldestKey].body))
 	delete(c.entries, oldestKey)
+	c.evictions++
 	return true
 }
 
@@ -219,6 +267,7 @@ func (c *EdgeCache) Purge() int {
 	n := len(c.entries)
 	c.entries = map[string]*cacheEntry{}
 	c.bytes = 0
+	c.purges += int64(n)
 	return n
 }
 
@@ -241,7 +290,83 @@ func (c *EdgeCache) PurgePath(path string) int {
 			n++
 		}
 	}
+	c.purges += int64(n)
 	return n
+}
+
+// PurgePrefix removes entries whose URL path starts with the
+// given prefix (keys are "GET <path>[?query]"). It reports
+// how many entries were removed.
+func (c *EdgeCache) PurgePrefix(prefix string) int {
+	if c == nil || prefix == "" {
+		return 0
+	}
+	match := "GET " + prefix
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	n := 0
+	for key, entry := range c.entries {
+		if strings.HasPrefix(key, match) {
+			delete(c.entries, key)
+			c.bytes -= int64(len(entry.body))
+			n++
+		}
+	}
+	c.purges += int64(n)
+	return n
+}
+
+// PurgeTag removes entries recorded with the given Cache-Tag
+// value. It reports how many entries were removed.
+func (c *EdgeCache) PurgeTag(tag string) int {
+	if c == nil || tag == "" {
+		return 0
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	n := 0
+	for key, entry := range c.entries {
+		for _, entryTag := range entry.tags {
+			if entryTag == tag {
+				delete(c.entries, key)
+				c.bytes -= int64(len(entry.body))
+				n++
+				break
+			}
+		}
+	}
+	c.purges += int64(n)
+	return n
+}
+
+// CacheAnalytics is the counter snapshot for one domain's
+// edge cache (Batch 8). Counters only: no keys, paths, or
+// bodies are exposed.
+type CacheAnalytics struct {
+	Hits        int64
+	Misses      int64
+	BytesServed int64
+	Stores      int64
+	Evictions   int64
+	Purges      int64
+	StaleServes int64
+	Entries     int
+	Bytes       int64
+}
+
+// Analytics returns the counter snapshot. A nil cache
+// reports zeros.
+func (c *EdgeCache) Analytics() CacheAnalytics {
+	if c == nil {
+		return CacheAnalytics{}
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return CacheAnalytics{
+		Hits: c.hits, Misses: c.misses, BytesServed: c.bytesServed,
+		Stores: c.stores, Evictions: c.evictions, Purges: c.purges,
+		StaleServes: c.staleServes, Entries: len(c.entries), Bytes: c.bytes,
+	}
 }
 
 // Stats reports the entry count and total stored bytes.
