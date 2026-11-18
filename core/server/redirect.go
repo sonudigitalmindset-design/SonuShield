@@ -13,6 +13,11 @@ import "strings"
 // redirector. This helper collapses any run of leading
 // slashes to exactly one, and maps anything that is not a
 // plain path (absolute URLs, empty targets) to "/".
+// Backslashes are folded to slashes first: browsers treat "\"
+// as "/" in URLs, so "/\evil.com" would otherwise survive as
+// a scheme-relative off-site target. ASCII control characters
+// are stripped: legitimate paths carry them percent-encoded,
+// and a raw control byte in a Location header is never valid.
 // Callers sanitise at store time, so every later consumer
 // of the stored value — server redirects and the JSON
 // redirect in the passkey flow — is covered.
@@ -20,5 +25,12 @@ func safeRedirectTarget(target string) string {
 	if target == "" || !strings.HasPrefix(target, "/") {
 		return "/"
 	}
+	target = strings.ReplaceAll(target, "\\", "/")
+	target = strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f {
+			return -1
+		}
+		return r
+	}, target)
 	return "/" + strings.TrimLeft(target, "/")
 }
