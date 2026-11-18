@@ -43,6 +43,32 @@ var iconMaskable512 []byte
 // and are served verbatim. With empty branding the output is the
 // built-in page, byte for byte.
 func Serve(writer http.ResponseWriter, brand domains.Branding) {
+	writePage(writer, render(brand, ""))
+}
+
+// ServeControlPlane writes the same dashboard page for the control
+// plane: one UI codebase, two serving modes. The only difference is
+// the bootstrap script injected in <head>: it sets
+// window.SONUSHIELD_CP, which switches the page to session-cookie
+// authentication, node-prefixed API calls, and the node switcher
+// and accounts views. The caller (the control plane) is
+// responsible for session gating. bootstrap must be JSON
+// produced by encoding/json (which escapes <, > and & inside
+// strings, so it is safe in a <script> block); it must never
+// contain secrets, and is injected verbatim.
+func ServeControlPlane(writer http.ResponseWriter, brand domains.Branding, bootstrapJSON string) {
+	script := `<script>window.SONUSHIELD_CP=` + bootstrapJSON + `;</script>`
+	writePage(writer, render(brand, script))
+}
+
+func writePage(writer http.ResponseWriter, page string) {
+	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	writer.Header().Set("X-Content-Type-Options", "nosniff")
+	writer.Write([]byte(page))
+}
+
+func render(brand domains.Branding, cpBootstrap string) string {
 	brand = brand.Sanitized()
 	title := "SonuShield Dashboard"
 	name := "SonuShield"
@@ -63,10 +89,8 @@ func Serve(writer http.ResponseWriter, brand domains.Branding) {
 	page = strings.ReplaceAll(page, "__BRAND_MARK__", mark)
 	page = strings.ReplaceAll(page, "__BRAND_NAME__", name)
 	page = strings.ReplaceAll(page, "__BRAND_STYLE__", style)
-	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-	writer.Header().Set("X-Content-Type-Options", "nosniff")
-	writer.Write([]byte(page))
+	page = strings.ReplaceAll(page, "__CP_BOOTSTRAP__", cpBootstrap)
+	return page
 }
 
 // defaultBrandMark is the built-in shield mark shown in the
@@ -134,4 +158,22 @@ func shellAssetFor(path, adminSecret string) (shellAsset, bool) {
 	}
 	asset, ok := shellAssets[strings.TrimPrefix(path, prefix)]
 	return asset, ok
+}
+
+// ServeAssetSuffix serves a PWA shell asset by its path suffix
+// (e.g. "manifest.webmanifest", "sw.js", "icons/icon-192.png") and
+// reports whether it served anything. This is the control-plane
+// variant: the dashboard is served from the control host root, so
+// the shell assets live at root paths. The caller is responsible
+// for session gating, exactly as for ServeControlPlane.
+func ServeAssetSuffix(writer http.ResponseWriter, suffix string) bool {
+	asset, ok := shellAssets[suffix]
+	if !ok {
+		return false
+	}
+	writer.Header().Set("Content-Type", asset.contentType)
+	writer.Header().Set("Cache-Control", asset.cache)
+	writer.Header().Set("X-Content-Type-Options", "nosniff")
+	writer.Write(asset.data)
+	return true
 }

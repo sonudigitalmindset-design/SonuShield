@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>(function(){try{var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="dark";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+__CP_BOOTSTRAP__
 <style>
 /* SonuShield Dashboard — one layout, two color themes (Premium Dark / Official Classic Light).
    Only color tokens change between themes; spacing, type, and components are shared. */
@@ -69,6 +70,7 @@ button{cursor:pointer}
 .wordmark small{display:block;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
 .topbar .spacer{flex:1}
 .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted);background:var(--panel);white-space:nowrap}
+#nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:2px 4px;font-size:12px;max-width:180px}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
 .pill.ok{color:var(--ok-text);border-color:var(--ok-border)}
 .pill.ok .dot{background:var(--ok-text)}
@@ -191,6 +193,8 @@ tr.selected td{background:var(--nav-active-bg)}
     <span class="wordmark">__BRAND_NAME__<small data-i18n="brandSub">Dashboard</small></span>
   </span>
   <span class="pill" id="hostPill" data-i18n-title="hostPillTitle" title="Domain in the address bar">host: —</span>
+  <span class="pill" id="nodeWrap" hidden><span data-i18n="cpNodeLabel">Node</span><select id="nodeSelect" data-i18n-aria="cpNodeAria" aria-label="Proxy node"></select></span>
+  <span class="pill" id="cpUserPill" data-i18n-title="cpUserTitle" title="Signed-in account" hidden></span>
   <div class="spacer"></div>
   <span class="pill" id="updatingPill" hidden><span class="spinner" aria-hidden="true"></span><span data-i18n="updating">Updating</span></span>
   <span class="themeseg" role="group" data-i18n-aria="themeAria" aria-label="Color theme">
@@ -220,6 +224,7 @@ tr.selected td{background:var(--nav-active-bg)}
     <button class="navbtn" type="button" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13h6M9 17h4"/></svg><span data-i18n="navReports">Reports</span></button>
     <button class="navbtn" type="button" data-view="insights"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span data-i18n="navInsights">Insights</span></button>
     <button class="navbtn" type="button" data-view="approvals"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span data-i18n="navApprovals">Approvals</span></button>
+    <button class="navbtn" type="button" data-view="accounts" id="navAccountsBtn" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.6 4.4-5.5 8-5.5s6.5 1.9 8 5.5"/></svg><span data-i18n="navAccounts">Accounts</span></button>
     <h3 data-i18n="navAboutH">About</h3>
     <button class="navbtn" type="button" data-view="about"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01" stroke-width="2.6"/></svg><span data-i18n="navAbout">About &amp; limits</span></button>
   </nav>
@@ -816,6 +821,66 @@ tr.selected td{background:var(--nav-active-bg)}
       <div id="approvalsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
     </section>
 
+    <section id="view-accounts" class="view">
+      <h1 data-i18n="accountsTitle">Accounts</h1>
+      <p class="sub" data-i18n="accountsSub">Control-plane accounts. Owners manage everything; resellers manage their tenants; tenants read only their own tenant. Passwords are stored hashed and never shown.</p>
+      <div class="inline-err" id="accountsError" role="alert"></div>
+      <div class="inline-ok" id="accountsOk" role="status"></div>
+      <div id="accountsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+      <div class="panel">
+        <h2 data-i18n="accountsCreateTitle">Create an account</h2>
+        <form id="accountCreateForm">
+          <div class="formgrid">
+            <div class="field">
+              <label for="acctUsername" data-i18n="accountsFormUser">Username</label>
+              <input id="acctUsername" type="text" spellcheck="false" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="acctPassword" data-i18n="accountsFormPassword">Password (at least 12 characters)</label>
+              <input id="acctPassword" type="password" autocomplete="new-password" required>
+            </div>
+            <div class="field">
+              <label for="acctRole" data-i18n="accountsFormRole">Role</label>
+              <select id="acctRole"><option value="tenant" data-i18n="roleTenant">Tenant</option><option value="reseller" data-i18n="roleReseller">Reseller</option><option value="owner" data-i18n="roleOwner">Owner</option></select>
+            </div>
+            <div class="field">
+              <label for="acctTenant" data-i18n="accountsFormTenant">Tenant (tenant accounts)</label>
+              <input id="acctTenant" type="text" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="acctTenants" data-i18n="accountsFormTenants">Tenants, comma-separated (reseller accounts)</label>
+              <input id="acctTenants" type="text" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" data-i18n="accountsCreateBtn">Create account</button>
+          </div>
+        </form>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="accountsPwTitle">Change a password</h2>
+        <form id="accountPasswordForm">
+          <div class="formgrid">
+            <div class="field">
+              <label for="acctPwUsername" data-i18n="accountsPwUser">Username (blank for yourself)</label>
+              <input id="acctPwUsername" type="text" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="acctPwCurrent" data-i18n="accountsPwCurrent">Current password (your own account)</label>
+              <input id="acctPwCurrent" type="password" autocomplete="current-password">
+            </div>
+            <div class="field">
+              <label for="acctPwNew" data-i18n="accountsPwNew">New password (at least 12 characters)</label>
+              <input id="acctPwNew" type="password" autocomplete="new-password" required>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" data-i18n="accountsPwBtn">Change password</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <section id="view-about" class="view">
       <h1 data-i18n="aboutTitle">About &amp; limits</h1>
       <p class="sub" data-i18n="aboutSub">SonuShield Dashboard — the control panel served by the proxy itself. No build step, no external resources: everything on this page is served from the single proxy binary and works offline.</p>
@@ -865,6 +930,15 @@ var apiSecret = null;
 var ssoMode = false;
 var pollTimer = null;
 var connected = false;
+/* Control-plane mode: the server replaces __CP_BOOTSTRAP__
+// with window.SONUSHIELD_CP when this page is served by the
+// control plane. In that mode there is no API secret to
+// enter: the control-plane session cookie authenticates, and
+// all node API calls go through /cp/api/<node>/... . */
+var CP = window.SONUSHIELD_CP || null;
+var cpNode = null;
+var cpUser = null;
+var CP_NODE_KEY = "sonushield_cp_node";
 
 function $(id){ return document.getElementById(id); }
 function esc(v){
@@ -915,6 +989,43 @@ var lang = "en";
 var STR = {
 en: {
 brandSub: "Dashboard",
+cpNodeLabel: "Node",
+cpNodeAria: "Proxy node",
+cpUserTitle: "Signed-in account",
+cpLogout: "Sign out",
+navAccounts: "Accounts",
+accountsTitle: "Accounts",
+accountsSub: "Control-plane accounts. Owners manage everything; resellers manage their tenants; tenants read only their own tenant. Passwords are stored hashed and never shown.",
+accountsEmpty: "No accounts to show.",
+accountsColUser: "Username",
+accountsColRole: "Role",
+accountsColTenant: "Tenant",
+accountsColTenants: "Tenants",
+accountsColStatus: "Status",
+accountsColActions: "Actions",
+accountsEnabled: "Enabled",
+accountsDisabled: "Disabled",
+accountsDelete: "Delete",
+accountsDeleteConfirm: "Delete account {0}?",
+accountsCreateTitle: "Create an account",
+accountsCreateBtn: "Create account",
+accountsFormUser: "Username",
+accountsFormPassword: "Password (at least 12 characters)",
+accountsFormRole: "Role",
+accountsFormTenant: "Tenant (tenant accounts)",
+accountsFormTenants: "Tenants, comma-separated (reseller accounts)",
+accountsCreated: "Account {0} created.",
+accountsDeleted: "Account {0} deleted.",
+accountsPwTitle: "Change a password",
+accountsPwUser: "Username (blank for yourself)",
+accountsPwCurrent: "Current password (your own account)",
+accountsPwNew: "New password (at least 12 characters)",
+accountsPwBtn: "Change password",
+accountsPwChanged: "Password changed for {0}.",
+accountsLoadFail: "Accounts could not be loaded.",
+roleTenant: "Tenant",
+roleReseller: "Reseller",
+roleOwner: "Owner",
 hostPill: "host: {0}",
 hostPillTitle: "Domain in the address bar",
 updating: "Updating",
@@ -1624,6 +1735,43 @@ purgeSelectiveBtn: "Purge selected"
 },
 hi: {
 brandSub: "डैशबोर्ड",
+cpNodeLabel: "Node",
+cpNodeAria: "Proxy node",
+cpUserTitle: "Signed-in account",
+cpLogout: "Sign out",
+navAccounts: "Accounts",
+accountsTitle: "Accounts",
+accountsSub: "Control-plane accounts. Owner sab kuchh manage karta hai; reseller sirf apne tenants ko; tenant sirf apna tenant dekh sakta hai. Password hash hokar store hote hain aur kabhi dikhaye nahi jate.",
+accountsEmpty: "Dikhane ke liye koi account nahi hai.",
+accountsColUser: "Username",
+accountsColRole: "Role",
+accountsColTenant: "Tenant",
+accountsColTenants: "Tenants",
+accountsColStatus: "Status",
+accountsColActions: "Actions",
+accountsEnabled: "Enabled",
+accountsDisabled: "Disabled",
+accountsDelete: "Delete",
+accountsDeleteConfirm: "Account {0} delete karein?",
+accountsCreateTitle: "Account banayein",
+accountsCreateBtn: "Account banayein",
+accountsFormUser: "Username",
+accountsFormPassword: "Password (kam se kam 12 characters)",
+accountsFormRole: "Role",
+accountsFormTenant: "Tenant (tenant accounts ke liye)",
+accountsFormTenants: "Tenants, comma se alag (reseller accounts ke liye)",
+accountsCreated: "Account {0} ban gaya.",
+accountsDeleted: "Account {0} delete ho gaya.",
+accountsPwTitle: "Password badlein",
+accountsPwUser: "Username (khud ke liye khaali chhodein)",
+accountsPwCurrent: "Current password (apne account ke liye)",
+accountsPwNew: "Naya password (kam se kam 12 characters)",
+accountsPwBtn: "Password badlein",
+accountsPwChanged: "{0} ka password badal gaya.",
+accountsLoadFail: "Accounts load nahi ho paye.",
+roleTenant: "Tenant",
+roleReseller: "Reseller",
+roleOwner: "Owner",
 hostPill: "host: {0}",
 hostPillTitle: "Address bar में domain",
 updating: "Update हो रहा है",
@@ -2377,6 +2525,7 @@ document.querySelectorAll("[data-lang-choice]").forEach(function(btn){
 });
 
 function apiV2(path, method){
+  if(CP && cpNode){ path = "/cp/api/" + encodeURIComponent(cpNode) + path; }
   // The CSRF header is always sent: it is required when the
   // call authenticates via the SSO session cookie, and ignored
   // when the API secret header is present. The secret header is
@@ -2384,7 +2533,9 @@ function apiV2(path, method){
   var headers = {"X-SonuShield-CSRF": "1"};
   if(apiSecret){ headers["Proxy-Secret"] = apiSecret; }
   return fetch(path, {method: method || "GET", headers: headers, credentials: "same-origin", cache: "no-store"})
-    .then(function(res){ return res.text().then(function(text){
+    .then(function(res){
+      if(CP && res.status === 401){ location.href = "/login"; throw new Error("session expired"); }
+      return res.text().then(function(text){
       var data;
       try { data = JSON.parse(text); }
       catch(e){ throw new Error(t("errApiNotJson")); }
@@ -3137,6 +3288,7 @@ function importRules(ev){
 var tailController = null;
 var tailLines = 0;
 function tailUrl(){
+  if(CP){ return "/cp/log-tail?node=" + encodeURIComponent(cpNode || ""); }
   return location.pathname.replace(/\/dashboard\/?$/, "/log-tail");
 }
 function tailLine(entry){
@@ -3651,6 +3803,13 @@ function connectSSO(){
   }).catch(function(){});
 }
 function disconnect(){
+  if(CP){
+    // Sign out of the control plane, then go to its login page.
+    fetch("/logout", {method: "POST", headers: {"X-SonuShield-CSRF": "1"}, credentials: "same-origin"}).finally(function(){
+      location.href = "/login";
+    });
+    return;
+  }
   apiSecret = null;
   try { sessionStorage.removeItem(SECRET_KEY); } catch(e){}
   setConnected(false);
@@ -4050,6 +4209,7 @@ function showView(name){
   else if(name === "logs"){ loadLogs(); }
   else if(name === "insights"){ loadInsights(); }
   else if(name === "approvals"){ loadApprovals(); }
+  else if(name === "accounts"){ loadAccounts(); }
 }
 
 document.querySelectorAll(".navbtn").forEach(function(b){
@@ -4151,6 +4311,167 @@ $("certReloadBtn").addEventListener("click", function(){ loadCerts(); });
 $("rumReloadBtn").addEventListener("click", function(){ loadRUM(); });
 $("approvalsReloadBtn").addEventListener("click", function(){ loadApprovals(); });
 
+
+/* ---- Control-plane mode: session probe, node switcher, accounts ---- */
+
+function cpFetch(path, method, bodyObj){
+  var opts = {method: method || "GET", headers: {"X-SonuShield-CSRF": "1"}, credentials: "same-origin"};
+  if(bodyObj !== undefined){
+    opts.headers["Content-Type"] = "application/json";
+    opts.body = JSON.stringify(bodyObj);
+  }
+  return fetch(path, opts).then(function(res){
+    if(res.status === 401){ location.href = "/login"; throw new Error("session expired"); }
+    return res.text().then(function(txt){
+      var data = null;
+      try { data = JSON.parse(txt); } catch(e){}
+      if(!data || data.success !== true){
+        var msg = (data && data.results && data.results.ERROR) || ("HTTP " + res.status);
+        throw new Error(msg);
+      }
+      return data.results || {};
+    });
+  });
+}
+
+function loadNodes(){
+  return cpFetch("/cp/nodes").then(function(r){
+    var nodes = r.NODES || [];
+    var sel = $("nodeSelect");
+    sel.innerHTML = "";
+    nodes.forEach(function(name){
+      var opt = document.createElement("option");
+      opt.value = name; opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    var saved = null;
+    try { saved = sessionStorage.getItem(CP_NODE_KEY); } catch(e){}
+    cpNode = (saved && nodes.indexOf(saved) >= 0) ? saved : (nodes[0] || null);
+    sel.value = cpNode || "";
+    return nodes;
+  });
+}
+
+function cpResolveDomain(){
+  // On the control host the address bar is not a protected
+  // domain, so pick the first domain the node reports when
+  // the current one is not served by it.
+  return proxyAction("GET_DOMAINS").then(function(r){
+    var list = r.DOMAINS || [];
+    if(!list.length) return;
+    var found = list.some(function(d){ return d.NAME === currentDomain; });
+    if(!found) setDomain(list[0].NAME);
+  }).catch(function(){});
+}
+
+function connectCP(){
+  return cpFetch("/cp/whoami").then(function(who){
+    cpUser = who;
+    return loadNodes();
+  }).then(function(){
+    $("authPanel").style.display = "none";
+    $("nodeWrap").hidden = false;
+    var pill = $("cpUserPill");
+    pill.hidden = false;
+    pill.textContent = cpUser.USERNAME + " (" + cpUser.ROLE + ")";
+    var dc = $("disconnectBtn");
+    dc.removeAttribute("data-i18n");
+    dc.textContent = t("cpLogout");
+    if(cpUser.ROLE === "owner" || cpUser.ROLE === "reseller"){
+      $("navAccountsBtn").hidden = false;
+    }
+    if(cpUser.ROLE === "reseller"){
+      // A reseller may create tenant accounts only; the
+      // server enforces this, the form only reflects it.
+      var roleSel = $("acctRole");
+      Array.prototype.slice.call(roleSel.options).forEach(function(o){
+        if(o.value !== "tenant") o.remove();
+      });
+    }
+    setConnected(true);
+    return cpResolveDomain();
+  }).then(function(){
+    return refreshAll();
+  }).catch(function(){
+    location.href = "/login";
+  });
+}
+
+function loadAccounts(){
+  return cpFetch("/cp/accounts").then(function(r){
+    var list = r.ACCOUNTS || [];
+    if(!list.length){
+      setHTML("accountsBody", '<div class="state">' + t("accountsEmpty") + '</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>' + t("accountsColUser") + '</th><th>' + t("accountsColRole") + '</th><th>' + t("accountsColTenant") + '</th><th>' + t("accountsColTenants") + '</th><th>' + t("accountsColStatus") + '</th><th>' + t("accountsColActions") + '</th></tr></thead><tbody>';
+    list.forEach(function(a){
+      h += '<tr><td class="mono">' + esc(a.USERNAME) + '</td><td>' + esc(a.ROLE) + '</td><td>' + esc(a.TENANT || "—") + '</td><td>' + esc((a.TENANTS || []).join(", ") || "—") + '</td><td>' + (a.DISABLED ? t("accountsDisabled") : t("accountsEnabled")) + '</td><td>';
+      if(cpUser && a.USERNAME !== cpUser.USERNAME){
+        h += '<button type="button" data-acct-del="' + esc(a.USERNAME) + '">' + t("accountsDelete") + '</button>';
+      }
+      h += '</td></tr>';
+    });
+    setHTML("accountsBody", h + "</tbody></table>");
+    document.querySelectorAll("[data-acct-del]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var name = btn.getAttribute("data-acct-del");
+        if(!window.confirm(t("accountsDeleteConfirm", name))) return;
+        showInline("accountsError", "accountsOk", "", "");
+        cpFetch("/cp/accounts?username=" + encodeURIComponent(name), "DELETE").then(function(){
+          showInline("accountsError", "accountsOk", "", t("accountsDeleted", name));
+          loadAccounts();
+        }).catch(function(err){
+          showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+        });
+      });
+    });
+  }).catch(function(err){
+    setHTML("accountsBody", '<div class="state state-error">' + t("accountsLoadFail") + '</div>');
+    showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+  });
+}
+
+$("nodeSelect").addEventListener("change", function(){
+  cpNode = $("nodeSelect").value || null;
+  try { sessionStorage.setItem(CP_NODE_KEY, cpNode || ""); } catch(e){}
+  stopTail();
+  cpResolveDomain().then(function(){ refreshAll(); });
+});
+$("accountCreateForm").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  showInline("accountsError", "accountsOk", "", "");
+  var tenants = $("acctTenants").value.split(",").map(function(x){ return x.trim(); }).filter(function(x){ return x; });
+  cpFetch("/cp/accounts", "POST", {
+    username: $("acctUsername").value.trim(),
+    password: $("acctPassword").value,
+    role: $("acctRole").value,
+    tenant: $("acctTenant").value.trim(),
+    tenants: tenants
+  }).then(function(r){
+    showInline("accountsError", "accountsOk", "", t("accountsCreated", r.USERNAME || $("acctUsername").value.trim()));
+    $("acctUsername").value = ""; $("acctPassword").value = "";
+    $("acctTenant").value = ""; $("acctTenants").value = "";
+    loadAccounts();
+  }).catch(function(err){
+    showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+  });
+});
+$("accountPasswordForm").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  showInline("accountsError", "accountsOk", "", "");
+  cpFetch("/cp/accounts/password", "POST", {
+    username: $("acctPwUsername").value.trim(),
+    currentPassword: $("acctPwCurrent").value,
+    newPassword: $("acctPwNew").value
+  }).then(function(r){
+    showInline("accountsError", "accountsOk", "", t("accountsPwChanged", r.USERNAME || ""));
+    $("acctPwUsername").value = ""; $("acctPwCurrent").value = ""; $("acctPwNew").value = "";
+  }).catch(function(err){
+    showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+  });
+});
+
 (function initLang(){
   var savedLang = null;
   try { savedLang = localStorage.getItem(LANG_KEY); } catch(e){}
@@ -4161,6 +4482,8 @@ $("domainInput").value = currentDomain;
 setConnected(false);
 showView("overview");
 
+if(CP){ connectCP(); }
+else {
 var saved = null;
 try { saved = sessionStorage.getItem(SECRET_KEY); } catch(e){}
 if(saved){ connect(saved); }
@@ -4173,6 +4496,7 @@ else {
       connectSSO();
     }
   }).catch(function(){});
+}
 }
 /* PWA: the service worker caches the app shell only (page, manifest,
    icons). API responses and secrets are never cached. Registration

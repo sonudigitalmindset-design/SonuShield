@@ -199,6 +199,10 @@ func (s *Server) handler() http.Handler {
 				}
 			case r.URL.Path == "/dashboard":
 				s.handleDashboard(w, r)
+			case r.URL.Path == "/cp/log-tail":
+				s.handleLogTail(w, r)
+			case r.URL.Path == "/manifest.webmanifest" || r.URL.Path == "/sw.js" || strings.HasPrefix(r.URL.Path, "/icons/"):
+				s.handleShellAsset(w, r)
 			case r.URL.Path == "/login":
 				s.handleLogin(w, r)
 			case r.URL.Path == "/logout":
@@ -226,9 +230,10 @@ func (s *Server) handler() http.Handler {
 }
 
 // handleDashboard serves the shared dashboard page behind the
-// session. The page itself never receives a secret: in
-// control-plane mode it talks to /cp/api/ with the session
-// cookie.
+// session, in control-plane mode: the bootstrap script tells
+// the page to use the session cookie, node-prefixed API calls,
+// and the node switcher and accounts views. The page itself
+// never receives a secret.
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -238,7 +243,24 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	dashboard.Serve(w, s.cfg.Branding)
+	dashboard.ServeControlPlane(w, s.cfg.Branding, `{"cp":true}`)
+}
+
+// handleShellAsset serves a PWA shell asset (manifest, service
+// worker, icons) behind the session, at the control host root.
+// The assets contain no secrets or live data.
+func (s *Server) handleShellAsset(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if _, _, ok := s.authenticate(r); !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if !dashboard.ServeAssetSuffix(w, strings.TrimPrefix(r.URL.Path, "/")) {
+		http.NotFound(w, r)
+	}
 }
 
 // Run serves the control plane until the process ends. TLS
