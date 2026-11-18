@@ -129,6 +129,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 		}
+		if strings.HasPrefix(request.URL.Path, "/_bProxy/public/") {
+			if api.ProcessPublic(writer, request) {
+				return
+			}
+		}
 	}
 
 	// Log paths must never carry the admin secret, which is a path
@@ -742,6 +747,15 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if strings.HasPrefix(request.URL.Path, "/_bProxy/api/v2") {
 		result := api.ProcessV2(writer, request)
 		if result {
+			return
+		}
+	}
+
+	//Public API v1 (Batch 6). Valid keys were already served
+	//by the early dispatch above; this site answers the rest
+	//(missing/wrong keys get a 401 here at Stage 0).
+	if strings.HasPrefix(request.URL.Path, "/_bProxy/public/") {
+		if api.ProcessPublic(writer, request) {
 			return
 		}
 	}

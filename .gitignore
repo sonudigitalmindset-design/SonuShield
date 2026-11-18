@@ -66,3 +66,7 @@ assets/server/
 # Let's Encrypt certificates obtained by autoSSL (autocert cache).
 # Never commit certificates or private keys.
 autocert-cache/
+
+# Python bytecode (SDK test runs).
+__pycache__/
+*.pyc

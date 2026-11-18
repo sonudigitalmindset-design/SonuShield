@@ -93,6 +93,13 @@ func AuthenticatedControlRequest(request *http.Request) bool {
 		_, ok, _ := attemptSSOAuth(request)
 		return ok
 	}
+	// Public API (Batch 6): a valid tenant key exempts the
+	// request, exactly like a valid control secret. A missing
+	// or wrong key keeps the normal fall-through behavior.
+	if strings.HasPrefix(path, "/_bProxy/public/") {
+		_, ok := resolvePublicKey(request)
+		return ok
+	}
 	return false
 }
 

@@ -215,6 +215,10 @@ func redactConfigForExport(cfg *domains.Configuration) {
 	}
 	// Stripe secret key: never in an export without --include-secrets.
 	redact(&cfg.Proxy.Stripe.SecretKey)
+	// Public API keys: the Key field of each entry is a secret.
+	for i := range cfg.Proxy.PublicAPIKeys {
+		redact(&cfg.Proxy.PublicAPIKeys[i].Key)
+	}
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

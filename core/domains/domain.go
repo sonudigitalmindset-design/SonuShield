@@ -296,6 +296,7 @@ type Proxy struct {
 	GitOps          GitOpsConfig     `json:"gitops"`
 	SSO             *SSOConfig      `json:"sso"`
 	Stripe          StripeConfig    `json:"stripe"`
+	PublicAPIKeys   []PublicAPIKey  `json:"publicApiKeys"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }
