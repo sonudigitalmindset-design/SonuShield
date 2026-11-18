@@ -6,9 +6,11 @@ import (
 	"sonushield/core/pnc"
 	"sonushield/core/proxy"
 	"sonushield/core/server"
+	"golang.org/x/term"
 	"io"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -33,6 +35,23 @@ func main() {
 
 	fmt.Println("Starting Proxy ...")
 
+	//First-run setup wizard (Batch 6): --wizard, or no config
+	//with a non-terminal stdin, starts the web-based setup
+	//instead of the terminal prompts. It never runs when a
+	//config already exists.
+	if wizardRequested() {
+		if _, err := os.Stat("config.json"); err == nil {
+			fmt.Println("config.json already exists; the setup wizard only runs on first run.")
+			os.Exit(1)
+		}
+		if err := server.RunWizard(wizardListenAddr()); err != nil {
+			fmt.Fprintln(os.Stderr, "Setup wizard: "+err.Error())
+			os.Exit(1)
+		}
+		fmt.Println("Setup complete. Start SonuShield again to run the proxy.")
+		return
+	}
+
 	config.Load()
 
 	fmt.Println("Loaded Config ...")
@@ -48,4 +67,32 @@ func main() {
 
 	//Keep server running
 	select {}
+}
+
+// wizardRequested reports whether the first-run setup wizard
+// should run instead of the normal startup: an explicit --wizard
+// flag, or no config.json with a non-terminal stdin (systemd,
+// Docker, and other non-interactive launches, where the terminal
+// prompts cannot work).
+func wizardRequested() bool {
+	for _, arg := range os.Args[1:] {
+		if arg == "--wizard" {
+			return true
+		}
+	}
+	if _, err := os.Stat("config.json"); err == nil {
+		return false
+	}
+	return !term.IsTerminal(int(os.Stdin.Fd()))
+}
+
+// wizardListenAddr is the wizard's listen address:
+// --wizard-listen=ADDR, defaulting to localhost-only.
+func wizardListenAddr() string {
+	for _, arg := range os.Args[1:] {
+		if strings.HasPrefix(arg, "--wizard-listen=") {
+			return strings.TrimPrefix(arg, "--wizard-listen=")
+		}
+	}
+	return "127.0.0.1:8080"
 }

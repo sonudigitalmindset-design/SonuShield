@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SonuShield — First-Run Setup</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --ink: #1a1d21; --muted: #5f6b76;
+    --line: #d9dee3; --accent: #1f4e79; --accent-dark: #163a5c;
+    --ok: #1e7a34; --warn: #8a5a00; --err: #a61c1c;
+    --ok-bg: #e9f6ec; --warn-bg: #fdf3e0; --err-bg: #fdecea;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 40px 20px 60px; }
+  h1 { font-size: 24px; margin: 0 0 4px; font-weight: 650; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .steps { display: flex; gap: 8px; margin-bottom: 24px; }
+  .step-dot { flex: 1; padding: 8px 0 7px; text-align: center; font-size: 13px;
+    color: var(--muted); border-top: 3px solid var(--line); }
+  .step-dot.active { color: var(--ink); border-top-color: var(--accent); font-weight: 600; }
+  .step-dot.done { color: var(--ok); border-top-color: var(--ok); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 24px 26px; }
+  .card h2 { font-size: 17px; margin: 0 0 4px; font-weight: 650; }
+  .card p.hint { color: var(--muted); font-size: 13.5px; margin: 0 0 18px; }
+  label { display: block; font-size: 13.5px; font-weight: 600; margin: 14px 0 5px; }
+  label:first-of-type { margin-top: 0; }
+  input[type="text"], input[type="password"] {
+    width: 100%; padding: 9px 11px; font: inherit; font-size: 14.5px;
+    border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
+  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+  input[readonly] { background: #f8f9fa; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px; }
+  .field-note { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .radio-row { display: flex; gap: 20px; margin: 2px 0 4px; }
+  .radio-row label, .check label { font-weight: 500; margin: 0; display: inline; }
+  .check { margin-top: 14px; font-size: 14px; }
+  .check input { margin-right: 8px; }
+  .secret-row { display: flex; gap: 8px; }
+  .secret-row input { flex: 1; }
+  .btn { font: inherit; font-size: 14px; padding: 9px 18px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink); }
+  .btn:hover { border-color: #b9c2c9; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn.primary:hover { background: var(--accent-dark); }
+  .btn.small { padding: 7px 12px; font-size: 13px; white-space: nowrap; }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+  .nav { display: flex; justify-content: space-between; margin-top: 22px; }
+  .msg { border-radius: 6px; padding: 11px 14px; font-size: 13.5px; margin-top: 16px; display: none; }
+  .msg.show { display: block; }
+  .msg.err { background: var(--err-bg); color: var(--err); border: 1px solid #f2c1c1; }
+  .msg.warn { background: var(--warn-bg); color: var(--warn); border: 1px solid #eed9a8; }
+  .msg.ok { background: var(--ok-bg); color: var(--ok); border: 1px solid #bfe3c8; }
+  .msg ul { margin: 6px 0 0; padding-left: 20px; }
+  table.review { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 4px; }
+  table.review td { padding: 7px 0; border-bottom: 1px solid #eef1f3; vertical-align: top; }
+  table.review td:first-child { color: var(--muted); width: 38%; padding-right: 12px; }
+  table.review td:last-child { word-break: break-all; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  .hidden { display: none !important; }
+  .conflict { border: 1px solid #eed9a8; background: var(--warn-bg); border-radius: 6px; padding: 14px 16px; margin-top: 18px; font-size: 13.5px; }
+  .conflict label { display: inline; font-weight: 500; margin: 0; }
+  .footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 28px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+    background: #eef1f3; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SonuShield Setup</h1>
+  <p class="sub">First-run configuration. This wizard creates the initial <code>config.json</code> and then stops. Nothing is written until you save.</p>
+
+  <div class="steps" id="stepDots">
+    <div class="step-dot active" data-step="1">1 · Domain &amp; backend</div>
+    <div class="step-dot" data-step="2">2 · Secrets</div>
+    <div class="step-dot" data-step="3">3 · Review &amp; save</div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="card" id="step1">
+    <h2>Domain &amp; backend</h2>
+    <p class="hint">The domain SonuShield protects, and the origin server it forwards clean traffic to. More domains can be added later from the dashboard.</p>
+    <label for="domain">Domain name</label>
+    <input type="text" id="domain" placeholder="example.com" autocomplete="off" spellcheck="false">
+    <div class="field-note">A hostname or IP address, without a scheme or port.</div>
+    <label for="backend">Backend (origin server)</label>
+    <input type="text" id="backend" placeholder="127.0.0.1:8080" autocomplete="off" spellcheck="false">
+    <div class="field-note">Host and port of your origin server, for example <code>127.0.0.1:8080</code>.</div>
+    <label>Backend scheme</label>
+    <div class="radio-row">
+      <span><input type="radio" name="scheme" id="schemeHttp" value="http" checked> <label for="schemeHttp">http</label></span>
+      <span><input type="radio" name="scheme" id="schemeHttps" value="https"> <label for="schemeHttps">https</label></span>
+    </div>
+    <div class="check"><input type="checkbox" id="cloudflare"><label for="cloudflare">This proxy sits behind Cloudflare</label></div>
+    <div class="check"><input type="checkbox" id="autoSSL"><label for="autoSSL">Obtain certificates automatically with Let&rsquo;s Encrypt (autoSSL)</label></div>
+    <label for="certificate">TLS certificate path <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <input type="text" id="certificate" placeholder="/etc/sonushield/fullchain.pem" autocomplete="off" spellcheck="false">
+    <label for="key">TLS key path <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <input type="text" id="key" placeholder="/etc/sonushield/privkey.pem" autocomplete="off" spellcheck="false">
+    <div class="field-note">Leave both empty when using Cloudflare or autoSSL. Certificate and key must both be set, or both be empty.</div>
+    <div class="nav">
+      <button class="btn" id="checkBackendBtn" type="button">Check backend</button>
+      <button class="btn primary" id="toStep2" type="button">Continue</button>
+    </div>
+    <div class="msg" id="step1Msg"></div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card hidden" id="step2">
+    <h2>Secrets</h2>
+    <p class="hint">Generated on this page with your browser&rsquo;s secure random generator. Save them somewhere safe — the dashboard address and the API both need them. They are stored in <code>config.json</code>, which the wizard writes with owner-only permissions.</p>
+    <label for="adminSecret">Admin secret <span style="font-weight:400;color:var(--muted)">(dashboard address)</span></label>
+    <div class="secret-row">
+      <input type="password" id="adminSecret" readonly autocomplete="off" spellcheck="false">
+      <button class="btn small" type="button" data-toggle="adminSecret">Show</button>
+      <button class="btn small" type="button" data-regen="adminSecret">Regenerate</button>
+      <button class="btn small" type="button" data-copy="adminSecret">Copy</button>
+    </div>
+    <label for="apiSecret">API secret <span style="font-weight:400;color:var(--muted)">(API authentication)</span></label>
+    <div class="secret-row">
+      <input type="password" id="apiSecret" readonly autocomplete="off" spellcheck="false">
+      <button class="btn small" type="button" data-toggle="apiSecret">Show</button>
+      <button class="btn small" type="button" data-regen="apiSecret">Regenerate</button>
+      <button class="btn small" type="button" data-copy="apiSecret">Copy</button>
+    </div>
+    <div class="field-note" style="margin-top:12px">The internal cookie, JavaScript, and captcha secrets are generated on the server when you save, and never shown here.</div>
+    <div class="nav">
+      <button class="btn" id="backToStep1" type="button">Back</button>
+      <button class="btn primary" id="toStep3" type="button">Continue</button>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="card hidden" id="step3">
+    <h2>Review &amp; save</h2>
+    <p class="hint">Check the summary. Saving writes <code>config.json</code> in the directory SonuShield runs from, then stops the wizard. Restart SonuShield afterwards to start the proxy.</p>
+    <table class="review" id="reviewTable"></table>
+    <div class="msg" id="step3Msg"></div>
+    <div class="conflict hidden" id="conflictBox">
+      <strong>A config.json appeared</strong> after the wizard started. Saving now will replace it; the existing file is backed up first with a timestamped name.<br>
+      <span style="display:inline-block;margin-top:8px"><input type="checkbox" id="overwrite"> <label for="overwrite">Replace the existing config.json (a backup is kept)</label></span>
+    </div>
+    <div class="nav">
+      <button class="btn" id="backToStep2" type="button">Back</button>
+      <button class="btn primary" id="saveBtn" type="button">Save configuration</button>
+    </div>
+  </div>
+
+  <!-- Done -->
+  <div class="card hidden" id="doneCard">
+    <h2>Configuration saved</h2>
+    <p class="hint">The wizard has stopped. Restart SonuShield to start the proxy.</p>
+    <table class="review" id="doneTable"></table>
+    <div class="msg" id="doneMsg"></div>
+  </div>
+
+  <div class="footer">SonuShield — originally by 41Baloo (balooProxy), forked and rebuilt by Sonu Digital Mindset · GPL-3.0</div>
+</div>
+
+<script>
+"use strict";
+var TOKEN = "__WIZARD_TOKEN__";
+var ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+function randomSecret(n) {
+  var out = "";
+  var buf = new Uint8Array(n * 2);
+  while (out.length < n) {
+    crypto.getRandomValues(buf);
+    for (var i = 0; i < buf.length && out.length < n; i++) {
+      if (buf[i] < 248) out += ALPHABET[buf[i] % 62]; // rejection sampling: no modulo bias
+    }
+  }
+  return out;
+}
+
+function $(id) { return document.getElementById(id); }
+
+function showStep(n) {
+  [1, 2, 3].forEach(function (i) {
+    $("step" + i).classList.toggle("hidden", i !== n);
+  });
+  document.querySelectorAll(".step-dot").forEach(function (d) {
+    var s = parseInt(d.dataset.step, 10);
+    d.classList.toggle("active", s === n);
+    d.classList.toggle("done", s < n);
+  });
+  window.scrollTo(0, 0);
+}
+
+function showMsg(el, kind, html) {
+  el.className = "msg show " + kind;
+  el.innerHTML = html;
+}
+function hideMsg(el) { el.className = "msg"; el.innerHTML = ""; }
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function collect() {
+  return {
+    domain: $("domain").value.trim(),
+    backend: $("backend").value.trim(),
+    scheme: document.querySelector('input[name="scheme"]:checked').value,
+    certificate: $("certificate").value.trim(),
+    key: $("key").value.trim(),
+    cloudflare: $("cloudflare").checked,
+    autoSSL: $("autoSSL").checked,
+    adminSecret: $("adminSecret").value,
+    apiSecret: $("apiSecret").value,
+    overwrite: $("overwrite").checked
+  };
+}
+
+function api(path, body) {
+  return fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Wizard-Token": TOKEN },
+    body: JSON.stringify(body)
+  }).then(function (resp) {
+    return resp.text().then(function (text) {
+      var data = null;
+      try { data = JSON.parse(text); } catch (e) { /* plain-text error */ }
+      return { status: resp.status, data: data, text: text };
+    });
+  });
+}
+
+function problemsHtml(list) {
+  return "Please fix the following:<ul>" + list.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>";
+}
+function warningsHtml(list) {
+  return "Note:<ul>" + list.map(function (w) { return "<li>" + esc(w) + "</li>"; }).join("") + "</ul>";
+}
+
+// Step 1: health check.
+$("checkBackendBtn").addEventListener("click", function () {
+  var btn = $("checkBackendBtn");
+  btn.disabled = true;
+  hideMsg($("step1Msg"));
+  api("/api/check", collect()).then(function (r) {
+    btn.disabled = false;
+    if (r.status !== 200 || !r.data) {
+      showMsg($("step1Msg"), "err", esc(r.text || "The check failed."));
+      return;
+    }
+    if (r.data.problems && r.data.problems.length) {
+      showMsg($("step1Msg"), "err", problemsHtml(r.data.problems));
+      return;
+    }
+    var b = r.data.backend || {};
+    var html = "";
+    if (b.reachable) {
+      html = "Backend is reachable";
+      if (b.tlsChecked) html += b.tlsOk ? " and the TLS handshake succeeded." : " but the TLS handshake failed: " + esc(b.error || "unknown error") + ".";
+      else html += ".";
+      var kind = b.tlsChecked && !b.tlsOk ? "warn" : "ok";
+      if (r.data.warnings && r.data.warnings.length) html += "<br><br>" + warningsHtml(r.data.warnings);
+      showMsg($("step1Msg"), kind, html);
+    } else {
+      html = "Backend could not be reached: " + esc(b.error || "connection failed") + ". You can still save — the backend may be started later.";
+      if (r.data.warnings && r.data.warnings.length) html += "<br><br>" + warningsHtml(r.data.warnings);
+      showMsg($("step1Msg"), "warn", html);
+    }
+  }).catch(function (err) {
+    btn.disabled = false;
+    showMsg($("step1Msg"), "err", "The check failed: " + esc(err.message));
+  });
+});
+
+$("toStep2").addEventListener("click", function () {
+  hideMsg($("step1Msg"));
+  api("/api/check", collect()).then(function (r) {
+    if (r.status === 200 && r.data && !(r.data.problems && r.data.problems.length)) {
+      showStep(2);
+    } else if (r.data && r.data.problems) {
+      showMsg($("step1Msg"), "err", problemsHtml(r.data.problems));
+    } else {
+      showMsg($("step1Msg"), "err", esc(r.text || "Validation failed."));
+    }
+  }).catch(function (err) {
+    showMsg($("step1Msg"), "err", "Validation failed: " + esc(err.message));
+  });
+});
+
+// Step 2: secret controls.
+document.querySelectorAll("[data-regen]").forEach(function (btn) {
+  btn.addEventListener("click", function () { $(btn.dataset.regen).value = randomSecret(32); });
+});
+document.querySelectorAll("[data-toggle]").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var input = $(btn.dataset.toggle);
+    var show = input.type === "password";
+    input.type = show ? "text" : "password";
+    btn.textContent = show ? "Hide" : "Show";
+  });
+});
+document.querySelectorAll("[data-copy]").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var input = $(btn.dataset.copy);
+    var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy"; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(done, function () { input.select(); document.execCommand("copy"); done(); });
+    } else {
+      input.select();
+      document.execCommand("copy");
+      done();
+    }
+  });
+});
+
+$("backToStep1").addEventListener("click", function () { showStep(1); });
+$("toStep3").addEventListener("click", function () {
+  var d = collect();
+  var rows = [
+    ["Domain", d.domain],
+    ["Backend", d.scheme + "://" + d.backend],
+    ["Behind Cloudflare", d.cloudflare ? "yes" : "no"],
+    ["AutoSSL", d.autoSSL ? "yes" : "no"],
+    ["Certificate", d.certificate || "(none)"],
+    ["Key", d.key || "(none)"],
+    ["Admin secret", d.adminSecret],
+    ["API secret", d.apiSecret]
+  ];
+  $("reviewTable").innerHTML = rows.map(function (r) {
+    return "<tr><td>" + esc(r[0]) + "</td><td>" + esc(r[1]) + "</td></tr>";
+  }).join("");
+  hideMsg($("step3Msg"));
+  showStep(3);
+});
+$("backToStep2").addEventListener("click", function () { showStep(2); });
+
+// Step 3: save.
+$("saveBtn").addEventListener("click", function () {
+  var btn = $("saveBtn");
+  btn.disabled = true;
+  hideMsg($("step3Msg"));
+  api("/api/setup", collect()).then(function (r) {
+    btn.disabled = false;
+    if (r.status === 200 && r.data && r.data.ok) {
+      var d = collect();
+      var dashUrl = "https://" + d.domain + "/_bProxy/" + d.adminSecret + "/dashboard";
+      $("doneTable").innerHTML =
+        "<tr><td>Configuration</td><td>config.json</td></tr>" +
+        (r.data.backup ? "<tr><td>Previous config backed up to</td><td>" + esc(r.data.backup) + "</td></tr>" : "") +
+        "<tr><td>Dashboard (after restart)</td><td>" + esc(dashUrl) + "</td></tr>";
+      var w = (r.data.warnings && r.data.warnings.length) ? warningsHtml(r.data.warnings) : "";
+      if (w) showMsg($("doneMsg"), "warn", w);
+      document.querySelectorAll(".step-dot").forEach(function (el) { el.classList.add("done"); el.classList.remove("active"); });
+      $("step3").classList.add("hidden");
+      $("doneCard").classList.remove("hidden");
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (r.status === 409) {
+      $("conflictBox").classList.remove("hidden");
+      showMsg($("step3Msg"), "warn", "A config.json already exists. Tick the replace option below to overwrite it — the existing file is backed up first.");
+      return;
+    }
+    if (r.data && r.data.problems) {
+      showMsg($("step3Msg"), "err", problemsHtml(r.data.problems));
+    } else {
+      showMsg($("step3Msg"), "err", esc(r.text || "Saving failed."));
+    }
+  }).catch(function (err) {
+    btn.disabled = false;
+    showMsg($("step3Msg"), "err", "Saving failed: " + esc(err.message));
+  });
+});
+
+// Initial secrets.
+$("adminSecret").value = randomSecret(32);
+$("apiSecret").value = randomSecret(32);
+</script>
+</body>
+</html>
