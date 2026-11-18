@@ -35,6 +35,10 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	// ID and a credentials file. Zero enrolled credentials means
 	// the captcha fallback applies.
 	settings.Passkeys = NewPasskeyStore(domain.Name, domain.Passkey)
+	// OpenAPI validation (Batch 8): nil unless a spec file and
+	// prefixes are configured. An invalid spec logs a warning
+	// and disables validation; see NewOpenAPISpec.
+	settings.OpenAPI = NewOpenAPISpec(domain.Name, domain.OpenAPI)
 	if settings.APIKeyHeader == "" {
 		settings.APIKeyHeader = "X-API-Key"
 	}

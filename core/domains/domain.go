@@ -65,6 +65,7 @@ type Domain struct {
 	FormGuard           FormGuardConfig  `json:"formGuard"`
 	CredentialStuffing  StuffingConfig   `json:"credentialStuffing"`
 	SessionHijack       SessionHijackConfig `json:"sessionHijack"`
+	OpenAPI             OpenAPIConfig     `json:"openApi"`
 	SLATarget           float64          `json:"slaTarget"`
 	FakeBotCheck        bool             `json:"fakeBotCheck"`
 	FakeBotSusLv        int              `json:"fakeBotSusLv"`
@@ -277,6 +278,7 @@ type DomainSettings struct {
 	Attest  *AttestationVerifier
 	Passkey  PasskeyConfig
 	Passkeys *PasskeyStore
+	OpenAPI  *OpenAPISpec
 }
 
 type DomainLog struct {

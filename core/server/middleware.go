@@ -1011,6 +1011,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//OpenAPI request validation (Batch 8). Validated prefixes
+	//only; inert without a loaded spec. See checkOpenAPI for
+	//the log/block modes.
+	if checkOpenAPI(writer, request, domainName, ip, domainSettings, tlsFp, ja4Fp, httpFp, browser, botFp, domainData.Stage, susLv, logPath) {
+		return
+	}
+
 	//WebSocket upgrade with an idle timeout (Batch 4). Only when
 	//the operator configured websocketIdleTimeout; otherwise the
 	//upgrade flows through the normal reverse proxy exactly as
