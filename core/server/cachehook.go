@@ -17,6 +17,7 @@ import (
 	"io"
 	"net/http"
 	"sonushield/core/domains"
+	"strconv"
 	"strings"
 )
 
@@ -36,6 +37,31 @@ func isUpgradeRequest(r *http.Request) bool {
 		}
 	}
 	return false
+}
+
+// serveCachedResponse serves a fresh cached response for key,
+// reporting whether there was a hit. CORS headers are per-request
+// (they depend on the request's Origin) and are never stored in
+// the cache, so they are applied again here at serve time.
+// Cache-served bytes count toward the domain's metering estimate.
+// Shared by the middleware's cache lookup and by the stampede
+// guard's post-wait re-check, so both serve byte-identical hits.
+func serveCachedResponse(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainName, key string) bool {
+	status, cachedHeader, cachedBody, age, ok := settings.Cache.Lookup(key)
+	if !ok {
+		return false
+	}
+	for name, values := range cachedHeader {
+		for _, value := range values {
+			writer.Header().Add(name, value)
+		}
+	}
+	ApplyCORSHeaders(writer.Header(), settings.CORS, request)
+	writer.Header().Set("Age", strconv.Itoa(int(age.Seconds())))
+	writer.WriteHeader(status)
+	addDomainBytes(domainName, 0, int64(len(cachedBody)))
+	writer.Write(cachedBody)
+	return true
 }
 
 func CacheModifyResponse(resp *http.Response) error {

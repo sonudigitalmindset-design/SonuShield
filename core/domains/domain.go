@@ -62,6 +62,7 @@ type Domain struct {
 	ImageOptimize       bool             `json:"imageOptimize"`
 	ImageOptimizeMaxWidth int             `json:"imageOptimizeMaxWidth"`
 	ImageOptimizeQuality int             `json:"imageOptimizeQuality"`
+	StampedeGuard       bool             `json:"stampedeGuard"`
 	WaitingRoom         bool             `json:"waitingRoom"`
 	WaitingRoomThreshold int              `json:"waitingRoomThreshold"`
 	WaitingRoomAdmit    int              `json:"waitingRoomAdmit"`
@@ -70,6 +71,10 @@ type Domain struct {
 	HealthCheckEnabled  bool             `json:"healthCheckEnabled"`
 	HealthCheckPath     string           `json:"healthCheckPath"`
 	HealthCheckInterval int              `json:"healthCheckInterval"`
+	PoolMaxIdleConns    int              `json:"poolMaxIdleConns"`
+	PoolMaxIdleConnsPerHost int           `json:"poolMaxIdleConnsPerHost"`
+	PoolMaxConnsPerHost int              `json:"poolMaxConnsPerHost"`
+	PoolIdleConnTimeout int              `json:"poolIdleConnTimeout"`
 	WebsocketIdleTimeout int             `json:"websocketIdleTimeout"`
 	JWTSecret           string           `json:"jwtSecret"`
 	JWTJWKSURL          string           `json:"jwtJWKSURL"`
@@ -152,6 +157,7 @@ type DomainSettings struct {
 	ImageOptimize       bool
 	ImageOptimizeMaxWidth int
 	ImageOptimizeQuality int
+	StampedeGuard       bool
 	WaitingRoom         bool
 	WaitingRoomThreshold int
 	WaitingRoomAdmit    int
@@ -160,6 +166,10 @@ type DomainSettings struct {
 	HealthCheckEnabled  bool
 	HealthCheckPath     string
 	HealthCheckInterval int
+	PoolMaxIdleConns    int
+	PoolMaxIdleConnsPerHost int
+	PoolMaxConnsPerHost int
+	PoolIdleConnTimeout int
 	WebsocketIdleTimeout int
 	JWTProtectedPaths   []string
 	APIKeyHeader        string

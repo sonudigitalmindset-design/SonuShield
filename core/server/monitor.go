@@ -616,6 +616,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			ImageOptimize:        domain.ImageOptimize,
 			ImageOptimizeMaxWidth: domain.ImageOptimizeMaxWidth,
 			ImageOptimizeQuality: domain.ImageOptimizeQuality,
+			StampedeGuard:        domain.StampedeGuard,
 			WaitingRoom:          domain.WaitingRoom,
 			WaitingRoomThreshold: domain.WaitingRoomThreshold,
 			WaitingRoomAdmit:     domain.WaitingRoomAdmit,
@@ -624,6 +625,10 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			HealthCheckEnabled:   domain.HealthCheckEnabled,
 			HealthCheckPath:      domain.HealthCheckPath,
 			HealthCheckInterval:  domain.HealthCheckInterval,
+			PoolMaxIdleConns:     domain.PoolMaxIdleConns,
+			PoolMaxIdleConnsPerHost: domain.PoolMaxIdleConnsPerHost,
+			PoolMaxConnsPerHost:  domain.PoolMaxConnsPerHost,
+			PoolIdleConnTimeout:  domain.PoolIdleConnTimeout,
 			WebsocketIdleTimeout: domain.WebsocketIdleTimeout,
 			JWTProtectedPaths:    domain.JWTProtectedPaths,
 			APIKeyHeader:         domain.APIKeyHeader,
@@ -700,6 +705,11 @@ func reloadFromConfig(cfg *domains.Configuration) {
 		fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ autoSSL is enabled but Cloudflare mode has no TLS listener; automatic certificates are disabled. ]")
 	}
 	domains.ConfigureAutoCert()
+
+	// Origin pooling (Batch 6): drop cached per-domain Transports
+	// so pool settings changed by this reload take effect on the
+	// next request. In-flight requests keep their Transport.
+	resetOriginTransports()
 
 	proxy.WatchedDomain = domains.Domains[0]
 }

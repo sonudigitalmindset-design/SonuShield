@@ -728,22 +728,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//exactly as before. Only plain GETs without Authorization are
 	//ever served from the cache.
 	if domainSettings.Cache != nil && request.Method == http.MethodGet && request.Header.Get("Authorization") == "" && !isUpgradeRequest(request) {
-		if status, cachedHeader, cachedBody, age, ok := domainSettings.Cache.Lookup(domains.CacheKey(request)); ok {
-			for name, values := range cachedHeader {
-				for _, value := range values {
-					writer.Header().Add(name, value)
-				}
-			}
-			//CORS headers are per-request (they depend on the
-			//request's Origin) and are never stored in the cache,
-			//so they are applied again here at serve time.
-			ApplyCORSHeaders(writer.Header(), domainSettings.CORS, request)
-			writer.Header().Set("Age", strconv.Itoa(int(age.Seconds())))
-			writer.WriteHeader(status)
-			//Metering (Batch 5): cache-served bytes count toward
-			//the domain's bandwidth estimate.
-			addDomainBytes(domainName, 0, int64(len(cachedBody)))
-			writer.Write(cachedBody)
+		if serveCachedResponse(writer, request, domainSettings, domainName, domains.CacheKey(request)) {
 			return
 		}
 	}
@@ -803,6 +788,18 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//bytes are counted in the RoundTripper.
 	if request.ContentLength > 0 {
 		addDomainBytes(domainName, request.ContentLength, 0)
+	}
+
+	//Stampede guard (Batch 6). For a cacheable GET that missed the
+	//cache, collapse simultaneous identical misses into one origin
+	//fetch: followers wait for the leader and then serve from the
+	//cache. Inert unless the domain enables stampedeGuard with the
+	//edge cache. The leader's release runs when this function
+	//returns, after the fetch has populated the cache.
+	if served, release := stampedeEnter(writer, request, domainSettings, domainName); served {
+		return
+	} else if release != nil {
+		defer release()
 	}
 
 	domainSettings.DomainProxy.ServeHTTP(writer, request)

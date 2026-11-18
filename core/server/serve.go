@@ -287,13 +287,89 @@ var defaultTransport = &http.Transport{
 	MaxConnsPerHost:     10,
 }
 
-func getTripperForDomain(domain string) *http.Transport {
+// Origin pool defaults (Batch 6). These match defaultTransport
+// exactly, so a domain with no pool keys behaves as before: it
+// shares defaultTransport.
+const (
+	poolDefaultMaxIdleConns        = 10
+	poolDefaultMaxIdleConnsPerHost = 2 // Go's DefaultMaxIdleConnsPerHost
+	poolDefaultMaxConnsPerHost     = 10
+	poolDefaultIdleConnTimeoutSec  = 90
+	poolMaxIdleConnTimeoutSec      = 3600
+)
 
-	transport, ok := transportMap.Load(domain)
-	if !ok {
-		transport, _ = transportMap.LoadOrStore(domain, defaultTransport)
+// poolTransportFor builds a dedicated origin Transport for a
+// domain from its pool settings, or returns nil when the domain
+// configures no pool key (the shared defaultTransport is used).
+// A non-positive value selects the default for that limit; the
+// idle timeout is clamped to 1..3600 seconds. The dialer, TLS
+// handshake timeout, and TLS config match defaultTransport.
+func poolTransportFor(settings domains.DomainSettings) *http.Transport {
+	if settings.PoolMaxIdleConns == 0 && settings.PoolMaxIdleConnsPerHost == 0 &&
+		settings.PoolMaxConnsPerHost == 0 && settings.PoolIdleConnTimeout == 0 {
+		return nil
 	}
-	return transport.(*http.Transport)
+	maxIdle := poolDefaultMaxIdleConns
+	if settings.PoolMaxIdleConns > 0 {
+		maxIdle = settings.PoolMaxIdleConns
+	}
+	maxIdlePerHost := poolDefaultMaxIdleConnsPerHost
+	if settings.PoolMaxIdleConnsPerHost > 0 {
+		maxIdlePerHost = settings.PoolMaxIdleConnsPerHost
+	}
+	maxConns := poolDefaultMaxConnsPerHost
+	if settings.PoolMaxConnsPerHost > 0 {
+		maxConns = settings.PoolMaxConnsPerHost
+	}
+	idleTimeout := poolDefaultIdleConnTimeoutSec
+	if settings.PoolIdleConnTimeout > 0 {
+		idleTimeout = settings.PoolIdleConnTimeout
+		if idleTimeout > poolMaxIdleConnTimeoutSec {
+			idleTimeout = poolMaxIdleConnTimeoutSec
+		}
+	}
+	return &http.Transport{
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return (&net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext(ctx, network, addr)
+		},
+		TLSHandshakeTimeout: 10 * time.Second,
+		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+		IdleConnTimeout:     time.Duration(idleTimeout) * time.Second,
+		MaxIdleConns:        maxIdle,
+		MaxIdleConnsPerHost: maxIdlePerHost,
+		MaxConnsPerHost:     maxConns,
+	}
+}
+
+// resetOriginTransports drops every cached per-domain Transport
+// so the next request resolves a fresh one from the current
+// settings. Called at the end of a config reload. In-flight
+// requests keep the Transport pointer they already hold; idle
+// connections on dropped Transports close at their idle timeout.
+func resetOriginTransports() {
+	transportMap.Range(func(key, _ any) bool {
+		transportMap.Delete(key)
+		return true
+	})
+}
+
+func getTripperForDomain(domain string) *http.Transport {
+	if transport, ok := transportMap.Load(domain); ok {
+		return transport.(*http.Transport)
+	}
+	transport := defaultTransport
+	if uncasted, ok := domains.DomainsMap.Load(domain); ok {
+		if settings, ok := uncasted.(domains.DomainSettings); ok {
+			if dedicated := poolTransportFor(settings); dedicated != nil {
+				transport = dedicated
+			}
+		}
+	}
+	actual, _ := transportMap.LoadOrStore(domain, transport)
+	return actual.(*http.Transport)
 }
 
 type RoundTripper struct {
