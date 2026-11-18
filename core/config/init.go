@@ -178,7 +178,7 @@ func Load() {
 			Host:   domain.Backend,
 		})
 		dProxy.Transport = &server.RoundTripper{}
-		dProxy.ModifyResponse = server.CacheModifyResponse
+		dProxy.ModifyResponse = server.ModifyResponseHook
 
 		// With autoSSL enabled, a domain without certificate/key paths
 		// keeps the empty certificate here; domains.GetCertificate
