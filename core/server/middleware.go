@@ -109,6 +109,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		firewall.Mutex.RLock()
 		earlyData := domains.DomainsData[domainName]
 		firewall.Mutex.RUnlock()
+		//PWA shell assets (Batch 6): same exemption as the
+		//dashboard page, so the installed app shell loads even
+		//at a locked stage.
+		if dashboard.ServeAsset(writer, request.URL.Path, proxy.AdminSecret) {
+			return
+		}
 		switch request.URL.Path {
 		case "/_bProxy/" + proxy.AdminSecret + "/api/v1":
 			if api.Process(writer, request, earlyData) {
@@ -688,6 +694,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	logging.Log(logging.Entry{Event: "allow", Domain: domainName, IP: ip, Action: "allow", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent(), RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 
 	//Reserved proxy-paths
+
+	//PWA shell assets (Batch 6): served under the same
+	//admin-secret path as the dashboard page itself.
+	if dashboard.ServeAsset(writer, request.URL.Path, proxy.AdminSecret) {
+		return
+	}
 
 	switch request.URL.Path {
 	case "/_bProxy/stats":

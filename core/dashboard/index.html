@@ -6,7 +6,13 @@
 <meta name="referrer" content="no-referrer">
 <title>SonuShield Dashboard</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<script>(function(){try{var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="dark";}document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<meta name="theme-color" content="#0b1220">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>(function(){try{var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="dark";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <style>
 /* SonuShield Dashboard — one layout, two color themes (Premium Dark / Official Classic Light).
    Only color tokens change between themes; spacing, type, and components are shared. */
@@ -180,34 +186,38 @@ tr.selected td{background:var(--nav-active-bg)}
 <header class="topbar">
   <span class="brand">
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" fill="#f6821f"/><path d="M8.5 12l2.4 2.4 4.7-4.7" stroke="#1a1206" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span class="wordmark">SonuShield<small>Dashboard</small></span>
+    <span class="wordmark">SonuShield<small data-i18n="brandSub">Dashboard</small></span>
   </span>
-  <span class="pill" id="hostPill" title="Domain in the address bar">host: —</span>
+  <span class="pill" id="hostPill" data-i18n-title="hostPillTitle" title="Domain in the address bar">host: —</span>
   <div class="spacer"></div>
-  <span class="pill" id="updatingPill" hidden><span class="spinner" aria-hidden="true"></span>Updating</span>
-  <span class="themeseg" role="group" aria-label="Color theme">
-    <button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button>
-    <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+  <span class="pill" id="updatingPill" hidden><span class="spinner" aria-hidden="true"></span><span data-i18n="updating">Updating</span></span>
+  <span class="themeseg" role="group" data-i18n-aria="themeAria" aria-label="Color theme">
+    <button type="button" data-theme-choice="dark" aria-pressed="true" data-i18n="themeDark">Dark</button>
+    <button type="button" data-theme-choice="light" aria-pressed="false" data-i18n="themeLight">Light</button>
   </span>
-  <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
-  <button id="refreshBtn" type="button" disabled>Refresh</button>
-  <button id="reloadBtn" type="button" disabled>Reload config</button>
-  <button id="disconnectBtn" type="button" disabled>Forget secret</button>
+  <span class="themeseg" role="group" data-i18n-aria="langAria" aria-label="Language">
+    <button type="button" data-lang-choice="en" aria-pressed="true">English</button>
+    <button type="button" data-lang-choice="hi" aria-pressed="false">हिन्दी</button>
+  </span>
+  <span class="pill" id="connPill"><span class="dot"></span><span id="connText" data-i18n="notConnected">Not connected</span></span>
+  <button id="refreshBtn" type="button" disabled data-i18n="refreshBtn">Refresh</button>
+  <button id="reloadBtn" type="button" disabled data-i18n="reloadBtn">Reload config</button>
+  <button id="disconnectBtn" type="button" disabled data-i18n="disconnectBtn">Forget secret</button>
 </header>
 <div class="layout">
-  <nav class="sidebar" aria-label="Dashboard sections">
-    <h3>Monitor</h3>
-    <button class="navbtn active" type="button" data-view="overview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Overview</span></button>
-    <button class="navbtn" type="button" data-view="domains"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg><span>Domains</span></button>
-    <button class="navbtn" type="button" data-view="rules"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span>Firewall rules</span></button>
-    <button class="navbtn" type="button" data-view="iplists"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>IP lists</span></button>
-    <button class="navbtn" type="button" data-view="stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Stage</span></button>
-    <button class="navbtn" type="button" data-view="logs"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="2.6"/></svg><span>Logs</span></button>
-    <h3>Manage</h3>
-    <button class="navbtn" type="button" data-view="settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
-    <button class="navbtn" type="button" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13h6M9 17h4"/></svg><span>Reports</span></button>
-    <h3>About</h3>
-    <button class="navbtn" type="button" data-view="about"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01" stroke-width="2.6"/></svg><span>About &amp; limits</span></button>
+  <nav class="sidebar" data-i18n-aria="navAria" aria-label="Dashboard sections">
+    <h3 data-i18n="navMonitor">Monitor</h3>
+    <button class="navbtn active" type="button" data-view="overview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span data-i18n="navOverview">Overview</span></button>
+    <button class="navbtn" type="button" data-view="domains"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg><span data-i18n="navDomains">Domains</span></button>
+    <button class="navbtn" type="button" data-view="rules"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span data-i18n="navRules">Firewall rules</span></button>
+    <button class="navbtn" type="button" data-view="iplists"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span data-i18n="navIpLists">IP lists</span></button>
+    <button class="navbtn" type="button" data-view="stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><span data-i18n="navStage">Stage</span></button>
+    <button class="navbtn" type="button" data-view="logs"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="2.6"/></svg><span data-i18n="navLogs">Logs</span></button>
+    <h3 data-i18n="navManage">Manage</h3>
+    <button class="navbtn" type="button" data-view="settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="navSettings">Settings</span></button>
+    <button class="navbtn" type="button" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 13h6M9 17h4"/></svg><span data-i18n="navReports">Reports</span></button>
+    <h3 data-i18n="navAboutH">About</h3>
+    <button class="navbtn" type="button" data-view="about"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01" stroke-width="2.6"/></svg><span data-i18n="navAbout">About &amp; limits</span></button>
   </nav>
   <main class="main">
     <noscript><div class="banner show">This dashboard needs JavaScript to call the SonuShield API. Enable JavaScript and reload the page.</div></noscript>
@@ -215,432 +225,433 @@ tr.selected td{background:var(--nav-active-bg)}
 
     <section id="authPanel" class="auth">
       <div class="panel">
-        <h1>Connect to SonuShield</h1>
-        <p class="sub">Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>Proxy-Secret</code> header to this same host, and is never written to a URL or a log.</p>
+        <h1 data-i18n="authTitle">Connect to SonuShield</h1>
+        <p class="sub" data-i18n="authSub">Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>Proxy-Secret</code> header to this same host, and is never written to a URL or a log.</p>
         <form id="authForm">
-          <label for="secretInput">API secret</label>
+          <label for="secretInput" data-i18n="authLabel">API secret</label>
           <input id="secretInput" type="password" autocomplete="off" spellcheck="false" placeholder="apisecret value" required>
-          <div style="margin-top:16px"><button class="primary" type="submit" style="width:100%">Connect</button></div>
+          <div style="margin-top:16px"><button class="primary" type="submit" style="width:100%" data-i18n="authConnect">Connect</button></div>
         </form>
         <div id="ssoBox" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
-          <p class="sub" style="margin-top:0">Or continue with your organisation's sign-in.</p>
-          <button class="primary" type="button" id="ssoBtn" style="width:100%">Sign in with SSO</button>
+          <p class="sub" style="margin-top:0" data-i18n="ssoSub">Or continue with your organisation's sign-in.</p>
+          <button class="primary" type="button" id="ssoBtn" style="width:100%" data-i18n="ssoBtn">Sign in with SSO</button>
         </div>
-        <p class="small muted">Wrong secret? The API will not answer and this page will stay disconnected. The page itself is gated by the admin-secret path you used to open it.</p>
+        <p class="small muted" data-i18n="authNote">Wrong secret? The API will not answer and this page will stay disconnected. The page itself is gated by the admin-secret path you used to open it.</p>
       </div>
     </section>
 
     <section id="view-overview" class="view">
-      <h1>Overview</h1>
-      <p class="sub">Live traffic for <strong id="ovDomain">—</strong>. Updates every 3 seconds while connected.</p>
+      <h1 data-i18n="ovTitle">Overview</h1>
+      <p class="sub"><span data-i18n="ovSubPre">Live traffic for </span><strong id="ovDomain">—</strong><span data-i18n="ovSubPost">. Updates every 3 seconds while connected.</span></p>
       <div class="cards">
-        <div class="card"><div class="label">Total requests</div><div class="value" id="cTotalRps">—</div><div class="foot">per second, all requests</div></div>
-        <div class="card"><div class="label">Bypassed requests</div><div class="value" id="cBypassRps">—</div><div class="foot">per second, passed to backend</div></div>
-        <div class="card"><div class="label">Total (all time)</div><div class="value" id="cTotal">—</div><div class="foot">since last reload</div></div>
-        <div class="card"><div class="label">Bypassed (all time)</div><div class="value" id="cBypassed">—</div><div class="foot">since last reload</div></div>
-        <div class="card"><div class="label">CPU usage</div><div class="value" id="cCpu">—</div><div class="foot">server CPU, percent</div></div>
-        <div class="card"><div class="label">RAM usage</div><div class="value" id="cRam">—</div><div class="foot">proxy memory, percent</div></div>
-        <div class="card"><div class="label">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot">from the stage API</div></div>
-        <div class="card"><div class="label">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot">automatic switching when unlocked</div></div>
+        <div class="card"><div class="label" data-i18n="cardTotalRps">Total requests</div><div class="value" id="cTotalRps">—</div><div class="foot" data-i18n="cardTotalRpsFoot">per second, all requests</div></div>
+        <div class="card"><div class="label" data-i18n="cardBypassRps">Bypassed requests</div><div class="value" id="cBypassRps">—</div><div class="foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div></div>
+        <div class="card"><div class="label" data-i18n="cardTotal">Total (all time)</div><div class="value" id="cTotal">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
+        <div class="card"><div class="label" data-i18n="cardBypassed">Bypassed (all time)</div><div class="value" id="cBypassed">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
+        <div class="card"><div class="label" data-i18n="cardCpu">CPU usage</div><div class="value" id="cCpu">—</div><div class="foot" data-i18n="cardCpuFoot">server CPU, percent</div></div>
+        <div class="card"><div class="label" data-i18n="cardRam">RAM usage</div><div class="value" id="cRam">—</div><div class="foot" data-i18n="cardRamFoot">proxy memory, percent</div></div>
+        <div class="card"><div class="label" data-i18n="cardStage">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
+        <div class="card"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
       </div>
       <div class="panel">
-        <h2>Top IPs by requests (current rate-limit window)</h2>
-        <div id="topIps"><div class="state">No data yet. Connect to load live data.</div></div>
+        <h2 data-i18n="topIpsTitle">Top IPs by requests (current rate-limit window)</h2>
+        <div id="topIps"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       </div>
       <div class="panel">
-        <h2>Top unknown fingerprints (current rate-limit window)</h2>
-        <p class="small muted">Fingerprints the proxy could not match to a known browser. A small number of distinct fingerprints with very high counts usually means bots.</p>
-        <div id="topFps"><div class="state">No data yet. Connect to load live data.</div></div>
+        <h2 data-i18n="topFpsTitle">Top unknown fingerprints (current rate-limit window)</h2>
+        <p class="small muted" data-i18n="topFpsNote">Fingerprints the proxy could not match to a known browser. A small number of distinct fingerprints with very high counts usually means bots.</p>
+        <div id="topFps"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       </div>
     </section>
 
     <section id="view-domains" class="view">
-      <h1>Domains</h1>
-      <p class="sub">Configured domains from the API. Select a domain to inspect and manage it everywhere in this dashboard.</p>
+      <h1 data-i18n="domTitle">Domains</h1>
+      <p class="sub" data-i18n="domSub">Configured domains from the API. Select a domain to inspect and manage it everywhere in this dashboard.</p>
       <div class="panel">
-        <h2>Configured domains</h2>
-        <div id="domList"><div class="state">No data yet. Connect to load live data.</div></div>
+        <h2 data-i18n="domConfiguredTitle">Configured domains</h2>
+        <div id="domList"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       </div>
       <div class="toolbar">
-        <label for="domainInput" class="muted">Or inspect a name directly</label>
+        <label for="domainInput" class="muted" data-i18n="inspectLabel">Or inspect a name directly</label>
         <input id="domainInput" class="grow" type="text" spellcheck="false" autocomplete="off" placeholder="example.com" style="flex:1;min-width:180px">
-        <button id="domainBtn" type="button" class="primary">Inspect domain</button>
+        <button id="domainBtn" type="button" class="primary" data-i18n="inspectBtn">Inspect domain</button>
       </div>
       <div class="panel">
         <h2 id="domTitle">—</h2>
-        <div id="domBody"><div class="state">No data yet. Connect to load live data.</div></div>
+        <div id="domBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       </div>
       <div class="panel">
-        <h2>Tenants</h2>
-        <p class="small muted">Usage per tenant, from live counters. “Blocked” is approximated as total requests minus requests that passed a challenge. Bandwidth is an estimate: proxied and cache-served traffic only (challenge pages, block pages, and WebSocket traffic are not counted). Tenant assignment is config-file-only.</p>
-        <div id="tenantBody"><div class="state">No data yet. Connect to load live data.</div></div>
+        <h2 data-i18n="tenantsTitle">Tenants</h2>
+        <p class="small muted" data-i18n="tenantsNote">Usage per tenant, from live counters. “Blocked” is approximated as total requests minus requests that passed a challenge. Bandwidth is an estimate: proxied and cache-served traffic only (challenge pages, block pages, and WebSocket traffic are not counted). Tenant assignment is config-file-only.</p>
+        <div id="tenantBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       </div>
       <div class="inline-err" id="tplError" role="alert"></div>
       <div class="inline-ok" id="tplOk" role="status"></div>
       <div class="panel">
-        <h2>New domain from template</h2>
-        <p class="small muted">Templates are starting points with sane presets — WAF log-only, and caching or compression where it fits the site kind. Adjust settings afterwards; no template ships firewall rules. Creating a domain reloads the configuration, which resets per-domain counters and stage state, exactly as a manual reload does.</p>
+        <h2 data-i18n="tplTitle">New domain from template</h2>
+        <p class="small muted" data-i18n="tplNote">Templates are starting points with sane presets — WAF log-only, and caching or compression where it fits the site kind. Adjust settings afterwards; no template ships firewall rules. Creating a domain reloads the configuration, which resets per-domain counters and stage state, exactly as a manual reload does.</p>
         <form id="tplForm">
           <div class="formgrid">
             <div class="field">
-              <label for="tplName">Domain name</label>
+              <label for="tplName" data-i18n="tplNameLabel">Domain name</label>
               <input id="tplName" type="text" spellcheck="false" autocomplete="off" placeholder="example.com" required>
             </div>
             <div class="field">
-              <label for="tplBackend">Backend (host:port)</label>
+              <label for="tplBackend" data-i18n="tplBackendLabel">Backend (host:port)</label>
               <input id="tplBackend" type="text" spellcheck="false" autocomplete="off" placeholder="127.0.0.1:8080" required>
             </div>
             <div class="field">
-              <label for="tplScheme">Backend scheme</label>
+              <label for="tplScheme" data-i18n="tplSchemeLabel">Backend scheme</label>
               <select id="tplScheme"><option value="http">http</option><option value="https">https</option></select>
             </div>
             <div class="field">
-              <label for="tplTemplate">Template</label>
+              <label for="tplTemplate" data-i18n="tplTemplateLabel">Template</label>
               <select id="tplTemplate"></select>
               <div class="hint" id="tplDesc"></div>
             </div>
             <div class="field">
-              <label for="tplCert">TLS certificate path (optional)</label>
+              <label for="tplCert" data-i18n="tplCertLabel">TLS certificate path (optional)</label>
               <input id="tplCert" type="text" spellcheck="false" autocomplete="off" placeholder="/etc/sonushield/fullchain.pem">
             </div>
             <div class="field">
-              <label for="tplKey">TLS key path (optional)</label>
+              <label for="tplKey" data-i18n="tplKeyLabel">TLS key path (optional)</label>
               <input id="tplKey" type="text" spellcheck="false" autocomplete="off" placeholder="/etc/sonushield/privkey.pem">
-              <div class="hint">Certificate and key must both be set, or both be empty. Leave both empty when using Cloudflare or autoSSL.</div>
+              <div class="hint" data-i18n="tplKeyHint">Certificate and key must both be set, or both be empty. Leave both empty when using Cloudflare or autoSSL.</div>
             </div>
           </div>
           <div class="btnrow">
-            <button class="primary" type="submit">Create domain</button>
+            <button class="primary" type="submit" data-i18n="tplCreateBtn">Create domain</button>
           </div>
         </form>
       </div>
       <div class="panel">
-        <h2>Import domains</h2>
-        <p class="small muted">Bulk-create domains from JSON or CSV. Every entry is validated first — an invalid import is rejected and nothing changes. Importing reloads the configuration, as creating a single domain does.</p>
+        <h2 data-i18n="importTitle">Import domains</h2>
+        <p class="small muted" data-i18n="importNote">Bulk-create domains from JSON or CSV. Every entry is validated first — an invalid import is rejected and nothing changes. Importing reloads the configuration, as creating a single domain does.</p>
         <form id="domImportForm">
           <div class="formgrid">
             <div class="field">
-              <label for="domImportFormat">Format</label>
+              <label for="domImportFormat" data-i18n="importFormatLabel">Format</label>
               <select id="domImportFormat"><option value="json">JSON</option><option value="csv">CSV</option></select>
             </div>
             <div class="field" style="grid-column:1/-1">
-              <label for="domImportData">Domains</label>
+              <label for="domImportData" data-i18n="importDataLabel">Domains</label>
               <textarea id="domImportData" rows="5" spellcheck="false" autocomplete="off" placeholder='[{"name": "example.com", "backend": "127.0.0.1:8080", "scheme": "http", "template": "wordpress"}]'></textarea>
-              <div class="hint">JSON: an array of objects with <code>name</code>, <code>backend</code>, and optional <code>scheme</code>, <code>template</code>, <code>certificate</code>, <code>key</code>. CSV: a header row (<code>name,backend,scheme,template,certificate,key</code>) followed by one domain per row.</div>
+              <div class="hint" data-i18n="importHint">JSON: an array of objects with <code>name</code>, <code>backend</code>, and optional <code>scheme</code>, <code>template</code>, <code>certificate</code>, <code>key</code>. CSV: a header row (<code>name,backend,scheme,template,certificate,key</code>) followed by one domain per row.</div>
             </div>
           </div>
           <div class="btnrow">
-            <button class="primary" type="submit">Import domains</button>
+            <button class="primary" type="submit" data-i18n="importBtn">Import domains</button>
           </div>
         </form>
       </div>
     </section>
 
     <section id="view-rules" class="view">
-      <h1>Firewall rules</h1>
-      <p class="sub">Rules for <strong id="rulesDomain">—</strong>, in evaluation order (top rule first). Changes are saved to <code>config.json</code> on the server immediately, take effect without a reload, and keep a backup of the previous config as <code>config.json.bak</code>.</p>
+      <h1 data-i18n="rulesTitle">Firewall rules</h1>
+      <p class="sub"><span data-i18n="rulesSubPre">Rules for </span><strong id="rulesDomain">—</strong><span data-i18n="rulesSubPost">, in evaluation order (top rule first). Changes are saved to <code>config.json</code> on the server immediately, take effect without a reload, and keep a backup of the previous config as <code>config.json.bak</code>.</span></p>
       <div class="inline-err" id="rulesError" role="alert"></div>
       <div class="inline-ok" id="rulesOk" role="status"></div>
-      <div id="rulesBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      <div id="rulesBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       <div class="panel">
-        <h2 id="ruleFormTitle">Add a rule</h2>
+        <h2 id="ruleFormTitle" data-i18n="ruleFormAdd">Add a rule</h2>
         <form id="ruleForm">
           <div class="formgrid">
             <div class="field" style="grid-column:1/-1">
-              <label for="ruleExpr">Expression</label>
+              <label for="ruleExpr" data-i18n="ruleExprLabel">Expression</label>
               <input id="ruleExpr" type="text" spellcheck="false" autocomplete="off" placeholder='(http.path eq "/wp-login.php")' required>
-              <div class="hint">Fields: <code>ip.*</code>, <code>http.*</code>, <code>proxy.*</code> — see the firewall-rules docs. Expressions that do not compile, or use an unknown field, are rejected and nothing changes.</div>
+              <div class="hint" data-i18n="ruleExprHint">Fields: <code>ip.*</code>, <code>http.*</code>, <code>proxy.*</code> — see the firewall-rules docs. Expressions that do not compile, or use an unknown field, are rejected and nothing changes.</div>
             </div>
             <div class="field">
-              <label for="ruleAction">Action</label>
+              <label for="ruleAction" data-i18n="ruleActionLabel">Action</label>
               <input id="ruleAction" type="text" spellcheck="false" autocomplete="off" placeholder="4" required>
-              <div class="hint"><code>0</code> allow, <code>1</code>–<code>3</code> challenge, <code>4+</code> block, <code>+N</code>/<code>-N</code> adjust and continue.</div>
+              <div class="hint" data-i18n="ruleActionHint"><code>0</code> allow, <code>1</code>–<code>3</code> challenge, <code>4+</code> block, <code>+N</code>/<code>-N</code> adjust and continue.</div>
             </div>
           </div>
           <div class="btnrow">
-            <button class="primary" type="submit" id="ruleSubmit">Add rule</button>
-            <button type="button" id="ruleCancel" hidden>Cancel edit</button>
+            <button class="primary" type="submit" id="ruleSubmit" data-i18n="ruleSubmitAdd">Add rule</button>
+            <button type="button" id="ruleCancel" hidden data-i18n="ruleCancel">Cancel edit</button>
           </div>
         </form>
       </div>
       <div class="panel">
-        <h2>Rule simulator</h2>
-        <p class="small muted">Evaluate an expression against sample request fields, without enforcing anything. Leave the sample empty to test against zero values.</p>
+        <h2 data-i18n="simTitle">Rule simulator</h2>
+        <p class="small muted" data-i18n="simNote">Evaluate an expression against sample request fields, without enforcing anything. Leave the sample empty to test against zero values.</p>
         <form id="simForm">
           <div class="formgrid">
             <div class="field" style="grid-column:1/-1">
-              <label for="simExpr">Expression</label>
+              <label for="simExpr" data-i18n="ruleExprLabel">Expression</label>
               <input id="simExpr" type="text" spellcheck="false" autocomplete="off" placeholder='(http.path eq "/wp-login.php")' required>
             </div>
             <div class="field" style="grid-column:1/-1">
-              <label for="simSample">Sample request fields (JSON object)</label>
+              <label for="simSample" data-i18n="simSampleLabel">Sample request fields (JSON object)</label>
               <textarea id="simSample" rows="4" spellcheck="false" autocomplete="off" placeholder='{"http.path": "/wp-login.php", "http.method": "POST", "ip.country": "US"}'></textarea>
-              <div class="hint">Field names are the same as in rules. Unknown fields are rejected. Values use the request types: <code>ip.src</code> an IP string, counters and <code>proxy.stage</code> integers, <code>proxy.*</code> flags booleans, the rest strings.</div>
+              <div class="hint" data-i18n="simHint">Field names are the same as in rules. Unknown fields are rejected. Values use the request types: <code>ip.src</code> an IP string, counters and <code>proxy.stage</code> integers, <code>proxy.*</code> flags booleans, the rest strings.</div>
             </div>
           </div>
           <div class="btnrow">
-            <button class="primary" type="submit">Simulate</button>
+            <button class="primary" type="submit" data-i18n="simBtn">Simulate</button>
           </div>
         </form>
         <div id="simResult" style="margin-top:12px"></div>
       </div>
       <div class="panel">
-        <h2>Export / import rules</h2>
-        <p class="small muted">Export downloads the rule set as JSON. Import validates every rule first — an invalid import is rejected and nothing changes. Replace mode overwrites the whole rule set; append mode adds to it.</p>
+        <h2 data-i18n="expTitle">Export / import rules</h2>
+        <p class="small muted" data-i18n="expNote">Export downloads the rule set as JSON. Import validates every rule first — an invalid import is rejected and nothing changes. Replace mode overwrites the whole rule set; append mode adds to it.</p>
         <div class="btnrow">
-          <button type="button" id="rulesExportBtn">Export rules (JSON)</button>
+          <button type="button" id="rulesExportBtn" data-i18n="expBtn">Export rules (JSON)</button>
         </div>
         <form id="importForm" style="margin-top:12px">
           <div class="formgrid">
             <div class="field" style="grid-column:1/-1">
-              <label for="importJson">Rules JSON</label>
+              <label for="importJson" data-i18n="importJsonLabel">Rules JSON</label>
               <textarea id="importJson" rows="5" spellcheck="false" autocomplete="off" placeholder='[{"expression": "(http.path eq \"/wp-login.php\")", "action": "4"}]'></textarea>
             </div>
             <div class="field">
-              <label for="importMode">Mode</label>
-              <select id="importMode"><option value="replace">Replace all rules</option><option value="append">Append to existing rules</option></select>
+              <label for="importMode" data-i18n="importModeLabel">Mode</label>
+              <select id="importMode"><option value="replace" data-i18n="importModeReplace">Replace all rules</option><option value="append" data-i18n="importModeAppend">Append to existing rules</option></select>
             </div>
           </div>
           <div class="btnrow">
-            <button class="primary" type="submit">Import rules</button>
+            <button class="primary" type="submit" data-i18n="importBtn2">Import rules</button>
           </div>
         </form>
       </div>
       <div class="panel">
-        <h2>What the actions mean</h2>
+        <h2 data-i18n="actionsTitle">What the actions mean</h2>
         <table>
-          <thead><tr><th>Action</th><th>Meaning</th></tr></thead>
+          <thead><tr><th data-i18n="ruleActionLabel">Action</th><th data-i18n="colMeaning">Meaning</th></tr></thead>
           <tbody>
-            <tr><td class="mono">0</td><td>Allow — request is whitelisted, never challenged.</td></tr>
-            <tr><td class="mono">1</td><td>Cookie challenge — invisible, passed automatically by most good bots.</td></tr>
-            <tr><td class="mono">2</td><td>JavaScript proof-of-work challenge — stops most bots, including good ones.</td></tr>
-            <tr><td class="mono">3</td><td>Captcha — visitor must solve a visual captcha.</td></tr>
-            <tr><td class="mono">4 or higher</td><td>Block — request is blocked outright.</td></tr>
-            <tr><td class="mono">+N / -N</td><td>Raise or lower the current suspicion level by N, then keep checking further rules.</td></tr>
+            <tr><td class="mono">0</td><td data-i18n="actionMean0">Allow — request is whitelisted, never challenged.</td></tr>
+            <tr><td class="mono">1</td><td data-i18n="actionMean1">Cookie challenge — invisible, passed automatically by most good bots.</td></tr>
+            <tr><td class="mono">2</td><td data-i18n="actionMean2">JavaScript proof-of-work challenge — stops most bots, including good ones.</td></tr>
+            <tr><td class="mono">3</td><td data-i18n="actionMean3">Captcha — visitor must solve a visual captcha.</td></tr>
+            <tr><td class="mono">4 or higher</td><td data-i18n="actionMean4">Block — request is blocked outright.</td></tr>
+            <tr><td class="mono">+N / -N</td><td data-i18n="actionMeanAdj">Raise or lower the current suspicion level by N, then keep checking further rules.</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
     <section id="view-iplists" class="view">
-      <h1>IP lists</h1>
-      <p class="sub">Allow and block lists for <strong id="ipListsDomain">—</strong>. A blocklisted IP is blocked before rate limiting runs; an allowlisted IP starts unchallenged and bypasses the early rate-limit and fingerprint blocks. The block list wins when an IP matches both. Expired entries drop automatically. Changes are saved to <code>config.json</code> on the server immediately and take effect without a reload.</p>
+      <h1 data-i18n="ipTitle">IP lists</h1>
+      <p class="sub"><span data-i18n="ipSubPre">Allow and block lists for </span><strong id="ipListsDomain">—</strong><span data-i18n="ipSubPost">. A blocklisted IP is blocked before rate limiting runs; an allowlisted IP starts unchallenged and bypasses the early rate-limit and fingerprint blocks. The block list wins when an IP matches both. Expired entries drop automatically. Changes are saved to <code>config.json</code> on the server immediately and take effect without a reload.</span></p>
       <div class="inline-err" id="ipListsError" role="alert"></div>
       <div class="inline-ok" id="ipListsOk" role="status"></div>
-      <div id="ipListsBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      <div id="ipListsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       <div class="panel">
-        <h2>Add an entry</h2>
+        <h2 data-i18n="addEntryTitle">Add an entry</h2>
         <form id="ipEntryForm">
           <div class="formgrid">
             <div class="field">
-              <label for="ipEntryList">List</label>
-              <select id="ipEntryList"><option value="blocklist">Block list</option><option value="allowlist">Allow list</option></select>
+              <label for="ipEntryList" data-i18n="ipListLabel">List</label>
+              <select id="ipEntryList"><option value="blocklist" data-i18n="ipListBlock">Block list</option><option value="allowlist" data-i18n="ipListAllow">Allow list</option></select>
             </div>
             <div class="field">
-              <label for="ipEntryTarget">IP or CIDR</label>
+              <label for="ipEntryTarget" data-i18n="ipTargetLabel">IP or CIDR</label>
               <input id="ipEntryTarget" type="text" spellcheck="false" autocomplete="off" placeholder="203.0.113.5 or 203.0.113.0/24" required>
             </div>
             <div class="field">
-              <label for="ipEntryExpires">Expires</label>
-              <select id="ipEntryExpires"><option value="0">Never</option><option value="3600">In 1 hour</option><option value="86400">In 24 hours</option><option value="604800">In 7 days</option><option value="2592000">In 30 days</option></select>
-              <div class="hint">Expired entries are removed automatically.</div>
+              <label for="ipEntryExpires" data-i18n="ipExpiresLabel">Expires</label>
+              <select id="ipEntryExpires"><option value="0" data-i18n="ipExpNever">Never</option><option value="3600" data-i18n="ipExp1h">In 1 hour</option><option value="86400" data-i18n="ipExp24h">In 24 hours</option><option value="604800" data-i18n="ipExp7d">In 7 days</option><option value="2592000" data-i18n="ipExp30d">In 30 days</option></select>
+              <div class="hint" data-i18n="ipExpHint">Expired entries are removed automatically.</div>
             </div>
             <div class="field">
-              <label for="ipEntryNote">Note (optional)</label>
-              <input id="ipEntryNote" type="text" autocomplete="off" maxlength="200" placeholder="Why this entry exists">
+              <label for="ipEntryNote" data-i18n="ipNoteLabel">Note (optional)</label>
+              <input id="ipEntryNote" type="text" autocomplete="off" maxlength="200" data-i18n-ph="ipNotePh" placeholder="Why this entry exists">
             </div>
           </div>
           <div class="btnrow">
-            <button class="primary" type="submit">Add entry</button>
+            <button class="primary" type="submit" data-i18n="ipAddBtn">Add entry</button>
           </div>
         </form>
       </div>
     </section>
 
     <section id="view-stage" class="view">
-      <h1>Stage</h1>
-      <p class="sub">The current challenge stage for <strong id="stageDomain">—</strong>.</p>
+      <h1 data-i18n="stageTitle">Stage</h1>
+      <p class="sub"><span data-i18n="stageSubPre">The current challenge stage for </span><strong id="stageDomain">—</strong><span data-i18n="stageSubPost">.</span></p>
       <div class="cards">
-        <div class="card"><div class="label">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot">from the stage API</div></div>
-        <div class="card"><div class="label">Stage locked</div><div class="value" id="stageLocked">—</div><div class="foot">automatic switching when unlocked</div></div>
-        <div class="card"><div class="label">Under attack</div><div class="value" id="stageAttack">—</div><div class="foot">raw or bypassing attack in progress</div></div>
+        <div class="card"><div class="label" data-i18n="stageCardCurrent">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
+        <div class="card"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="stageLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
+        <div class="card"><div class="label" data-i18n="stageCardAttack">Under attack</div><div class="value" id="stageAttack">—</div><div class="foot" data-i18n="stageCardAttackFoot">raw or bypassing attack in progress</div></div>
       </div>
       <div class="inline-err" id="stageError" role="alert"></div>
       <div class="inline-ok" id="stageOk" role="status"></div>
       <div class="panel">
-        <h2>Change the stage</h2>
+        <h2 data-i18n="stageChangeTitle">Change the stage</h2>
         <div class="btnrow">
-          <button type="button" data-stage="0">Automatic (unlock)</button>
-          <button type="button" data-stage="1">Lock Stage 1</button>
-          <button type="button" data-stage="2">Lock Stage 2</button>
-          <button type="button" data-stage="3">Lock Stage 3</button>
-          <button type="button" data-underattack="true" class="danger">Under-attack mode</button>
+          <button type="button" data-stage="0" data-i18n="stageBtnAuto">Automatic (unlock)</button>
+          <button type="button" data-stage="1" data-i18n="stageBtn1">Lock Stage 1</button>
+          <button type="button" data-stage="2" data-i18n="stageBtn2">Lock Stage 2</button>
+          <button type="button" data-stage="3" data-i18n="stageBtn3">Lock Stage 3</button>
+          <button type="button" data-underattack="true" class="danger" data-i18n="stageBtnAttack">Under-attack mode</button>
         </div>
-        <p class="small muted">Stage changes apply immediately and are <strong>runtime-only</strong>: a config reload or restart returns the domain to automatic switching. Under-attack mode locks Stage 3; Automatic turns it off.</p>
+        <p class="small muted" data-i18n="stageChangeNote">Stage changes apply immediately and are <strong>runtime-only</strong>: a config reload or restart returns the domain to automatic switching. Under-attack mode locks Stage 3; Automatic turns it off.</p>
       </div>
       <div class="panel">
-        <h2>What each stage does</h2>
+        <h2 data-i18n="stageWhatTitle">What each stage does</h2>
         <table>
-          <thead><tr><th>Stage</th><th>Challenge</th><th>Effect</th></tr></thead>
+          <thead><tr><th data-i18n="stageTitle">Stage</th><th data-i18n="stageThChallenge">Challenge</th><th data-i18n="stageThEffect">Effect</th></tr></thead>
           <tbody>
-            <tr><td><span class="badge stage1">Stage 1</span></td><td>Cookie challenge</td><td>Invisible; stops simple attacks.</td></tr>
-            <tr><td><span class="badge stage2">Stage 2</span></td><td>Proof-of-work JS challenge</td><td>Stops more advanced bots.</td></tr>
-            <tr><td><span class="badge stage3">Stage 3</span></td><td>Custom captcha</td><td>Last resort; stops most malicious requests and good bots too.</td></tr>
-            <tr><td><span class="badge block">Above 3</span></td><td>Block</td><td>All requests blocked (only when manually locked above 3).</td></tr>
+            <tr><td><span class="badge stage1" data-i18n="stageRow1Badge">Stage 1</span></td><td data-i18n="stageRow1Challenge">Cookie challenge</td><td data-i18n="stageRow1Effect">Invisible; stops simple attacks.</td></tr>
+            <tr><td><span class="badge stage2" data-i18n="stageRow2Badge">Stage 2</span></td><td data-i18n="stageRow2Challenge">Proof-of-work JS challenge</td><td data-i18n="stageRow2Effect">Stops more advanced bots.</td></tr>
+            <tr><td><span class="badge stage3" data-i18n="stageRow3Badge">Stage 3</span></td><td data-i18n="stageRow3Challenge">Custom captcha</td><td data-i18n="stageRow3Effect">Last resort; stops most malicious requests and good bots too.</td></tr>
+            <tr><td><span class="badge block" data-i18n="stageRow4Badge">Above 3</span></td><td data-i18n="stageRow4Challenge">Block</td><td data-i18n="stageRow4Effect">All requests blocked (only when manually locked above 3).</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="note"><strong>Stage changes are runtime-only.</strong> Locking a stage here has the same effect as the terminal <span class="kbd">stage</span> command, and a reload or restart returns the domain to automatic switching. There is no need to use the terminal for stage control.</div>
+      <div class="note" data-i18n="stageNote"><strong>Stage changes are runtime-only.</strong> Locking a stage here has the same effect as the terminal <span class="kbd">stage</span> command, and a reload or restart returns the domain to automatic switching. There is no need to use the terminal for stage control.</div>
     </section>
 
     <section id="view-logs" class="view">
-      <h1>Logs</h1>
-      <p class="sub">Most recent requests that passed the challenges, for <strong id="logsDomain">—</strong>. Newest first. Logs only include requests that passed; blocked and challenged requests are not logged here.</p>
+      <h1 data-i18n="logsTitle">Logs</h1>
+      <p class="sub"><span data-i18n="logsSubPre">Most recent requests that passed the challenges, for </span><strong id="logsDomain">—</strong><span data-i18n="logsSubPost">. Newest first. Logs only include requests that passed; blocked and challenged requests are not logged here.</span></p>
       <div class="toolbar">
-        <button id="clearLogsBtn" type="button" class="danger">Clear logs for this domain</button>
-        <button id="clearAllLogsBtn" type="button">Clear logs for all domains</button>
+        <button id="clearLogsBtn" type="button" class="danger" data-i18n="clearLogsBtn">Clear logs for this domain</button>
+        <button id="clearAllLogsBtn" type="button" data-i18n="clearAllLogsBtn">Clear logs for all domains</button>
         <span class="small muted" id="logsNote"></span>
       </div>
       <div class="inline-err" id="logsError" role="alert"></div>
-      <div id="logsBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      <div id="logsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       <div class="panel">
-        <h2>Search structured logs</h2>
-        <p class="small muted">Searches the JSON log files on the server (current + rotated, newest first) — including blocked and challenged requests, which the list above does not show. Requires <code>proxy.logFormat</code> set to <code>json</code> and <code>proxy.logFile</code> set in <code>config.json</code>. Filters match exactly.</p>
+        <h2 data-i18n="lsTitle">Search structured logs</h2>
+        <p class="small muted" data-i18n="lsNote">Searches the JSON log files on the server (current + rotated, newest first) — including blocked and challenged requests, which the list above does not show. Requires <code>proxy.logFormat</code> set to <code>json</code> and <code>proxy.logFile</code> set in <code>config.json</code>. Filters match exactly.</p>
         <form id="logSearchForm">
           <div class="formgrid">
-            <div class="field"><label for="lsIp">IP</label><input id="lsIp" type="text" spellcheck="false" autocomplete="off" placeholder="203.0.113.5"></div>
-            <div class="field"><label for="lsEvent">Event</label><input id="lsEvent" type="text" spellcheck="false" autocomplete="off" placeholder="block"></div>
-            <div class="field"><label for="lsAction">Action</label><input id="lsAction" type="text" spellcheck="false" autocomplete="off" placeholder="ratelimit"></div>
-            <div class="field"><label for="lsFrom">From</label><input id="lsFrom" type="datetime-local"></div>
-            <div class="field"><label for="lsTo">To</label><input id="lsTo" type="datetime-local"></div>
-            <div class="field"><label for="lsPerPage">Per page</label><select id="lsPerPage"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="200">200</option></select></div>
+            <div class="field"><label for="lsIp" data-i18n="lsIpLabel">IP</label><input id="lsIp" type="text" spellcheck="false" autocomplete="off" placeholder="203.0.113.5"></div>
+            <div class="field"><label for="lsEvent" data-i18n="lsEventLabel">Event</label><input id="lsEvent" type="text" spellcheck="false" autocomplete="off" placeholder="block"></div>
+            <div class="field"><label for="lsAction" data-i18n="ruleActionLabel">Action</label><input id="lsAction" type="text" spellcheck="false" autocomplete="off" placeholder="ratelimit"></div>
+            <div class="field"><label for="lsFrom" data-i18n="lsFromLabel">From</label><input id="lsFrom" type="datetime-local"></div>
+            <div class="field"><label for="lsTo" data-i18n="lsToLabel">To</label><input id="lsTo" type="datetime-local"></div>
+            <div class="field"><label for="lsPerPage" data-i18n="lsPerPageLabel">Per page</label><select id="lsPerPage"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="200">200</option></select></div>
           </div>
           <div class="btnrow">
-            <button class="primary" type="submit">Search</button>
-            <button type="button" id="lsPrev" disabled>Previous page</button>
-            <button type="button" id="lsNext" disabled>Next page</button>
+            <button class="primary" type="submit" data-i18n="lsSearchBtn">Search</button>
+            <button type="button" id="lsPrev" disabled data-i18n="lsPrevBtn">Previous page</button>
+            <button type="button" id="lsNext" disabled data-i18n="lsNextBtn">Next page</button>
             <span class="small muted" id="lsMeta"></span>
           </div>
         </form>
-        <div id="logSearchBody" style="margin-top:12px"><div class="state">No search run yet.</div></div>
+        <div id="logSearchBody" style="margin-top:12px"><div class="state" data-i18n="lsNoSearch">No search run yet.</div></div>
       </div>
     </section>
 
     <section id="view-settings" class="view">
-      <h1>Settings</h1>
-      <p class="sub">Configuration for <strong id="settingsDomain">—</strong>. Saved changes are written to <code>config.json</code> on the server immediately and survive restarts. Secrets, backends, schemes, and certificate paths can only be changed in <code>config.json</code> on the server, followed by Reload config.</p>
+      <h1 data-i18n="setTitle">Settings</h1>
+      <p class="sub"><span data-i18n="setSubPre">Configuration for </span><strong id="settingsDomain">—</strong><span data-i18n="setSubPost">. Saved changes are written to <code>config.json</code> on the server immediately and survive restarts. Secrets, backends, schemes, and certificate paths can only be changed in <code>config.json</code> on the server, followed by Reload config.</span></p>
       <div class="inline-err" id="settingsError" role="alert"></div>
       <div class="inline-ok" id="settingsOk" role="status"></div>
       <form id="settingsForm">
         <div class="panel">
-          <h2>Attack thresholds</h2>
+          <h2 data-i18n="setThreshTitle">Attack thresholds</h2>
           <div class="formgrid">
-            <div class="field"><label for="setBypassStage1">Bypass Stage 1 (r/s)</label><input id="setBypassStage1" type="number" min="0" step="1"><div class="hint">Bypassed requests/s that trigger Stage 2.</div></div>
-            <div class="field"><label for="setBypassStage2">Bypass Stage 2 (r/s)</label><input id="setBypassStage2" type="number" min="0" step="1"><div class="hint">Bypassed requests/s that trigger Stage 3.</div></div>
-            <div class="field"><label for="setDisableBypassStage3">Disable bypass Stage 3</label><input id="setDisableBypassStage3" type="number" min="0" step="1"><div class="hint">Bypassed requests/s below which Stage 3 steps down.</div></div>
-            <div class="field"><label for="setDisableRawStage3">Disable raw Stage 3</label><input id="setDisableRawStage3" type="number" min="0" step="1"><div class="hint">Total requests/s below which Stage 3 steps down.</div></div>
-            <div class="field"><label for="setDisableBypassStage2">Disable bypass Stage 2</label><input id="setDisableBypassStage2" type="number" min="0" step="1"><div class="hint">Bypassed requests/s below which Stage 2 steps down.</div></div>
-            <div class="field"><label for="setDisableRawStage2">Disable raw Stage 2</label><input id="setDisableRawStage2" type="number" min="0" step="1"><div class="hint">Total requests/s below which an attack is considered over.</div></div>
-            <div class="field"><label for="setStage2Difficulty">Stage 2 difficulty (0 = default)</label><input id="setStage2Difficulty" type="number" min="0" max="16" step="1"><div class="hint">Proof-of-work difficulty. 0 uses the default of 5.</div></div>
+            <div class="field"><label for="setBypassStage1" data-i18n="setBypass1Label">Bypass Stage 1 (r/s)</label><input id="setBypassStage1" type="number" min="0" step="1"><div class="hint" data-i18n="setBypass1Hint">Bypassed requests/s that trigger Stage 2.</div></div>
+            <div class="field"><label for="setBypassStage2" data-i18n="setBypass2Label">Bypass Stage 2 (r/s)</label><input id="setBypassStage2" type="number" min="0" step="1"><div class="hint" data-i18n="setBypass2Hint">Bypassed requests/s that trigger Stage 3.</div></div>
+            <div class="field"><label for="setDisableBypassStage3" data-i18n="setDisBypass3Label">Disable bypass Stage 3</label><input id="setDisableBypassStage3" type="number" min="0" step="1"><div class="hint" data-i18n="setDisBypass3Hint">Bypassed requests/s below which Stage 3 steps down.</div></div>
+            <div class="field"><label for="setDisableRawStage3" data-i18n="setDisRaw3Label">Disable raw Stage 3</label><input id="setDisableRawStage3" type="number" min="0" step="1"><div class="hint" data-i18n="setDisRaw3Hint">Total requests/s below which Stage 3 steps down.</div></div>
+            <div class="field"><label for="setDisableBypassStage2" data-i18n="setDisBypass2Label">Disable bypass Stage 2</label><input id="setDisableBypassStage2" type="number" min="0" step="1"><div class="hint" data-i18n="setDisBypass2Hint">Bypassed requests/s below which Stage 2 steps down.</div></div>
+            <div class="field"><label for="setDisableRawStage2" data-i18n="setDisRaw2Label">Disable raw Stage 2</label><input id="setDisableRawStage2" type="number" min="0" step="1"><div class="hint" data-i18n="setDisRaw2Hint">Total requests/s below which an attack is considered over.</div></div>
+            <div class="field"><label for="setStage2Difficulty" data-i18n="setDiffLabel">Stage 2 difficulty (0 = default)</label><input id="setStage2Difficulty" type="number" min="0" max="16" step="1"><div class="hint" data-i18n="setDiffHint">Proof-of-work difficulty. 0 uses the default of 5.</div></div>
           </div>
         </div>
         <div class="panel">
-          <h2>Proof-of-work &amp; challenges</h2>
+          <h2 data-i18n="setPowTitle">Proof-of-work &amp; challenges</h2>
           <div class="formgrid">
-            <div class="field"><label for="setAdaptivePow">Adaptive proof-of-work</label><select id="setAdaptivePow"><option value="true">Enabled</option><option value="false">Disabled</option></select><div class="hint">Difficulty scales with bypassed traffic between the bounds below.</div></div>
-            <div class="field"><label for="setPowMin">PoW difficulty min (0 = default)</label><input id="setPowMin" type="number" min="0" max="16" step="1"></div>
-            <div class="field"><label for="setPowMax">PoW difficulty max (0 = default)</label><input id="setPowMax" type="number" min="0" max="16" step="1"></div>
+            <div class="field"><label for="setAdaptivePow" data-i18n="setAdaptiveLabel">Adaptive proof-of-work</label><select id="setAdaptivePow"><option value="true" data-i18n="setAdaptiveEnabled">Enabled</option><option value="false" data-i18n="setAdaptiveDisabled">Disabled</option></select><div class="hint" data-i18n="setAdaptiveHint">Difficulty scales with bypassed traffic between the bounds below.</div></div>
+            <div class="field"><label for="setPowMin" data-i18n="setPowMinLabel">PoW difficulty min (0 = default)</label><input id="setPowMin" type="number" min="0" max="16" step="1"></div>
+            <div class="field"><label for="setPowMax" data-i18n="setPowMaxLabel">PoW difficulty max (0 = default)</label><input id="setPowMax" type="number" min="0" max="16" step="1"></div>
           </div>
-          <p class="small muted">Challenge provider: <strong id="settingsProvider">—</strong> · keys configured: <strong id="settingsKeys">—</strong>. Provider and keys are config-file-only and are never shown here.</p>
+          <p class="small muted"><span data-i18n="setProviderPre">Challenge provider: </span><strong id="settingsProvider">—</strong><span data-i18n="setProviderMid"> · keys configured: </span><strong id="settingsKeys">—</strong><span data-i18n="setProviderPost">. Provider and keys are config-file-only and are never shown here.</span></p>
         </div>
         <div class="panel">
-          <h2>WAF-lite</h2>
+          <h2 data-i18n="setWafTitle">WAF-lite</h2>
           <div class="formgrid">
-            <div class="field"><label for="setWafMode">WAF mode</label><select id="setWafMode"><option value="off">Off</option><option value="log">Log only</option><option value="block">Block</option></select><div class="hint">Block mode answers matches with a generic 403.</div></div>
-            <div class="field"><label for="setWafInspectBody">Inspect request bodies</label><select id="setWafInspectBody"><option value="true">Yes</option><option value="false">No</option></select></div>
-            <div class="field"><label for="setWafWpLimit">WordPress login limit (per min/IP)</label><input id="setWafWpLimit" type="number" min="0" step="1"><div class="hint">0 uses the default of 20/minute.</div></div>
+            <div class="field"><label for="setWafMode" data-i18n="setWafModeLabel">WAF mode</label><select id="setWafMode"><option value="off" data-i18n="setWafOff">Off</option><option value="log" data-i18n="setWafLog">Log only</option><option value="block" data-i18n="setWafBlock">Block</option></select><div class="hint" data-i18n="setWafHint">Block mode answers matches with a generic 403.</div></div>
+            <div class="field"><label for="setWafInspectBody" data-i18n="setWafBodyLabel">Inspect request bodies</label><select id="setWafInspectBody"><option value="true" data-i18n="yes">Yes</option><option value="false" data-i18n="no">No</option></select></div>
+            <div class="field"><label for="setWafWpLimit" data-i18n="setWpLabel">WordPress login limit (per min/IP)</label><input id="setWafWpLimit" type="number" min="0" step="1"><div class="hint" data-i18n="setWpHint">0 uses the default of 20/minute.</div></div>
           </div>
         </div>
         <div class="panel">
-          <h2>Firewall rules</h2>
+          <h2 data-i18n="navRules">Firewall rules</h2>
           <div class="formgrid">
-            <div class="field"><label for="setRulesDryRun">Rules dry-run mode</label><select id="setRulesDryRun"><option value="false">Off — rules enforced</option><option value="true">On — log matches, take no action</option></select><div class="hint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
+            <div class="field"><label for="setRulesDryRun" data-i18n="setDryRunLabel">Rules dry-run mode</label><select id="setRulesDryRun"><option value="false" data-i18n="setDryRunOff">Off — rules enforced</option><option value="true" data-i18n="setDryRunOn">On — log matches, take no action</option></select><div class="hint" data-i18n="setDryRunHint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
           </div>
         </div>
         <div class="btnrow">
-          <button class="primary" type="submit">Save settings</button>
-          <button type="button" id="settingsReloadBtn">Reload current values</button>
+          <button class="primary" type="submit" data-i18n="setSaveBtn">Save settings</button>
+          <button type="button" id="settingsReloadBtn" data-i18n="setReloadBtn">Reload current values</button>
         </div>
       </form>
       <div class="panel">
-        <h2>Proxy features</h2>
-        <div id="proxyFeatures"><div class="state">No data yet. Connect to load live data.</div></div>
-        <div class="btnrow"><button type="button" id="refreshFeedBtn">Refresh reputation feed</button></div>
+        <h2 data-i18n="setProxyTitle">Proxy features</h2>
+        <div id="proxyFeatures"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="refreshFeedBtn" data-i18n="setRefreshFeedBtn">Refresh reputation feed</button></div>
       </div>
       <div class="panel">
-        <h2>Configuration backups</h2>
-        <p class="small muted">Every saved change keeps the previous <code>config.json</code> as a backup, newest first. Restoring validates the backup first, backs up the current file, and reloads the proxy.</p>
-        <div id="backupList"><div class="state">No data yet. Connect to load live data.</div></div>
-        <div class="btnrow"><button type="button" id="backupsReloadBtn">Reload list</button></div>
+        <h2 data-i18n="setBackupsTitle">Configuration backups</h2>
+        <p class="small muted" data-i18n="setBackupsNote">Every saved change keeps the previous <code>config.json</code> as a backup, newest first. Restoring validates the backup first, backs up the current file, and reloads the proxy.</p>
+        <div id="backupList"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="backupsReloadBtn" data-i18n="setBackupsReloadBtn">Reload list</button></div>
       </div>
     </section>
 
     <section id="view-reports" class="view">
-      <h1>Attack report</h1>
-      <p class="sub">Attack summary for <strong id="reportDomain">—</strong>, built from live counters. IP and fingerprint tallies are proxy-wide and labelled as such in the report.</p>
+      <h1 data-i18n="repTitle">Attack report</h1>
+      <p class="sub"><span data-i18n="repSubPre">Attack summary for </span><strong id="reportDomain">—</strong><span data-i18n="repSubPost">, built from live counters. IP and fingerprint tallies are proxy-wide and labelled as such in the report.</span></p>
       <div class="toolbar">
-        <label for="reportTop" class="muted">Show top</label>
+        <label for="reportTop" class="muted" data-i18n="repTopLabel">Show top</label>
         <input id="reportTop" type="number" min="1" max="50" value="10" style="width:80px">
-        <button id="reportLoadBtn" type="button" class="primary">Load report</button>
-        <button id="reportJsonBtn" type="button">Download JSON</button>
-        <button id="reportCsvBtn" type="button">Download CSV</button>
+        <button id="reportLoadBtn" type="button" class="primary" data-i18n="repLoadBtn">Load report</button>
+        <button id="reportJsonBtn" type="button" data-i18n="repJsonBtn">Download JSON</button>
+        <button id="reportCsvBtn" type="button" data-i18n="repCsvBtn">Download CSV</button>
       </div>
       <div class="inline-err" id="reportError" role="alert"></div>
-      <div id="reportBody"><div class="state">No report loaded yet.</div></div>
+      <div id="reportBody"><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
       <div class="panel">
-        <h2>Attack map</h2>
-        <p class="small muted">Top countries by blocked and challenged requests in the window, from the JSON log's country field. Shown only when a GeoIP database is configured — without one, no country data exists. The globe is schematic: dot positions are approximate country centroids, not precise locations.</p>
+        <h2 data-i18n="mapTitle">Attack map</h2>
+        <p class="small muted" data-i18n="mapNote">Top countries by blocked and challenged requests in the window, from the JSON log's country field. Shown only when a GeoIP database is configured — without one, no country data exists. The globe is schematic: dot positions are approximate country centroids, not precise locations.</p>
         <div class="toolbar">
-          <label for="mapWindow" class="muted">Window</label>
-          <select id="mapWindow"><option value="3600">Last hour</option><option value="21600">Last 6 hours</option><option value="86400">Last 24 hours</option></select>
-          <label for="mapTop" class="muted">Show top</label>
+          <label for="mapWindow" class="muted" data-i18n="mapWindowLabel">Window</label>
+          <select id="mapWindow"><option value="3600" data-i18n="mapWin1h">Last hour</option><option value="21600" data-i18n="mapWin6h">Last 6 hours</option><option value="86400" data-i18n="mapWin24h">Last 24 hours</option></select>
+          <label for="mapTop" class="muted" data-i18n="repTopLabel">Show top</label>
           <input id="mapTop" type="number" min="1" max="50" value="10" style="width:80px">
-          <button id="mapLoadBtn" type="button" class="primary">Load map</button>
+          <button id="mapLoadBtn" type="button" class="primary" data-i18n="mapLoadBtn">Load map</button>
           <span class="small muted" id="mapMeta"></span>
         </div>
-        <div id="mapBody"><div class="state">No map loaded yet.</div></div>
+        <div id="mapBody"><div class="state" data-i18n="mapNoMap">No map loaded yet.</div></div>
       </div>
     </section>
 
     <section id="view-about" class="view">
-      <h1>About &amp; limits</h1>
-      <p class="sub">SonuShield Dashboard — the control panel served by the proxy itself. No build step, no external resources: everything on this page is served from the single proxy binary and works offline.</p>
+      <h1 data-i18n="aboutTitle">About &amp; limits</h1>
+      <p class="sub" data-i18n="aboutSub">SonuShield Dashboard — the control panel served by the proxy itself. No build step, no external resources: everything on this page is served from the single proxy binary and works offline.</p>
       <div class="panel">
-        <h2>What this dashboard can do</h2>
+        <h2 data-i18n="aboutCanTitle">What this dashboard can do</h2>
         <ul>
-          <li>Show live request rates, totals, CPU/RAM, and the current stage.</li>
-          <li>List configured domains with backends, schemes, and live summaries.</li>
-          <li>Change the stage, lock it, or switch under-attack mode on and off (runtime-only; a reload resets it).</li>
-          <li>Add, edit, and delete firewall rules — saved to <code>config.json</code> immediately, with a backup kept.</li>
-          <li>Edit domain thresholds, proof-of-work, and WAF-lite settings — saved to <code>config.json</code> immediately.</li>
-          <li>Show recent passed requests, clear logs, load attack reports, and export them as JSON or CSV.</li>
-          <li>Reload the configuration from <code>config.json</code> after validating it; an invalid config is rejected and the running proxy is untouched.</li>
+          <li data-i18n="aboutCan1">Show live request rates, totals, CPU/RAM, and the current stage.</li>
+          <li data-i18n="aboutCan2">List configured domains with backends, schemes, and live summaries.</li>
+          <li data-i18n="aboutCan3">Change the stage, lock it, or switch under-attack mode on and off (runtime-only; a reload resets it).</li>
+          <li data-i18n="aboutCan4">Add, edit, and delete firewall rules — saved to <code>config.json</code> immediately, with a backup kept.</li>
+          <li data-i18n="aboutCan5">Edit domain thresholds, proof-of-work, and WAF-lite settings — saved to <code>config.json</code> immediately.</li>
+          <li data-i18n="aboutCan6">Show recent passed requests, clear logs, load attack reports, and export them as JSON or CSV.</li>
+          <li data-i18n="aboutCan7">Reload the configuration from <code>config.json</code> after validating it; an invalid config is rejected and the running proxy is untouched.</li>
+          <li data-i18n="aboutCan8">Create domains from templates and bulk-import domains from JSON or CSV.</li>
         </ul>
-        <h2>What still needs the config file</h2>
+        <h2 data-i18n="aboutNeedTitle">What still needs the config file</h2>
         <ul>
-          <li><strong>Secrets</strong> — API/admin secrets, challenge keys, the Telegram bot token, and the email password are never shown or accepted here. Edit <code>config.json</code> on the server. Admin/API secret changes need a restart.</li>
-          <li><strong>Adding or removing domains, backends, schemes, and certificate paths</strong> — edit <code>config.json</code>, then use Reload config here.</li>
-          <li><strong>Proxy-wide settings</strong> (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging) — edit <code>config.json</code>, then use Reload config here.</li>
+          <li data-i18n="aboutNeed1"><strong>Secrets</strong> — API/admin secrets, challenge keys, the Telegram bot token, and the email password are never shown or accepted here. Edit <code>config.json</code> on the server. Admin/API secret changes need a restart.</li>
+          <li data-i18n="aboutNeed2"><strong>Removing domains, and changing backends, schemes, and certificate paths</strong> — edit <code>config.json</code>, then use Reload config here. New domains can be created in the Domains view.</li>
+          <li data-i18n="aboutNeed3"><strong>Proxy-wide settings</strong> (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging) — edit <code>config.json</code>, then use Reload config here.</li>
         </ul>
-        <h2>Security notes</h2>
+        <h2 data-i18n="aboutSecTitle">Security notes</h2>
         <ul>
-          <li>This page is only served on the admin-secret path. Anyone without the exact path never receives it.</li>
-          <li>All data comes from the existing API v2 endpoints with the <code>Proxy-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.</li>
-          <li>Your theme choice (Dark/Light) is stored in this browser's local storage and never sent to the server.</li>
-          <li>Keep both secrets out of screenshots, chat logs, and shared URLs. Rotate them in <code>config.json</code> if they ever leak.</li>
+          <li data-i18n="aboutSec1">This page is only served on the admin-secret path. Anyone without the exact path never receives it.</li>
+          <li data-i18n="aboutSec2">All data comes from the existing API v2 endpoints with the <code>Proxy-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.</li>
+          <li data-i18n="aboutSec3">Your theme (Dark/Light) and language (English/Hindi) choices are stored in this browser's local storage and never sent to the server.</li>
+          <li data-i18n="aboutSec4">Keep both secrets out of screenshots, chat logs, and shared URLs. Rotate them in <code>config.json</code> if they ever leak.</li>
         </ul>
       </div>
-      <p class="footer">SonuShield — lightweight HTTP anti-DDoS reverse proxy. Originally balooProxy by 41Baloo, forked and rebuilt by Sonu Digital Mindset. Licensed under the GNU General Public License v3.0.</p>
+      <p class="footer" data-i18n="aboutFooter">SonuShield — lightweight HTTP anti-DDoS reverse proxy. Originally balooProxy by 41Baloo, forked and rebuilt by Sonu Digital Mindset. Licensed under the GNU General Public License v3.0.</p>
     </section>
   </main>
 </div>
@@ -693,6 +704,977 @@ document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
   applyTheme(current === "light" ? "light" : "dark");
 })();
 
+/* Dashboard language: English / Hindi. Every UI string lives in STR;
+   t() falls back to English when a Hindi key is missing, so the UI
+   never shows a blank label. Strings containing HTML (&amp;, <code>,
+   <strong>) are inserted with innerHTML only, never with setText.
+   API-returned data (domain names, IPs, server error details,
+   template descriptions) is data, not UI text, and stays as the
+   server sent it. Numbers stay in Western digits in both languages. */
+var LANG_KEY = "sonushield_lang";
+var lang = "en";
+var STR = {
+en: {
+appTitle: "SonuShield Dashboard",
+brandSub: "Dashboard",
+hostPill: "host: {0}",
+hostPillTitle: "Domain in the address bar",
+updating: "Updating",
+themeDark: "Dark",
+themeLight: "Light",
+themeAria: "Color theme",
+langAria: "Language",
+refreshBtn: "Refresh",
+reloadBtn: "Reload config",
+disconnectBtn: "Forget secret",
+navAria: "Dashboard sections",
+navMonitor: "Monitor",
+navOverview: "Overview",
+navDomains: "Domains",
+navRules: "Firewall rules",
+navIpLists: "IP lists",
+navStage: "Stage",
+navLogs: "Logs",
+navManage: "Manage",
+navSettings: "Settings",
+navReports: "Reports",
+navAboutH: "About",
+navAbout: "About &amp; limits",
+authTitle: "Connect to SonuShield",
+authSub: "Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>Proxy-Secret</code> header to this same host, and is never written to a URL or a log.",
+authLabel: "API secret",
+authConnect: "Connect",
+ssoSub: "Or continue with your organisation's sign-in.",
+ssoBtn: "Sign in with SSO",
+authNote: "Wrong secret? The API will not answer and this page will stay disconnected. The page itself is gated by the admin-secret path you used to open it.",
+ovTitle: "Overview",
+ovSubPre: "Live traffic for ",
+ovSubPost: ". Updates every 3 seconds while connected.",
+cardTotalRps: "Total requests",
+cardTotalRpsFoot: "per second, all requests",
+cardBypassRps: "Bypassed requests",
+cardBypassRpsFoot: "per second, passed to backend",
+cardTotal: "Total (all time)",
+cardTotalFoot: "since last reload",
+cardBypassed: "Bypassed (all time)",
+cardCpu: "CPU usage",
+cardCpuFoot: "server CPU, percent",
+cardRam: "RAM usage",
+cardRamFoot: "proxy memory, percent",
+cardStage: "Stage",
+fromStageApiShort: "from the stage API",
+cardLocked: "Stage locked",
+cardLockedFoot: "automatic switching when unlocked",
+topIpsTitle: "Top IPs by requests (current rate-limit window)",
+topFpsTitle: "Top unknown fingerprints (current rate-limit window)",
+topFpsNote: "Fingerprints the proxy could not match to a known browser. A small number of distinct fingerprints with very high counts usually means bots.",
+noDataYet: "No data yet. Connect to load live data.",
+domTitle: "Domains",
+domSub: "Configured domains from the API. Select a domain to inspect and manage it everywhere in this dashboard.",
+domConfiguredTitle: "Configured domains",
+inspectLabel: "Or inspect a name directly",
+inspectBtn: "Inspect domain",
+tenantsTitle: "Tenants",
+tenantsNote: "Usage per tenant, from live counters. “Blocked” is approximated as total requests minus requests that passed a challenge. Bandwidth is an estimate: proxied and cache-served traffic only (challenge pages, block pages, and WebSocket traffic are not counted). Tenant assignment is config-file-only.",
+tplTitle: "New domain from template",
+tplNote: "Templates are starting points with sane presets — WAF log-only, and caching or compression where it fits the site kind. Adjust settings afterwards; no template ships firewall rules. Creating a domain reloads the configuration, which resets per-domain counters and stage state, exactly as a manual reload does.",
+tplNameLabel: "Domain name",
+tplBackendLabel: "Backend (host:port)",
+tplSchemeLabel: "Backend scheme",
+tplTemplateLabel: "Template",
+tplCertLabel: "TLS certificate path (optional)",
+tplKeyLabel: "TLS key path (optional)",
+tplKeyHint: "Certificate and key must both be set, or both be empty. Leave both empty when using Cloudflare or autoSSL.",
+tplCreateBtn: "Create domain",
+importTitle: "Import domains",
+importNote: "Bulk-create domains from JSON or CSV. Every entry is validated first — an invalid import is rejected and nothing changes. Importing reloads the configuration, as creating a single domain does.",
+importFormatLabel: "Format",
+importDataLabel: "Domains",
+importHint: "JSON: an array of objects with <code>name</code>, <code>backend</code>, and optional <code>scheme</code>, <code>template</code>, <code>certificate</code>, <code>key</code>. CSV: a header row (<code>name,backend,scheme,template,certificate,key</code>) followed by one domain per row.",
+importBtn: "Import domains",
+rulesTitle: "Firewall rules",
+rulesSubPre: "Rules for ",
+rulesSubPost: ", in evaluation order (top rule first). Changes are saved to <code>config.json</code> on the server immediately, take effect without a reload, and keep a backup of the previous config as <code>config.json.bak</code>.",
+ruleFormAdd: "Add a rule",
+ruleFormEdit: "Edit rule #{0}",
+ruleExprLabel: "Expression",
+ruleExprHint: "Fields: <code>ip.*</code>, <code>http.*</code>, <code>proxy.*</code> — see the firewall-rules docs. Expressions that do not compile, or use an unknown field, are rejected and nothing changes.",
+ruleActionLabel: "Action",
+ruleActionHint: "<code>0</code> allow, <code>1</code>–<code>3</code> challenge, <code>4+</code> block, <code>+N</code>/<code>-N</code> adjust and continue.",
+ruleSubmitAdd: "Add rule",
+ruleSave: "Save rule",
+ruleCancel: "Cancel edit",
+simTitle: "Rule simulator",
+simNote: "Evaluate an expression against sample request fields, without enforcing anything. Leave the sample empty to test against zero values.",
+simSampleLabel: "Sample request fields (JSON object)",
+simHint: "Field names are the same as in rules. Unknown fields are rejected. Values use the request types: <code>ip.src</code> an IP string, counters and <code>proxy.stage</code> integers, <code>proxy.*</code> flags booleans, the rest strings.",
+simBtn: "Simulate",
+expTitle: "Export / import rules",
+expNote: "Export downloads the rule set as JSON. Import validates every rule first — an invalid import is rejected and nothing changes. Replace mode overwrites the whole rule set; append mode adds to it.",
+expBtn: "Export rules (JSON)",
+importJsonLabel: "Rules JSON",
+importModeLabel: "Mode",
+importModeReplace: "Replace all rules",
+importModeAppend: "Append to existing rules",
+importBtn2: "Import rules",
+actionsTitle: "What the actions mean",
+colMeaning: "Meaning",
+actionMean0: "Allow — request is whitelisted, never challenged.",
+actionMean1: "Cookie challenge — invisible, passed automatically by most good bots.",
+actionMean2: "JavaScript proof-of-work challenge — stops most bots, including good ones.",
+actionMean3: "Captcha — visitor must solve a visual captcha.",
+actionMean4: "Block — request is blocked outright.",
+actionMeanAdj: "Raise or lower the current suspicion level by N, then keep checking further rules.",
+ipTitle: "IP lists",
+ipSubPre: "Allow and block lists for ",
+ipSubPost: ". A blocklisted IP is blocked before rate limiting runs; an allowlisted IP starts unchallenged and bypasses the early rate-limit and fingerprint blocks. The block list wins when an IP matches both. Expired entries drop automatically. Changes are saved to <code>config.json</code> on the server immediately and take effect without a reload.",
+addEntryTitle: "Add an entry",
+ipListLabel: "List",
+ipListBlock: "Block list",
+ipListAllow: "Allow list",
+ipTargetLabel: "IP or CIDR",
+ipExpiresLabel: "Expires",
+ipExpNever: "Never",
+ipExp1h: "In 1 hour",
+ipExp24h: "In 24 hours",
+ipExp7d: "In 7 days",
+ipExp30d: "In 30 days",
+ipExpHint: "Expired entries are removed automatically.",
+ipNoteLabel: "Note (optional)",
+ipNotePh: "Why this entry exists",
+ipAddBtn: "Add entry",
+stageTitle: "Stage",
+stageSubPre: "The current challenge stage for ",
+stageSubPost: ".",
+stageCardCurrent: "Current stage",
+stageCardAttack: "Under attack",
+stageCardAttackFoot: "raw or bypassing attack in progress",
+stageChangeTitle: "Change the stage",
+stageBtnAuto: "Automatic (unlock)",
+stageBtn1: "Lock Stage 1",
+stageBtn2: "Lock Stage 2",
+stageBtn3: "Lock Stage 3",
+stageBtnAttack: "Under-attack mode",
+stageChangeNote: "Stage changes apply immediately and are <strong>runtime-only</strong>: a config reload or restart returns the domain to automatic switching. Under-attack mode locks Stage 3; Automatic turns it off.",
+stageWhatTitle: "What each stage does",
+stageThChallenge: "Challenge",
+stageThEffect: "Effect",
+stageRow1Badge: "Stage 1",
+stageRow1Challenge: "Cookie challenge",
+stageRow1Effect: "Invisible; stops simple attacks.",
+stageRow2Badge: "Stage 2",
+stageRow2Challenge: "Proof-of-work JS challenge",
+stageRow2Effect: "Stops more advanced bots.",
+stageRow3Badge: "Stage 3",
+stageRow3Challenge: "Custom captcha",
+stageRow3Effect: "Last resort; stops most malicious requests and good bots too.",
+stageRow4Badge: "Above 3",
+stageRow4Challenge: "Block",
+stageRow4Effect: "All requests blocked (only when manually locked above 3).",
+stageNote: "<strong>Stage changes are runtime-only.</strong> Locking a stage here has the same effect as the terminal <span class=\"kbd\">stage</span> command, and a reload or restart returns the domain to automatic switching. There is no need to use the terminal for stage control.",
+logsTitle: "Logs",
+logsSubPre: "Most recent requests that passed the challenges, for ",
+logsSubPost: ". Newest first. Logs only include requests that passed; blocked and challenged requests are not logged here.",
+clearLogsBtn: "Clear logs for this domain",
+clearAllLogsBtn: "Clear logs for all domains",
+lsTitle: "Search structured logs",
+lsNote: "Searches the JSON log files on the server (current + rotated, newest first) — including blocked and challenged requests, which the list above does not show. Requires <code>proxy.logFormat</code> set to <code>json</code> and <code>proxy.logFile</code> set in <code>config.json</code>. Filters match exactly.",
+lsIpLabel: "IP",
+lsEventLabel: "Event",
+lsFromLabel: "From",
+lsToLabel: "To",
+lsPerPageLabel: "Per page",
+lsSearchBtn: "Search",
+lsPrevBtn: "Previous page",
+lsNextBtn: "Next page",
+lsNoSearch: "No search run yet.",
+setTitle: "Settings",
+setSubPre: "Configuration for ",
+setSubPost: ". Saved changes are written to <code>config.json</code> on the server immediately and survive restarts. Secrets, backends, schemes, and certificate paths can only be changed in <code>config.json</code> on the server, followed by Reload config.",
+setThreshTitle: "Attack thresholds",
+setBypass1Label: "Bypass Stage 1 (r/s)",
+setBypass1Hint: "Bypassed requests/s that trigger Stage 2.",
+setBypass2Label: "Bypass Stage 2 (r/s)",
+setBypass2Hint: "Bypassed requests/s that trigger Stage 3.",
+setDisBypass3Label: "Disable bypass Stage 3",
+setDisBypass3Hint: "Bypassed requests/s below which Stage 3 steps down.",
+setDisRaw3Label: "Disable raw Stage 3",
+setDisRaw3Hint: "Total requests/s below which Stage 3 steps down.",
+setDisBypass2Label: "Disable bypass Stage 2",
+setDisBypass2Hint: "Bypassed requests/s below which Stage 2 steps down.",
+setDisRaw2Label: "Disable raw Stage 2",
+setDisRaw2Hint: "Total requests/s below which an attack is considered over.",
+setDiffLabel: "Stage 2 difficulty (0 = default)",
+setDiffHint: "Proof-of-work difficulty. 0 uses the default of 5.",
+setPowTitle: "Proof-of-work &amp; challenges",
+setAdaptiveLabel: "Adaptive proof-of-work",
+setAdaptiveEnabled: "Enabled",
+setAdaptiveDisabled: "Disabled",
+setAdaptiveHint: "Difficulty scales with bypassed traffic between the bounds below.",
+setPowMinLabel: "PoW difficulty min (0 = default)",
+setPowMaxLabel: "PoW difficulty max (0 = default)",
+setProviderPre: "Challenge provider: ",
+setProviderMid: " · keys configured: ",
+setProviderPost: ". Provider and keys are config-file-only and are never shown here.",
+setWafTitle: "WAF-lite",
+setWafModeLabel: "WAF mode",
+setWafOff: "Off",
+setWafLog: "Log only",
+setWafBlock: "Block",
+setWafHint: "Block mode answers matches with a generic 403.",
+setWafBodyLabel: "Inspect request bodies",
+setWpLabel: "WordPress login limit (per min/IP)",
+setWpHint: "0 uses the default of 20/minute.",
+setDryRunLabel: "Rules dry-run mode",
+setDryRunOff: "Off — rules enforced",
+setDryRunOn: "On — log matches, take no action",
+setDryRunHint: "In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.",
+setSaveBtn: "Save settings",
+setReloadBtn: "Reload current values",
+setProxyTitle: "Proxy features",
+setRefreshFeedBtn: "Refresh reputation feed",
+setBackupsTitle: "Configuration backups",
+setBackupsNote: "Every saved change keeps the previous <code>config.json</code> as a backup, newest first. Restoring validates the backup first, backs up the current file, and reloads the proxy.",
+setBackupsReloadBtn: "Reload list",
+repTitle: "Attack report",
+repSubPre: "Attack summary for ",
+repSubPost: ", built from live counters. IP and fingerprint tallies are proxy-wide and labelled as such in the report.",
+repTopLabel: "Show top",
+repLoadBtn: "Load report",
+repJsonBtn: "Download JSON",
+repCsvBtn: "Download CSV",
+mapTitle: "Attack map",
+mapNote: "Top countries by blocked and challenged requests in the window, from the JSON log's country field. Shown only when a GeoIP database is configured — without one, no country data exists. The globe is schematic: dot positions are approximate country centroids, not precise locations.",
+mapWindowLabel: "Window",
+mapWin1h: "Last hour",
+mapWin6h: "Last 6 hours",
+mapWin24h: "Last 24 hours",
+mapLoadBtn: "Load map",
+repNoReport: "No report loaded yet.",
+mapNoMap: "No map loaded yet.",
+aboutTitle: "About &amp; limits",
+aboutSub: "SonuShield Dashboard — the control panel served by the proxy itself. No build step, no external resources: everything on this page is served from the single proxy binary and works offline.",
+aboutCanTitle: "What this dashboard can do",
+aboutCan1: "Show live request rates, totals, CPU/RAM, and the current stage.",
+aboutCan2: "List configured domains with backends, schemes, and live summaries.",
+aboutCan3: "Change the stage, lock it, or switch under-attack mode on and off (runtime-only; a reload resets it).",
+aboutCan4: "Add, edit, and delete firewall rules — saved to <code>config.json</code> immediately, with a backup kept.",
+aboutCan5: "Edit domain thresholds, proof-of-work, and WAF-lite settings — saved to <code>config.json</code> immediately.",
+aboutCan6: "Show recent passed requests, clear logs, load attack reports, and export them as JSON or CSV.",
+aboutCan7: "Reload the configuration from <code>config.json</code> after validating it; an invalid config is rejected and the running proxy is untouched.",
+aboutCan8: "Create domains from templates and bulk-import domains from JSON or CSV.",
+aboutNeedTitle: "What still needs the config file",
+aboutNeed1: "<strong>Secrets</strong> — API/admin secrets, challenge keys, the Telegram bot token, and the email password are never shown or accepted here. Edit <code>config.json</code> on the server. Admin/API secret changes need a restart.",
+aboutNeed2: "<strong>Removing domains, and changing backends, schemes, and certificate paths</strong> — edit <code>config.json</code>, then use Reload config here. New domains can be created in the Domains view.",
+aboutNeed3: "<strong>Proxy-wide settings</strong> (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging) — edit <code>config.json</code>, then use Reload config here.",
+aboutSecTitle: "Security notes",
+aboutSec1: "This page is only served on the admin-secret path. Anyone without the exact path never receives it.",
+aboutSec2: "All data comes from the existing API v2 endpoints with the <code>Proxy-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.",
+aboutSec3: "Your theme (Dark/Light) and language (English/Hindi) choices are stored in this browser's local storage and never sent to the server.",
+aboutSec4: "Keep both secrets out of screenshots, chat logs, and shared URLs. Rotate them in <code>config.json</code> if they ever leak.",
+aboutFooter: "SonuShield — lightweight HTTP anti-DDoS reverse proxy. Originally balooProxy by 41Baloo, forked and rebuilt by Sonu Digital Mindset. Licensed under the GNU General Public License v3.0.",
+errApiNotJson: "API did not return JSON (secret rejected or request fell through to the backend).",
+errUnknownApi: "unknown API error",
+errApiPrefix: "API error: ",
+stageBadge1: "Stage 1 · Cookie",
+stageBadge2: "Stage 2 · JS PoW",
+stageBadge3: "Stage 3 · Captcha",
+stageBadgeN: "Stage {0}",
+noDataWindow: "No data in this window yet.",
+actAllow: "Allow",
+actCookie: "Cookie challenge",
+actJs: "JS challenge",
+actCaptcha: "Captcha",
+actAdjust: "Adjust suspicion by {0}",
+actBlock: "Block",
+actUnknown: "Unknown action",
+fromStageApi: "from the stage API · {0}",
+yes: "Yes",
+no: "No",
+colIp: "IP address",
+colRequests: "Requests",
+colTlsFp: "TLS fingerprint",
+noDomains: "No domains configured.",
+colDomain: "Domain",
+colTenant: "Tenant",
+colBackend: "Backend",
+colLocked: "Locked",
+colTotalRps: "Total r/s",
+colBypassedRps: "Bypassed r/s",
+colRules: "Rules",
+errLoadDomains: "Could not load the domain list.",
+errSecretRejected: "The API secret may have been rejected.",
+noTenants: "No tenants with domains.",
+colBlockedApprox: "Blocked (approx.)",
+colBwIn: "Bandwidth in",
+colBwOut: "Bandwidth out",
+colBwTotal: "Bandwidth total",
+errLoadTenants: "Could not load tenant usage.",
+errLoadTemplates: "Could not load domain templates: {0}",
+tplBodyInspection: "body inspection",
+tplEdgeCache: "edge cache {0}s",
+tplImageOpt: "image optimization",
+tplHoneypots: "honeypots: {0}",
+tplPresets: " Presets: {0}.",
+tplCreated: "Created {0} from the {1} template and reloaded the configuration.",
+errCreateDomain: "Could not create domain: {0}",
+domImported: "Imported {0} domain(s) and reloaded the configuration: {1}.",
+errImportDomains: "Could not import domains: {0}",
+noData: "No data.",
+errDomainMissing: "The domain may not exist in the proxy config, or the API secret was rejected.",
+domRowTotalRps: "Total requests / second",
+domRowBypassRps: "Bypassed requests / second",
+domRowTotal: "Total requests (all time)",
+domRowBypassed: "Bypassed requests (all time)",
+domRowScheme: "Scheme",
+domRowCert: "Certificate",
+certAuto: "— (auto SSL or Cloudflare mode)",
+domRowProvider: "Challenge provider",
+providerNone: "none (proof-of-work)",
+domRowAlerts: "Alerts",
+purgeCacheBtn: "Purge edge cache",
+confirmPurgeCache: "Purge the whole edge cache for {0}? Cached responses will be fetched from the backend again.",
+purgedEntries: "Purged {0} entries.",
+cacheDisabled: "Edge cache is disabled for this domain.",
+errPurge: "Purge failed: {0}",
+noRules: "No firewall rules configured for this domain.",
+colNum: "#",
+colActions: "Actions",
+editBtn: "Edit",
+deleteBtn: "Delete",
+errLoadRules: "Could not load rules.",
+errDomainOrSecret: "The domain may not exist, or the API secret was rejected.",
+errLoadRule: "Could not load the rule: {0}",
+confirmDeleteRule: "Delete rule #{0}? This is saved to config.json immediately.",
+ruleDeleted: "Rule deleted and saved to config.json.",
+errDeleteRule: "Could not delete the rule: {0}",
+ruleSaved: "Rule saved to config.json.",
+ruleAdded: "Rule added and saved to config.json.",
+errSaveRule: "Could not save the rule: {0}",
+noIpEntries: "No entries.",
+colTarget: "Target",
+colNote: "Note",
+removeBtn: "Remove",
+errLoadIpLists: "Could not load IP lists.",
+confirmRemoveIp: "Remove {0} from the {1}? This is saved to config.json immediately.",
+ipEntryRemoved: "Entry removed and saved to config.json.",
+errRemoveIp: "Could not remove the entry: {0}",
+ipEntryAdded: "Entry added and saved to config.json.",
+errAddIp: "Could not add the entry: {0}",
+simulating: "Simulating…",
+simMatch: "Match.",
+simMatchDetail: "The expression matches this sample.",
+simNoMatch: "No match.",
+simNoMatchDetail: "The expression does not match this sample.",
+simFieldsUsed: "Fields used: ",
+noneWord: "none",
+simFailed: "Could not simulate:",
+rulesExported: "Exported {0} rule(s).",
+errExportRules: "Could not export rules: {0}",
+confirmReplaceRules: "Replace ALL firewall rules for {0} with the imported set? The current config is backed up first.",
+rulesImported: "Imported {0} rule(s) and saved to config.json.",
+errImportRules: "Could not import rules: {0}",
+noLogs: "No passed requests logged yet.",
+colTime: "Time",
+colBrowserBot: "Browser / bot",
+colUserAgent: "User agent",
+colPath: "Path",
+unknownWord: "unknown",
+errLoadLogs: "Could not load logs.",
+searching: "Searching…",
+lsMeta: "{0} matches · page {1} of {2} · {3} lines scanned",
+lsTruncated: " · scan truncated",
+noLogEntries: "No matching log entries.",
+colRule: "Rule",
+colRisk: "Risk",
+errJsonLogs: "Structured logging is not configured. Set <code>proxy.logFormat</code> to <code>json</code> and <code>proxy.logFile</code> to a writable path in <code>config.json</code>, then reload the config.",
+searchFailed: "Search failed.",
+mapAriaLabel: "Schematic world map of attack sources",
+loadingMap: "Loading map…",
+errNoGeoip: "No GeoIP database is configured, so no country data exists. Set <code>proxy.geoipCountryDatabase</code> to a MaxMind database path in <code>config.json</code> to enable the attack map.",
+mapMeta: "{0} lines scanned",
+noMapData: "No blocked or challenged requests with country data in this window.",
+mapBarVal: "{0} blocked · {1} challenged",
+errLoadMap: "Could not load the attack map.",
+errLoadSettings: "Could not load settings: {0}",
+settingsSaved: "Settings saved to config.json.",
+errSaveSettings: "Could not save settings: {0}",
+pfQuiet: "Quiet mode",
+pfAutoSsl: "Auto SSL",
+pfGeoCountry: "GeoIP country database",
+pfGeoAsn: "GeoIP ASN database",
+pfRepFeed: "Reputation feed",
+pfRepSize: "Reputation list size",
+onWord: "on",
+offWord: "off",
+enabledWord: "enabled",
+disabledWord: "disabled",
+activeSuffix: " (active)",
+loadedWord: "loaded",
+notLoadedWord: "not loaded",
+configuredWord: "configured",
+notConfiguredWord: "not configured",
+repListSize: "{0} IPs, {1} networks (local) · {2} IPs, {3} networks (feed)",
+errLoadProxyFeatures: "Could not load proxy features.",
+noBackups: "No configuration backups yet. Backups appear after the first saved change.",
+colBackup: "Backup",
+colSize: "Size",
+colModified: "Modified (UTC)",
+sizeBytes: "{0} bytes",
+restoreBtn: "Restore",
+errLoadBackups: "Could not load backups.",
+confirmRestoreBackup: "Restore {0}? The backup is validated first, the current config is backed up, and the proxy reloads. Reloading resets per-domain counters and stage state.",
+backupRestored: "Backup restored and proxy reloaded.",
+errRestoreBackup: "Could not restore the backup: {0}",
+noneRecorded: "None recorded.",
+colCount: "Count",
+repCardBypassed: "Bypassed",
+repCardBypassedFoot: "passed to backend",
+repCardPeak: "Peak r/s",
+repCardPeakFoot: "peak bypassed: {0}/s",
+repLocked: "locked",
+repAutomatic: "automatic",
+repUnderAttack: " · under attack",
+repBlocks: "Blocks by reason",
+repChallenges: "Challenges by stage",
+repWaf: "WAF matches by rule",
+repReqOk: "Requests OK",
+repReqFailed: "Requests failed",
+repLatency: "Average latency",
+repLatencySec: "{0} s",
+repTopVerified: "Top verified IPs (proxy-wide)",
+repTopUnverified: "Top unverified IPs (proxy-wide)",
+repTopFps: "Top unknown fingerprints (proxy-wide)",
+repCountries: "Countries (proxy-wide, top IPs only)",
+colCountry: "Country",
+colAsn: "ASN",
+noneInWindow: "None in this window.",
+repGenerated: "Generated at {0} · window: {1}s.",
+repReason: "Reason",
+repFingerprint: "Fingerprint",
+loadingReport: "Loading report…",
+errLoadReport: "Could not load the report: {0}",
+errExportReport: "Could not export the report: {0}",
+stageAppliedSuffix: " — applied immediately (runtime-only; a reload resets it).",
+errChangeStage: "Could not change the stage: {0}",
+stageLabelAuto: "Automatic switching restored",
+stageLabelLock: "Stage {0} locked",
+stageLabelAttack: "Under-attack mode on (Stage 3 locked)",
+allDomains: "all domains",
+confirmClearLogs: "Clear logs for {0}? This cannot be undone.",
+logsCleared: "Logs cleared.",
+errClearLogs: "Could not clear logs: {0}",
+confirmReload: "Reload the configuration from config.json?\n\nThe file is validated first: if it is invalid, nothing changes and the running proxy is untouched. A successful reload resets request counters and stage locks, like the terminal reload.",
+errReload: "Reload failed, running config untouched: {0}",
+errReachApi: "Could not reach the API: {0}",
+connectedSso: "Connected via SSO",
+connected: "Connected",
+notConnected: "Not connected",
+errConnect: "Connection failed: {0} Check the API secret and try again.",
+errRefreshFeed: "Could not refresh the reputation feed: {0}"
+},
+hi: {
+appTitle: "SonuShield Dashboard",
+brandSub: "डैशबोर्ड",
+hostPill: "host: {0}",
+hostPillTitle: "Address bar में domain",
+updating: "Update हो रहा है",
+themeDark: "Dark",
+themeLight: "Light",
+themeAria: "Color theme",
+langAria: "भाषा",
+refreshBtn: "Refresh",
+reloadBtn: "Reload config",
+disconnectBtn: "Secret भूल जाएँ",
+navAria: "Dashboard sections",
+navMonitor: "Monitor",
+navOverview: "Overview",
+navDomains: "Domains",
+navRules: "Firewall rules",
+navIpLists: "IP lists",
+navStage: "Stage",
+navLogs: "Logs",
+navManage: "Manage",
+navSettings: "Settings",
+navReports: "Reports",
+navAboutH: "About",
+navAbout: "About व limits",
+authTitle: "SonuShield से connect करें",
+authSub: "अपने <code>config.json</code> से <code>apisecret</code> डालें। यह सिर्फ इसी browser tab में रहता है (session storage), सिर्फ इसी host को <code>Proxy-Secret</code> header के रूप में भेजा जाता है, और कभी किसी URL या log में नहीं लिखा जाता।",
+authLabel: "API secret",
+authConnect: "Connect",
+ssoSub: "या अपनी organisation के sign-in से आगे बढ़ें।",
+ssoBtn: "SSO से sign in करें",
+authNote: "गलत secret? API जवाब नहीं देगा और यह page disconnected रहेगा। यह page खुद उस admin-secret path से सुरक्षित है जिससे आपने इसे खोला था।",
+ovTitle: "Overview",
+ovSubPre: "",
+ovSubPost: " के लिए live traffic। Connect रहने पर हर 3 second में update होता है।",
+cardTotalRps: "Total requests",
+cardTotalRpsFoot: "प्रति second, सभी requests",
+cardBypassRps: "Bypassed requests",
+cardBypassRpsFoot: "प्रति second, backend तक पहुँचे",
+cardTotal: "Total (सभी समय)",
+cardTotalFoot: "पिछले reload से",
+cardBypassed: "Bypassed (सभी समय)",
+cardCpu: "CPU usage",
+cardCpuFoot: "server CPU, percent में",
+cardRam: "RAM usage",
+cardRamFoot: "proxy memory, percent में",
+cardStage: "Stage",
+fromStageApiShort: "stage API से",
+cardLocked: "Stage locked",
+cardLockedFoot: "unlock रहने पर automatic switching",
+topIpsTitle: "Requests के हिसाब से top IPs (current rate-limit window)",
+topFpsTitle: "Top unknown fingerprints (current rate-limit window)",
+topFpsNote: "वे fingerprints जिन्हें proxy किसी known browser से match नहीं कर पाया। कुछ ही अलग fingerprints पर बहुत ज़्यादा counts आमतौर पर bots का मतलब होता है।",
+noDataYet: "अभी कोई data नहीं। Live data load करने के लिए connect करें।",
+domTitle: "Domains",
+domSub: "API से configured domains। किसी domain को select करें — फिर पूरे dashboard में वही domain inspect और manage होगा।",
+domConfiguredTitle: "Configured domains",
+inspectLabel: "या सीधे कोई नाम inspect करें",
+inspectBtn: "Domain inspect करें",
+tenantsTitle: "Tenants",
+tenantsNote: "Live counters से प्रति tenant usage। “Blocked” अनुमान है: total requests में से challenge पास करने वाले requests घटाकर। Bandwidth भी अनुमान है: सिर्फ proxied और cache से serve हुआ traffic (challenge pages, block pages और WebSocket traffic गिने नहीं जाते)। Tenant assignment सिर्फ config file से होता है।",
+tplTitle: "Template से नया domain",
+tplNote: "Templates समझदारी भरे presets के साथ शुरुआती point हैं — WAF log-only, और site के प्रकार के हिसाब से caching या compression। बाद में settings adjust करें; कोई भी template firewall rules नहीं देता। Domain बनाने पर configuration reload होता है, जिससे per-domain counters और stage state reset हो जाते हैं — बिल्कुल manual reload की तरह।",
+tplNameLabel: "Domain name",
+tplBackendLabel: "Backend (host:port)",
+tplSchemeLabel: "Backend scheme",
+tplTemplateLabel: "Template",
+tplCertLabel: "TLS certificate path (optional)",
+tplKeyLabel: "TLS key path (optional)",
+tplKeyHint: "Certificate और key दोनों set हों, या दोनों खाली हों। Cloudflare या autoSSL इस्तेमाल कर रहे हों तो दोनों खाली छोड़ें।",
+tplCreateBtn: "Domain बनाएँ",
+importTitle: "Domains import करें",
+importNote: "JSON या CSV से एक साथ कई domains बनाएँ। हर entry पहले validate होती है — गलत import reject हो जाता है और कुछ नहीं बदलता। Import करने पर configuration reload होता है, जैसे एक domain बनाने पर होता है।",
+importFormatLabel: "Format",
+importDataLabel: "Domains",
+importHint: "JSON: objects की array, जिसमें <code>name</code>, <code>backend</code>, और optional <code>scheme</code>, <code>template</code>, <code>certificate</code>, <code>key</code> हों। CSV: header row (<code>name,backend,scheme,template,certificate,key</code>) और फिर हर row में एक domain।",
+importBtn: "Domains import करें",
+rulesTitle: "Firewall rules",
+rulesSubPre: "",
+rulesSubPost: " के rules, evaluation order में (पहला rule सबसे ऊपर)। Changes तुरंत server पर <code>config.json</code> में save हो जाते हैं, reload के बिना effect लेते हैं, और पिछले config का backup <code>config.json.bak</code> के रूप में रखा जाता है।",
+ruleFormAdd: "Rule जोड़ें",
+ruleFormEdit: "Rule #{0} edit करें",
+ruleExprLabel: "Expression",
+ruleExprHint: "Fields: <code>ip.*</code>, <code>http.*</code>, <code>proxy.*</code> — firewall-rules docs देखें। जो expressions compile नहीं होते, या unknown field इस्तेमाल करते हैं, वे reject हो जाते हैं और कुछ नहीं बदलता।",
+ruleActionLabel: "Action",
+ruleActionHint: "<code>0</code> allow, <code>1</code>–<code>3</code> challenge, <code>4+</code> block, <code>+N</code>/<code>-N</code> adjust करें और आगे बढ़ें।",
+ruleSubmitAdd: "Rule जोड़ें",
+ruleSave: "Rule save करें",
+ruleCancel: "Edit रद्द करें",
+simTitle: "Rule simulator",
+simNote: "किसी expression को sample request fields पर जाँचें, बिना कुछ enforce किए। Zero values पर test करने के लिए sample खाली छोड़ें।",
+simSampleLabel: "Sample request fields (JSON object)",
+simHint: "Field names rules जैसे ही हैं। Unknown fields reject हो जाते हैं। Values request types के हिसाब से हों: <code>ip.src</code> IP string, counters और <code>proxy.stage</code> integers, <code>proxy.*</code> flags booleans, बाकी strings।",
+simBtn: "Simulate करें",
+expTitle: "Rules export / import करें",
+expNote: "Export से rule set JSON में download होता है। Import पहले हर rule validate करता है — गलत import reject हो जाता है और कुछ नहीं बदलता। Replace mode पूरा rule set बदल देता है; append mode उसमें जोड़ता है।",
+expBtn: "Rules export करें (JSON)",
+importJsonLabel: "Rules JSON",
+importModeLabel: "Mode",
+importModeReplace: "सभी rules बदल दें",
+importModeAppend: "मौजूदा rules में जोड़ें",
+importBtn2: "Rules import करें",
+actionsTitle: "Actions का मतलब क्या है",
+colMeaning: "मतलब",
+actionMean0: "Allow — request whitelisted है, कभी challenge नहीं होगा।",
+actionMean1: "Cookie challenge — invisible, ज़्यादातर अच्छे bots इसे automatically पास कर लेते हैं।",
+actionMean2: "JavaScript proof-of-work challenge — ज़्यादातर bots को रोकता है, अच्छे bots समेत।",
+actionMean3: "Captcha — visitor को visual captcha solve करना होगा।",
+actionMean4: "Block — request सीधे block हो जाता है।",
+actionMeanAdj: "Current suspicion level को N से बढ़ाएँ या घटाएँ, फिर आगे के rules जाँचते रहें।",
+ipTitle: "IP lists",
+ipSubPre: "",
+ipSubPost: " की allow और block lists। Blocklist में IP rate limiting से पहले ही block हो जाता है; allowlist में IP बिना challenge के शुरू होता है और शुरुआती rate-limit व fingerprint blocks को bypass करता है। IP दोनों में हो तो block list जीतती है। Expired entries अपने आप हट जाती हैं। Changes तुरंत server पर <code>config.json</code> में save हो जाते हैं और reload के बिना effect लेते हैं।",
+addEntryTitle: "Entry जोड़ें",
+ipListLabel: "List",
+ipListBlock: "Block list",
+ipListAllow: "Allow list",
+ipTargetLabel: "IP या CIDR",
+ipExpiresLabel: "Expires",
+ipExpNever: "कभी नहीं",
+ipExp1h: "1 घंटे में",
+ipExp24h: "24 घंटे में",
+ipExp7d: "7 दिन में",
+ipExp30d: "30 दिन में",
+ipExpHint: "Expired entries अपने आप हटा दी जाती हैं।",
+ipNoteLabel: "Note (optional)",
+ipNotePh: "यह entry क्यों है",
+ipAddBtn: "Entry जोड़ें",
+stageTitle: "Stage",
+stageSubPre: "",
+stageSubPost: " का current challenge stage।",
+stageCardCurrent: "Current stage",
+stageCardAttack: "Under attack",
+stageCardAttackFoot: "raw या bypassing attack चल रहा है",
+stageChangeTitle: "Stage बदलें",
+stageBtnAuto: "Automatic (unlock)",
+stageBtn1: "Stage 1 lock करें",
+stageBtn2: "Stage 2 lock करें",
+stageBtn3: "Stage 3 lock करें",
+stageBtnAttack: "Under-attack mode",
+stageChangeNote: "Stage changes तुरंत apply होते हैं और <strong>सिर्फ runtime</strong> तक रहते हैं: config reload या restart होने पर domain वापस automatic switching पर आ जाता है। Under-attack mode Stage 3 lock करता है; Automatic उसे बंद करता है।",
+stageWhatTitle: "हर stage क्या करता है",
+stageThChallenge: "Challenge",
+stageThEffect: "प्रभाव",
+stageRow1Badge: "Stage 1",
+stageRow1Challenge: "Cookie challenge",
+stageRow1Effect: "Invisible; आसान attacks को रोकता है।",
+stageRow2Badge: "Stage 2",
+stageRow2Challenge: "Proof-of-work JS challenge",
+stageRow2Effect: "ज़्यादा advanced bots को रोकता है।",
+stageRow3Badge: "Stage 3",
+stageRow3Challenge: "Custom captcha",
+stageRow3Effect: "आखिरी उपाय; ज़्यादातर malicious requests और अच्छे bots को भी रोकता है।",
+stageRow4Badge: "3 से ऊपर",
+stageRow4Challenge: "Block",
+stageRow4Effect: "सभी requests blocked (सिर्फ तब जब 3 से ऊपर manually lock किया गया हो)।",
+stageNote: "<strong>Stage changes सिर्फ runtime तक रहते हैं।</strong> यहाँ stage lock करने का वही effect है जो terminal के <span class=\"kbd\">stage</span> command का है, और reload या restart होने पर domain वापस automatic switching पर आ जाता है। Stage control के लिए terminal इस्तेमाल करने की ज़रूरत नहीं है।",
+logsTitle: "Logs",
+logsSubPre: "",
+logsSubPost: " के लिए challenges पास करने वाले सबसे recent requests। सबसे नए पहले। Logs में सिर्फ पास हुए requests आते हैं; blocked और challenged requests यहाँ log नहीं होते।",
+clearLogsBtn: "इस domain के logs साफ़ करें",
+clearAllLogsBtn: "सभी domains के logs साफ़ करें",
+lsTitle: "Structured logs खोजें",
+lsNote: "Server पर JSON log files खोजता है (current + rotated, सबसे नई पहले) — blocked और challenged requests समेत, जो ऊपर वाली list में नहीं दिखते। <code>proxy.logFormat</code> को <code>json</code> और <code>proxy.logFile</code> को <code>config.json</code> में set करना ज़रूरी है। Filters बिल्कुल match करते हैं।",
+lsIpLabel: "IP",
+lsEventLabel: "Event",
+lsFromLabel: "कब से",
+lsToLabel: "कब तक",
+lsPerPageLabel: "प्रति page",
+lsSearchBtn: "Search",
+lsPrevBtn: "पिछला page",
+lsNextBtn: "अगला page",
+lsNoSearch: "अभी कोई search नहीं हुई।",
+setTitle: "Settings",
+setSubPre: "",
+setSubPost: " का configuration। Save किए गए changes तुरंत server पर <code>config.json</code> में लिखे जाते हैं और restart के बाद भी रहते हैं। Secrets, backends, schemes और certificate paths सिर्फ server पर <code>config.json</code> में बदले जा सकते हैं, फिर Reload config करें।",
+setThreshTitle: "Attack thresholds",
+setBypass1Label: "Bypass Stage 1 (r/s)",
+setBypass1Hint: "इतने bypassed requests/s पर Stage 2 शुरू होता है।",
+setBypass2Label: "Bypass Stage 2 (r/s)",
+setBypass2Hint: "इतने bypassed requests/s पर Stage 3 शुरू होता है।",
+setDisBypass3Label: "Disable bypass Stage 3",
+setDisBypass3Hint: "इससे कम bypassed requests/s पर Stage 3 नीचे आता है।",
+setDisRaw3Label: "Disable raw Stage 3",
+setDisRaw3Hint: "इससे कम total requests/s पर Stage 3 नीचे आता है।",
+setDisBypass2Label: "Disable bypass Stage 2",
+setDisBypass2Hint: "इससे कम bypassed requests/s पर Stage 2 नीचे आता है।",
+setDisRaw2Label: "Disable raw Stage 2",
+setDisRaw2Hint: "इससे कम total requests/s पर attack खत्म माना जाता है।",
+setDiffLabel: "Stage 2 difficulty (0 = default)",
+setDiffHint: "Proof-of-work difficulty। 0 पर default 5 इस्तेमाल होता है।",
+setPowTitle: "Proof-of-work व challenges",
+setAdaptiveLabel: "Adaptive proof-of-work",
+setAdaptiveEnabled: "Enabled",
+setAdaptiveDisabled: "Disabled",
+setAdaptiveHint: "Difficulty नीचे दी गई limits के बीच bypassed traffic के हिसाब से बदलती है।",
+setPowMinLabel: "PoW difficulty min (0 = default)",
+setPowMaxLabel: "PoW difficulty max (0 = default)",
+setProviderPre: "Challenge provider: ",
+setProviderMid: " · keys configured: ",
+setProviderPost: "। Provider और keys सिर्फ config file में होते हैं और यहाँ कभी नहीं दिखाए जाते।",
+setWafTitle: "WAF-lite",
+setWafModeLabel: "WAF mode",
+setWafOff: "Off",
+setWafLog: "Log only",
+setWafBlock: "Block",
+setWafHint: "Block mode में matches पर generic 403 जवाब मिलता है।",
+setWafBodyLabel: "Request bodies inspect करें",
+setWpLabel: "WordPress login limit (प्रति min/IP)",
+setWpHint: "0 पर default 20/minute इस्तेमाल होता है।",
+setDryRunLabel: "Rules dry-run mode",
+setDryRunOff: "Off — rules enforce होंगे",
+setDryRunOn: "On — matches log होंगे, कोई action नहीं",
+setDryRunHint: "Dry-run mode में rule matches <code>dryrun</code> entries के रूप में log होते हैं, उस level के साथ जो rules set करते — लेकिन rules से कोई request challenge या block नहीं होता।",
+setSaveBtn: "Settings save करें",
+setReloadBtn: "Current values reload करें",
+setProxyTitle: "Proxy features",
+setRefreshFeedBtn: "Reputation feed refresh करें",
+setBackupsTitle: "Configuration backups",
+setBackupsNote: "हर save किया गया change पिछले <code>config.json</code> को backup के रूप में रखता है, सबसे नया पहले। Restore करने पर पहले backup validate होता है, current file का backup बनता है, और proxy reload होता है।",
+setBackupsReloadBtn: "List reload करें",
+repTitle: "Attack report",
+repSubPre: "",
+repSubPost: " की attack summary, live counters से बनी हुई। IP और fingerprint की गिनती पूरे proxy की है और report में वैसी ही labelled है।",
+repTopLabel: "Top दिखाएँ",
+repLoadBtn: "Report load करें",
+repJsonBtn: "JSON download करें",
+repCsvBtn: "CSV download करें",
+mapTitle: "Attack map",
+mapNote: "Window में blocked और challenged requests के हिसाब से top countries, JSON log के country field से। सिर्फ तब दिखता है जब GeoIP database configured हो — उसके बिना कोई country data नहीं होता। Globe schematic है: dots की positions अनुमानित country centroids हैं, सटीक locations नहीं।",
+mapWindowLabel: "Window",
+mapWin1h: "पिछला 1 घंटा",
+mapWin6h: "पिछले 6 घंटे",
+mapWin24h: "पिछले 24 घंटे",
+mapLoadBtn: "Map load करें",
+repNoReport: "अभी कोई report load नहीं हुई।",
+mapNoMap: "अभी कोई map load नहीं हुआ।",
+aboutTitle: "About व limits",
+aboutSub: "SonuShield Dashboard — proxy द्वारा serve किया गया control panel। कोई build step नहीं, कोई external resources नहीं: इस page की हर चीज़ single proxy binary से serve होती है और offline काम करती है।",
+aboutCanTitle: "यह dashboard क्या कर सकता है",
+aboutCan1: "Live request rates, totals, CPU/RAM और current stage दिखाना।",
+aboutCan2: "Configured domains को backends, schemes और live summaries के साथ list करना।",
+aboutCan3: "Stage बदलना, lock करना, या under-attack mode on/off करना (सिर्फ runtime; reload से reset हो जाता है)।",
+aboutCan4: "Firewall rules जोड़ना, edit करना और delete करना — तुरंत <code>config.json</code> में save, backup के साथ।",
+aboutCan5: "Domain thresholds, proof-of-work और WAF-lite settings edit करना — तुरंत <code>config.json</code> में save।",
+aboutCan6: "Recent passed requests दिखाना, logs साफ़ करना, attack reports load करना और उन्हें JSON या CSV में export करना।",
+aboutCan7: "<code>config.json</code> से configuration validate करके reload करना; गलत config reject हो जाता है और चलता हुआ proxy अछूता रहता है।",
+aboutCan8: "Templates से domains बनाना और JSON या CSV से एक साथ कई domains import करना।",
+aboutNeedTitle: "किसके लिए अभी भी config file चाहिए",
+aboutNeed1: "<strong>Secrets</strong> — API/admin secrets, challenge keys, Telegram bot token और email password यहाँ कभी दिखाए या लिए नहीं जाते। Server पर <code>config.json</code> edit करें। Admin/API secret बदलने पर restart ज़रूरी है।",
+aboutNeed2: "<strong>Domains हटाना, और backends, schemes व certificate paths बदलना</strong> — <code>config.json</code> edit करें, फिर यहाँ Reload config इस्तेमाल करें। नए domains Domains view में बनाए जा सकते हैं।",
+aboutNeed3: "<strong>Proxy-wide settings</strong> (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging) — <code>config.json</code> edit करें, फिर यहाँ Reload config इस्तेमाल करें।",
+aboutSecTitle: "Security notes",
+aboutSec1: "यह page सिर्फ admin-secret path पर serve होता है। जिसके पास exact path नहीं है, उसे यह page कभी नहीं मिलता।",
+aboutSec2: "सारा data मौजूदा API v2 endpoints से <code>Proxy-Secret</code> header के साथ आता है। आपका API secret इसी tab की session storage में रहता है और “Forget secret” click करने या tab बंद करने पर साफ़ हो जाता है।",
+aboutSec3: "आपकी theme (Dark/Light) और भाषा (English/Hindi) की पसंद इसी browser की local storage में रहती है और कभी server को नहीं भेजी जाती।",
+aboutSec4: "दोनों secrets को screenshots, chat logs और shared URLs से दूर रखें। अगर कभी leak हो जाएँ तो <code>config.json</code> में बदल दें।",
+aboutFooter: "SonuShield — lightweight HTTP anti-DDoS reverse proxy। मूल रूप से 41Baloo का balooProxy, Sonu Digital Mindset द्वारा fork करके rebuild किया गया। GNU General Public License v3.0 के तहत licensed।",
+errApiNotJson: "API ने JSON नहीं लौटाया (secret reject हुआ या request backend तक पहुँच गई)।",
+errUnknownApi: "unknown API error",
+errApiPrefix: "API error: ",
+stageBadge1: "Stage 1 · Cookie",
+stageBadge2: "Stage 2 · JS PoW",
+stageBadge3: "Stage 3 · Captcha",
+stageBadgeN: "Stage {0}",
+noDataWindow: "इस window में अभी कोई data नहीं।",
+actAllow: "Allow",
+actCookie: "Cookie challenge",
+actJs: "JS challenge",
+actCaptcha: "Captcha",
+actAdjust: "Suspicion {0} से adjust करें",
+actBlock: "Block",
+actUnknown: "Unknown action",
+fromStageApi: "stage API से · {0}",
+yes: "हाँ",
+no: "नहीं",
+colIp: "IP address",
+colRequests: "Requests",
+colTlsFp: "TLS fingerprint",
+noDomains: "कोई domain configured नहीं है।",
+colDomain: "Domain",
+colTenant: "Tenant",
+colBackend: "Backend",
+colLocked: "Locked",
+colTotalRps: "Total r/s",
+colBypassedRps: "Bypassed r/s",
+colRules: "Rules",
+errLoadDomains: "Domain list load नहीं हो पाई।",
+errSecretRejected: "API secret reject हो गया हो सकता है।",
+noTenants: "Domains वाले कोई tenants नहीं हैं।",
+colBlockedApprox: "Blocked (अनुमान)",
+colBwIn: "Bandwidth in",
+colBwOut: "Bandwidth out",
+colBwTotal: "Bandwidth total",
+errLoadTenants: "Tenant usage load नहीं हो पाया।",
+errLoadTemplates: "Domain templates load नहीं हो पाए: {0}",
+tplBodyInspection: "body inspection",
+tplEdgeCache: "edge cache {0}s",
+tplImageOpt: "image optimization",
+tplHoneypots: "honeypots: {0}",
+tplPresets: " Presets: {0}।",
+tplCreated: "{1} template से {0} बनाया गया और configuration reload हो गया।",
+errCreateDomain: "Domain नहीं बन पाया: {0}",
+domImported: "{0} domain(s) import हुए और configuration reload हो गया: {1}।",
+errImportDomains: "Domains import नहीं हो पाए: {0}",
+noData: "कोई data नहीं।",
+errDomainMissing: "Domain proxy config में नहीं हो सकता, या API secret reject हो गया हो सकता है।",
+domRowTotalRps: "Total requests / second",
+domRowBypassRps: "Bypassed requests / second",
+domRowTotal: "Total requests (सभी समय)",
+domRowBypassed: "Bypassed requests (सभी समय)",
+domRowScheme: "Scheme",
+domRowCert: "Certificate",
+certAuto: "— (auto SSL या Cloudflare mode)",
+domRowProvider: "Challenge provider",
+providerNone: "none (proof-of-work)",
+domRowAlerts: "Alerts",
+purgeCacheBtn: "Edge cache purge करें",
+confirmPurgeCache: "{0} का पूरा edge cache purge करें? Cached responses backend से फिर fetch होंगे।",
+purgedEntries: "{0} entries purge हो गईं।",
+cacheDisabled: "इस domain के लिए edge cache disabled है।",
+errPurge: "Purge fail हो गया: {0}",
+noRules: "इस domain के लिए कोई firewall rules configured नहीं हैं।",
+colNum: "#",
+colActions: "Actions",
+editBtn: "Edit",
+deleteBtn: "Delete",
+errLoadRules: "Rules load नहीं हो पाए।",
+errDomainOrSecret: "Domain मौजूद नहीं हो सकता, या API secret reject हो गया हो सकता है।",
+errLoadRule: "Rule load नहीं हो पाया: {0}",
+confirmDeleteRule: "Rule #{0} delete करें? यह तुरंत config.json में save हो जाएगा।",
+ruleDeleted: "Rule delete हो गया और config.json में save हो गया।",
+errDeleteRule: "Rule delete नहीं हो पाया: {0}",
+ruleSaved: "Rule config.json में save हो गया।",
+ruleAdded: "Rule जुड़ गया और config.json में save हो गया।",
+errSaveRule: "Rule save नहीं हो पाया: {0}",
+noIpEntries: "कोई entries नहीं हैं।",
+colTarget: "Target",
+colNote: "Note",
+removeBtn: "हटाएँ",
+errLoadIpLists: "IP lists load नहीं हो पाईं।",
+confirmRemoveIp: "{0} को {1} से हटाएँ? यह तुरंत config.json में save हो जाएगा।",
+ipEntryRemoved: "Entry हट गई और config.json में save हो गई।",
+errRemoveIp: "Entry हट नहीं पाई: {0}",
+ipEntryAdded: "Entry जुड़ गई और config.json में save हो गई।",
+errAddIp: "Entry जुड़ नहीं पाई: {0}",
+simulating: "Simulate हो रहा है…",
+simMatch: "Match।",
+simMatchDetail: "Expression इस sample से match करता है।",
+simNoMatch: "No match।",
+simNoMatchDetail: "Expression इस sample से match नहीं करता।",
+simFieldsUsed: "इस्तेमाल हुए fields: ",
+noneWord: "कोई नहीं",
+simFailed: "Simulate नहीं हो पाया:",
+rulesExported: "{0} rule(s) export हो गए।",
+errExportRules: "Rules export नहीं हो पाए: {0}",
+confirmReplaceRules: "{0} के सभी firewall rules को imported set से बदल दें? पहले current config का backup बनता है।",
+rulesImported: "{0} rule(s) import हुए और config.json में save हो गए।",
+errImportRules: "Rules import नहीं हो पाए: {0}",
+noLogs: "अभी कोई passed requests log नहीं हुए।",
+colTime: "Time",
+colBrowserBot: "Browser / bot",
+colUserAgent: "User agent",
+colPath: "Path",
+unknownWord: "unknown",
+errLoadLogs: "Logs load नहीं हो पाए।",
+searching: "Search हो रहा है…",
+lsMeta: "{0} matches · page {1} / {2} · {3} lines scan हुईं",
+lsTruncated: " · scan छोटा किया गया",
+noLogEntries: "कोई matching log entries नहीं मिलीं।",
+colRule: "Rule",
+colRisk: "Risk",
+errJsonLogs: "Structured logging configured नहीं है। <code>proxy.logFormat</code> को <code>json</code> और <code>proxy.logFile</code> को <code>config.json</code> में writable path पर set करें, फिर config reload करें।",
+searchFailed: "Search fail हो गया।",
+mapAriaLabel: "Attack sources का schematic world map",
+loadingMap: "Map load हो रहा है…",
+errNoGeoip: "कोई GeoIP database configured नहीं है, इसलिए कोई country data नहीं है। Attack map enable करने के लिए <code>proxy.geoipCountryDatabase</code> को <code>config.json</code> में MaxMind database path पर set करें।",
+mapMeta: "{0} lines scan हुईं",
+noMapData: "इस window में country data वाले कोई blocked या challenged requests नहीं हैं।",
+mapBarVal: "{0} blocked · {1} challenged",
+errLoadMap: "Attack map load नहीं हो पाया।",
+errLoadSettings: "Settings load नहीं हो पाईं: {0}",
+settingsSaved: "Settings config.json में save हो गईं।",
+errSaveSettings: "Settings save नहीं हो पाईं: {0}",
+pfQuiet: "Quiet mode",
+pfAutoSsl: "Auto SSL",
+pfGeoCountry: "GeoIP country database",
+pfGeoAsn: "GeoIP ASN database",
+pfRepFeed: "Reputation feed",
+pfRepSize: "Reputation list size",
+onWord: "on",
+offWord: "off",
+enabledWord: "enabled",
+disabledWord: "disabled",
+activeSuffix: " (active)",
+loadedWord: "loaded",
+notLoadedWord: "not loaded",
+configuredWord: "configured",
+notConfiguredWord: "not configured",
+repListSize: "{0} IPs, {1} networks (local) · {2} IPs, {3} networks (feed)",
+errLoadProxyFeatures: "Proxy features load नहीं हो पाए।",
+noBackups: "अभी कोई configuration backups नहीं हैं। पहला change save होने पर backups दिखेंगे।",
+colBackup: "Backup",
+colSize: "Size",
+colModified: "Modified (UTC)",
+sizeBytes: "{0} bytes",
+restoreBtn: "Restore",
+errLoadBackups: "Backups load नहीं हो पाए।",
+confirmRestoreBackup: "{0} restore करें? पहले backup validate होता है, current config का backup बनता है, और proxy reload होता है। Reload से per-domain counters और stage state reset हो जाते हैं।",
+backupRestored: "Backup restore हो गया और proxy reload हो गया।",
+errRestoreBackup: "Backup restore नहीं हो पाया: {0}",
+noneRecorded: "कुछ record नहीं हुआ।",
+colCount: "Count",
+repCardBypassed: "Bypassed",
+repCardBypassedFoot: "backend तक पहुँचे",
+repCardPeak: "Peak r/s",
+repCardPeakFoot: "peak bypassed: {0}/s",
+repLocked: "locked",
+repAutomatic: "automatic",
+repUnderAttack: " · under attack",
+repBlocks: "Blocks by reason",
+repChallenges: "Challenges by stage",
+repWaf: "WAF matches by rule",
+repReqOk: "Requests OK",
+repReqFailed: "Requests failed",
+repLatency: "Average latency",
+repLatencySec: "{0} s",
+repTopVerified: "Top verified IPs (proxy-wide)",
+repTopUnverified: "Top unverified IPs (proxy-wide)",
+repTopFps: "Top unknown fingerprints (proxy-wide)",
+repCountries: "Countries (proxy-wide, सिर्फ top IPs)",
+colCountry: "Country",
+colAsn: "ASN",
+noneInWindow: "इस window में कोई नहीं।",
+repGenerated: "{0} पर generate हुआ · window: {1}s।",
+repReason: "Reason",
+repFingerprint: "Fingerprint",
+loadingReport: "Report load हो रहा है…",
+errLoadReport: "Report load नहीं हो पाई: {0}",
+errExportReport: "Report export नहीं हो पाई: {0}",
+stageAppliedSuffix: " — तुरंत apply हो गया (सिर्फ runtime; reload से reset हो जाता है)।",
+errChangeStage: "Stage बदल नहीं पाया: {0}",
+stageLabelAuto: "Automatic switching वापस आ गया",
+stageLabelLock: "Stage {0} lock हो गया",
+stageLabelAttack: "Under-attack mode on (Stage 3 locked)",
+allDomains: "सभी domains",
+confirmClearLogs: "{0} के logs साफ़ करें? यह वापस नहीं हो सकता।",
+logsCleared: "Logs साफ़ हो गए।",
+errClearLogs: "Logs साफ़ नहीं हो पाए: {0}",
+confirmReload: "config.json से configuration reload करें?\n\nपहले file validate होती है: गलत होने पर कुछ नहीं बदलता और चलता हुआ proxy अछूता रहता है। सफल reload से request counters और stage locks reset हो जाते हैं, terminal reload की तरह।",
+errReload: "Reload fail हो गया, चलता हुआ config अछूता है: {0}",
+errReachApi: "API तक नहीं पहुँच पाए: {0}",
+connectedSso: "SSO से connected",
+connected: "Connected",
+notConnected: "Not connected",
+errConnect: "Connection fail हो गया: {0} API secret जाँचें और फिर कोशिश करें।",
+errRefreshFeed: "Reputation feed refresh नहीं हो पाया: {0}"
+}
+};
+function t(key){
+  var s = (STR[lang] && STR[lang][key] != null) ? STR[lang][key] : STR.en[key];
+  if(s == null) return key;
+  for(var i = 1; i < arguments.length; i++){
+    s = s.split("{" + (i - 1) + "}").join(String(arguments[i]));
+  }
+  return s;
+}
+function applyLang(newLang, skipRefresh){
+  lang = (newLang === "hi") ? "hi" : "en";
+  document.documentElement.setAttribute("lang", lang);
+  document.title = t("appTitle");
+  document.querySelectorAll("[data-i18n]").forEach(function(el){ el.innerHTML = t(el.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(function(el){ el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(function(el){ el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
+  document.querySelectorAll("[data-i18n-title]").forEach(function(el){ el.setAttribute("title", t(el.getAttribute("data-i18n-title"))); });
+  document.querySelectorAll("[data-lang-choice]").forEach(function(btn){
+    btn.setAttribute("aria-pressed", btn.getAttribute("data-lang-choice") === lang ? "true" : "false");
+  });
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+  /* Live labels that JS owns (not data-i18n elements). */
+  setText("hostPill", t("hostPill", hostDomain || "—"));
+  setText("connText", connected ? (ssoMode ? t("connectedSso") : t("connected")) : t("notConnected"));
+  if(editingIndex !== null){
+    setText("ruleFormTitle", t("ruleFormEdit", editingIndex + 1));
+    $("ruleSubmit").textContent = t("ruleSave");
+  } else {
+    setText("ruleFormTitle", t("ruleFormAdd"));
+    $("ruleSubmit").textContent = t("ruleSubmitAdd");
+  }
+  if(skipRefresh || !connected) return;
+  refreshAll();
+  /* Settings and reports load on demand, so re-render their
+     read-only panels too. loadSettings is NOT re-run: it would
+     discard unsaved form edits. */
+  if(currentView === "settings"){ loadProxyFeatures(); loadBackups(); }
+  else if(currentView === "reports"){ loadReport(); loadAttackMap(); }
+}
+document.querySelectorAll("[data-lang-choice]").forEach(function(btn){
+  btn.addEventListener("click", function(){ applyLang(btn.getAttribute("data-lang-choice")); });
+});
+
 function apiV2(path, method){
   // The CSRF header is always sent: it is required when the
   // call authenticates via the SSO session cookie, and ignored
@@ -704,11 +1686,11 @@ function apiV2(path, method){
     .then(function(res){ return res.text().then(function(text){
       var data;
       try { data = JSON.parse(text); }
-      catch(e){ throw new Error("API did not return JSON (secret rejected or request fell through to the backend)."); }
+      catch(e){ throw new Error(t("errApiNotJson")); }
       if(!data || data.success !== true){
-        var code = (data && data.results && data.results.ERROR) ? data.results.ERROR : "unknown API error";
+        var code = (data && data.results && data.results.ERROR) ? data.results.ERROR : t("errUnknownApi");
         var detail = (data && data.results && data.results.ERROR_DETAIL) ? data.results.ERROR_DETAIL : "";
-        var err = new Error("API error: " + code + (detail ? " — " + detail : ""));
+        var err = new Error(t("errApiPrefix") + code + (detail ? " — " + detail : ""));
         err.code = code;
         err.detail = detail;
         throw err;
@@ -744,17 +1726,17 @@ function showInline(id, okId, msg, okMsg){
   }
 }
 function stageBadge(stage){
-  if(stage === "1") return '<span class="badge stage1">Stage 1 · Cookie</span>';
-  if(stage === "2") return '<span class="badge stage2">Stage 2 · JS PoW</span>';
-  if(stage === "3") return '<span class="badge stage3">Stage 3 · Captcha</span>';
-  if(stage) return '<span class="badge block">Stage ' + esc(stage) + '</span>';
+  if(stage === "1") return '<span class="badge stage1">' + t("stageBadge1") + '</span>';
+  if(stage === "2") return '<span class="badge stage2">' + t("stageBadge2") + '</span>';
+  if(stage === "3") return '<span class="badge stage3">' + t("stageBadge3") + '</span>';
+  if(stage) return '<span class="badge block">' + t("stageBadgeN", esc(stage)) + '</span>';
   return "—";
 }
 function topTable(mapObj, keyLabel, valLabel, limit){
   var rows = Object.keys(mapObj || {}).map(function(k){ return [k, Number(mapObj[k]) || 0]; });
   rows.sort(function(a,b){ return b[1]-a[1]; });
   rows = rows.slice(0, limit || 10);
-  if(!rows.length) return '<div class="state">No data in this window yet.</div>';
+  if(!rows.length) return '<div class="state">' + t("noDataWindow") + '</div>';
   var h = '<table><thead><tr><th>' + esc(keyLabel) + '</th><th>' + esc(valLabel) + '</th></tr></thead><tbody>';
   rows.forEach(function(r){
     h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td>" + num(r[1]) + "</td></tr>";
@@ -763,14 +1745,14 @@ function topTable(mapObj, keyLabel, valLabel, limit){
 }
 function actionExplain(action){
   var a = String(action == null ? "" : action);
-  if(a === "0") return "Allow";
-  if(a === "1") return "Cookie challenge";
-  if(a === "2") return "JS challenge";
-  if(a === "3") return "Captcha";
-  if(/^[+-]\d+$/.test(a)) return "Adjust suspicion by " + a;
+  if(a === "0") return t("actAllow");
+  if(a === "1") return t("actCookie");
+  if(a === "2") return t("actJs");
+  if(a === "3") return t("actCaptcha");
+  if(/^[+-]\d+$/.test(a)) return t("actAdjust", a);
   var n = parseInt(a, 10);
-  if(!isNaN(n) && n >= 4) return "Block";
-  return "Unknown action";
+  if(!isNaN(n) && n >= 4) return t("actBlock");
+  return t("actUnknown");
 }
 
 function setText(id, text){ var el = $(id); if(el) el.textContent = text; }
@@ -793,10 +1775,10 @@ function loadOverview(){
     if(tot) setText("cTotal", num(tot.TOTAL_REQUESTS));
     if(byp) setText("cBypassed", num(byp.BYPASSED_REQUESTS));
     if(ips){
-      setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, "IP address", "Requests"));
+      setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, t("colIp"), t("colRequests")));
     }
     if(fps){
-      setHTML("topFps", topTable(fps.TOTAL_FINGERPRINT_REQUESTS, "TLS fingerprint", "Requests"));
+      setHTML("topFps", topTable(fps.TOTAL_FINGERPRINT_REQUESTS, t("colTlsFp"), t("colRequests")));
     }
   });
 }
@@ -805,12 +1787,12 @@ function loadStageState(){
   return domainAction(currentDomain, "GET_STAGE").then(function(r){
     var stage = (r.STAGE == null ? null : String(r.STAGE));
     setHTML("cStage", stageBadge(stage));
-    setText("cStageFoot", "from the stage API · " + currentDomain);
+    setText("cStageFoot", t("fromStageApi", currentDomain));
     setHTML("stageBig", stageBadge(stage));
-    setText("stageBigFoot", "from the stage API · " + currentDomain);
-    setText("cLocked", r.STAGE_LOCKED ? "Yes" : "No");
-    setText("stageLocked", r.STAGE_LOCKED ? "Yes" : "No");
-    setText("stageAttack", r.UNDER_ATTACK ? "Yes" : "No");
+    setText("stageBigFoot", t("fromStageApi", currentDomain));
+    setText("cLocked", r.STAGE_LOCKED ? t("yes") : t("no"));
+    setText("stageLocked", r.STAGE_LOCKED ? t("yes") : t("no"));
+    setText("stageAttack", r.UNDER_ATTACK ? t("yes") : t("no"));
     return r;
   }).catch(function(){
     setHTML("cStage", "—");
@@ -826,20 +1808,20 @@ function loadDomains(){
   return proxyAction("GET_DOMAINS").then(function(r){
     var list = r.DOMAINS || [];
     if(!list.length){
-      setHTML("domList", '<div class="state">No domains configured.</div>');
+      setHTML("domList", '<div class="state">' + t("noDomains") + '</div>');
       return;
     }
-    var h = '<table><thead><tr><th>Domain</th><th>Tenant</th><th>Backend</th><th>Stage</th><th>Locked</th><th>Under attack</th><th>Total r/s</th><th>Bypassed r/s</th><th>Rules</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("colDomain") + '</th><th>' + t("colTenant") + '</th><th>' + t("colBackend") + '</th><th>' + t("stageTitle") + '</th><th>' + t("colLocked") + '</th><th>' + t("stageCardAttack") + '</th><th>' + t("colTotalRps") + '</th><th>' + t("colBypassedRps") + '</th><th>' + t("colRules") + '</th></tr></thead><tbody>';
     list.forEach(function(d){
       var sel = (d.NAME === currentDomain) ? ' class="clickable selected"' : ' class="clickable"';
-      h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td>" + esc(d.TENANT || "default") + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? "Yes" : "No") + "</td><td>" + (d.UNDER_ATTACK ? "Yes" : "No") + "</td><td>" + num(d.TOTAL_RPS) + "</td><td>" + num(d.BYPASSED_RPS) + "</td><td>" + num(d.RULE_COUNT) + "</td></tr>";
+      h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td>" + esc(d.TENANT || "default") + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? t("yes") : t("no")) + "</td><td>" + (d.UNDER_ATTACK ? t("yes") : t("no")) + "</td><td>" + num(d.TOTAL_RPS) + "</td><td>" + num(d.BYPASSED_RPS) + "</td><td>" + num(d.RULE_COUNT) + "</td></tr>";
     });
     setHTML("domList", h + "</tbody></table>");
     document.querySelectorAll("#domList tr[data-domain]").forEach(function(row){
       row.addEventListener("click", function(){ setDomain(row.getAttribute("data-domain")); });
     });
   }).catch(function(){
-    setHTML("domList", '<div class="state state-error"><strong>Could not load the domain list.</strong><br>The API secret may have been rejected.</div>');
+    setHTML("domList", '<div class="state state-error"><strong>' + t("errLoadDomains") + '</strong><br>' + t("errSecretRejected") + '</div>');
   });
 }
 
@@ -855,17 +1837,17 @@ function loadTenants(){
   return proxyAction("GET_TENANT_USAGE").then(function(r){
     var rows = r.USAGE || [];
     if(!rows.length){
-      setHTML("tenantBody", '<div class="state">No tenants with domains.</div>');
+      setHTML("tenantBody", '<div class="state">' + t("noTenants") + '</div>');
       return;
     }
-    var h = '<table><thead><tr><th>Tenant</th><th>Domains</th><th>Requests</th><th>Blocked (approx.)</th><th>Bandwidth in</th><th>Bandwidth out</th><th>Bandwidth total</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("colTenant") + '</th><th>' + t("domTitle") + '</th><th>' + t("colRequests") + '</th><th>' + t("colBlockedApprox") + '</th><th>' + t("colBwIn") + '</th><th>' + t("colBwOut") + '</th><th>' + t("colBwTotal") + '</th></tr></thead><tbody>';
     rows.forEach(function(u){
       var names = (u.DOMAINS || []).map(function(d){ return esc(d); }).join(", ");
       h += "<tr><td>" + esc(u.TENANT) + "</td><td class='mono'>" + names + "</td><td>" + num(u.REQUESTS) + "</td><td>" + num(u.BLOCKED) + "</td><td>" + fmtBytes(u.BYTES_IN) + "</td><td>" + fmtBytes(u.BYTES_OUT) + "</td><td>" + fmtBytes(u.BYTES_TOTAL) + "</td></tr>";
     });
     setHTML("tenantBody", h + "</tbody></table>");
   }).catch(function(){
-    setHTML("tenantBody", '<div class="state state-error"><strong>Could not load tenant usage.</strong><br>The API secret may have been rejected.</div>');
+    setHTML("tenantBody", '<div class="state state-error"><strong>' + t("errLoadTenants") + '</strong><br>' + t("errSecretRejected") + '</div>');
   });
 }
 
@@ -883,7 +1865,7 @@ function loadTemplates(){
     });
     updateTplDesc();
   }).catch(function(err){
-    showInline("tplError", "tplOk", "Could not load domain templates: " + err.message, "");
+    showInline("tplError", "tplOk", t("errLoadTemplates", err.message), "");
   });
 }
 function updateTplDesc(){
@@ -894,12 +1876,12 @@ function updateTplDesc(){
   var p = found.PRESET || {};
   var bits = [];
   if(p.wafMode) bits.push("WAF " + p.wafMode);
-  if(p.wafInspectBody) bits.push("body inspection");
-  if(p.edgeCache) bits.push("edge cache " + (p.edgeCacheTTL || 0) + "s");
+  if(p.wafInspectBody) bits.push(t("tplBodyInspection"));
+  if(p.edgeCache) bits.push(t("tplEdgeCache", p.edgeCacheTTL || 0));
   if(p.brotli) bits.push("Brotli");
-  if(p.imageOptimize) bits.push("image optimization");
-  if(p.honeypotPaths && p.honeypotPaths.length) bits.push("honeypots: " + p.honeypotPaths.join(", "));
-  setText("tplDesc", found.DESCRIPTION + (bits.length ? " Presets: " + bits.join(" · ") + "." : ""));
+  if(p.imageOptimize) bits.push(t("tplImageOpt"));
+  if(p.honeypotPaths && p.honeypotPaths.length) bits.push(t("tplHoneypots", p.honeypotPaths.join(", ")));
+  setText("tplDesc", found.DESCRIPTION + (bits.length ? t("tplPresets", bits.join(" · ")) : ""));
 }
 function createFromTemplate(ev){
   ev.preventDefault();
@@ -912,14 +1894,14 @@ function createFromTemplate(ev){
     certificate: $("tplCert").value.trim(),
     key: $("tplKey").value.trim()
   }).then(function(r){
-    showInline("tplError", "tplOk", "", "Created " + (r.CREATED || []).join(", ") + " from the " + (r.TEMPLATE || "") + " template and reloaded the configuration.");
+    showInline("tplError", "tplOk", "", t("tplCreated", (r.CREATED || []).join(", "), r.TEMPLATE || ""));
     $("tplName").value = "";
     $("tplBackend").value = "";
     $("tplCert").value = "";
     $("tplKey").value = "";
     loadDomains(); loadDomainPanel(); loadTenants();
   }).catch(function(err){
-    showInline("tplError", "tplOk", "Could not create domain: " + err.message, "");
+    showInline("tplError", "tplOk", t("errCreateDomain", err.message), "");
   });
 }
 function importDomainsForm(ev){
@@ -928,11 +1910,11 @@ function importDomainsForm(ev){
   if(!payload) return;
   showInline("tplError", "tplOk", "", "");
   proxyWrite("IMPORT_DOMAINS", {format: $("domImportFormat").value, data: payload}).then(function(r){
-    showInline("tplError", "tplOk", "", "Imported " + (r.COUNT || 0) + " domain(s) and reloaded the configuration: " + (r.CREATED || []).join(", ") + ".");
+    showInline("tplError", "tplOk", "", t("domImported", r.COUNT || 0, (r.CREATED || []).join(", ")));
     $("domImportData").value = "";
     loadDomains(); loadDomainPanel(); loadTenants();
   }).catch(function(err){
-    showInline("tplError", "tplOk", "Could not import domains: " + err.message, "");
+    showInline("tplError", "tplOk", t("errImportDomains", err.message), "");
   });
 }
 
@@ -962,34 +1944,34 @@ function loadDomainPanel(){
   return Promise.all([pCfg, pRps, pBrps, pTot, pByp]).then(function(r){
     var cfg = r[0];
     if(!cfg && !r[1] && !r[2] && !r[3] && !r[4]){
-      setHTML("domBody", '<div class="state"><strong>No data.</strong><br>The domain may not exist in the proxy config, or the API secret was rejected.</div>');
+      setHTML("domBody", '<div class="state"><strong>' + t("noData") + '</strong><br>' + t("errDomainMissing") + '</div>');
       return;
     }
     var h = '<table><tbody>'
-      + "<tr><td>Total requests / second</td><td>" + num(r[1] && r[1].TOTAL_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
-      + "<tr><td>Bypassed requests / second</td><td>" + num(r[2] && r[2].BYPASSED_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
-      + "<tr><td>Total requests (all time)</td><td>" + num(r[3] && r[3].TOTAL_REQUESTS) + "</td></tr>"
-      + "<tr><td>Bypassed requests (all time)</td><td>" + num(r[4] && r[4].BYPASSED_REQUESTS) + "</td></tr>";
+      + "<tr><td>" + t("domRowTotalRps") + "</td><td>" + num(r[1] && r[1].TOTAL_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>" + t("domRowBypassRps") + "</td><td>" + num(r[2] && r[2].BYPASSED_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>" + t("domRowTotal") + "</td><td>" + num(r[3] && r[3].TOTAL_REQUESTS) + "</td></tr>"
+      + "<tr><td>" + t("domRowBypassed") + "</td><td>" + num(r[4] && r[4].BYPASSED_REQUESTS) + "</td></tr>";
     if(cfg){
-      h += "<tr><td>Backend</td><td class='mono'>" + esc(cfg.BACKEND || "—") + "</td></tr>"
-        + "<tr><td>Scheme</td><td class='mono'>" + esc(cfg.SCHEME || "—") + "</td></tr>"
-        + "<tr><td>Certificate</td><td class='mono'>" + esc(cfg.CERTIFICATE || "— (auto SSL or Cloudflare mode)") + "</td></tr>"
-        + "<tr><td>Firewall rules</td><td>" + num(cfg.RULE_COUNT) + "</td></tr>"
-        + "<tr><td>Challenge provider</td><td>" + esc(cfg.CHALLENGE_PROVIDER || "none (proof-of-work)") + "</td></tr>"
-        + "<tr><td>WAF mode</td><td>" + esc(cfg.WAF_MODE_EFFECTIVE || cfg.WAF_MODE || "—") + "</td></tr>"
-        + "<tr><td>Alerts</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? "yes" : "no") + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? "yes" : "no") + " · Email: " + (cfg.EMAIL_CONFIGURED ? "yes" : "no") + "</td></tr>";
+      h += "<tr><td>" + t("colBackend") + "</td><td class='mono'>" + esc(cfg.BACKEND || "—") + "</td></tr>"
+        + "<tr><td>" + t("domRowScheme") + "</td><td class='mono'>" + esc(cfg.SCHEME || "—") + "</td></tr>"
+        + "<tr><td>" + t("domRowCert") + "</td><td class='mono'>" + esc(cfg.CERTIFICATE || t("certAuto")) + "</td></tr>"
+        + "<tr><td>" + t("navRules") + "</td><td>" + num(cfg.RULE_COUNT) + "</td></tr>"
+        + "<tr><td>" + t("domRowProvider") + "</td><td>" + esc(cfg.CHALLENGE_PROVIDER || t("providerNone")) + "</td></tr>"
+        + "<tr><td>" + t("setWafModeLabel") + "</td><td>" + esc(cfg.WAF_MODE_EFFECTIVE || cfg.WAF_MODE || "—") + "</td></tr>"
+        + "<tr><td>" + t("domRowAlerts") + "</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? t("yes") : t("no")) + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? t("yes") : t("no")) + " · Email: " + (cfg.EMAIL_CONFIGURED ? t("yes") : t("no")) + "</td></tr>";
     }
     setHTML("domBody", h + "</tbody></table>"
-      + '<div class="btnrow" style="margin-top:12px"><button type="button" id="purgeCacheBtn">Purge edge cache</button><span class="small muted" id="purgeCacheNote"></span></div>');
+      + '<div class="btnrow" style="margin-top:12px"><button type="button" id="purgeCacheBtn">' + t("purgeCacheBtn") + '</button><span class="small muted" id="purgeCacheNote"></span></div>');
     var purgeBtn = $("purgeCacheBtn");
     if(purgeBtn){
       purgeBtn.addEventListener("click", function(){
-        if(!window.confirm("Purge the whole edge cache for " + dom + "? Cached responses will be fetched from the backend again.")) return;
+        if(!window.confirm(t("confirmPurgeCache", dom))) return;
         setText("purgeCacheNote", "");
         domainWrite(dom, "PURGE_CACHE", {}).then(function(r){
-          setText("purgeCacheNote", r.CACHE_ENABLED ? ("Purged " + num(r.PURGED) + " entries.") : "Edge cache is disabled for this domain.");
+          setText("purgeCacheNote", r.CACHE_ENABLED ? t("purgedEntries", num(r.PURGED)) : t("cacheDisabled"));
         }).catch(function(err){
-          setText("purgeCacheNote", "Purge failed: " + err.message);
+          setText("purgeCacheNote", t("errPurge", err.message));
         });
       });
     }
@@ -1004,14 +1986,14 @@ function loadRules(force){
   return domainAction(currentDomain, "GET_FIREWALL_RULES").then(function(r){
     var rules = r.FIREWALL_RULES || [];
     if(!rules.length){
-      setHTML("rulesBody", '<div class="state">No firewall rules configured for this domain.</div>');
+      setHTML("rulesBody", '<div class="state">' + t("noRules") + '</div>');
       return;
     }
-    var h = '<table><thead><tr><th>#</th><th>Expression</th><th>Action</th><th>Meaning</th><th>Actions</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("colNum") + '</th><th>' + t("ruleExprLabel") + '</th><th>' + t("ruleActionLabel") + '</th><th>' + t("colMeaning") + '</th><th>' + t("colActions") + '</th></tr></thead><tbody>';
     rules.forEach(function(rule, i){
       h += "<tr><td>" + (i+1) + "</td><td class='mono'>" + esc(rule.expression) + "</td><td class='mono'>" + esc(rule.action) + "</td><td>" + esc(actionExplain(rule.action)) + "</td>"
-        + '<td style="white-space:nowrap"><button type="button" class="small" data-rule-edit="' + i + '">Edit</button> '
-        + '<button type="button" class="small danger" data-rule-del="' + i + '">Delete</button></td></tr>';
+        + '<td style="white-space:nowrap"><button type="button" class="small" data-rule-edit="' + i + '">' + t("editBtn") + '</button> '
+        + '<button type="button" class="small danger" data-rule-del="' + i + '">' + t("deleteBtn") + '</button></td></tr>';
     });
     setHTML("rulesBody", h + "</tbody></table>");
     document.querySelectorAll("[data-rule-edit]").forEach(function(btn){
@@ -1021,14 +2003,14 @@ function loadRules(force){
       btn.addEventListener("click", function(){ deleteRule(parseInt(btn.getAttribute("data-rule-del"), 10)); });
     });
   }).catch(function(){
-    setHTML("rulesBody", '<div class="state state-error"><strong>Could not load rules.</strong><br>The domain may not exist, or the API secret was rejected.</div>');
+    setHTML("rulesBody", '<div class="state state-error"><strong>' + t("errLoadRules") + '</strong><br>' + t("errDomainOrSecret") + '</div>');
   });
 }
 
 function resetRuleForm(){
   editingIndex = null;
-  setText("ruleFormTitle", "Add a rule");
-  $("ruleSubmit").textContent = "Add rule";
+  setText("ruleFormTitle", t("ruleFormAdd"));
+  $("ruleSubmit").textContent = t("ruleSubmitAdd");
   $("ruleCancel").hidden = true;
   $("ruleForm").reset();
 }
@@ -1040,24 +2022,24 @@ function startRuleEdit(index){
     editingIndex = index;
     $("ruleExpr").value = rules[index].expression || "";
     $("ruleAction").value = rules[index].action || "";
-    setText("ruleFormTitle", "Edit rule #" + (index + 1));
-    $("ruleSubmit").textContent = "Save rule";
+    setText("ruleFormTitle", t("ruleFormEdit", index + 1));
+    $("ruleSubmit").textContent = t("ruleSave");
     $("ruleCancel").hidden = false;
     showInline("rulesError", "rulesOk", "", "");
     $("ruleExpr").focus();
   }).catch(function(err){
-    showInline("rulesError", "rulesOk", "Could not load the rule: " + err.message, "");
+    showInline("rulesError", "rulesOk", t("errLoadRule", err.message), "");
   });
 }
 
 function deleteRule(index){
-  if(!window.confirm("Delete rule #" + (index + 1) + "? This is saved to config.json immediately.")) return;
+  if(!window.confirm(t("confirmDeleteRule", index + 1))) return;
   showInline("rulesError", "rulesOk", "", "");
   domainWrite(currentDomain, "DELETE_RULE", {index: String(index)}).then(function(){
-    showInline("rulesError", "rulesOk", "", "Rule deleted and saved to config.json.");
+    showInline("rulesError", "rulesOk", "", t("ruleDeleted"));
     return loadRules(true);
   }).catch(function(err){
-    showInline("rulesError", "rulesOk", "Could not delete the rule: " + err.message, "");
+    showInline("rulesError", "rulesOk", t("errDeleteRule", err.message), "");
   });
 }
 
@@ -1076,20 +2058,20 @@ function submitRuleForm(ev){
   call.then(function(){
     var wasEdit = editingIndex !== null;
     resetRuleForm();
-    showInline("rulesError", "rulesOk", "", wasEdit ? "Rule saved to config.json." : "Rule added and saved to config.json.");
+    showInline("rulesError", "rulesOk", "", wasEdit ? t("ruleSaved") : t("ruleAdded"));
     return loadRules(true);
   }).catch(function(err){
-    showInline("rulesError", "rulesOk", "Could not save the rule: " + err.message, "");
+    showInline("rulesError", "rulesOk", t("errSaveRule", err.message), "");
   });
 }
 
 function ipEntryRows(entries, listName){
-  if(!entries.length) return '<div class="state">No entries.</div>';
-  var h = '<table><thead><tr><th>Target</th><th>Expires</th><th>Note</th><th>Actions</th></tr></thead><tbody>';
+  if(!entries.length) return '<div class="state">' + t("noIpEntries") + '</div>';
+  var h = '<table><thead><tr><th>' + t("colTarget") + '</th><th>' + t("ipExpiresLabel") + '</th><th>' + t("colNote") + '</th><th>' + t("colActions") + '</th></tr></thead><tbody>';
   entries.forEach(function(entry){
-    var expires = entry.EXPIRES ? new Date(entry.EXPIRES * 1000).toLocaleString() : "Never";
+    var expires = entry.EXPIRES ? new Date(entry.EXPIRES * 1000).toLocaleString() : t("ipExpNever");
     h += "<tr><td class='mono'>" + esc(entry.TARGET) + "</td><td>" + esc(expires) + "</td><td>" + esc(entry.NOTE || "") + "</td>"
-      + '<td><button type="button" class="small danger" data-ip-del-list="' + listName + '" data-ip-del-target="' + esc(entry.TARGET) + '">Remove</button></td></tr>';
+      + '<td><button type="button" class="small danger" data-ip-del-list="' + listName + '" data-ip-del-target="' + esc(entry.TARGET) + '">' + t("removeBtn") + '</button></td></tr>';
   });
   return h + "</tbody></table>";
 }
@@ -1097,8 +2079,8 @@ function ipEntryRows(entries, listName){
 function loadIPLists(){
   setText("ipListsDomain", currentDomain);
   return domainAction(currentDomain, "GET_IP_LISTS").then(function(r){
-    var h = '<div class="panel"><h2>Allow list</h2>' + ipEntryRows(r.ALLOWLIST || [], "allowlist") + "</div>"
-      + '<div class="panel"><h2>Block list</h2>' + ipEntryRows(r.BLOCKLIST || [], "blocklist") + "</div>";
+    var h = '<div class="panel"><h2>' + t("ipListAllow") + '</h2>' + ipEntryRows(r.ALLOWLIST || [], "allowlist") + "</div>"
+      + '<div class="panel"><h2>' + t("ipListBlock") + '</h2>' + ipEntryRows(r.BLOCKLIST || [], "blocklist") + "</div>";
     setHTML("ipListsBody", h);
     document.querySelectorAll("[data-ip-del-target]").forEach(function(btn){
       btn.addEventListener("click", function(){
@@ -1106,18 +2088,19 @@ function loadIPLists(){
       });
     });
   }).catch(function(){
-    setHTML("ipListsBody", '<div class="state state-error"><strong>Could not load IP lists.</strong><br>The domain may not exist, or the API secret was rejected.</div>');
+    setHTML("ipListsBody", '<div class="state state-error"><strong>' + t("errLoadIpLists") + '</strong><br>' + t("errDomainOrSecret") + '</div>');
   });
 }
 
 function removeIPEntry(listName, target){
-  if(!window.confirm("Remove " + target + " from the " + listName + "? This is saved to config.json immediately.")) return;
+  var listLabel = listName === "allowlist" ? t("ipListAllow") : t("ipListBlock");
+  if(!window.confirm(t("confirmRemoveIp", target, listLabel))) return;
   showInline("ipListsError", "ipListsOk", "", "");
   domainWrite(currentDomain, "REMOVE_IP_ENTRY", {list: listName, target: target}).then(function(){
-    showInline("ipListsError", "ipListsOk", "", "Entry removed and saved to config.json.");
+    showInline("ipListsError", "ipListsOk", "", t("ipEntryRemoved"));
     return loadIPLists();
   }).catch(function(err){
-    showInline("ipListsError", "ipListsOk", "Could not remove the entry: " + err.message, "");
+    showInline("ipListsError", "ipListsOk", t("errRemoveIp", err.message), "");
   });
 }
 
@@ -1133,10 +2116,10 @@ function submitIPEntryForm(ev){
   showInline("ipListsError", "ipListsOk", "", "");
   domainWrite(currentDomain, "ADD_IP_ENTRY", params).then(function(){
     $("ipEntryForm").reset();
-    showInline("ipListsError", "ipListsOk", "", "Entry added and saved to config.json.");
+    showInline("ipListsError", "ipListsOk", "", t("ipEntryAdded"));
     return loadIPLists();
   }).catch(function(err){
-    showInline("ipListsError", "ipListsOk", "Could not add the entry: " + err.message, "");
+    showInline("ipListsError", "ipListsOk", t("errAddIp", err.message), "");
   });
 }
 
@@ -1144,13 +2127,13 @@ function simulateRule(){
   var expr = $("simExpr").value.trim();
   if(!expr) return;
   showInline("rulesError", "rulesOk", "", "");
-  setHTML("simResult", '<div class="state">Simulating…</div>');
+  setHTML("simResult", '<div class="state">' + t("simulating") + '</div>');
   domainWrite(currentDomain, "SIMULATE_RULE", {expression: expr, sample: $("simSample").value}).then(function(r){
-    var fields = (r.FIELDS_USED || []).map(function(f){ return esc(f); }).join(", ") || "none";
-    setHTML("simResult", '<div class="state">' + (r.MATCH ? "<strong>Match.</strong> The expression matches this sample." : "<strong>No match.</strong> The expression does not match this sample.")
-      + "<br>Fields used: <span class='mono'>" + fields + "</span></div>");
+    var fields = (r.FIELDS_USED || []).map(function(f){ return esc(f); }).join(", ") || t("noneWord");
+    setHTML("simResult", '<div class="state">' + (r.MATCH ? "<strong>" + t("simMatch") + "</strong> " + t("simMatchDetail") : "<strong>" + t("simNoMatch") + "</strong> " + t("simNoMatchDetail"))
+      + "<br>" + t("simFieldsUsed") + "<span class='mono'>" + fields + "</span></div>");
   }).catch(function(err){
-    setHTML("simResult", '<div class="state state-error"><strong>Could not simulate:</strong> ' + esc(err.message) + "</div>");
+    setHTML("simResult", '<div class="state state-error"><strong>' + t("simFailed") + '</strong> ' + esc(err.message) + "</div>");
   });
 }
 
@@ -1166,9 +2149,9 @@ function exportRules(){
     a.click();
     a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-    showInline("rulesError", "rulesOk", "", "Exported " + (r.RULE_COUNT || 0) + " rule(s).");
+    showInline("rulesError", "rulesOk", "", t("rulesExported", r.RULE_COUNT || 0));
   }).catch(function(err){
-    showInline("rulesError", "rulesOk", "Could not export rules: " + err.message, "");
+    showInline("rulesError", "rulesOk", t("errExportRules", err.message), "");
   });
 }
 
@@ -1177,14 +2160,14 @@ function importRules(ev){
   var payload = $("importJson").value.trim();
   if(!payload) return;
   var mode = $("importMode").value;
-  if(mode === "replace" && !window.confirm("Replace ALL firewall rules for " + currentDomain + " with the imported set? The current config is backed up first.")) return;
+  if(mode === "replace" && !window.confirm(t("confirmReplaceRules", currentDomain))) return;
   showInline("rulesError", "rulesOk", "", "");
   domainWrite(currentDomain, "IMPORT_RULES", {rules: payload, mode: mode}).then(function(r){
-    showInline("rulesError", "rulesOk", "", "Imported " + (r.IMPORTED || 0) + " rule(s) and saved to config.json.");
+    showInline("rulesError", "rulesOk", "", t("rulesImported", r.IMPORTED || 0));
     $("importJson").value = "";
     return loadRules(true);
   }).catch(function(err){
-    showInline("rulesError", "rulesOk", "Could not import rules: " + err.message, "");
+    showInline("rulesError", "rulesOk", t("errImportRules", err.message), "");
   });
 }
 
@@ -1193,19 +2176,19 @@ function loadLogs(){
   return domainAction(currentDomain, "GET_LOGS").then(function(r){
     var logs = (r.LOGS || []).slice().reverse();
     if(!logs.length){
-      setHTML("logsBody", '<div class="state">No passed requests logged yet.</div>');
+      setHTML("logsBody", '<div class="state">' + t("noLogs") + '</div>');
       return;
     }
     var shown = logs.slice(0, 100);
-    var h = '<table><thead><tr><th>Time</th><th>IP</th><th>Browser / bot</th><th>TLS fingerprint</th><th>User agent</th><th>Path</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("colTime") + '</th><th>' + t("lsIpLabel") + '</th><th>' + t("colBrowserBot") + '</th><th>' + t("colTlsFp") + '</th><th>' + t("colUserAgent") + '</th><th>' + t("colPath") + '</th></tr></thead><tbody>';
     shown.forEach(function(l){
       var who = (l.BrowserFP || "") + (l.BotFP || "");
-      if(!who) who = "unknown";
+      if(!who) who = t("unknownWord");
       h += "<tr><td class='mono'>" + esc(l.Time) + "</td><td class='mono'>" + esc(l.IP) + "</td><td>" + esc(who) + "</td><td class='mono'>" + esc(String(l.TLSFP || "").slice(0, 48)) + "</td><td class='small'>" + esc(String(l.Useragent || "").slice(0, 80)) + "</td><td class='mono'>" + esc(l.Path) + "</td></tr>";
     });
     setHTML("logsBody", h + "</tbody></table>");
   }).catch(function(){
-    setHTML("logsBody", '<div class="state state-error"><strong>Could not load logs.</strong><br>The domain may not exist, or the API secret was rejected.</div>');
+    setHTML("logsBody", '<div class="state state-error"><strong>' + t("errLoadLogs") + '</strong><br>' + t("errDomainOrSecret") + '</div>');
   });
 }
 
@@ -1231,7 +2214,7 @@ function logSearchParams(){
 
 function runLogSearch(){
   var q = buildQuery(logSearchParams());
-  setHTML("logSearchBody", '<div class="state">Searching…</div>');
+  setHTML("logSearchBody", '<div class="state">' + t("searching") + '</div>');
   setText("lsMeta", "");
   return apiV2("/_bProxy/api/v2/" + encodeURIComponent(currentDomain) + "/SEARCH_LOGS?" + q).then(function(r){
     var entries = r.ENTRIES || [];
@@ -1240,12 +2223,12 @@ function runLogSearch(){
     var pages = Math.max(1, Math.ceil(logSearchTotal / perPage));
     $("lsPrev").disabled = logSearchPage <= 1;
     $("lsNext").disabled = logSearchPage >= pages;
-    setText("lsMeta", num(logSearchTotal) + " matches · page " + logSearchPage + " of " + pages + " · " + num(r.SCANNED || 0) + " lines scanned" + (r.TRUNCATED ? " · scan truncated" : ""));
+    setText("lsMeta", t("lsMeta", num(logSearchTotal), logSearchPage, pages, num(r.SCANNED || 0)) + (r.TRUNCATED ? t("lsTruncated") : ""));
     if(!entries.length){
-      setHTML("logSearchBody", '<div class="state">No matching log entries.</div>');
+      setHTML("logSearchBody", '<div class="state">' + t("noLogEntries") + '</div>');
       return;
     }
-    var h = '<table><thead><tr><th>Time</th><th>Event</th><th>IP</th><th>Action</th><th>Rule</th><th>Risk</th><th>Path</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("colTime") + '</th><th>' + t("lsEventLabel") + '</th><th>' + t("lsIpLabel") + '</th><th>' + t("ruleActionLabel") + '</th><th>' + t("colRule") + '</th><th>' + t("colRisk") + '</th><th>' + t("colPath") + '</th></tr></thead><tbody>';
     entries.forEach(function(e){
       h += "<tr><td class='mono'>" + esc(e.ts || "") + "</td><td>" + esc(e.event || "") + "</td><td class='mono'>" + esc(e.ip || "") + "</td><td>" + esc(e.action || "") + "</td><td class='mono'>" + esc(e.rule || "") + "</td><td>" + (e.risk_score != null ? num(e.risk_score) : "—") + "</td><td class='mono'>" + esc(e.path || "") + "</td></tr>";
     });
@@ -1254,9 +2237,9 @@ function runLogSearch(){
     $("lsPrev").disabled = true;
     $("lsNext").disabled = true;
     if(err.code === "ERR_JSON_LOGS_NOT_CONFIGURED"){
-      setHTML("logSearchBody", '<div class="state">Structured logging is not configured. Set <code>proxy.logFormat</code> to <code>json</code> and <code>proxy.logFile</code> to a writable path in <code>config.json</code>, then reload the config.</div>');
+      setHTML("logSearchBody", '<div class="state">' + t("errJsonLogs") + '</div>');
     } else {
-      setHTML("logSearchBody", '<div class="state state-error"><strong>Search failed.</strong><br>' + esc(err.message) + '</div>');
+      setHTML("logSearchBody", '<div class="state state-error"><strong>' + t("searchFailed") + '</strong><br>' + esc(err.message) + '</div>');
     }
   });
 }
@@ -1267,7 +2250,7 @@ var countryCentroids = {US:[39.8,-98.5],CN:[35,105],RU:[60,90],IN:[21,78],BR:[-1
 
 function attackMapSVG(countries, max){
   var cx = 180, cy = 100, r = 88;
-  var s = '<svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Schematic world map of attack sources" style="max-width:640px;display:block;margin:0 auto 12px">';
+  var s = '<svg viewBox="0 0 360 200" width="100%" role="img" aria-label="' + t("mapAriaLabel") + '" style="max-width:640px;display:block;margin:0 auto 12px">';
   s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#888" stroke-width="1" opacity="0.6"/>';
   s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r + '" ry="30" fill="none" stroke="#888" stroke-width="0.5" opacity="0.35"/>';
   s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="30" ry="' + r + '" fill="none" stroke="#888" stroke-width="0.5" opacity="0.35"/>';
@@ -1288,32 +2271,32 @@ function attackMapSVG(countries, max){
 function loadAttackMap(){
   var win = $("mapWindow").value;
   var top = $("mapTop").value || "10";
-  setHTML("mapBody", '<div class="state">Loading map…</div>');
+  setHTML("mapBody", '<div class="state">' + t("loadingMap") + '</div>');
   setText("mapMeta", "");
   return apiV2("/_bProxy/api/v2/GET_ATTACK_MAP?window=" + encodeURIComponent(win) + "&top=" + encodeURIComponent(top)).then(function(r){
     if(!r.LOGS_CONFIGURED){
-      setHTML("mapBody", '<div class="state">Structured logging is not configured. Set <code>proxy.logFormat</code> to <code>json</code> and <code>proxy.logFile</code> to a writable path in <code>config.json</code>, then reload the config.</div>');
+      setHTML("mapBody", '<div class="state">' + t("errJsonLogs") + '</div>');
       return;
     }
     if(!r.GEO_CONFIGURED){
-      setHTML("mapBody", '<div class="state">No GeoIP database is configured, so no country data exists. Set <code>proxy.geoipCountryDatabase</code> to a MaxMind database path in <code>config.json</code> to enable the attack map.</div>');
+      setHTML("mapBody", '<div class="state">' + t("errNoGeoip") + '</div>');
       return;
     }
     var countries = r.COUNTRIES || [];
-    setText("mapMeta", num(r.SCANNED || 0) + " lines scanned" + (r.TRUNCATED ? " · scan truncated" : ""));
+    setText("mapMeta", t("mapMeta", num(r.SCANNED || 0)) + (r.TRUNCATED ? t("lsTruncated") : ""));
     if(!countries.length){
-      setHTML("mapBody", '<div class="state">No blocked or challenged requests with country data in this window.</div>');
+      setHTML("mapBody", '<div class="state">' + t("noMapData") + '</div>');
       return;
     }
     var max = countries[0].TOTAL || 1;
     var h = attackMapSVG(countries, max);
     countries.forEach(function(c){
       var pct = Math.round((c.TOTAL / max) * 100);
-      h += '<div class="bar-row"><span class="lbl">' + esc(c.COUNTRY) + '</span><span class="track"><span class="fill" style="display:block;width:' + pct + '%"></span></span><span class="val">' + num(c.TOTAL) + ' · ' + num(c.BLOCKS) + ' blocked · ' + num(c.CHALLENGES) + ' challenged</span></div>';
+      h += '<div class="bar-row"><span class="lbl">' + esc(c.COUNTRY) + '</span><span class="track"><span class="fill" style="display:block;width:' + pct + '%"></span></span><span class="val">' + num(c.TOTAL) + ' · ' + t("mapBarVal", num(c.BLOCKS), num(c.CHALLENGES)) + '</span></div>';
     });
     setHTML("mapBody", h);
   }).catch(function(err){
-    setHTML("mapBody", '<div class="state state-error"><strong>Could not load the attack map.</strong><br>' + esc(err.message) + '</div>');
+    setHTML("mapBody", '<div class="state state-error"><strong>' + t("errLoadMap") + '</strong><br>' + esc(err.message) + '</div>');
   });
 }
 
@@ -1338,11 +2321,11 @@ function loadSettings(){
     setField("setWafInspectBody", r.WAF_INSPECT_BODY ? "true" : "false");
     setField("setWafWpLimit", r.WAF_WP_LOGIN_LIMIT);
     setField("setRulesDryRun", r.RULES_DRY_RUN ? "true" : "false");
-    setText("settingsProvider", r.CHALLENGE_PROVIDER || "none (proof-of-work)");
-    setText("settingsKeys", r.CHALLENGE_KEYS_CONFIGURED ? "yes" : "no");
+    setText("settingsProvider", r.CHALLENGE_PROVIDER || t("providerNone"));
+    setText("settingsKeys", r.CHALLENGE_KEYS_CONFIGURED ? t("yes") : t("no"));
     showInline("settingsError", "settingsOk", "", "");
   }).catch(function(err){
-    showInline("settingsError", "settingsOk", "Could not load settings: " + err.message, "");
+    showInline("settingsError", "settingsOk", t("errLoadSettings", err.message), "");
   });
 }
 
@@ -1366,26 +2349,26 @@ function submitSettings(ev){
   };
   showInline("settingsError", "settingsOk", "", "");
   domainWrite(currentDomain, "SET_DOMAIN_CONFIG", params).then(function(){
-    showInline("settingsError", "settingsOk", "", "Settings saved to config.json.");
+    showInline("settingsError", "settingsOk", "", t("settingsSaved"));
     return loadSettings();
   }).catch(function(err){
-    showInline("settingsError", "settingsOk", "Could not save settings: " + err.message, "");
+    showInline("settingsError", "settingsOk", t("errSaveSettings", err.message), "");
   });
 }
 
 function loadProxyFeatures(){
   return proxyAction("GET_PROXY_FEATURES").then(function(r){
     var h = '<table><tbody>'
-      + "<tr><td>Quiet mode</td><td>" + (r.QUIET_MODE ? "on" : "off") + "</td></tr>"
-      + "<tr><td>Auto SSL</td><td>" + (r.AUTO_SSL ? "enabled" : "disabled") + (r.AUTO_SSL_ACTIVE ? " (active)" : "") + "</td></tr>"
-      + "<tr><td>GeoIP country database</td><td>" + (r.GEO_COUNTRY_LOADED ? "loaded" : "not loaded") + "</td></tr>"
-      + "<tr><td>GeoIP ASN database</td><td>" + (r.GEO_ASN_LOADED ? "loaded" : "not loaded") + "</td></tr>"
-      + "<tr><td>Reputation feed</td><td>" + (r.REPUTATION_FEED_CONFIGURED ? "configured" : "not configured") + "</td></tr>"
-      + "<tr><td>Reputation list size</td><td>" + num(r.REPUTATION_LOCAL_IPS) + " IPs, " + num(r.REPUTATION_LOCAL_NETWORKS) + " networks (local) · " + num(r.REPUTATION_FEED_IPS) + " IPs, " + num(r.REPUTATION_FEED_NETWORKS) + " networks (feed)</td></tr>"
+      + "<tr><td>" + t("pfQuiet") + "</td><td>" + (r.QUIET_MODE ? t("onWord") : t("offWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfAutoSsl") + "</td><td>" + (r.AUTO_SSL ? t("enabledWord") : t("disabledWord")) + (r.AUTO_SSL_ACTIVE ? t("activeSuffix") : "") + "</td></tr>"
+      + "<tr><td>" + t("pfGeoCountry") + "</td><td>" + (r.GEO_COUNTRY_LOADED ? t("loadedWord") : t("notLoadedWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfGeoAsn") + "</td><td>" + (r.GEO_ASN_LOADED ? t("loadedWord") : t("notLoadedWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfRepFeed") + "</td><td>" + (r.REPUTATION_FEED_CONFIGURED ? t("configuredWord") : t("notConfiguredWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfRepSize") + "</td><td>" + t("repListSize", num(r.REPUTATION_LOCAL_IPS), num(r.REPUTATION_LOCAL_NETWORKS), num(r.REPUTATION_FEED_IPS), num(r.REPUTATION_FEED_NETWORKS)) + "</td></tr>"
       + "</tbody></table>";
     setHTML("proxyFeatures", h);
   }).catch(function(){
-    setHTML("proxyFeatures", '<div class="state state-error"><strong>Could not load proxy features.</strong></div>');
+    setHTML("proxyFeatures", '<div class="state state-error"><strong>' + t("errLoadProxyFeatures") + '</strong></div>');
   });
 }
 
@@ -1393,70 +2376,70 @@ function loadBackups(){
   return proxyAction("LIST_CONFIG_BACKUPS").then(function(r){
     var backups = r.BACKUPS || [];
     if(!backups.length){
-      setHTML("backupList", '<div class="state">No configuration backups yet. Backups appear after the first saved change.</div>');
+      setHTML("backupList", '<div class="state">' + t("noBackups") + '</div>');
       return;
     }
-    var h = '<table><thead><tr><th>Backup</th><th>Size</th><th>Modified (UTC)</th><th>Actions</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("colBackup") + '</th><th>' + t("colSize") + '</th><th>' + t("colModified") + '</th><th>' + t("colActions") + '</th></tr></thead><tbody>';
     backups.forEach(function(b){
-      h += "<tr><td class='mono'>" + esc(b.NAME) + "</td><td>" + num(b.SIZE) + " bytes</td><td>" + esc(b.MODIFIED) + "</td>"
-        + '<td style="white-space:nowrap"><button type="button" class="small" data-backup-restore="' + esc(b.NAME) + '">Restore</button></td></tr>';
+      h += "<tr><td class='mono'>" + esc(b.NAME) + "</td><td>" + t("sizeBytes", num(b.SIZE)) + "</td><td>" + esc(b.MODIFIED) + "</td>"
+        + '<td style="white-space:nowrap"><button type="button" class="small" data-backup-restore="' + esc(b.NAME) + '">' + t("restoreBtn") + '</button></td></tr>';
     });
     setHTML("backupList", h + "</tbody></table>");
     document.querySelectorAll("[data-backup-restore]").forEach(function(btn){
       btn.addEventListener("click", function(){ restoreBackup(btn.getAttribute("data-backup-restore")); });
     });
   }).catch(function(){
-    setHTML("backupList", '<div class="state state-error"><strong>Could not load backups.</strong></div>');
+    setHTML("backupList", '<div class="state state-error"><strong>' + t("errLoadBackups") + '</strong></div>');
   });
 }
 
 function restoreBackup(name){
-  if(!window.confirm("Restore " + name + "? The backup is validated first, the current config is backed up, and the proxy reloads. Reloading resets per-domain counters and stage state.")) return;
+  if(!window.confirm(t("confirmRestoreBackup", name))) return;
   showInline("settingsError", "settingsOk", "", "");
   proxyWrite("RESTORE_CONFIG_BACKUP", {backup: name}).then(function(){
-    showInline("settingsError", "settingsOk", "", "Backup restored and proxy reloaded.");
+    showInline("settingsError", "settingsOk", "", t("backupRestored"));
     loadBackups();
     return loadSettings();
   }).catch(function(err){
-    showInline("settingsError", "settingsOk", "Could not restore the backup: " + err.message, "");
+    showInline("settingsError", "settingsOk", t("errRestoreBackup", err.message), "");
   });
 }
 
 function countTable(mapObj, keyLabel){
   var rows = Object.keys(mapObj || {}).map(function(k){ return [k, Number(mapObj[k]) || 0]; });
   rows.sort(function(a,b){ return b[1]-a[1]; });
-  if(!rows.length) return '<p class="small muted">None recorded.</p>';
-  var h = '<table><thead><tr><th>' + esc(keyLabel) + '</th><th>Count</th></tr></thead><tbody>';
+  if(!rows.length) return '<p class="small muted">' + t("noneRecorded") + '</p>';
+  var h = '<table><thead><tr><th>' + esc(keyLabel) + '</th><th>' + t("colCount") + '</th></tr></thead><tbody>';
   rows.forEach(function(r){ h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td>" + num(r[1]) + "</td></tr>"; });
   return h + "</tbody></table>";
 }
 
 function renderReport(rep){
   var h = '<div class="cards">'
-    + '<div class="card"><div class="label">Total requests</div><div class="value">' + num(rep.total_requests) + '</div><div class="foot">since last reload</div></div>'
-    + '<div class="card"><div class="label">Bypassed</div><div class="value">' + num(rep.bypassed_requests) + '</div><div class="foot">passed to backend</div></div>'
-    + '<div class="card"><div class="label">Peak r/s</div><div class="value">' + num(rep.peak_requests_per_second) + '</div><div class="foot">peak bypassed: ' + num(rep.peak_bypassed_per_second) + '/s</div></div>'
-    + '<div class="card"><div class="label">Stage</div><div class="value">' + esc(String(rep.stage)) + '</div><div class="foot">' + (rep.stage_manually_set ? "locked" : "automatic") + (rep.raw_attack || rep.bypass_attack ? " · under attack" : "") + '</div></div>'
+    + '<div class="card"><div class="label">' + t("cardTotalRps") + '</div><div class="value">' + num(rep.total_requests) + '</div><div class="foot">' + t("cardTotalFoot") + '</div></div>'
+    + '<div class="card"><div class="label">' + t("repCardBypassed") + '</div><div class="value">' + num(rep.bypassed_requests) + '</div><div class="foot">' + t("repCardBypassedFoot") + '</div></div>'
+    + '<div class="card"><div class="label">' + t("repCardPeak") + '</div><div class="value">' + num(rep.peak_requests_per_second) + '</div><div class="foot">' + t("repCardPeakFoot", num(rep.peak_bypassed_per_second)) + '</div></div>'
+    + '<div class="card"><div class="label">' + t("stageTitle") + '</div><div class="value">' + esc(String(rep.stage)) + '</div><div class="foot">' + (rep.stage_manually_set ? t("repLocked") : t("repAutomatic")) + (rep.raw_attack || rep.bypass_attack ? t("repUnderAttack") : "") + '</div></div>'
     + '</div>';
-  h += '<div class="panel"><h2>Blocks by reason</h2>' + countTable(rep.blocks_by_reason, "Reason") + '</div>';
-  h += '<div class="panel"><h2>Challenges by stage</h2>' + countTable(rep.challenges_by_stage, "Stage") + '</div>';
-  h += '<div class="panel"><h2>WAF matches by rule</h2>' + countTable(rep.waf_matches_by_rule, "Rule") + '</div>';
-  h += '<div class="panel"><h2>Backend</h2><table><tbody>'
-    + "<tr><td>Requests OK</td><td>" + num(rep.backend_requests_ok) + "</td></tr>"
-    + "<tr><td>Requests failed</td><td>" + num(rep.backend_requests_failed) + "</td></tr>"
-    + "<tr><td>Average latency</td><td>" + (rep.backend_latency_avg_seconds != null ? rep.backend_latency_avg_seconds.toFixed(3) + " s" : "—") + "</td></tr>"
+  h += '<div class="panel"><h2>' + t("repBlocks") + '</h2>' + countTable(rep.blocks_by_reason, t("repReason")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repChallenges") + '</h2>' + countTable(rep.challenges_by_stage, t("stageTitle")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repWaf") + '</h2>' + countTable(rep.waf_matches_by_rule, t("colRule")) + '</div>';
+  h += '<div class="panel"><h2>' + t("colBackend") + '</h2><table><tbody>'
+    + "<tr><td>" + t("repReqOk") + "</td><td>" + num(rep.backend_requests_ok) + "</td></tr>"
+    + "<tr><td>" + t("repReqFailed") + "</td><td>" + num(rep.backend_requests_failed) + "</td></tr>"
+    + "<tr><td>" + t("repLatency") + "</td><td>" + (rep.backend_latency_avg_seconds != null ? t("repLatencySec", rep.backend_latency_avg_seconds.toFixed(3)) : "—") + "</td></tr>"
     + "</tbody></table></div>";
   var ipRows = function(list){
-    if(!list || !list.length) return '<p class="small muted">None in this window.</p>';
-    var t = '<table><thead><tr><th>IP</th><th>Requests</th><th>Country</th><th>ASN</th></tr></thead><tbody>';
-    list.forEach(function(e){ t += "<tr><td class='mono'>" + esc(e.ip) + "</td><td>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
-    return t + "</tbody></table>";
+    if(!list || !list.length) return '<p class="small muted">' + t("noneInWindow") + '</p>';
+    var tbl = '<table><thead><tr><th>' + t("lsIpLabel") + '</th><th>' + t("colRequests") + '</th><th>' + t("colCountry") + '</th><th>' + t("colAsn") + '</th></tr></thead><tbody>';
+    list.forEach(function(e){ tbl += "<tr><td class='mono'>" + esc(e.ip) + "</td><td>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
+    return tbl + "</tbody></table>";
   };
-  h += '<div class="panel"><h2>Top verified IPs (proxy-wide)</h2>' + ipRows(rep.top_verified_ips_proxy_wide) + '</div>';
-  h += '<div class="panel"><h2>Top unverified IPs (proxy-wide)</h2>' + ipRows(rep.top_unverified_ips_proxy_wide) + '</div>';
-  h += '<div class="panel"><h2>Top unknown fingerprints (proxy-wide)</h2>' + countTable((rep.top_unknown_fingerprints_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), "Fingerprint") + '</div>';
-  h += '<div class="panel"><h2>Countries (proxy-wide, top IPs only)</h2>' + countTable((rep.countries_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), "Country") + '</div>';
-  h += '<p class="small muted">Generated at ' + esc(rep.generated_at || "") + ' · window: ' + num(rep.window_seconds) + 's.</p>';
+  h += '<div class="panel"><h2>' + t("repTopVerified") + '</h2>' + ipRows(rep.top_verified_ips_proxy_wide) + '</div>';
+  h += '<div class="panel"><h2>' + t("repTopUnverified") + '</h2>' + ipRows(rep.top_unverified_ips_proxy_wide) + '</div>';
+  h += '<div class="panel"><h2>' + t("repTopFps") + '</h2>' + countTable((rep.top_unknown_fingerprints_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("repFingerprint")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repCountries") + '</h2>' + countTable((rep.countries_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("colCountry")) + '</div>';
+  h += '<p class="small muted">' + t("repGenerated", esc(rep.generated_at || ""), num(rep.window_seconds)) + '</p>';
   setHTML("reportBody", h);
 }
 
@@ -1469,12 +2452,12 @@ function reportTopValue(){
 
 function loadReport(){
   showInline("reportError", null, "", "");
-  setHTML("reportBody", '<div class="state">Loading report…</div>');
+  setHTML("reportBody", '<div class="state">' + t("loadingReport") + '</div>');
   return domainAction(currentDomain, "GET_ATTACK_REPORT?format=json&top=" + reportTopValue()).then(function(r){
     renderReport(r.REPORT || {});
   }).catch(function(err){
-    setHTML("reportBody", '<div class="state">No report loaded yet.</div>');
-    showInline("reportError", null, "Could not load the report: " + err.message, "");
+    setHTML("reportBody", '<div class="state">' + t("repNoReport") + '</div>');
+    showInline("reportError", null, t("errLoadReport", err.message), "");
   });
 }
 
@@ -1500,41 +2483,41 @@ function downloadReport(format){
     a.remove();
     setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
   }).catch(function(err){
-    showInline("reportError", null, "Could not export the report: " + err.message, "");
+    showInline("reportError", null, t("errExportReport", err.message), "");
   });
 }
 
 function changeStage(params, label){
   showInline("stageError", "stageOk", "", "");
   domainWrite(currentDomain, "SET_STAGE", params).then(function(){
-    showInline("stageError", "stageOk", "", label + " — applied immediately (runtime-only; a reload resets it).");
+    showInline("stageError", "stageOk", "", label + t("stageAppliedSuffix"));
     return loadStageState();
   }).catch(function(err){
-    showInline("stageError", "stageOk", "Could not change the stage: " + err.message, "");
+    showInline("stageError", "stageOk", t("errChangeStage", err.message), "");
   });
 }
 
 function clearLogs(all){
-  var label = all ? "all domains" : currentDomain;
-  if(!window.confirm("Clear logs for " + label + "? This cannot be undone.")) return;
+  var label = all ? t("allDomains") : currentDomain;
+  if(!window.confirm(t("confirmClearLogs", label))) return;
   showInline("logsError", null, "", "");
   var call = all ? proxyWrite("CLEAR_LOGS", {}) : domainWrite(currentDomain, "CLEAR_LOGS", {});
   call.then(function(){
-    setText("logsNote", "Logs cleared.");
+    setText("logsNote", t("logsCleared"));
     return loadLogs();
   }).catch(function(err){
-    showInline("logsError", null, "Could not clear logs: " + err.message, "");
+    showInline("logsError", null, t("errClearLogs", err.message), "");
   });
 }
 
 function reloadConfig(){
-  if(!window.confirm("Reload the configuration from config.json?\n\nThe file is validated first: if it is invalid, nothing changes and the running proxy is untouched. A successful reload resets request counters and stage locks, like the terminal reload.")) return;
+  if(!window.confirm(t("confirmReload"))) return;
   showBanner("");
   proxyWrite("RELOAD", {}).then(function(){
     showBanner("");
     return refreshAll();
   }).catch(function(err){
-    showBanner("Reload failed, running config untouched: " + err.message);
+    showBanner(t("errReload", err.message));
   });
 }
 
@@ -1554,7 +2537,7 @@ function refreshAll(){
     updating.hidden = true;
   }).catch(function(err){
     updating.hidden = true;
-    showBanner("Could not reach the API: " + (err && err.message ? err.message : err));
+    showBanner(t("errReachApi", err && err.message ? err.message : err));
   });
 }
 function startPolling(){
@@ -1576,7 +2559,7 @@ function setConnected(on){
   var pill = $("connPill");
   pill.classList.toggle("ok", on);
   pill.classList.toggle("bad", false);
-  setText("connText", on ? (ssoMode ? "Connected via SSO" : "Connected") : "Not connected");
+  setText("connText", on ? (ssoMode ? t("connectedSso") : t("connected")) : t("notConnected"));
   if(on){ startPolling(); } else { stopPolling(); }
 }
 function connect(secret){
@@ -1590,7 +2573,7 @@ function connect(secret){
   }).catch(function(err){
     apiSecret = null;
     setConnected(false);
-    showBanner("Connection failed: " + (err && err.message ? err.message : err) + " Check the API secret and try again.");
+    showBanner(t("errConnect", err && err.message ? err.message : err));
   });
 }
 function connectSSO(){
@@ -1681,12 +2664,12 @@ $("ruleCancel").addEventListener("click", function(){
 document.querySelectorAll("[data-stage]").forEach(function(btn){
   btn.addEventListener("click", function(){
     var s = btn.getAttribute("data-stage");
-    changeStage({stage: s}, s === "0" ? "Automatic switching restored" : "Stage " + s + " locked");
+    changeStage({stage: s}, s === "0" ? t("stageLabelAuto") : t("stageLabelLock", s));
   });
 });
 document.querySelectorAll("[data-underattack]").forEach(function(btn){
   btn.addEventListener("click", function(){
-    changeStage({underAttack: "true"}, "Under-attack mode on (Stage 3 locked)");
+    changeStage({underAttack: "true"}, t("stageLabelAttack"));
   });
 });
 $("clearLogsBtn").addEventListener("click", function(){ clearLogs(false); });
@@ -1698,7 +2681,7 @@ $("refreshFeedBtn").addEventListener("click", function(){
   proxyWrite("REFRESH_REPUTATION_FEED", {}).then(function(){
     return loadProxyFeatures();
   }).catch(function(err){
-    showBanner("Could not refresh the reputation feed: " + err.message);
+    showBanner(t("errRefreshFeed", err.message));
   });
 });
 $("reportLoadBtn").addEventListener("click", loadReport);
@@ -1717,7 +2700,11 @@ $("lsNext").addEventListener("click", function(){
 $("reportJsonBtn").addEventListener("click", function(){ downloadReport("json"); });
 $("reportCsvBtn").addEventListener("click", function(){ downloadReport("csv"); });
 
-setText("hostPill", "host: " + (hostDomain || "—"));
+(function initLang(){
+  var savedLang = null;
+  try { savedLang = localStorage.getItem(LANG_KEY); } catch(e){}
+  applyLang(savedLang === "hi" ? "hi" : "en", true);
+})();
 syncDomainLabels();
 $("domainInput").value = currentDomain;
 setConnected(false);
@@ -1735,6 +2722,16 @@ else {
       connectSSO();
     }
   }).catch(function(){});
+}
+/* PWA: the service worker caches the app shell only (page, manifest,
+   icons). API responses and secrets are never cached. Registration
+   is best-effort: a failure leaves a normal web page behind. */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    try {
+      navigator.serviceWorker.register("./sw.js").catch(function(){});
+    } catch(e){}
+  });
 }
 })();
 </script>

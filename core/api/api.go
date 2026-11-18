@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sonushield/core/dashboard"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/proxy"
@@ -77,6 +78,11 @@ func AuthenticatedControlRequest(request *http.Request) bool {
 			return ok
 		}
 		if path == "/_bProxy/"+proxy.AdminSecret+"/dashboard" {
+			return true
+		}
+		// PWA shell assets (Batch 6): same secret-path
+		// authentication as the dashboard page itself.
+		if dashboard.IsShellAsset(path, proxy.AdminSecret) {
 			return true
 		}
 	}
