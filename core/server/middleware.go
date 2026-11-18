@@ -953,6 +953,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Mobile app attestation (Batch 8). Attested API paths require
+	//a valid integrity token; inert unless configured. See
+	//checkAttestation for the log/block modes.
+	if checkAttestation(writer, request, domainName, ip, domainSettings, tlsFp, ja4Fp, httpFp, browser, botFp, domainData.Stage, susLv, logPath) {
+		return
+	}
+
 	//WebSocket upgrade with an idle timeout (Batch 4). Only when
 	//the operator configured websocketIdleTimeout; otherwise the
 	//upgrade flows through the normal reverse proxy exactly as

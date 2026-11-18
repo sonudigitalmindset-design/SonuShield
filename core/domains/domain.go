@@ -100,6 +100,7 @@ type Domain struct {
 	APIKeyHeader        string           `json:"apiKeyHeader"`
 	APIKeyPaths         []string         `json:"apiKeyPaths"`
 	GraphQLPath         string           `json:"graphqlPath"`
+	Attestation         AttestationConfig `json:"attestation"`
 	GraphQLMaxDepth     int              `json:"graphqlMaxDepth"`
 	GraphQLMaxFields    int              `json:"graphqlMaxFields"`
 	RulesDryRun         bool             `json:"rulesDryRun"`
@@ -268,6 +269,7 @@ type DomainSettings struct {
 	Pool    *BackendPool
 	JWT     *JWTVerifier
 	APIKeys *APIKeyState
+	Attest  *AttestationVerifier
 }
 
 type DomainLog struct {

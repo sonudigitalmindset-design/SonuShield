@@ -121,6 +121,10 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		"SIGNED_URL_CONFIGURED": len(domainSettings.SignedURLPaths) > 0 && domainSettings.SignedURLSecret != "",
 		"HOTLINK_PROTECT":       domainSettings.HotlinkProtect,
 		"CANARY_CONFIGURED": len(domainSettings.CanaryPaths) > 0 || len(domainSettings.CanaryTokens) > 0,
+		// Mobile app attestation (Batch 8), read-only here. The
+		// secret and JWKS URL are never returned: only whether
+		// attestation is active.
+		"ATTESTATION_CONFIGURED": domainSettings.Attest != nil,
 	}
 }
 

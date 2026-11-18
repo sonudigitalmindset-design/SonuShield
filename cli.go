@@ -261,6 +261,7 @@ func redactConfigForExport(cfg *domains.Configuration) {
 		redact(&d.Twilio.AuthToken)
 		redact(&d.ChallengeSecretKey)
 		redact(&d.JWTSecret)
+		redact(&d.Attestation.Secret)
 		redact(&d.OriginLockSecret)
 		redact(&d.SignedURLSecret)
 		redact(&d.CloudflareAPIToken)

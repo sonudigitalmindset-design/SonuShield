@@ -27,6 +27,10 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	if len(domain.JWTProtectedPaths) > 0 && settings.JWT == nil {
 		fmt.Println("[ ! ] [ jwtProtectedPaths set for " + domain.Name + " but no jwtSecret/jwtJWKSURL configured; protected routes will reject all requests ]")
 	}
+	// Mobile app attestation (Batch 8): nil unless enabled with
+	// paths. A verifier without verification material fails
+	// closed on its paths; see NewAttestationVerifier.
+	settings.Attest = NewAttestationVerifier(domain.Name, domain.Attestation)
 	if settings.APIKeyHeader == "" {
 		settings.APIKeyHeader = "X-API-Key"
 	}
