@@ -259,6 +259,14 @@ func redactConfigForExport(cfg *domains.Configuration) {
 	}
 	// BGP monitor API token (custom sources only).
 	redact(&cfg.Proxy.BGPMonitor.APIToken)
+	// On-call responder channel secrets.
+	for i := range cfg.Proxy.OnCall.Responders {
+		responder := &cfg.Proxy.OnCall.Responders[i]
+		redact(&responder.Telegram.BotToken)
+		redact(&responder.Email.Password)
+		redact(&responder.Twilio.AuthToken)
+		redact(&responder.Webhook.URL)
+	}
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

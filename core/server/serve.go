@@ -12,6 +12,7 @@ import (
 	"sonushield/core/metrics"
 	"sonushield/core/pnc"
 	"sonushield/core/proxy"
+	"sonushield/core/utils"
 	"io"
 	"net"
 	"net/http"
@@ -52,6 +53,12 @@ func Serve() {
 	//Synthetic self-checks (Batch 8). Started once; inert
 	//unless proxy.synthetic is enabled with checks.
 	StartSyntheticChecks()
+
+	//On-call escalation ticker (Batch 8). Started once;
+	//inert unless proxy.oncall is enabled with an escalation
+	//delay. utils owns the ticker because it owns the channel
+	//senders.
+	utils.StartOnCallEscalation()
 
 	//Stripe usage reporter (Batch 6). Started once; inert without
 	//a valid key and a report interval in proxy.stripe.

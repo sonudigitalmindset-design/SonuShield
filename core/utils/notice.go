@@ -18,18 +18,26 @@ package utils
 
 import (
 	"sonushield/core/domains"
+	"sonushield/core/oncalls"
 	"sonushield/core/pnc"
 )
 
 // SendNotice fans a title + body out to every configured alert
 // channel for the domain. It never logs, and it never fails:
 // unconfigured or broken channels are skipped silently.
+// Under an active on-call rotation the notice goes to the
+// on-call responder's channels and is tracked for
+// acknowledgement (see utils/oncall.go).
 func SendNotice(domainSettings domains.DomainSettings, title, body string) {
 	defer pnc.PanicHndl()
 
+	resolved, tracked := resolveOnCallSettings(domainSettings)
 	text := title + "\n" + body
-	sendTelegramText(domainSettings.DomainTelegram, text)
-	sendEmailText(domainSettings.DomainEmail, "SonuShield: "+title, body)
-	sendTwilioText(domainSettings.DomainTwilio, text)
-	sendDiscordText(domainSettings.DomainWebhooks, title, body)
+	sendTelegramText(resolved.DomainTelegram, text)
+	sendEmailText(resolved.DomainEmail, "SonuShield: "+title, body)
+	sendTwilioText(resolved.DomainTwilio, text)
+	sendDiscordText(resolved.DomainWebhooks, title, body)
+	if tracked {
+		oncalls.Track(title, body, domainSettings.Name)
+	}
 }

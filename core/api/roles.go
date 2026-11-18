@@ -117,6 +117,8 @@ var actionMinRole = map[string]string{
 	"GET_BGP_STATUS":                   proxy.RoleViewer,
 	"GET_SYNTHETIC_STATUS":             proxy.RoleViewer,
 	"GET_RUM_STATS":                    proxy.RoleViewer,
+	"GET_ONCALL_STATUS":                proxy.RoleViewer,
+	"ACK_ALERT":                        proxy.RoleOperator,
 }
 
 func roleLevel(role string) int {

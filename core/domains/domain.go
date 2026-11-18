@@ -368,6 +368,7 @@ type Proxy struct {
 	ThreatSharing   ThreatSharingConfig `json:"threatSharing"`
 	BGPMonitor      BGPMonitorConfig  `json:"bgpMonitor"`
 	Synthetic       SyntheticConfig   `json:"synthetic"`
+	OnCall          OnCallConfig      `json:"oncall"`
 	SSO             *SSOConfig      `json:"sso"`
 	Stripe          StripeConfig    `json:"stripe"`
 	PublicAPIKeys   []PublicAPIKey  `json:"publicApiKeys"`

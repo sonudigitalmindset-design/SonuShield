@@ -17,15 +17,27 @@ package utils
 import (
 	"sonushield/core/domains"
 	"sonushield/core/events"
+	"sonushield/core/oncalls"
 	"strconv"
 	"strings"
 )
 
 func SendAlerts(domainData domains.DomainData, domainSettings domains.DomainSettings, notificationType int) {
-	SendWebhook(domainData, domainSettings, notificationType)
-	SendTelegram(domainData, domainSettings, notificationType)
-	SendEmail(domainData, domainSettings, notificationType)
-	SendTwilio(domainData, domainSettings, notificationType)
+	// On-call rotation (Batch 8): channel sends go to the
+	// on-call responder when one is resolved; SIEM/event
+	// publication below is unaffected.
+	resolved, tracked := resolveOnCallSettings(domainSettings)
+	SendWebhook(domainData, resolved, notificationType)
+	SendTelegram(domainData, resolved, notificationType)
+	SendEmail(domainData, resolved, notificationType)
+	SendTwilio(domainData, resolved, notificationType)
+	if tracked {
+		if notificationType == 0 {
+			oncalls.TrackFixed("attack:"+domainSettings.Name, "Attack detected on "+domainSettings.Name, alertText("", domainData, domainSettings.Name, notificationType), domainSettings.Name)
+		} else {
+			oncalls.Clear("attack:" + domainSettings.Name)
+		}
+	}
 	// Signed event webhooks / SIEM export (Batch 6). Non-blocking;
 	// inert without configured endpoints.
 	kind := "attack"

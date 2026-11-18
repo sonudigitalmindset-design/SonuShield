@@ -416,6 +416,24 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			return
 		}
 		APIResponse(writer, true, response)
+	case "GET_ONCALL_STATUS":
+		response, errCode := onCallStatusResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "ACK_ALERT":
+		response, errCode := ackAlertResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "REFRESH_REPUTATION_FEED":
 		started := firewall.RefreshReputationFeedAsync()
 		feedConfigured, _, _, _, _, _, _, _, _ := firewall.ReputationStatus()
