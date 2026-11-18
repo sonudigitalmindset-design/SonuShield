@@ -3,7 +3,7 @@ package main
 // Command-line interface (Batch 6). Subcommands:
 //
 //	sonushield run [--wizard] [--wizard-listen=ADDR]
-//	sonushield validate [--config PATH]
+//	sonushield validate [--config PATH] [--probe-backends]
 //	sonushield export [--config PATH] [--include-secrets]
 //	sonushield backup [--config PATH] [--output PATH] [--include-secrets]
 //	sonushield restore [--config PATH] BACKUP_FILE
@@ -16,14 +16,16 @@ package main
 // proxy, preserving the first-run wizard invocation form. Any
 // other first argument is an unknown command and prints usage.
 //
-// validate and export never start the proxy and never touch the
-// network: they read the config file, and validate additionally
-// applies the same checks a reload would (ValidateConfig,
-// including certificate loading). export prints the parsed
-// configuration as indented JSON with secrets redacted by
-// default; --include-secrets prints a faithful copy and warns
-// on stderr. When a secret-bearing config field is added, it
-// must be added to redactConfigForExport as well.
+// validate and export never start the proxy. validate applies
+// the detailed check (ValidateConfigDetailed: structure,
+// secrets presence, certificate validity and expiry, rule and
+// schedule validity, feature-configuration sanity) and exits
+// 1 on any error; warnings do not fail it. --probe-backends
+// additionally dials every domain backend. export prints the
+// parsed configuration as indented JSON with secrets redacted
+// by default; --include-secrets prints a faithful copy and
+// warns on stderr. When a secret-bearing config field is
+// added, it must be added to redactConfigForExport as well.
 //
 // backup and restore move whole configurations between
 // instances (see core/backup). backup writes a versioned
@@ -51,6 +53,7 @@ import (
 	"sonushield/core/domains"
 	"sonushield/core/server"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -66,9 +69,13 @@ Usage:
       --wizard starts the first-run web setup instead, when no
       config.json exists. --wizard-listen sets its listen
       address (default 127.0.0.1:8080, localhost-only).
-  sonushield validate [--config PATH]
-      Check a config file without starting the proxy. Exits 0
-      when the config would load and reload cleanly.
+  sonushield validate [--config PATH] [--probe-backends]
+      Fully check a config file without starting the proxy:
+      structure, secrets presence, certificate validity and
+      expiry, rule and schedule validity, and
+      feature-configuration sanity. Exits 0 when there are
+      no errors (warnings do not fail it). --probe-backends
+      also dials every domain backend.
   sonushield export [--config PATH] [--include-secrets]
       Print the config as indented JSON. Secrets are redacted
       unless --include-secrets is given.
@@ -141,8 +148,9 @@ func runValidate(stdout, stderr io.Writer, args []string) int {
 	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	configPath := fs.String("config", "config.json", "config file to validate")
+	probeBackends := fs.Bool("probe-backends", false, "also TCP-dial every domain backend (unreachable backends fail validation)")
 	fs.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: sonushield validate [--config PATH]")
+		fmt.Fprintln(stderr, "Usage: sonushield validate [--config PATH] [--probe-backends]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -152,16 +160,32 @@ func runValidate(stdout, stderr io.Writer, args []string) int {
 		fs.Usage()
 		return 2
 	}
-	cfg, err := readCLIConfig(*configPath)
+	raw, err := os.ReadFile(*configPath)
 	if err != nil {
 		fmt.Fprintln(stderr, "validate: "+err.Error())
 		return 1
 	}
-	if err := server.ValidateConfig(cfg); err != nil {
-		fmt.Fprintln(stderr, "validate: "+*configPath+" is invalid: "+err.Error())
+	var cfg domains.Configuration
+	if err := json.Unmarshal(raw, &cfg); err != nil {
+		fmt.Fprintln(stderr, "validate: "+*configPath+" is not valid JSON: "+err.Error())
 		return 1
 	}
-	fmt.Fprintf(stdout, "%s is valid: %d domain(s)\n", *configPath, len(cfg.Domains))
+	errors, warnings := server.ValidateConfigDetailed(&cfg, raw, *probeBackends)
+	for _, warning := range warnings {
+		fmt.Fprintln(stdout, "warning: "+warning)
+	}
+	if len(errors) > 0 {
+		for _, err := range errors {
+			fmt.Fprintln(stderr, "validate: "+err)
+		}
+		fmt.Fprintln(stderr, "validate: "+*configPath+" is invalid ("+strconv.Itoa(len(errors))+" error(s))")
+		return 1
+	}
+	fmt.Fprintf(stdout, "%s is valid: %d domain(s)", *configPath, len(cfg.Domains))
+	if len(warnings) > 0 {
+		fmt.Fprintf(stdout, " (%d warning(s))", len(warnings))
+	}
+	fmt.Fprintln(stdout)
 	return 0
 }
 

@@ -128,6 +128,47 @@ type OpenAPISpec struct {
 	violated  atomic.Int64
 }
 
+// CheckOpenAPISpec verifies that a spec file can be loaded
+// for validation, without printing anything. It returns nil
+// when validation is not configured (no spec file or no
+// prefixes) or when the spec loads cleanly, and an error
+// describing the first problem otherwise. Used by
+// `sonushield validate`; NewOpenAPISpec applies the same
+// checks at runtime with printed warnings.
+func CheckOpenAPISpec(cfg OpenAPIConfig) error {
+	if cfg.SpecFile == "" || len(cfg.Prefixes) == 0 {
+		return nil
+	}
+	data, err := os.ReadFile(cfg.SpecFile)
+	if err != nil {
+		return fmt.Errorf("spec unreadable: %s", err.Error())
+	}
+	var doc openAPIDocument
+	if err := json.Unmarshal(data, &doc); err != nil {
+		return fmt.Errorf("spec malformed: %s", err.Error())
+	}
+	if !strings.HasPrefix(doc.OpenAPI, "3.") {
+		return fmt.Errorf("spec is not an OpenAPI 3.x document")
+	}
+	if len(doc.Paths) == 0 {
+		return fmt.Errorf("spec defines no paths")
+	}
+	spec := &OpenAPISpec{
+		prefixes:  cfg.Prefixes,
+		blockMode: strings.ToLower(strings.TrimSpace(cfg.Mode)) == "block",
+		routes:    cfg.Routes,
+		paths:     doc.Paths,
+		patterns:  map[string]*regexp.Regexp{},
+	}
+	if doc.Components != nil {
+		spec.schemas = doc.Components.Schemas
+	}
+	if !spec.compilePatterns() {
+		return fmt.Errorf("spec has an invalid pattern")
+	}
+	return nil
+}
+
 // NewOpenAPISpec loads and validates a spec file, or returns
 // nil when validation is not configured. An unreadable,
 // malformed, or unsupported document logs a warning and
