@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-label="SonuShield — lightweight HTTP anti-DDoS reverse proxy">
  <defs>
   <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-   <stop offset="0" stop-color="#0d1b2e"/>
-   <stop offset="1" stop-color="#14263f"/>
+   <stop offset="0" stop-color="#020617"/>
+   <stop offset="1" stop-color="#0f172a"/>
   </linearGradient>
   <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
    <stop offset="0" stop-color="#f59e0b"/>
@@ -24,14 +24,14 @@
   </clipPath>
  </defs>
  <rect width="1200" height="320" rx="16" fill="url(#bg)"/>
-  <g fill="none" stroke="#243b57" stroke-width="1" clip-path="url(#gridClip)">
+  <g fill="none" stroke="#334155" stroke-width="1" clip-path="url(#gridClip)">
   <path d="M0 80 H1200 M0 160 H1200 M0 240 H1200 M200 0 V320 M400 0 V320 M600 0 V320 M800 0 V320 M1000 0 V320" opacity="0.35"/>
  </g>
  <use href="#flow1" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6 8" opacity="0">
   <animate attributeName="opacity" values="0;0.35" dur="1.2s" begin="0.15s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
   <animate attributeName="stroke-dashoffset" values="0;-28" dur="2.8s" repeatCount="indefinite"/>
  </use>
- <use href="#flow2" stroke="#4f7fb8" stroke-width="1.5" stroke-dasharray="6 8" opacity="0">
+ <use href="#flow2" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 8" opacity="0">
   <animate attributeName="opacity" values="0;0.35" dur="1.2s" begin="0.3s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
   <animate attributeName="stroke-dashoffset" values="0;-28" dur="3.4s" repeatCount="indefinite"/>
  </use>
@@ -41,9 +41,9 @@
   <circle r="5" fill="#f59e0b"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#flow1"/></animateMotion></circle>
   <circle r="5" fill="#f59e0b" opacity="0.8"><animateMotion dur="6s" begin="0.45s" repeatCount="indefinite"><mpath href="#flow1"/></animateMotion></circle>
   <circle r="4" fill="#f59e0b" opacity="0.6"><animateMotion dur="6s" begin="0.9s" repeatCount="indefinite"><mpath href="#flow1"/></animateMotion></circle>
-  <circle r="8" fill="#7fb3e8" opacity="0.25"><animateMotion dur="7.5s" begin="1.2s" repeatCount="indefinite"><mpath href="#flow2"/></animateMotion></circle>
-  <circle r="4" fill="#7fb3e8"><animateMotion dur="7.5s" begin="1.2s" repeatCount="indefinite"><mpath href="#flow2"/></animateMotion></circle>
-  <circle r="3.5" fill="#7fb3e8" opacity="0.7"><animateMotion dur="7.5s" begin="1.9s" repeatCount="indefinite"><mpath href="#flow2"/></animateMotion></circle>
+  <circle r="8" fill="#38bdf8" opacity="0.25"><animateMotion dur="7.5s" begin="1.2s" repeatCount="indefinite"><mpath href="#flow2"/></animateMotion></circle>
+  <circle r="4" fill="#38bdf8"><animateMotion dur="7.5s" begin="1.2s" repeatCount="indefinite"><mpath href="#flow2"/></animateMotion></circle>
+  <circle r="3.5" fill="#38bdf8" opacity="0.7"><animateMotion dur="7.5s" begin="1.9s" repeatCount="indefinite"><mpath href="#flow2"/></animateMotion></circle>
  </g>
   <g transform="translate(96,58)">
   <path d="M78 6 L148 34 V96 C148 146 118 178 78 198 C38 178 8 146 8 96 V34 Z" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="500" stroke-dashoffset="500">
@@ -61,33 +61,33 @@
   <path d="M78 6 L148 34 V96 C148 146 118 178 78 198 C38 178 8 146 8 96 V34 Z" fill="url(#shield)" opacity="0">
    <animate attributeName="opacity" values="0;0.95" dur="0.5s" begin="0.95s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
   </path>
-  <path d="M52 96 L72 118 L108 74" fill="none" stroke="#0d1b2e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="90" stroke-dashoffset="90">
+  <path d="M52 96 L72 118 L108 74" fill="none" stroke="#020617" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="90" stroke-dashoffset="90">
    <animate attributeName="stroke-dashoffset" values="90;0" dur="0.5s" begin="1.25s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
   </path>
  </g>
   <g clip-path="url(#titleClip)">
   <text x="300" y="140" font-size="72" font-weight="700" fill="#ffffff" letter-spacing="-1">SonuShield</text>
  </g>
- <text x="302" y="182" font-size="24" fill="#c8d6e5" opacity="0">Lightweight HTTP anti-DDoS reverse proxy<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="-20 0;0 0" dur="0.7s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
- <text x="302" y="216" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="18" fill="#8fa6bd" opacity="0">TLS fingerprinting · staged challenges · live dashboard<animate attributeName="opacity" values="0;1" dur="0.7s" begin="1.05s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="-20 0;0 0" dur="0.7s" begin="1.05s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
+ <text x="302" y="182" font-size="24" fill="#cbd5e1" opacity="0">Lightweight HTTP anti-DDoS reverse proxy<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="-20 0;0 0" dur="0.7s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
+ <text x="302" y="216" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="18" fill="#94a3b8" opacity="0">TLS fingerprinting · staged challenges · live dashboard<animate attributeName="opacity" values="0;1" dur="0.7s" begin="1.05s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="-20 0;0 0" dur="0.7s" begin="1.05s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
   <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="14" font-weight="600">
   <g opacity="0">
    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="1.2s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
    <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.6s" begin="1.2s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-   <rect x="302" y="240" width="118" height="30" rx="15" fill="#1e3a5c"/>
-   <text x="361" y="260" text-anchor="middle" fill="#dbe7f3">Go 1.24</text>
+   <rect x="302" y="240" width="118" height="30" rx="15" fill="#1e293b"/>
+   <text x="361" y="260" text-anchor="middle" fill="#e0f2fe">Go 1.24</text>
   </g>
   <g opacity="0">
    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="1.32s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
    <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.6s" begin="1.32s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-   <rect x="432" y="240" width="118" height="30" rx="15" fill="#1e3a5c"/>
-   <text x="491" y="260" text-anchor="middle" fill="#dbe7f3">GPL-3.0</text>
+   <rect x="432" y="240" width="118" height="30" rx="15" fill="#1e293b"/>
+   <text x="491" y="260" text-anchor="middle" fill="#e0f2fe">GPL-3.0</text>
   </g>
   <g opacity="0">
    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="1.44s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
    <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.6s" begin="1.44s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-   <rect x="562" y="240" width="170" height="30" rx="15" fill="#1e3a5c"/>
-   <text x="647" y="260" text-anchor="middle" fill="#dbe7f3">Single binary</text>
+   <rect x="562" y="240" width="170" height="30" rx="15" fill="#1e293b"/>
+   <text x="647" y="260" text-anchor="middle" fill="#e0f2fe">Single binary</text>
   </g>
  </g>
   <g clip-path="url(#pillClip)">

@@ -2,14 +2,25 @@
 
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Go 1.24](https://img.shields.io/badge/go-1.24-00ADD8)](https://go.dev/)
+[![CI](https://github.com/sonudigitalmindset-design/SonuShield/actions/workflows/ci.yml/badge.svg)](https://github.com/sonudigitalmindset-design/SonuShield/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/sonudigitalmindset-design/SonuShield/actions/workflows/codeql.yml/badge.svg)](https://github.com/sonudigitalmindset-design/SonuShield/actions/workflows/codeql.yml)
 [![Prerelease](https://img.shields.io/github/v/release/sonudigitalmindset-design/SonuShield?include_prereleases&label=prerelease)](https://github.com/sonudigitalmindset-design/SonuShield/releases)
 [![Stars](https://img.shields.io/github/stars/sonudigitalmindset-design/SonuShield)](https://github.com/sonudigitalmindset-design/SonuShield/stargazers)
 
-**SonuShield is a lightweight HTTP anti-DDoS reverse proxy written in Go.** It sits in front of your web server, fingerprints incoming TLS connections, and automatically escalates through three challenges — an invisible cookie challenge, a proof-of-work JavaScript challenge, and a custom captcha — as attacks get stronger, while affecting real visitors as little as possible.
+**SonuShield is a lightweight HTTP anti-DDoS reverse proxy written in Go.** It sits in front of your web server, fingerprints incoming TLS connections, and automatically escalates through three challenges — an invisible cookie challenge, a proof-of-work JavaScript challenge, and a custom captcha — as attacks get stronger, while affecting real visitors as little as possible. One static binary, no database, no external services required.
 
 > **Attribution:** Originally by [41Baloo (balooProxy)](https://github.com/41Baloo/balooProxy), forked and rebuilt by [Sonu Digital Mindset](https://github.com/sonudigitalmindset-design). SonuShield is free software licensed under the [GNU General Public License v3.0](LICENSE). The original project's copyright and license notices are preserved.
 
-## What It Does
+## Evidence, not promises
+
+| Check | Result |
+|-------|--------|
+| Load test (VM-local, 18 Nov 2026) | 3,437 req/s passthrough, 1,633 challenge flows/s, 7,505 PoW pages/s, 0 errors — on 1.5 shared CPUs. Relative cost only; measure capacity on your own server. See [Benchmarks](docs/benchmarks.md). |
+| Security review (18 Nov 2026) | Two manual reviews: 13 findings (2 High, 6 Medium, 5 Low, 0 Critical), all fixed; the follow-up pass found no new issues. See [Security Audit](docs/security-audit.md). |
+| Continuous integration | Every push and pull request runs build, vet, the full test suite, and config validation. See the CI badge above. |
+| Documented features | [114 features](docs/features.md), each with an animated diagram, plus 29 documentation pages covering setup, operation, and internals. |
+
+## What it does
 
 | Capability | In short |
 |------------|----------|
@@ -31,7 +42,9 @@
 
 ![How requests flow through SonuShield](docs/assets/request-flow.svg)
 
-## Quick Start
+For the full picture — every defense layer, in the order an attack meets it — see [How an attack is stopped](docs/how-an-attack-is-stopped.md).
+
+## Quick start
 
 ```sh
 git clone https://github.com/sonudigitalmindset-design/SonuShield.git
@@ -54,9 +67,11 @@ Point your domain's DNS at the server, check for the `SonuShield: 1.5` response 
 | [API Reference](docs/api.md) | API v1/v2, response format, error codes, actions, reserved paths. |
 | [Firewall Rules](docs/firewall-rules.md) | Custom gofilter rules: fields, operators, priority, and actions. |
 | [Troubleshooting](docs/troubleshooting.md) | FAQ and common issues: startup, DNS, challenges, alerts, API. |
-| [Roadmap](docs/roadmap.md) | Planned work, clearly marked — batches 1–8, sale-readiness, and heavy work last. |
+| [Roadmap](docs/roadmap.md) | How the work was sequenced — batches 1–8, control panel, sale-readiness, and Batch 3, all implemented; open items noted for later. |
 
-## An Honest Note
+Deeper topics: [Architecture](docs/architecture.md) · [Benchmarks](docs/benchmarks.md) · [Security Audit](docs/security-audit.md) · [Control Plane](docs/control-plane.md) · [Multi-server](docs/multi-server.md) · [HTTP/3](docs/http3.md) · [Cloudflare Auto-UAM](docs/cloudflare-auto-uam.md) · [Scrubbing Integration](docs/scrubbing-integration.md) · [ML Evaluation](docs/ml-evaluation.md)
+
+## An honest note
 
 No single-server product can stop every DDoS attack. SonuShield is strong against Layer 7 HTTP and bot floods on small and medium sites, but it runs on one server: it cannot absorb volumetric attacks large enough to saturate that server's network connection on its own. For very large attacks, use it together with an upstream protection service. Nothing here promises 100% DDoS protection — and no benchmark figures are claimed without a real load test.
 

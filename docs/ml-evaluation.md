@@ -9,6 +9,8 @@ data, and what the shipped code is and is not. Nothing
 here is "AI protection", and no user-facing text may call
 it that.
 
+> [← README](../README.md)
+
 ## The pre-registered ship rule
 
 Fixed before any evaluation ran:

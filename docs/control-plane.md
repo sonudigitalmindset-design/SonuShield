@@ -2,6 +2,8 @@
 
 The control plane is the Cloudflare-style management host for SonuShield: the owner, resellers, and tenants sign in to **one separate host** and manage one or more proxy nodes from the dashboard there. Protected domains carry no login page, no `/admin` path, and no management surface at all — visitors see nothing.
 
+> [← README](../README.md)
+
 ![Control-plane schematic](assets/control-plane.svg)
 
 The control plane is a separate server mode of the same binary (`sonushield control`). It serves the management UI and API from its own listener, and manages proxy nodes by calling their existing authenticated control API v2. It **never proxies visitor traffic itself**, and it keeps no copy of proxy configuration: the proxy remains the source of truth for every domain, rule, and stage. Everything the control plane offers works end to end against a real node — stage, rules, domain config, logs, reports, reload, and two-person approvals.

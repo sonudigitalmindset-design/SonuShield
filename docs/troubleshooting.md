@@ -2,6 +2,8 @@
 
 Common problems and how to fix them. If your issue is not listed here, check the [README](../README.md) and the relevant docs page first — most behavior is documented there.
 
+> [← README](../README.md)
+
 ## The proxy refuses to start
 
 **Secrets still contain `CHANGE_ME`.** SonuShield refuses to start if any secret still contains `CHANGE_ME`. Replace every placeholder in `config.json` with real random values (for example, from `openssl rand -hex 20`).

@@ -46,7 +46,7 @@ func brandBanner(b domains.Branding) string {
 		out += `<img src="` + html.EscapeString(b.LogoURL) + `" alt="" style="max-height:48px;max-width:220px">`
 	}
 	if b.DisplayName != "" {
-		out += `<div style="font-weight:700;font-size:18px;color:#333;margin-top:8px">` + html.EscapeString(b.DisplayName) + `</div>`
+		out += `<div style="font-weight:700;font-size:18px;color:#0f172a;margin-top:8px">` + html.EscapeString(b.DisplayName) + `</div>`
 	}
 	return out + `</div>`
 }

@@ -2,6 +2,8 @@
 
 How to get SonuShield running: requirements, building, certificates, running it, Docker, and DNS.
 
+> [← README](../README.md)
+
 > **New here?** Start with the [README](../README.md), then come back here. For what every setting does, see [Configuration](configuration.md).
 
 ## Requirements
@@ -55,7 +57,8 @@ Run `./main` without a `config.json` in the same directory and SonuShield will a
 
 If you already have a `config.json`, place it in the same directory as the `main` binary before starting.
 
-> **Note:** Example configurations use `CHANGE_ME` placeholder secrets. SonuShield refuses to start if any secret still contains `CHANGE_ME` — replace all of them with real random values first.
+> [!NOTE]
+> Example configurations use `CHANGE_ME` placeholder secrets. SonuShield refuses to start if any secret still contains `CHANGE_ME` — replace all of them with real random values first.
 
 ## Command-Line Interface
 
@@ -105,7 +108,8 @@ For local testing only, generate self-signed certificates with the included scri
 
 This writes `assets/server/server.crt` and `assets/server/server.key`, matching the paths used in `examples/config.json`. Generated certificates and keys are ignored by git and are never committed.
 
-> **Warning:** Self-signed certificates are for development only. Browsers will show security warnings for them. In production, use real certificates (for example, from Let's Encrypt) and keep private keys secret.
+> [!WARNING]
+> Self-signed certificates are for development only. Browsers will show security warnings for them. In production, use real certificates (for example, from Let's Encrypt) and keep private keys secret.
 
 Do not use any certificate or key previously found in this repository's history: the old default private key was public and must never be reused. In Cloudflare mode, leave `certificate` and `key` empty — they are not loaded.
 

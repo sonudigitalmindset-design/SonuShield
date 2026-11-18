@@ -6,6 +6,8 @@ can raise the zone's Cloudflare security level to
 restore it when the attack ends — through the Cloudflare
 API, automatically, with no operator action.
 
+> [← README](../README.md)
+
 ```json
 {
   "name": "example.com",

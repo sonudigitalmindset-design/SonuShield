@@ -309,6 +309,48 @@ names, or challenge flow semantics.
   motion respects prefers-reduced-motion. Service-worker shell
   bumped to v6.
 
+### Full visual overhaul (UI/UX Pro Max, "Accessible & Ethical" system)
+
+- README restructured as a trust-first landing page (hero, proof
+  table with verified numbers only, capability overview, quick
+  start, docs index); no invented stats, testimonials, or logos.
+- Docs: uniform header pattern (title, purpose, nav line) across
+  all 29 pages; plain callouts converted to GitHub alert callouts;
+  stale roadmap wording fixed (the banner claimed Batches 7–8,
+  sale-readiness, and 3 were unimplemented; all are implemented,
+  and the test count is now 76 tests / 11 packages). No technical
+  fact changed without verification against the code.
+- Diagrams: the skill-token color pass covers all 128 SVGs (hero
+  banner, architecture, flagship attack-defense journey, and the
+  114 feature schematics). Only hex colors changed — geometry,
+  text, and all SMIL animations are untouched, verified by valid
+  XML + identical animation counts + before/after frame renders.
+  Dark-background elements keep light-blue accents so they stay
+  visible; warning amber, status greens, and the destructive red
+  keep their meanings.
+- Visitor-facing pages (challenge, memory-PoW, captcha, passkey,
+  provider verification, waiting room, backend errors,
+  maintenance): skill tokens, system font stacks, visible focus
+  states. Still generic and unbranded, quiet-mode behaviour
+  unchanged, all JavaScript and Go template placeholders
+  identical, no new external requests.
+- Operator-facing pages (control-plane sign-in/setup, SSO failure
+  pages, setup wizard): same token system, 4px radii, visible
+  3px focus rings, 200ms control transitions. Branding and the
+  orange shield mark are unchanged; auth, CSRF, placeholders, and
+  redirects are untouched.
+- Dashboard consistency pass only: the traffic chart now always
+  renders its axis and gridlines, so a zero-traffic chart reads
+  as a working chart at zero instead of a broken one; the
+  attack-map grid lines use the slate token so they stay visible
+  in both themes. IDs, translations, secret-header sends, and the
+  theme-migration bootstrap are unchanged. Service-worker shell
+  bumped to v7.
+- Visual verification: none of this was eyeballed on the build VM
+  (no browser for screenshots); the rendered-frame checks above
+  verify structure and motion, not taste. The live pages still
+  need an eyeball.
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without

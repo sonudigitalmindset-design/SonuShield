@@ -1,12 +1,15 @@
 # Benchmarks
 
-> **CAVEAT — READ FIRST: the numbers below are VM-local, measured on a small
+> [!CAUTION]
+> **The numbers below are VM-local, measured on a small
 > shared virtual machine (1.5 shared CPUs). They are NOT server numbers and
 > must NOT be quoted as SonuShield's capacity.** Real capacity must be
 > measured on your own server with its real CPU, network, and backend, using
 > the instructions at the bottom of this page. The useful takeaway from the
 > VM run is the *relative* cost of each code path on identical hardware, not
 > any absolute figure.
+
+> [← README](../README.md)
 
 ## VM-local results — 18 November 2026
 

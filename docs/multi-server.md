@@ -5,6 +5,8 @@ enabled, nodes share two pieces of state through Redis so a
 load balancer can spread visitors across them without each
 node enforcing limits on only the traffic it saw itself.
 
+> [← README](../README.md)
+
 ```json
 "proxy": {
   "redis": {

@@ -2,6 +2,8 @@
 
 SonuShield exposes an HTTP API for reading proxy statistics, firewall rules, and logs — and for managing the proxy: stage control, domain configuration, firewall rule editing, log clearing, and configuration reload. Both API versions authenticate with the `apisecret` from your configuration, or with a role-mapped secret (see [Roles and Audit Log](#roles-and-audit-log)). The v1 path additionally contains your `adminsecret`.
 
+> [← README](../README.md)
+
 ![API schematic](assets/api.svg)
 
 > The API documentation previously hosted on SwaggerHub is no longer available. This page is the authoritative API reference for the current code.

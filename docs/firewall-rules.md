@@ -2,6 +2,8 @@
 
 Thanks to [gofilter](https://github.com/kor44/gofilter), SonuShield lets you add your own firewall rules using a rule engine based on [Wireshark display filter expressions](https://www.wireshark.org/docs/wsug_html_chunked/ChWorkBuildDisplayFilterSection.html).
 
+> [← README](../README.md)
+
 ![Firewall rules schematic](assets/firewall-rules.svg)
 
 ## Fields
@@ -45,10 +47,13 @@ These fields can be used in rule expressions. Values reflect the current request
 | `proxy.rps` | Int | Currently incoming requests per second. |
 | `proxy.rps_allowed` | Int | Currently incoming requests per second forwarded to the backend. |
 
-> **Do not use** `ip.requests`, `http.headers`, or `http.body` in rules. These names are registered in the rule engine but are never given values, so rules using them will not behave as expected.
+> [!WARNING]
+> Do not use `ip.requests`, `http.headers`, or `http.body` in rules. These names are registered in the rule engine but are never given values, so rules using them will not behave as expected.
 
+> [!WARNING]
 > **Bool fields cannot be compared.** The rule engine's equality test has no boolean case, so `eq`/`ne` on `proxy.cloudflare`, `proxy.stage_locked`, `proxy.attack`, and `proxy.bypass_attack` never match — this is a pre-existing limitation of the gofilter engine, not a configuration problem. The fields are listed for completeness; do not build rules that depend on comparing them. (A bare field name only tests whether the field exists, which is always true, since every field is always populated.)
 
+> [!NOTE]
 > **`ip.quic` carries real QUIC data.** Since Batch 3's HTTP/3 work, the field is registered and populated for HTTP/3 requests as `q1:<quic-version>:<tls-version>-<cipher>:<alpn>:<flags>`; TCP requests get an empty value, so rules on `ip.quic` never match TCP traffic. See [HTTP/3](http3.md).
 
 IP literals in expressions are written **bare, never quoted**: `ip.src eq 127.0.0.1` is valid, while `ip.src eq "127.0.0.1"` fails to compile (`invalid IP address`). String literals are quoted, as in the examples below.

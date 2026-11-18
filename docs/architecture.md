@@ -7,6 +7,8 @@ management service that never touches visitor traffic. There is no database,
 no separate worker process, and no required external service: all runtime
 state lives in memory, and all configuration lives in `config.json`.
 
+> [← README](../README.md)
+
 ![Request pipeline schematic](assets/architecture.svg)
 
 ## Components

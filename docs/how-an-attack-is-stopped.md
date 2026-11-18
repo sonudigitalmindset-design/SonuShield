@@ -2,6 +2,8 @@
 
 A plain-English walkthrough of what happens to every request that reaches SonuShield — the same journey, told twice: once for a real visitor, once for an attacker. No technical background needed. For the technical version, see [How It Works](how-it-works.md); for every feature in detail, see the [feature index](features.md).
 
+> [← README](../README.md)
+
 ![Attack vs defense journey](assets/attack-defense-journey.svg)
 
 The diagram shows two lanes. The **top lane** is a real visitor: they pass quietly through a few checks and reach your website, noticing nothing. The **bottom lane** is a botnet flood: the same checks catch it, its suspicion climbs step by step, it fails the challenges, gets slowed to a drip, and is blocked before it ever reaches your website. The **dark band in the middle** lists the 16 defense layers in the order every request meets them. The numbered steps below follow that exact order.

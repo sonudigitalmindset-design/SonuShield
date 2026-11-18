@@ -5,6 +5,8 @@ plus all SonuShield work — for committed secrets, keys, and tokens. No
 history was rewritten: the findings below remain in history, and this page
 exists so nobody mistakes that for safety.
 
+> [← README](../README.md)
+
 **No secret values are printed in this document.** Findings are identified
 by file name, blob/commit SHA, and secret type only.
 

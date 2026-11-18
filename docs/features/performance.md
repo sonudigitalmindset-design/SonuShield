@@ -2,6 +2,8 @@
 
 Rate limits, queues, caches, backends, and the request path under load.
 
+> [← Feature index](../features.md)
+
 Every diagram on this page is an animated schematic: it shows the mechanism in motion, not a screenshot. Diagrams use SMIL animation only, so they animate on GitHub.
 
 <a id="rate-limits"></a>

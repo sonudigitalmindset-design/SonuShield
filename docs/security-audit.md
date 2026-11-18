@@ -7,6 +7,8 @@ fixed, and what remains as an accepted, documented limitation. It is not a
 penetration-test report and makes no claim that the code is free of issues
 outside the reviewed scope.
 
+> [← README](../README.md)
+
 ## First audit — 18 November 2026 (code through `bc2588c`)
 
 Scope: all packages, plus two live probes (Stage-1 redirect behaviour and

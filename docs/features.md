@@ -2,6 +2,8 @@
 
 Every SonuShield feature, with an animated diagram and an advanced explanation: how it works, its exact configuration, and its honest limits. Diagrams are animated schematics (SMIL only, so they animate on GitHub) — each one shows its feature's mechanism in motion.
 
+> [← README](../README.md)
+
 **114 features** across 9 groups. No feature here is aspirational: every claim traces to code or existing documentation, and limits state plainly what is disabled by default, mock-verified, or untested.
 
 For the whole story in one picture, see [How an Attack Is Stopped](how-an-attack-is-stopped.md) — a plain-English walkthrough with a two-lane animated diagram of the visitor's journey and the attacker's journey through all 16 defense layers.

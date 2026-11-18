@@ -2,6 +2,8 @@
 
 `config.json` has two top-level fields: `proxy` (general settings) and `domains` (one entry per protected domain). Firewall rules are configured per domain, under each domain's `firewallRules` — see [Firewall Rules](firewall-rules.md).
 
+> [← README](../README.md)
+
 ## Example Configuration
 
 ```json
@@ -469,7 +471,7 @@ Each domain can send Discord DDoS alerts through a webhook. Create a webhook in 
 
 Both messages support placeholders: `{{domain.name}}`, `{{attack.start}}`, `{{attack.end}}`, `{{proxy.cpu}}`, and `{{proxy.ram}}`.
 
-Alerts are only sent when the stage is **not** locked, when the first stage starts being bypassed, and when the attack ends. See [DDoS Alerts](features.md#ddos-alerts).
+Alerts are only sent when the stage is **not** locked, when the first stage starts being bypassed, and when the attack ends. See the [alert features](features.md#observability-alerts).
 
 ## Telegram and Email Alerts
 

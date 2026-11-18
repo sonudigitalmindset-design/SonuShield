@@ -1,6 +1,8 @@
 # Roadmap
 
-> **Mostly planned, not yet implemented.** Batches 7–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1, 2, 4, 5, and 6 and the control panel are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
+> **All batches below are implemented.** Batches 1, 2, 4, 5, 6, 7, 8, the control panel, sale-readiness, and Batch 3 are all in the current code (see their sections). This page is now a record of how the work was sequenced; the items under [Also Noted for Later](#also-noted-for-later) remain open. For what SonuShield can do today, see [Features](features.md).
+
+> [← README](../README.md)
 
 Work is planned in batches, in this order: 1 → 2 → control panel → 4 → 5 → 6 → 7 → 8 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
 
@@ -68,13 +70,13 @@ Still planned from this batch's original scope: firewall-level block export (nft
 - Public status page plus a bare health endpoint.
 - Multi-tenancy and usage metering (tenant-scoped API roles, bandwidth estimates).
 - GitOps configuration sync (validated reload path, one-way).
-- SSO login for the dashboard (OIDC, PKCE, JWKS-verified tokens; paths temporary until the platform-host work).
+- SSO login for the dashboard (OIDC, PKCE, JWKS-verified tokens). The control plane reuses these code paths for its own SSO — see the Platform Model section below.
 - eBPF / Anycast / scrubbing-provider integration: honesty limit — kernel XDP/eBPF filtering and Anycast cannot be delivered by this userspace proxy. Delivered: health/status polling hooks, failover signaling, and [integration docs](scrubbing-integration.md) only. No eBPF/Anycast capability is claimed.
 
 ## Batch 6 — Next-Generation Detection, Operations, and Business ✅ Implemented
 
 - Control-plane exemption (fix from Batch 5 findings): API/dashboard requests carrying a valid secret bypass the challenge flow, so scripted clients can unlock a locked stage; wrong-secret requests keep the previous fall-through behavior exactly.
-- Post-quantum TLS: X25519MLKEM768 hybrid key exchange (Go 1.24 default), verified by real handshakes, with a `tlsDisablePostQuantum` opt-out. ECH honesty limit: Go's stdlib has no server-side ECH as of Go 1.24 — documented only, not claimed. QUIC fingerprinting honesty limit: no QUIC listener exists until Batch 3's HTTP/3 work, so only the reserved, inactive `ip.quic` field exists — no QUIC data is invented.
+- Post-quantum TLS: X25519MLKEM768 hybrid key exchange (Go 1.24 default), verified by real handshakes, with a `tlsDisablePostQuantum` opt-out. ECH honesty limit: Go's stdlib has no server-side ECH as of Go 1.24 — documented only, not claimed. QUIC note: at Batch 6 time no QUIC listener existed, so only the reserved, inactive `ip.quic` field existed; Batch 3's HTTP/3 work (below) superseded this — `ip.quic` now carries real QUIC data for HTTP/3 requests.
 - Memory-hard Argon2 proof-of-work (opt-in, phone-safe defaults, pure-JS solver, no CDN/WASM) and challenge rotation across attack waves or per request (PoW / memory-hard / Turnstile / hCaptcha / captcha, per operator policy).
 - Brotli compression and on-the-fly image optimization (both off by default, strict size/CPU bounds, never for non-GET or authenticated traffic).
 - Origin connection pooling (configurable limits, inert by default) and a cache stampede guard (single-flight collapse of identical cache misses).
@@ -146,7 +148,7 @@ Still planned from this batch's original scope: nothing — every item above is 
 
 Quality work needed before the project can be evaluated seriously by a larger organization:
 
-- Automated tests (✅ 47 tests, 7 packages) and a CI pipeline (✅ build + vet + test + config validator on pushes/PRs).
+- Automated tests (✅ 76 tests, 11 packages, measured 18 November 2026) and a CI pipeline (✅ build + vet + test + config validator on pushes/PRs).
 - Security audit (✅ first audit + follow-up pass; see [Security Audit](security-audit.md)).
 - Real, measured benchmarks (✅ VM-local numbers with caveats + server-run instructions; see [Benchmarks](benchmarks.md)).
 - Architecture documentation and a changelog (✅ [Architecture](architecture.md), [Changelog](../CHANGELOG.md)).

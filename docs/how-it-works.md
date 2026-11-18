@@ -2,6 +2,8 @@
 
 What SonuShield does to every request, how the staged challenges escalate, and how Cloudflare mode changes the picture.
 
+> [← README](../README.md)
+
 ![Request flow](assets/request-flow.svg)
 
 > **New here?** [How an Attack Is Stopped](how-an-attack-is-stopped.md) walks the same journey in plain English, with a big animated diagram showing the visitor's lane and the attacker's lane side by side.

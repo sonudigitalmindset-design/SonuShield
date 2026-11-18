@@ -228,7 +228,7 @@ func (s *Server) ssoFail(w http.ResponseWriter, r *http.Request, logClass string
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusBadRequest)
-	fmt.Fprint(w, `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign-in failed</title><style>body{font-family:Arial,sans-serif;background:#0b1220;color:#e6ebf2;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{background:#0d1729;border:1px solid #1e2c47;border-radius:8px;padding:32px;max-width:420px;text-align:center}h1{font-size:20px;margin:0 0 8px}p{margin:8px 0;color:#9aa7bc}a{color:#f6821f}</style></head><body><div class="box"><h1>Sign-in failed</h1><p>Something went wrong during sign-in. Please try again.</p><p><a href="/login">Back to sign-in</a></p></div></body></html>`)
+	fmt.Fprint(w, `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign-in failed</title><style>body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#f1f5f9;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{background:#1e293b;border:1px solid #334155;border-radius:4px;padding:32px;max-width:420px;text-align:center}h1{font-size:20px;margin:0 0 8px}p{margin:8px 0;color:#cbd5e1}a{color:#7dd3fc}</style></head><body><div class="box"><h1>Sign-in failed</h1><p>Something went wrong during sign-in. Please try again.</p><p><a href="/login">Back to sign-in</a></p></div></body></html>`)
 }
 
 // handleSSO routes /sso/* requests. The status endpoint

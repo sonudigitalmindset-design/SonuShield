@@ -2,6 +2,8 @@
 
 SonuShield includes a web dashboard and control panel — no build step, no extra files, no external resources. It monitors the proxy and manages it: no terminal interaction is needed for day-to-day operation. It is served two ways from one UI codebase: by the proxy itself on each protected domain (the original mode, still the fallback), and by the [control plane](control-plane.md) from a separate management host (the Cloudflare-style platform model, where operators sign in once and manage every node). This page describes the on-domain mode; the control-plane mode adds a node switcher, reseller/tenant scoping, and account management, and is documented in [Control Plane](control-plane.md).
 
+> [← README](../README.md)
+
 ![Dashboard schematic](assets/dashboard.svg)
 
 ## Opening It

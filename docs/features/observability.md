@@ -2,6 +2,8 @@
 
 Metrics, logs, reports, alerts, and external monitoring signals.
 
+> [← Feature index](../features.md)
+
 Every diagram on this page is an animated schematic: it shows the mechanism in motion, not a screenshot. Diagrams use SMIL animation only, so they animate on GitHub.
 
 <a id="prometheus-metrics"></a>

@@ -48,7 +48,7 @@ func serveMaintenancePage(writer http.ResponseWriter, message string) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Maintenance</title>
-<style>body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#222;background:#fff;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center}main{max-width:34em;padding:2em;text-align:center}h1{font-size:1.25em;font-weight:600;margin:0 0 .5em}p{margin:0;line-height:1.5;color:#555}</style>
+<style>body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#020617;background:#f8fafc;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center}main{max-width:34em;padding:2em;text-align:center}h1{font-size:1.25em;font-weight:600;margin:0 0 .5em}p{margin:0;line-height:1.5;color:#475569}</style>
 </head>
 <body>
 <main>

@@ -2,6 +2,8 @@
 
 The staged challenges visitors may meet, and the ways they adapt.
 
+> [← Feature index](../features.md)
+
 Every diagram on this page is an animated schematic: it shows the mechanism in motion, not a screenshot. Diagrams use SMIL animation only, so they animate on GitHub.
 
 <a id="staged-challenges"></a>

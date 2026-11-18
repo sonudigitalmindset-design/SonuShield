@@ -1,37 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" role="img" aria-label="Firewall rules: evaluated top to bottom, adjusting the suspicion level from allow to block">
  <defs>
   <marker id="arrow7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-   <path d="M0 0 L10 5 L0 10 z" fill="#57606a"/>
+   <path d="M0 0 L10 5 L0 10 z" fill="#475569"/>
   </marker>
  </defs>
- <rect width="900" height="300" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+ <rect width="900" height="300" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
  <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
-  <text x="40" y="36" font-size="14" font-weight="700" fill="#14263f" opacity="0">Rules run top to bottom — earlier rules win<animate attributeName="opacity" values="0;1" dur="0.7s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="-16 0;0 0" dur="0.7s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
+  <text x="40" y="36" font-size="14" font-weight="700" fill="#0f172a" opacity="0">Rules run top to bottom — earlier rules win<animate attributeName="opacity" values="0;1" dur="0.7s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="-16 0;0 0" dur="0.7s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
   <g font-family="ui-monospace,monospace" font-size="12">
       <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.1s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="-20 0;0 0" dur="0.7s" begin="0.1s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="40" y="48" width="470" height="40" rx="8" fill="#ffffff" stroke="#d0d7de"/>
-    <text x="56" y="73" fill="#14263f">(http.path eq "/captcha")</text>
-    <rect x="420" y="56" width="76" height="24" rx="6" fill="#14263f"/>
+    <rect x="40" y="48" width="470" height="40" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+    <text x="56" y="73" fill="#0f172a">(http.path eq "/captcha")</text>
+    <rect x="420" y="56" width="76" height="24" rx="6" fill="#0f172a"/>
     <rect x="420" y="56" width="76" height="24" rx="6" fill="#ffffff" opacity="0"><animate attributeName="opacity" values="0.35;0.35;0;0;0.35" keyTimes="0;0.24;0.32;0.92;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
     <text x="458" y="72" text-anchor="middle" fill="#ffffff">action 3</text>
    </g>
    <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.22s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="-20 0;0 0" dur="0.7s" begin="0.22s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="40" y="96" width="470" height="40" rx="8" fill="#ffffff" stroke="#d0d7de"/>
-    <text x="56" y="121" fill="#14263f">(ip.engine eq "")</text>
+    <rect x="40" y="96" width="470" height="40" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+    <text x="56" y="121" fill="#0f172a">(ip.engine eq "")</text>
     <rect x="420" y="104" width="76" height="24" rx="6" fill="#f59e0b"/>
     <rect x="420" y="104" width="76" height="24" rx="6" fill="#ffffff" opacity="0"><animate attributeName="opacity" values="0;0;0.35;0.35;0;0" keyTimes="0;0.3;0.38;0.58;0.66;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
-    <text x="458" y="120" text-anchor="middle" fill="#0d1b2e">action +1</text>
+    <text x="458" y="120" text-anchor="middle" fill="#020617">action +1</text>
    </g>
    <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.34s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="-20 0;0 0" dur="0.7s" begin="0.34s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="40" y="144" width="470" height="40" rx="8" fill="#ffffff" stroke="#d0d7de"/>
-    <text x="56" y="169" fill="#14263f">(http.user_agent contains "chrome")</text>
-    <rect x="420" y="152" width="76" height="24" rx="6" fill="#4f7fb8"/>
+    <rect x="40" y="144" width="470" height="40" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+    <text x="56" y="169" fill="#0f172a">(http.user_agent contains "chrome")</text>
+    <rect x="420" y="152" width="76" height="24" rx="6" fill="#0369a1"/>
     <rect x="420" y="152" width="76" height="24" rx="6" fill="#ffffff" opacity="0"><animate attributeName="opacity" values="0;0;0;0.35;0.35;0" keyTimes="0;0.6;0.68;0.76;0.9;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
     <text x="458" y="168" text-anchor="middle" fill="#ffffff">action -1</text>
    </g>
@@ -40,65 +40,65 @@
    <animate attributeName="y" values="48;48;96;96;144;144;48" keyTimes="0;0.22;0.33;0.55;0.66;0.88;1" dur="6s" begin="1.4s" repeatCount="indefinite"/>
    <animate attributeName="opacity" values="0;0.12;0.12;0.12;0.12;0;0" keyTimes="0;0.06;0.22;0.66;0.84;0.9;1" dur="6s" begin="1.4s" repeatCount="indefinite"/>
   </rect>
-  <line x1="275" y1="192" x2="275" y2="224" stroke="#57606a" stroke-width="2" marker-end="url(#arrow7)" stroke-dasharray="32" stroke-dashoffset="32" opacity="0">
+  <line x1="275" y1="192" x2="275" y2="224" stroke="#475569" stroke-width="2" marker-end="url(#arrow7)" stroke-dasharray="32" stroke-dashoffset="32" opacity="0">
    <animate attributeName="opacity" values="0;1" dur="0.2s" begin="0.6s" fill="freeze"/>
    <animate attributeName="stroke-dashoffset" values="32;0" dur="0.4s" begin="0.6s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
   </line>
-  <text x="40" y="252" font-size="13" fill="#57606a" opacity="0">Absolute actions stop further checks. +/- actions stack<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.75s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
-  <text x="40" y="272" font-size="13" fill="#57606a" opacity="0">and checking continues.<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.85s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
+  <text x="40" y="252" font-size="13" fill="#475569" opacity="0">Absolute actions stop further checks. +/- actions stack<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.75s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
+  <text x="40" y="272" font-size="13" fill="#475569" opacity="0">and checking continues.<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.85s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
     <g>
-   <text x="560" y="36" font-size="14" font-weight="700" fill="#14263f" opacity="0">Suspicion level (susLv)<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.15s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="16 0;0 0" dur="0.7s" begin="0.15s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
+   <text x="560" y="36" font-size="14" font-weight="700" fill="#0f172a" opacity="0">Suspicion level (susLv)<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.15s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="16 0;0 0" dur="0.7s" begin="0.15s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/></text>
    <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.25s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="20 0;0 0" dur="0.7s" begin="0.25s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="560" y="48" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+    <rect x="560" y="48" width="300" height="34" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
     <rect x="560" y="48" width="300" height="34" rx="8" fill="#22c55e" opacity="0"><animate attributeName="opacity" values="0.12;0.12;0;0" keyTimes="0;0.16;0.24;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
     <rect x="560" y="48" width="60" height="34" rx="8" fill="#22c55e"/>
     <text x="590" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">0</text>
-    <text x="700" y="70" font-size="13" fill="#14263f">Allow — whitelisted</text>
+    <text x="700" y="70" font-size="13" fill="#0f172a">Allow — whitelisted</text>
    </g>
    <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.35s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="20 0;0 0" dur="0.7s" begin="0.35s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="560" y="90" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
-    <rect x="560" y="90" width="300" height="34" rx="8" fill="#4f7fb8" opacity="0"><animate attributeName="opacity" values="0;0;0.12;0.12;0;0" keyTimes="0;0.18;0.24;0.36;0.44;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
-    <rect x="560" y="90" width="60" height="34" rx="8" fill="#4f7fb8"/>
+    <rect x="560" y="90" width="300" height="34" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="560" y="90" width="300" height="34" rx="8" fill="#0369a1" opacity="0"><animate attributeName="opacity" values="0;0;0.12;0.12;0;0" keyTimes="0;0.18;0.24;0.36;0.44;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
+    <rect x="560" y="90" width="60" height="34" rx="8" fill="#0369a1"/>
     <text x="590" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">1</text>
-    <text x="700" y="112" font-size="13" fill="#14263f">Cookie challenge</text>
+    <text x="700" y="112" font-size="13" fill="#0f172a">Cookie challenge</text>
    </g>
    <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.45s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="20 0;0 0" dur="0.7s" begin="0.45s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="560" y="132" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+    <rect x="560" y="132" width="300" height="34" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
     <rect x="560" y="132" width="300" height="34" rx="8" fill="#f59e0b" opacity="0"><animate attributeName="opacity" values="0;0;0.12;0.12;0;0" keyTimes="0;0.38;0.44;0.56;0.64;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
     <rect x="560" y="132" width="60" height="34" rx="8" fill="#f59e0b"/>
     <text x="590" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">2</text>
-    <text x="700" y="154" font-size="13" fill="#14263f">JS challenge</text>
+    <text x="700" y="154" font-size="13" fill="#0f172a">JS challenge</text>
    </g>
    <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.55s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="20 0;0 0" dur="0.7s" begin="0.55s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="560" y="174" width="300" height="34" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+    <rect x="560" y="174" width="300" height="34" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
     <rect x="560" y="174" width="300" height="34" rx="8" fill="#d97706" opacity="0"><animate attributeName="opacity" values="0;0;0.12;0.12;0;0" keyTimes="0;0.58;0.64;0.76;0.84;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
     <rect x="560" y="174" width="60" height="34" rx="8" fill="#d97706"/>
     <text x="590" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">3</text>
-    <text x="700" y="196" font-size="13" fill="#14263f">Captcha</text>
+    <text x="700" y="196" font-size="13" fill="#0f172a">Captcha</text>
    </g>
    <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.65s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="20 0;0 0" dur="0.7s" begin="0.65s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
-    <rect x="560" y="216" width="300" height="34" rx="8" fill="#ffffff" stroke="#ef4444"/>
-    <rect x="560" y="216" width="300" height="34" rx="8" fill="#ef4444" opacity="0"><animate attributeName="opacity" values="0;0;0.12;0.12;0" keyTimes="0;0.78;0.84;0.96;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
-    <rect x="560" y="216" width="60" height="34" rx="8" fill="#ef4444"/>
+    <rect x="560" y="216" width="300" height="34" rx="8" fill="#ffffff" stroke="#dc2626"/>
+    <rect x="560" y="216" width="300" height="34" rx="8" fill="#dc2626" opacity="0"><animate attributeName="opacity" values="0;0;0.12;0.12;0" keyTimes="0;0.78;0.84;0.96;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
+    <rect x="560" y="216" width="60" height="34" rx="8" fill="#dc2626"/>
     <rect x="560" y="216" width="60" height="34" rx="8" fill="#ffffff" opacity="0"><animate attributeName="opacity" values="0;0;0.4;0;0" keyTimes="0;0.8;0.86;0.94;1" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
     <text x="590" y="238" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">4+</text>
-    <text x="700" y="238" font-size="13" fill="#14263f">Block</text>
+    <text x="700" y="238" font-size="13" fill="#0f172a">Block</text>
    </g>
-   <polygon points="0,-7 10,0 0,7" fill="#14263f" opacity="0">
+   <polygon points="0,-7 10,0 0,7" fill="#0f172a" opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.4s" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate" values="543 65;543 107;543 149;543 191;543 233;543 65" calcMode="discrete" dur="6s" begin="1.4s" repeatCount="indefinite"/>
    </polygon>
-   <text x="560" y="274" font-size="12" fill="#57606a" opacity="0">Starts at the domain's current stage.<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
+   <text x="560" y="274" font-size="12" fill="#475569" opacity="0">Starts at the domain's current stage.<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/></text>
   </g>
  </g>
 </svg>

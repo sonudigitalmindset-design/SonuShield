@@ -2,6 +2,8 @@
 
 How SonuShield fits in front of — or behind — an upstream scrubbing provider, and what it honestly cannot do.
 
+> [← README](../README.md)
+
 ## What SonuShield is not
 
 SonuShield is a userspace Go reverse proxy. It cannot do kernel-level XDP/eBPF packet filtering, and it cannot do Anycast routing. Those need kernel programs, BGP announcements, and a multi-location network — none of which a single Go process on one server can provide. Nothing in this project claims otherwise, and no configuration option enables either capability.
