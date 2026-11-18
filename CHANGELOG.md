@@ -222,6 +222,12 @@ names, or challenge flow semantics.
 - Load generator committed as `tools/bench/`; benchmark docs with VM-local
   numbers and server-run instructions.
 - Architecture documentation + request-pipeline schematic.
+- Clean-history review: full-history scan (265 commits, 1,358 blobs) with
+  values redacted; `.gitignore` hardened against committing live configs,
+  account files, and audit logs.
+- balooPow evaluation: the solver repository carries no license, so
+  vendoring is not permitted — the CDN dependency stands, documented in
+  the [Roadmap](docs/roadmap.md).
 
 ## Known limitations (carried forward)
 

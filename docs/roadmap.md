@@ -142,15 +142,15 @@ Still planned from this batch's original scope: nothing — every item above is 
 - Every control-plane action audit-logged (who, what, which node, result; secrets never logged); every dashboard action works end to end against a real node through API v2 (stage, rules, domain config, logs, reports, reload, approvals). No shadow state — the proxy remains the source of truth. Two-person approval through the control plane needs the shared `controlPlaneSecret` on node and control plane, or approvals fail closed.
 - Live-verified by a dedicated smoke harness (143 checks: setup, login, rate limiting, CSRF, scoping, accounts, approvals with and without the shared secret, log tail, audit, dashboard-mode variants, TLS + SSO against a mock IdP). Real-IdP SSO is unverified.
 
-## Sale-Readiness
+## Sale-Readiness ✅ Done (18 November 2026)
 
 Quality work needed before the project can be evaluated seriously by a larger organization:
 
-- Automated tests (still pending) and a CI pipeline (✅ done in Batch 8: build + vet + config validator on pushes/PRs).
-- Security audit.
-- Real, measured benchmarks (no estimates).
-- Architecture documentation and a changelog.
-- Clean-history review (including the old public private key that remains in git history and must never be reused).
+- Automated tests (✅ 47 tests, 7 packages) and a CI pipeline (✅ build + vet + test + config validator on pushes/PRs).
+- Security audit (✅ first audit + follow-up pass; see [Security Audit](security-audit.md)).
+- Real, measured benchmarks (✅ VM-local numbers with caveats + server-run instructions; see [Benchmarks](benchmarks.md)).
+- Architecture documentation and a changelog (✅ [Architecture](architecture.md), [Changelog](../CHANGELOG.md)).
+- Clean-history review (✅ including the old public private key that remains in git history and must never be reused; see [History Review](history-review.md)).
 
 ## Batch 3 — Heavy Work, Last
 
@@ -161,6 +161,23 @@ Quality work needed before the project can be evaluated seriously by a larger or
 
 ## Also Noted for Later
 
-- Forking or vendoring the `balooPow` proof-of-work script so Stage 2 no longer depends on the original project's CDN.
+- **balooPow vendoring — evaluated 18 November 2026, NOT vendored.** The
+  Stage-2 page loads the solver from the 41Baloo CDN
+  (`cdn.jsdelivr.net/gh/41Baloo/balooPow@main/balooPow.min.js`) plus
+  `crypto-js` 4.0.0 from cdnjs. The balooPow repository carries **no
+  license**: no LICENSE file, no license statement in its README or in the
+  script header, and the GitHub API reports no license. With no license,
+  redistribution is not permitted, so the script was deliberately NOT
+  vendored into this repo. The CDN dependency stands, with the residual
+  risk recorded in [Security Audit](security-audit.md). Paths forward, in
+  order of preference: (1) ask 41Baloo to add an explicit license or grant
+  redistribution permission; (2) write an original solver implementing the
+  same challenge protocol (SHA-256 brute-force over the difficulty range —
+  the protocol is described in balooPow's README, but a clean-room
+  implementation must not copy its code); (3) keep the CDN and add
+  subresource integrity once a pinned version and hash can be verified.
+  Note the solver itself loads `crypto-js` from cdnjs inside its worker
+  script, so vendoring `crypto-js` alone (MIT-licensed) would not remove
+  the CDN dependency.
 - Validating the Docker image build (no Docker available in the development environment yet).
 - A future Go toolchain decision: the newest `golang.org/x/*` packages and gopsutil v4.26.x require Go 1.26.
