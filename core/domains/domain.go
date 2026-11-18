@@ -45,6 +45,8 @@ type Domain struct {
 	ChallengeProvider   string           `json:"challengeProvider"`
 	ChallengeSiteKey    string           `json:"challengeSiteKey"`
 	ChallengeSecretKey  string           `json:"challengeSecretKey"`
+	ChallengeRotation   []string         `json:"challengeRotation"`
+	ChallengeRotationMode string         `json:"challengeRotationMode"`
 	WAFMode             string           `json:"wafMode"`
 	HoneypotPaths       []string         `json:"honeypotPaths"`
 	HoneypotSusLv       int              `json:"honeypotSusLv"`
@@ -127,6 +129,8 @@ type DomainSettings struct {
 	ChallengeProvider   string
 	ChallengeSiteKey    string
 	ChallengeSecretKey  string
+	ChallengeRotation   []string
+	ChallengeRotationMode string
 	WAFMode             string
 	WAFInspectBody      bool
 	WAFWpLoginLimit     int

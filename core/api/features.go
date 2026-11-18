@@ -94,6 +94,13 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		"MEMORY_HARD_POW_BITS":      domainSettings.MemoryHardPowBits,
 		"MEMORY_HARD_POW_MEMORY_KB": domainSettings.MemoryHardPowMemory,
 		"MEMORY_HARD_POW_TIME":      domainSettings.MemoryHardPowTime,
+		// Challenge rotation policy, config-file-only like the
+		// memory-hard parameters above. The live current type
+		// lives in the server package (wave cursor) and is not
+		// exposed here; the policy itself is what operators
+		// verify through this action.
+		"CHALLENGE_ROTATION":      domainSettings.ChallengeRotation,
+		"CHALLENGE_ROTATION_MODE": domainSettings.ChallengeRotationMode,
 		"CHALLENGE_PROVIDER": domainSettings.ChallengeProvider,
 		"CHALLENGE_KEYS_CONFIGURED": domainSettings.ChallengeProvider != "" &&
 			domainSettings.ChallengeSiteKey != "" &&

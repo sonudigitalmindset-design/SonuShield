@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"encoding/base64"
 	"sonushield/core/api"
 	"sonushield/core/dashboard"
 	"sonushield/core/domains"
@@ -11,12 +10,6 @@ import (
 	"sonushield/core/metrics"
 	"sonushield/core/proxy"
 	"sonushield/core/utils"
-	"image"
-	"image/color"
-	"image/draw"
-	"image/png"
-	"math"
-	"math/rand"
 	"net"
 	"net/http"
 	"strconv"
@@ -597,6 +590,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		case 2:
 			metrics.ObserveChallenge(domainName, 2)
 			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			//Challenge rotation (Batch 6). When the operator configured
+			//a rotation policy, the current wave's (or request's)
+			//challenge type decides, and the fixed chain below is
+			//skipped. Rotation always serves something when enabled.
+			if serveRotatedChallenge(writer, request, domainSettings, domainData, domainName, encryptedIP, hashedEncryptedIP, ip, tlsFp, reqUa, buffer) {
+				return
+			}
+
 			//Challenge provider (Turnstile/hCaptcha) replaces the
 			//proof-of-work page when the operator configured one with
 			//their own keys. Falls back to proof-of-work when the
@@ -617,105 +618,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 				}
 			}
 
-			//Adaptive PoW: scale the difficulty with current load so a
-			//legitimate visitor is barely delayed under normal conditions
-			//and bots face a harder puzzle during an attack. Disabled by
-			//default (fixed configured difficulty). The clamps below also
-			//guard against misconfigured difficulties.
-			difficulty := domainData.Stage2Difficulty
-			if domainSettings.AdaptivePow {
-				difficulty = firewall.EffectivePoWDifficulty(domainData.Stage2Difficulty, domainSettings.PoWDifficultyMin, domainSettings.PoWDifficultyMax, domainData.RequestsBypassedPerSecond, domainSettings.BypassStage1, domainSettings.BypassStage2)
-			}
-			if difficulty < 1 {
-				difficulty = 1
-			}
-			if difficulty >= len(encryptedIP) {
-				difficulty = len(encryptedIP) - 1
-			}
-			publicSalt := encryptedIP[:len(encryptedIP)-difficulty]
-			writer.Header().Set("Content-Type", "text/html")
-			writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0") // Prevent special(ed) browsers from caching the challenge
-			//Built-in page text is English/Hindi by Accept-Language; a
-			//validated custom template replaces the visible part.
-			pageStr := stringsFor(request)
-			if tpl := domainSettings.PageTemplates; tpl != nil && tpl.PoW != "" {
-				SendResponse(renderPowTemplate(tpl.PoW, pageStr, publicSalt, hashedEncryptedIP, difficulty), buffer, writer)
-			} else {
-				SendResponse(powPage(pageStr, publicSalt, hashedEncryptedIP, difficulty), buffer, writer)
-			}
+			serveClassicPowChallenge(writer, request, domainSettings, domainData, encryptedIP, hashedEncryptedIP, buffer)
 			return
 		case 3:
 			metrics.ObserveChallenge(domainName, 3)
 			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
-			secretPart := encryptedIP[:6]
-			publicPart := encryptedIP[6:]
-
-			captchaData := ""
-			maskData := ""
-			captchaCache, captchaExists := firewall.CacheImgs.Load(secretPart)
-
-			if !captchaExists {
-				randomShift := rand.Intn(50) - 25
-				captchaImg := image.NewRGBA(image.Rect(0, 0, 100, 37))
-				randomColor := uint8(rand.Intn(255))
-				utils.AddLabel(captchaImg, 0, 18, publicPart[6:], color.RGBA{61, 140, 64, 20})
-				utils.AddLabel(captchaImg, rand.Intn(90), rand.Intn(30), publicPart[:6], color.RGBA{255, randomColor, randomColor, 100})
-				utils.AddLabel(captchaImg, rand.Intn(25), rand.Intn(20)+10, secretPart, color.RGBA{61, 140, 64, 255})
-
-				amplitude := float64(rand.Intn(10)+10) / 10.0
-				period := float64(37) / 5.0
-				displacement := func(x, y int) (int, int) {
-					dx := amplitude * math.Sin(float64(y)/period)
-					dy := amplitude * math.Sin(float64(x)/period)
-					return x + int(dx), y + int(dy)
-				}
-				captchaImg = utils.WarpImg(captchaImg, displacement)
-
-				maskImg := image.NewRGBA(captchaImg.Bounds())
-				draw.Draw(maskImg, maskImg.Bounds(), image.Transparent, image.Point{}, draw.Src)
-
-				numTriangles := rand.Intn(20) + 10
-
-				blacklist := make(map[[2]int]bool) // We use this to keep track of already overwritten pixels.
-				// it's slightly more performant to not do this but can lead to unsolvable captchas
-
-				for i := 0; i < numTriangles; i++ {
-					size := rand.Intn(5) + 10
-					x := rand.Intn(captchaImg.Bounds().Dx() - size)
-					y := rand.Intn(captchaImg.Bounds().Dy() - size)
-					blacklist = utils.DrawTriangle(blacklist, captchaImg, maskImg, x, y, size, randomShift)
-				}
-
-				var captchaBuf, maskBuf bytes.Buffer
-				if err := png.Encode(&captchaBuf, captchaImg); err != nil {
-					SendResponse(errorMessage("Failed to encode captcha: "+err.Error()), buffer, writer)
-					return
-				}
-				if err := png.Encode(&maskBuf, maskImg); err != nil {
-					SendResponse(errorMessage("Failed to encode captchaMask: "+err.Error()), buffer, writer)
-					return
-				}
-
-				captchaData = base64.StdEncoding.EncodeToString(captchaBuf.Bytes())
-				maskData = base64.StdEncoding.EncodeToString(maskBuf.Bytes())
-
-				firewall.CacheImgs.Store(secretPart, [2]string{captchaData, maskData})
-			} else {
-				captchaDataTmp := captchaCache.([2]string)
-				captchaData = captchaDataTmp[0]
-				maskData = captchaDataTmp[1]
-			}
-
-			writer.Header().Set("Content-Type", "text/html")
-			writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0") // Prevent special(ed) browsers from caching the challenge
-			//Built-in page text is English/Hindi by Accept-Language; a
-			//validated custom template replaces the visible part.
-			pageStr := stringsFor(request)
-			if tpl := domainSettings.PageTemplates; tpl != nil && tpl.Captcha != "" {
-				SendResponse(renderCaptchaTemplate(tpl.Captcha, pageStr, ip, publicPart, captchaData, maskData), buffer, writer)
-			} else {
-				SendResponse(captchaPage(pageStr, ip, publicPart, captchaData, maskData), buffer, writer)
-			}
+			serveCaptchaChallenge(writer, request, domainSettings, encryptedIP, ip, buffer)
 			return
 		default:
 			writer.Header().Set("Content-Type", "text/plain")

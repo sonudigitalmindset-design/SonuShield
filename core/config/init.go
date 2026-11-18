@@ -243,6 +243,8 @@ func Load() {
 			ChallengeProvider:   domain.ChallengeProvider,
 			ChallengeSiteKey:    domain.ChallengeSiteKey,
 			ChallengeSecretKey:  domain.ChallengeSecretKey,
+			ChallengeRotation:   domain.ChallengeRotation,
+			ChallengeRotationMode: domain.ChallengeRotationMode,
 			WAFMode:             domain.WAFMode,
 			WAFInspectBody:      domain.WAFInspectBody,
 			WAFWpLoginLimit:     domain.WAFWpLoginLimit,

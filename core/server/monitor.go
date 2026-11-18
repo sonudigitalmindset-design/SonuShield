@@ -168,6 +168,8 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 					})
 					go utils.SendAlerts(domainData, domainSettings, int(0))
 					logging.Log(logging.Entry{Event: "attack_start", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
+					//Challenge rotation (Batch 6): a new wave begins.
+					advanceChallengeRotation(domainName, domainSettings)
 				}
 				// Start/Set cooldown
 				domainData.BufferCooldown = 10
@@ -205,6 +207,8 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 				})
 				go utils.SendAlerts(domainData, domainSettings, int(0))
 				logging.Log(logging.Entry{Event: "attack_start", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
+				//Challenge rotation (Batch 6): a new wave begins.
+				advanceChallengeRotation(domainName, domainSettings)
 			}
 
 			//Set/Start cooldown
@@ -593,6 +597,8 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			ChallengeProvider:    domain.ChallengeProvider,
 			ChallengeSiteKey:     domain.ChallengeSiteKey,
 			ChallengeSecretKey:   domain.ChallengeSecretKey,
+			ChallengeRotation:    domain.ChallengeRotation,
+			ChallengeRotationMode: domain.ChallengeRotationMode,
 			WAFMode:              domain.WAFMode,
 			WAFInspectBody:       domain.WAFInspectBody,
 			WAFWpLoginLimit:      domain.WAFWpLoginLimit,
