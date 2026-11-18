@@ -7,10 +7,12 @@ package server
 // handled here (waiting page or queue-full response) and the
 // middleware must not continue to the backend.
 //
-// The waiting page is deliberately generic and unbranded: no
-// product name, no marketing, just the queue position and an
-// automatic refresh. It is only ever shown to excess visitors
-// while the domain is over its threshold.
+// The waiting page is generic by default: no product name, no
+// marketing, just the queue position and an automatic refresh.
+// It is only ever shown to excess visitors while the domain is
+// over its threshold. When the operator configures branding, the
+// page carries the operator's banner and accent color instead;
+// the queue behavior never changes.
 
 import (
 	"fmt"
@@ -18,7 +20,7 @@ import (
 	"sonushield/core/domains"
 )
 
-func checkWaitingRoom(writer http.ResponseWriter, request *http.Request, ip string, room *domains.WaitingRoom, bypassedRPS int, template string) bool {
+func checkWaitingRoom(writer http.ResponseWriter, request *http.Request, ip string, room *domains.WaitingRoom, bypassedRPS int, template string, brand domains.Branding) bool {
 	decision := room.Evaluate(request, ip, bypassedRPS)
 	if decision.Pass {
 		if decision.AdmittedCookie != nil {
@@ -48,7 +50,7 @@ func checkWaitingRoom(writer http.ResponseWriter, request *http.Request, ip stri
 	if template != "" {
 		fmt.Fprint(writer, renderWaitingTemplate(template, pageStr, decision.Position))
 	} else {
-		fmt.Fprint(writer, waitingPage(pageStr, decision.Position))
+		fmt.Fprint(writer, waitingPage(pageStr, brand, decision.Position))
 	}
 	return true
 }

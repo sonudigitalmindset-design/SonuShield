@@ -32,6 +32,7 @@ type Domain struct {
 	Telegram            TelegramSettings `json:"telegram"`
 	Email               EmailSettings    `json:"email"`
 	Twilio              TwilioSettings   `json:"twilio"`
+	Branding            Branding         `json:"branding"`
 	FirewallRules       []JsonRule       `json:"firewallRules"`
 	EdgeRules           []JsonRule       `json:"edgeRules"`
 	BypassStage1        int              `json:"bypassStage1"`
@@ -125,6 +126,7 @@ type DomainSettings struct {
 	DomainTelegram     TelegramSettings
 	DomainEmail        EmailSettings
 	DomainTwilio       TwilioSettings
+	Branding           Branding
 
 	BypassStage1        int
 	BypassStage2        int
@@ -279,6 +281,7 @@ type Proxy struct {
 	AutoSSLCacheDir string            `json:"autoSSLCacheDir"`
 	AutoSSLEmail    string            `json:"autoSSLEmail"`
 	QuietMode       bool              `json:"quietMode"`
+	Branding        Branding          `json:"branding"`
 	TLSDisablePostQuantum bool      `json:"tlsDisablePostQuantum"`
 	MetricsEnabled  bool              `json:"metricsEnabled"`
 	ReportDirectory string            `json:"reportDirectory"`
@@ -337,6 +340,15 @@ type EmailSettings struct {
 // https://api.twilio.com for compatible providers; empty means
 // the default. All of AccountSID, AuthToken, From, and To are
 // required; the channel is inert when any is missing.
+// Branding is the operator-configured display identity for the
+// dashboard and the built-in challenge pages. See branding.go
+// for the safety rules and the GPL-attribution hard limit.
+type Branding struct {
+	DisplayName string `json:"displayName"`
+	LogoURL     string `json:"logoURL"`
+	AccentColor string `json:"accentColor"`
+}
+
 type TwilioSettings struct {
 	AccountSID     string `json:"accountSID"`
 	AuthToken      string `json:"authToken"`

@@ -183,7 +183,7 @@ func serveClassicPowChallenge(writer http.ResponseWriter, request *http.Request,
 	if tpl := settings.PageTemplates; tpl != nil && tpl.PoW != "" {
 		SendResponse(renderPowTemplate(tpl.PoW, pageStr, publicSalt, hashedEncryptedIP, difficulty), buffer, writer)
 	} else {
-		SendResponse(powPage(pageStr, publicSalt, hashedEncryptedIP, difficulty), buffer, writer)
+		SendResponse(powPage(pageStr, resolveBranding(settings), publicSalt, hashedEncryptedIP, difficulty), buffer, writer)
 	}
 }
 

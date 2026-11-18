@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<title>SonuShield Dashboard</title>
+<title>__BRAND_TITLE__</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
@@ -180,13 +180,13 @@ tr.selected td{background:var(--nav-active-bg)}
   .main{padding:var(--space-2) var(--space-2) 32px}
   .topbar{padding:8px 16px;gap:8px}
 }
-</style>
+</style>__BRAND_STYLE__
 </head>
 <body>
 <header class="topbar">
   <span class="brand">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" fill="#f6821f"/><path d="M8.5 12l2.4 2.4 4.7-4.7" stroke="#1a1206" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span class="wordmark">SonuShield<small data-i18n="brandSub">Dashboard</small></span>
+    __BRAND_MARK__
+    <span class="wordmark">__BRAND_NAME__<small data-i18n="brandSub">Dashboard</small></span>
   </span>
   <span class="pill" id="hostPill" data-i18n-title="hostPillTitle" title="Domain in the address bar">host: —</span>
   <div class="spacer"></div>
@@ -659,6 +659,11 @@ tr.selected td{background:var(--nav-active-bg)}
 (function(){
 "use strict";
 var SECRET_KEY = "sonushield_api_secret";
+/* The server renders the page title (branded when the operator
+   configured branding, "SonuShield Dashboard" otherwise).
+   Language switching keeps the server title: brand names do
+   not translate, and the default title is language-neutral. */
+var serverTitle = document.title;
 var THEME_KEY = "sonushield_theme";
 var hostDomain = window.location.hostname || "";
 var currentDomain = hostDomain;
@@ -715,7 +720,6 @@ var LANG_KEY = "sonushield_lang";
 var lang = "en";
 var STR = {
 en: {
-appTitle: "SonuShield Dashboard",
 brandSub: "Dashboard",
 hostPill: "host: {0}",
 hostPillTitle: "Domain in the address bar",
@@ -1174,7 +1178,6 @@ errConnect: "Connection failed: {0} Check the API secret and try again.",
 errRefreshFeed: "Could not refresh the reputation feed: {0}"
 },
 hi: {
-appTitle: "SonuShield Dashboard",
 brandSub: "डैशबोर्ड",
 hostPill: "host: {0}",
 hostPillTitle: "Address bar में domain",
@@ -1644,7 +1647,7 @@ function t(key){
 function applyLang(newLang, skipRefresh){
   lang = (newLang === "hi") ? "hi" : "en";
   document.documentElement.setAttribute("lang", lang);
-  document.title = t("appTitle");
+  document.title = serverTitle;
   document.querySelectorAll("[data-i18n]").forEach(function(el){ el.innerHTML = t(el.getAttribute("data-i18n")); });
   document.querySelectorAll("[data-i18n-ph]").forEach(function(el){ el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
   document.querySelectorAll("[data-i18n-aria]").forEach(function(el){ el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });

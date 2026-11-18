@@ -598,6 +598,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 				AttackStartMsg: domain.Twilio.AttackStartMsg,
 				AttackStopMsg:  domain.Twilio.AttackStopMsg,
 			},
+			Branding: domain.Branding,
 
 			BypassStage1:         domain.BypassStage1,
 			BypassStage2:         domain.BypassStage2,

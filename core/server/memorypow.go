@@ -248,7 +248,7 @@ func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, 
 	writer.Header().Set("Content-Type", "text/html")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	//Built-in page text is English/Hindi by Accept-Language.
-	fmt.Fprint(writer, memoryPowPage(stringsFor(request), nonce, hex.EncodeToString(salt), bits, memoryKB, timeCost))
+	fmt.Fprint(writer, memoryPowPage(stringsFor(request), resolveBranding(settings), nonce, hex.EncodeToString(salt), bits, memoryKB, timeCost))
 	return true
 }
 
@@ -310,7 +310,7 @@ func HandleMemoryPowVerify(writer http.ResponseWriter, request *http.Request, ip
 // form the solver submits, and the embedded Argon2id solver with
 // the salt and parameters substituted. The solver script is fixed
 // server-side content; the page carries no branding.
-func memoryPowPage(s pageStrings, nonce, saltHex string, bits, memoryKB, timeCost uint32) string {
+func memoryPowPage(s pageStrings, brand domains.Branding, nonce, saltHex string, bits, memoryKB, timeCost uint32) string {
 	script := strings.ReplaceAll(argon2powJS, "__ARGON_SALT_HEX__", saltHex)
 	script = strings.ReplaceAll(script, "__ARGON_BITS__", strconv.FormatUint(uint64(bits), 10))
 	script = strings.ReplaceAll(script, "__ARGON_MEMORY_KB__", strconv.FormatUint(uint64(memoryKB), 10))
@@ -319,7 +319,11 @@ func memoryPowPage(s pageStrings, nonce, saltHex string, bits, memoryKB, timeCos
 		s.lang +
 		`"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>` +
 		s.powTitle +
-		`</title><style>body,html{height:100%;width:100%;margin:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:#f0f0f0;font-family:Arial,sans-serif}.loader{display:flex;justify-content:space-around;align-items:center;width:100px;height:100px}.loader div{width:20px;height:20px;background-color:#333;border-radius:50%;animation:bounce .6s infinite alternate}.loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}@keyframes bounce{to{transform:translateY(-30px)}}.message{text-align:center;margin-top:20px;color:#333}.subtext{text-align:center;color:#666;font-size:.9em;margin-top:5px}</style></head><body><div class="loader"><div></div><div></div><div></div></div><div class="message"><p>` +
+		`</title><style>body,html{height:100%;width:100%;margin:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:#f0f0f0;font-family:Arial,sans-serif}.loader{display:flex;justify-content:space-around;align-items:center;width:100px;height:100px}.loader div{width:20px;height:20px;background-color:#333;border-radius:50%;animation:bounce .6s infinite alternate}.loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}@keyframes bounce{to{transform:translateY(-30px)}}.message{text-align:center;margin-top:20px;color:#333}.subtext{text-align:center;color:#666;font-size:.9em;margin-top:5px}</style>` +
+		brandAccentOverride(brand, ".loader div{background-color:{accent}}") +
+		`</head><body>` +
+		brandBanner(brand) +
+		`<div class="loader"><div></div><div></div><div></div></div><div class="message"><p>` +
 		s.powMessage +
 		`</p><div class="subtext">` +
 		s.powSubtext +

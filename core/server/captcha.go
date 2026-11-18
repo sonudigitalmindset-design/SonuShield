@@ -101,7 +101,7 @@ func serveCaptchaChallenge(writer http.ResponseWriter, request *http.Request, se
 	if tpl := settings.PageTemplates; tpl != nil && tpl.Captcha != "" {
 		SendResponse(renderCaptchaTemplate(tpl.Captcha, pageStr, ip, publicPart, captchaData, maskData), buffer, writer)
 	} else {
-		SendResponse(captchaPage(pageStr, ip, publicPart, captchaData, maskData), buffer, writer)
+		SendResponse(captchaPage(pageStr, resolveBranding(settings), ip, publicPart, captchaData, maskData), buffer, writer)
 	}
 	return
 }

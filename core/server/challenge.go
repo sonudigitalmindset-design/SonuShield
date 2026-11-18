@@ -189,7 +189,7 @@ func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, s
 	writer.Header().Set("Content-Type", "text/html")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	//Built-in page text is English/Hindi by Accept-Language.
-	fmt.Fprint(writer, providerPage(stringsFor(request), nonce, widgetScript))
+	fmt.Fprint(writer, providerPage(stringsFor(request), resolveBranding(settings), nonce, widgetScript))
 	return true
 }
 

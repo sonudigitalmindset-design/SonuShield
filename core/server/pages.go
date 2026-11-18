@@ -29,6 +29,7 @@ package server
 import (
 	"html"
 	"net/http"
+	"sonushield/core/domains"
 	"strconv"
 	"strings"
 )
@@ -154,13 +155,15 @@ func stringsFor(req *http.Request) pageStrings {
 }
 
 // powPage renders the built-in Stage 2 proof-of-work page.
-func powPage(s pageStrings, publicSalt, hashedEncryptedIP string, difficulty int) string {
-	return powPageHead(s, publicSalt, hashedEncryptedIP) + powSolverScript(publicSalt, hashedEncryptedIP, difficulty)
+// brand is the resolved, sanitized branding; empty branding
+// renders the page exactly as before.
+func powPage(s pageStrings, brand domains.Branding, publicSalt, hashedEncryptedIP string, difficulty int) string {
+	return powPageHead(s, brand, publicSalt, hashedEncryptedIP) + powSolverScript(publicSalt, hashedEncryptedIP, difficulty)
 }
 
 // captchaPage renders the built-in Stage 3 captcha page.
-func captchaPage(s pageStrings, ip, publicPart, captchaData, maskData string) string {
-	return captchaPageHead(s) + captchaSolverScript(ip, publicPart, captchaData, maskData)
+func captchaPage(s pageStrings, brand domains.Branding, ip, publicPart, captchaData, maskData string) string {
+	return captchaPageHead(s, brand) + captchaSolverScript(ip, publicPart, captchaData, maskData)
 }
 
 // renderPowTemplate applies a validated custom PoW template:
@@ -201,12 +204,15 @@ func renderWaitingTemplate(tpl string, s pageStrings, position int) string {
 }
 
 // powPageHead renders the visible part of the built-in Stage 2 page, up to the solver script.
-func powPageHead(s pageStrings, publicSalt, hashedEncryptedIP string) string {
+func powPageHead(s pageStrings, brand domains.Branding, publicSalt, hashedEncryptedIP string) string {
 	return `<!doctypehtml><html lang=` +
 		s.lang +
 		`><meta charset=UTF-8><meta content="width=device-width,initial-scale=1"name=viewport><title>` +
 		s.powTitle +
-		`</title><style>body,html{height:100%;width:100%;margin:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:#f0f0f0;font-family:Arial,sans-serif}.loader{display:flex;justify-content:space-around;align-items:center;width:100px;height:100px}.loader div{width:20px;height:20px;background-color:#333;border-radius:50%;animation:bounce .6s infinite alternate}.loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}@keyframes bounce{to{transform:translateY(-30px)}}.message{text-align:center;margin-top:20px;color:#333}.subtext{text-align:center;color:#666;font-size:.9em;margin-top:5px}.placeholder-container{width:25%;text-align:center;margin:10px 0}.placeholder-label{font-weight:700;margin-bottom:5px}.placeholder{background-color:#e0e0e0;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;cursor:pointer;}</style><div class=loader><div></div><div></div><div></div></div><div class=message><p>` +
+		`</title><style>body,html{height:100%;width:100%;margin:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:#f0f0f0;font-family:Arial,sans-serif}.loader{display:flex;justify-content:space-around;align-items:center;width:100px;height:100px}.loader div{width:20px;height:20px;background-color:#333;border-radius:50%;animation:bounce .6s infinite alternate}.loader div:nth-child(2){animation-delay:.2s}.loader div:nth-child(3){animation-delay:.4s}@keyframes bounce{to{transform:translateY(-30px)}}.message{text-align:center;margin-top:20px;color:#333}.subtext{text-align:center;color:#666;font-size:.9em;margin-top:5px}.placeholder-container{width:25%;text-align:center;margin:10px 0}.placeholder-label{font-weight:700;margin-bottom:5px}.placeholder{background-color:#e0e0e0;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;cursor:pointer;}</style>` +
+		brandAccentOverride(brand, ".loader div{background-color:{accent}}") +
+		brandBanner(brand) +
+		`<div class=loader><div></div><div></div><div></div></div><div class=message><p>` +
 		s.powMessage +
 		`<div class=subtext>` +
 		s.powSubtext +
@@ -231,8 +237,12 @@ func powSolverScript(publicSalt, hashedEncryptedIP string, difficulty int) strin
 }
 
 // captchaPageHead renders the visible part of the built-in Stage 3 page, up to the solver script.
-func captchaPageHead(s pageStrings) string {
-	return `<style>body{background-color:#f5f5f5;font-family:Arial,sans-serif}.center{display:flex;align-items:center;justify-content:center;height:100vh}.box{background-color:#fff;border:1px solid #ddd;border-radius:4px;padding:20px;width:500px}canvas{display:block;margin:0 auto;max-width:100%;width:100%;height:auto}input[type=text]{width:100%;padding:12px 20px;margin:8px 0;box-sizing:border-box;border:2px solid #ccc;border-radius:4px}button{width:100%;background-color:#4caf50;color:#fff;padding:14px 20px;margin:8px 0;border:none;border-radius:4px;cursor:pointer}button:hover{background-color:#45a049}.box{background-color:#fff;border:1px solid #ddd;border-radius:4px;padding:20px;width:500px;transition:height .1s;position:block}.box *{transition:opacity .1s}.success{background-color:#dff0d8;border:1px solid #d6e9c6;border-radius:4px;color:#3c763d;padding:20px}.failure{background-color:#f0d8d8;border:1px solid #e9c6c6;border-radius:4px;color:#763c3c;padding:20px}.collapsible{background-color:#f5f5f5;color:#444;cursor:pointer;padding:18px;width:100%;border:none;text-align:left;outline:0;font-size:15px}.collapsible:after{content:'\002B';color:#777;font-weight:700;float:right;margin-left:5px}.collapsible.active:after{content:"\2212"}.collapsible:hover{background-color:#e5e5e5}.collapsible-content{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .2s ease-out;background-color:#f5f5f5}.captcha-wrapper{position:relative;width:100%;height:200px}.captcha-wrapper canvas{position:absolute}input[type=range]{-webkit-appearance:none;width:100%;height:25px;background:#ddd;outline:0;opacity:.7;transition:opacity .2s;border-radius:4px;margin:8px 0}input[type=range]:hover{opacity:1}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:25px;height:25px;background:#4caf50;cursor:pointer;border-radius:50%}input[type=range]::-moz-range-thumb{width:25px;height:25px;background:#4caf50;cursor:pointer;border-radius:50%}</style><div class=center id=center><div class=box id=box><h1>` +
+func captchaPageHead(s pageStrings, brand domains.Branding) string {
+	return `<style>body{background-color:#f5f5f5;font-family:Arial,sans-serif}.center{display:flex;align-items:center;justify-content:center;height:100vh}.box{background-color:#fff;border:1px solid #ddd;border-radius:4px;padding:20px;width:500px}canvas{display:block;margin:0 auto;max-width:100%;width:100%;height:auto}input[type=text]{width:100%;padding:12px 20px;margin:8px 0;box-sizing:border-box;border:2px solid #ccc;border-radius:4px}button{width:100%;background-color:#4caf50;color:#fff;padding:14px 20px;margin:8px 0;border:none;border-radius:4px;cursor:pointer}button:hover{background-color:#45a049}.box{background-color:#fff;border:1px solid #ddd;border-radius:4px;padding:20px;width:500px;transition:height .1s;position:block}.box *{transition:opacity .1s}.success{background-color:#dff0d8;border:1px solid #d6e9c6;border-radius:4px;color:#3c763d;padding:20px}.failure{background-color:#f0d8d8;border:1px solid #e9c6c6;border-radius:4px;color:#763c3c;padding:20px}.collapsible{background-color:#f5f5f5;color:#444;cursor:pointer;padding:18px;width:100%;border:none;text-align:left;outline:0;font-size:15px}.collapsible:after{content:'\002B';color:#777;font-weight:700;float:right;margin-left:5px}.collapsible.active:after{content:"\2212"}.collapsible:hover{background-color:#e5e5e5}.collapsible-content{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .2s ease-out;background-color:#f5f5f5}.captcha-wrapper{position:relative;width:100%;height:200px}.captcha-wrapper canvas{position:absolute}input[type=range]{-webkit-appearance:none;width:100%;height:25px;background:#ddd;outline:0;opacity:.7;transition:opacity .2s;border-radius:4px;margin:8px 0}input[type=range]:hover{opacity:1}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:25px;height:25px;background:#4caf50;cursor:pointer;border-radius:50%}input[type=range]::-moz-range-thumb{width:25px;height:25px;background:#4caf50;cursor:pointer;border-radius:50%}</style>` +
+		brandAccentOverride(brand, "button{background-color:{accent}}button:hover{background-color:{accent};filter:brightness(.92)}input[type=range]::-webkit-slider-thumb{background:{accent}}input[type=range]::-moz-range-thumb{background:{accent}}") +
+		`<div class=center id=center><div class=box id=box>` +
+		brandBanner(brand) +
+		`<h1>` +
 		s.captchaHeading +
 		`</h1><div class=captcha-wrapper><canvas height=37 id=captcha width=100></canvas><canvas height=37 id=mask width=100></canvas></div><input id=captcha-slider max=50 min=-50 type=range><form onsubmit="return checkAnswer(event)"><input id=text type=text maxlength=6 placeholder=` +
 		s.captchaPlaceholder +
@@ -263,12 +273,21 @@ func captchaSolverScript(ip, publicPart, captchaData, maskData string) string {
 }
 
 // providerPage renders the built-in Turnstile/hCaptcha verification page. The widget script is built by the caller; this function only places it.
-func providerPage(s pageStrings, nonce, widgetScript string) string {
+func providerPage(s pageStrings, brand domains.Branding, nonce, widgetScript string) string {
+	// The page body is a centered flex row for the provider
+	// widget; pin the brand banner to the top so it never
+	// disturbs the widget layout. Empty when unbranded.
+	banner := brandBanner(brand)
+	if banner != "" {
+		banner = `<div style="position:absolute;top:32px;left:0;right:0">` + banner + `</div>`
+	}
 	return `<!doctype html><html lang="` +
 		s.lang +
 		`"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>` +
 		s.verifyTitle +
-		`</title><style>body{font-family:Arial,sans-serif;color:#333;display:flex;height:100vh;margin:0;align-items:center;justify-content:center;background:#f5f5f5}p{text-align:center}</style></head><body><p id="msg">` +
+		`</title><style>body{font-family:Arial,sans-serif;color:#333;display:flex;height:100vh;margin:0;align-items:center;justify-content:center;background:#f5f5f5}p{text-align:center}</style></head><body>` +
+		banner +
+		`<p id="msg">` +
 		s.verifyMessage +
 		`</p><form id="v" method="post" action="/_bProxy/challenge-verify"><input type="hidden" name="nonce" value="` +
 		html.EscapeString(nonce) +
@@ -282,12 +301,16 @@ func providerPage(s pageStrings, nonce, widgetScript string) string {
 }
 
 // waitingPage renders the built-in waiting-room page.
-func waitingPage(s pageStrings, position int) string {
+func waitingPage(s pageStrings, brand domains.Branding, position int) string {
 	return `<!doctype html><html lang="` +
 		s.lang +
 		`"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="5"><meta name="robots" content="noindex"><title>` +
 		s.waitTitle +
-		`</title><style>body{font-family:Arial,sans-serif;background:#f5f5f5;color:#333;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{background:#fff;border:1px solid #ddd;border-radius:4px;padding:32px;max-width:420px;text-align:center}h1{font-size:20px;margin:0 0 8px}p{margin:8px 0;color:#666}.pos{font-size:36px;font-weight:bold;color:#111;margin:16px 0}</style></head><body><div class="box"><h1>` +
+		`</title><style>body{font-family:Arial,sans-serif;background:#f5f5f5;color:#333;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{background:#fff;border:1px solid #ddd;border-radius:4px;padding:32px;max-width:420px;text-align:center}h1{font-size:20px;margin:0 0 8px}p{margin:8px 0;color:#666}.pos{font-size:36px;font-weight:bold;color:#111;margin:16px 0}</style>` +
+		brandAccentOverride(brand, ".pos{color:{accent}}") +
+		`</head><body><div class="box">` +
+		brandBanner(brand) +
+		`<h1>` +
 		s.waitTitle +
 		`</h1><p>` +
 		s.waitBody1 +

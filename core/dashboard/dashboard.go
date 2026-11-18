@@ -2,7 +2,9 @@ package dashboard
 
 import (
 	_ "embed"
+	"html"
 	"net/http"
+	"sonushield/core/domains"
 	"strings"
 )
 
@@ -33,12 +35,43 @@ var iconMaskable512 []byte
 // The page itself fetches all data through the existing API v2 endpoints
 // using the API secret supplied by the operator in the browser; it never
 // receives or embeds any secret from the server.
-func Serve(writer http.ResponseWriter) {
+//
+// brand is the proxy-wide operator branding (see domains.Branding).
+// When set, it replaces the wordmark, the page title, the brand mark,
+// and the accent color. It NEVER touches the About footer, the
+// credits text, or any GPL attribution: those have no placeholders
+// and are served verbatim. With empty branding the output is the
+// built-in page, byte for byte.
+func Serve(writer http.ResponseWriter, brand domains.Branding) {
+	brand = brand.Sanitized()
+	title := "SonuShield Dashboard"
+	name := "SonuShield"
+	mark := defaultBrandMark
+	style := ""
+	if brand.DisplayName != "" {
+		name = html.EscapeString(brand.DisplayName)
+		title = name + " Dashboard"
+	}
+	if brand.LogoURL != "" {
+		mark = `<img src="` + html.EscapeString(brand.LogoURL) + `" alt="" style="height:28px;width:auto;max-width:140px;object-fit:contain">`
+	}
+	if brand.AccentColor != "" {
+		style = `<style>:root[data-theme="dark"],:root[data-theme="light"]{--accent:` + brand.AccentColor + `;--accent-hover:` + brand.AccentColor + `;--accent-text:` + brand.AccentColor + `}</style>`
+	}
+	page := string(indexHTML)
+	page = strings.ReplaceAll(page, "__BRAND_TITLE__", title)
+	page = strings.ReplaceAll(page, "__BRAND_MARK__", mark)
+	page = strings.ReplaceAll(page, "__BRAND_NAME__", name)
+	page = strings.ReplaceAll(page, "__BRAND_STYLE__", style)
 	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	writer.Header().Set("X-Content-Type-Options", "nosniff")
-	writer.Write(indexHTML)
+	writer.Write([]byte(page))
 }
+
+// defaultBrandMark is the built-in shield mark shown in the
+// dashboard top bar when the operator configures no logo.
+const defaultBrandMark = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z" fill="#f6821f"/><path d="M8.5 12l2.4 2.4 4.7-4.7" stroke="#1a1206" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
 
 // shellAsset is one PWA shell file: bytes, content type, and the
 // cache directive it is served with. Icons are immutable

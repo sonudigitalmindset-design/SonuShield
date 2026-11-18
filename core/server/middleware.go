@@ -121,7 +121,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 		case "/_bProxy/" + proxy.AdminSecret + "/dashboard":
-			dashboard.Serve(writer)
+			dashboard.Serve(writer, proxyBranding())
 			return
 		}
 		if strings.HasPrefix(request.URL.Path, "/_bProxy/api/v2") {
@@ -729,7 +729,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			SendResponse("404 Not Found", buffer, writer)
 			return
 		}
-		dashboard.Serve(writer)
+		dashboard.Serve(writer, proxyBranding())
 		return
 
 	//Do not remove or modify this. It is required by the license
@@ -765,7 +765,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		if domainSettings.PageTemplates != nil {
 			waitingTpl = domainSettings.PageTemplates.WaitingRoom
 		}
-		if checkWaitingRoom(writer, request, ip, domainSettings.Waiting, domainData.RequestsBypassedPerSecond, waitingTpl) {
+		if checkWaitingRoom(writer, request, ip, domainSettings.Waiting, domainData.RequestsBypassedPerSecond, waitingTpl, resolveBranding(domainSettings)) {
 			return
 		}
 	}
