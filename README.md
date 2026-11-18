@@ -25,7 +25,7 @@
 | Custom firewall rules | Wireshark-style expressions that set each request's suspicion level: allow, challenge, captcha, or block. |
 | Rate limiting | Per-IP and per-fingerprint limits within a configurable window. |
 | Discord alerts | Attack start/end notifications with request rates and a traffic chart. |
-| Web dashboard | Read-only live monitoring in two themes, served by the proxy itself, zero external resources. |
+| Web dashboard | Full control panel — stage, rules, domains, logs, reload — in two themes, served by the proxy itself, zero external resources. |
 | Cloudflare mode | Run behind Cloudflare on port 80 with `Cf-Connecting-Ip` client IPs. |
 | HTTP API | Read stats, rules, and logs as JSON (v1 and v2); adjust feature settings at runtime. |
 

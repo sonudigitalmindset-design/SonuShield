@@ -49,7 +49,7 @@ These fields can be used in rule expressions. Values reflect the current request
 
 > **Bool fields cannot be compared.** The rule engine's equality test has no boolean case, so `eq`/`ne` on `proxy.cloudflare`, `proxy.stage_locked`, `proxy.attack`, and `proxy.bypass_attack` never match — this is a pre-existing limitation of the gofilter engine, not a configuration problem. The fields are listed for completeness; do not build rules that depend on comparing them. (A bare field name only tests whether the field exists, which is always true, since every field is always populated.)
 
-> **`ip.quic` is reserved and inactive.** The field name is reserved for QUIC fingerprinting, which needs the HTTP/3 listener planned for Batch 3 — there is no QUIC traffic to fingerprint yet, so the field is always empty and the rule API rejects expressions that use it. Do not write rules on it; they will be rejected. This is documented here so the reservation is visible, not because the field does anything today.
+> **`ip.quic` carries real QUIC data.** Since Batch 3's HTTP/3 work, the field is registered and populated for HTTP/3 requests as `q1:<quic-version>:<tls-version>-<cipher>:<alpn>:<flags>`; TCP requests get an empty value, so rules on `ip.quic` never match TCP traffic. See [HTTP/3](http3.md).
 
 IP literals in expressions are written **bare, never quoted**: `ip.src eq 127.0.0.1` is valid, while `ip.src eq "127.0.0.1"` fails to compile (`invalid IP address`). String literals are quoted, as in the examples below.
 
@@ -180,7 +180,7 @@ This example raises the suspicion level by `1` for requests from an unknown brow
 Only a strict subset of expressions fits the fast grammar, and anything else is rejected at load time with a warning naming the rule (the rule is skipped; use `firewallRules` for it — never a panic, never a silent accept):
 
 - One comparison only: `<field> <op> <literal>`, with the word operators `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `contains`, separated by whitespace. Compound expressions (`and`/`or`/`not`, parentheses), regex `matches`, and symbolic operators (`==`, `!=`, `>`, …) are not accepted.
-- Every documented field except the boolean `proxy.*` fields (boolean comparisons never match in the engine, so compiling one would create a dead rule) and except `ip.quic` (reserved, unregistered).
+- Every documented field except the boolean `proxy.*` fields (boolean comparisons never match in the engine, so compiling one would create a dead rule).
 - `contains` only on string fields — on integer/IP fields it can never match in the engine either.
 - Literals parse exactly as the engine parses them for the field's type: base-0 integers (`0x`/`0o`/`0b`/leading-zero), bare IP addresses or CIDRs, and strings via Go unquoting. Backquote literals are rejected by the engine itself.
 

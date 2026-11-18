@@ -86,7 +86,7 @@ Common problems and how to fix them. If your issue is not listed here, check the
 
 **JA4 values do not match an external database.** Expected: SonuShield computes JA4 from the fields Go's TLS stack exposes, without the raw extension list, so its values are only comparable with other SonuShield-computed values. Only use JA4 values observed on your own proxy (see `/_bProxy/fingerprint`) in `ja4_fingerprints.json` and firewall rules.
 
-**Edge rule skipped with a warning at startup.** The expression does not fit the fast grammar (compound expression, regex, symbolic operator, boolean field, `ip.quic`, or a quoted IP literal — IP literals are bare: `ip.src eq 127.0.0.1`). The warning names the rule; move it to `firewallRules`, where the full grammar applies. See [Edge Rules](firewall-rules.md#edge-rules).
+**Edge rule skipped with a warning at startup.** The expression does not fit the fast grammar (compound expression, regex, symbolic operator, boolean field, or a quoted IP literal — IP literals are bare: `ip.src eq 127.0.0.1`). The warning names the rule; move it to `firewallRules`, where the full grammar applies. See [Edge Rules](firewall-rules.md#edge-rules).
 
 **Public API returns 401 for every key.** Keys must be at least 16 characters — shorter keys never match — and travel as `Authorization: Bearer <key>` or `X-API-Key`. Keys live in the proxy-level `publicApiKeys` config; with no keys configured, every public request gets a 401. A `429` means the key's per-minute rate limit was hit; check the `Retry-After` header. See [Public API](configuration.md#public-api).
 
