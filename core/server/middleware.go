@@ -593,7 +593,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	//Check if client provided correct verification result
-	if !strings.Contains(request.Header.Get("Cookie"), "__bProxy_v="+encryptedIP) {
+	//Public API requests skip the challenge switch below:
+	//the dispatch after this block answers them with JSON
+	//errors at any stage. The suspect block above, for
+	//susLv > 3, still applies to every path.
+	publicAPI := strings.HasPrefix(request.URL.Path, "/_bProxy/public/")
+	if !publicAPI && !strings.Contains(request.Header.Get("Cookie"), "__bProxy_v="+encryptedIP) {
 
 		firewall.Mutex.Lock()
 		firewall.WindowAccessIpsCookie[proxy.Last10SecondTimestamp][ip]++
@@ -656,6 +661,18 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			}
 			domainSettings.Tarpit.Apply(susLv)
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr), buffer, writer)
+			return
+		}
+	}
+
+	//Public API v1 (Batch 6): answer here, before access
+	//logging, so unauthenticated probes never inflate the
+	//bypass counters. Valid keys were already served by the
+	//early dispatch; this site answers the rest with JSON
+	//401/404/405 errors at any stage. ProcessPublic never
+	//proxies and never sets cookies.
+	if strings.HasPrefix(request.URL.Path, "/_bProxy/public/") {
+		if api.ProcessPublic(writer, request) {
 			return
 		}
 	}
@@ -747,15 +764,6 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if strings.HasPrefix(request.URL.Path, "/_bProxy/api/v2") {
 		result := api.ProcessV2(writer, request)
 		if result {
-			return
-		}
-	}
-
-	//Public API v1 (Batch 6). Valid keys were already served
-	//by the early dispatch above; this site answers the rest
-	//(missing/wrong keys get a 401 here at Stage 0).
-	if strings.HasPrefix(request.URL.Path, "/_bProxy/public/") {
-		if api.ProcessPublic(writer, request) {
 			return
 		}
 	}
