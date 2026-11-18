@@ -108,6 +108,7 @@ var actionMinRole = map[string]string{
 	"GET_HIJACK_STATUS":                proxy.RoleViewer,
 	"GET_OPENAPI_STATUS":               proxy.RoleViewer,
 	"GET_DLP_STATUS":                   proxy.RoleViewer,
+	"GET_CSP_REPORTS":                  proxy.RoleViewer,
 }
 
 func roleLevel(role string) int {

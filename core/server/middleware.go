@@ -98,6 +98,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//CSP violation reports (Batch 8). Handled before the
+	//challenge flow: browsers deliver reports without cookies
+	//or authentication. Unhandled paths fall through exactly
+	//as before.
+	if HandleCSPReport(writer, request, domainName) {
+		return
+	}
+
 	// Authenticated control-plane requests (Batch 6). API and
 	// dashboard requests carrying a valid secret bypass the
 	// challenge flow entirely: at a locked Stage 2/3 a scripted

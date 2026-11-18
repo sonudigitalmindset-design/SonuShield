@@ -598,6 +598,11 @@ tr.selected td{background:var(--nav-active-bg)}
         </form>
         <div id="logSearchBody" style="margin-top:12px"><div class="state" data-i18n="lsNoSearch">No search run yet.</div></div>
       </div>
+      <div class="panel">
+        <h2 data-i18n="cspTitle">CSP violation reports</h2>
+        <p class="small muted" data-i18n="cspNote">Reports sent by browsers to /_bProxy/csp-report for this domain, newest first. Query strings are stripped from stored URLs. Reports never affect enforcement.</p>
+        <div id="cspBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+      </div>
     </section>
 
     <section id="view-settings" class="view">
@@ -1469,7 +1474,17 @@ errLoadApprovals: "Could not load pending approvals.",
 errApprove: "Could not approve the action: {0}",
 errReject: "Could not reject the action: {0}",
 confirmApprove: "Approve and execute this action?",
-confirmReject: "Reject this action?"
+confirmReject: "Reject this action?",
+cspTitle: "CSP violation reports",
+cspNote: "Reports sent by browsers to /_bProxy/csp-report for this domain, newest first. Query strings are stripped from stored URLs. Reports never affect enforcement.",
+cspEmpty: "No CSP reports received yet.",
+cspDocUri: "Document",
+cspBlockedUri: "Blocked URI",
+cspViolated: "Violated directive",
+cspEffective: "Effective directive",
+cspSource: "Source",
+cspStatus: "Status",
+errLoadCsp: "Could not load CSP reports."
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2103,7 +2118,17 @@ errLoadApprovals: "Pending approvals load नहीं हो पाए।",
 errApprove: "Action approve नहीं हो पाया: {0}",
 errReject: "Action reject नहीं हो पाया: {0}",
 confirmApprove: "इस action को approve करके execute करें?",
-confirmReject: "इस action को reject करें?"
+confirmReject: "इस action को reject करें?",
+cspTitle: "CSP उल्लंघन रिपोर्ट",
+cspNote: "इस domain के लिए ब्राउज़र द्वारा /_bProxy/csp-report पर भेजी गई रिपोर्ट, नवीनतम पहले। संग्रहीत URL से query string हटा दी जाती है। रिपोर्ट enforcement को प्रभावित नहीं करतीं।",
+cspEmpty: "अभी तक कोई CSP रिपोर्ट प्राप्त नहीं हुई।",
+cspDocUri: "Document",
+cspBlockedUri: "Blocked URI",
+cspViolated: "Violated directive",
+cspEffective: "Effective directive",
+cspSource: "Source",
+cspStatus: "Status",
+errLoadCsp: "CSP रिपोर्ट load नहीं हो पाईं।"
 }
 };
 function t(key){
@@ -2649,6 +2674,24 @@ function importRules(ev){
   });
 }
 
+function loadCSPReports(){
+  return domainAction(currentDomain, "GET_CSP_REPORTS?limit=50").then(function(r){
+    var reports = r.REPORTS || [];
+    if(!reports.length){
+      setHTML("cspBody", '<div class="state">' + t("cspEmpty") + '</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>' + t("colTime") + '</th><th>' + t("cspDocUri") + '</th><th>' + t("cspBlockedUri") + '</th><th>' + t("cspViolated") + '</th><th>' + t("cspEffective") + '</th><th>' + t("cspSource") + '</th><th>' + t("cspStatus") + '</th></tr></thead><tbody>';
+    reports.forEach(function(rep){
+      var src = rep.SOURCE_FILE || "";
+      if(rep.LINE) src += ":" + rep.LINE;
+      h += "<tr><td class='mono'>" + esc(rep.TIME) + "</td><td class='mono small'>" + esc(rep.DOCUMENT_URI) + "</td><td class='mono small'>" + esc(rep.BLOCKED_URI) + "</td><td class='mono'>" + esc(rep.VIOLATED_DIRECTIVE) + "</td><td class='mono'>" + esc(rep.EFFECTIVE_DIRECTIVE) + "</td><td class='mono small'>" + esc(src) + "</td><td>" + esc(String(rep.STATUS || "")) + "</td></tr>";
+    });
+    setHTML("cspBody", h + "</tbody></table>");
+  }).catch(function(){
+    setHTML("cspBody", '<div class="state state-error">' + t("errLoadCsp") + '</div>');
+  });
+}
 function loadLogs(){
   setText("logsDomain", currentDomain);
   return domainAction(currentDomain, "GET_LOGS").then(function(r){
@@ -3008,7 +3051,7 @@ function refreshAll(){
   if(currentView === "domains"){ jobs.push(loadDomains(), loadDomainPanel(), loadTenants()); }
   else if(currentView === "rules"){ jobs.push(loadRules(false)); }
   else if(currentView === "iplists"){ jobs.push(loadIPLists()); }
-  else if(currentView === "logs"){ jobs.push(loadLogs()); }
+  else if(currentView === "logs"){ jobs.push(loadLogs(), loadCSPReports()); }
   /* Settings and reports load on demand (view switch / buttons), so
      polling never overwrites a form being edited or a report being read. */
   return Promise.all(jobs).then(function(){
