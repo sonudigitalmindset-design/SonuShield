@@ -293,12 +293,14 @@ func (s *Server) handleWhoami(w http.ResponseWriter, r *http.Request) {
 		apiError(w, http.StatusForbidden, "ERR_FORBIDDEN")
 		return
 	}
+	// Result keys follow the v2 API convention (UPPERCASE),
+	// matching what the dashboard parses.
 	writeJSON(w, map[string]interface{}{
-		"username": account.Username,
-		"role":     account.Role,
-		"tenant":   account.Tenant,
-		"tenants":  account.Tenants,
-		"sso":      session.SSO,
+		"USERNAME": account.Username,
+		"ROLE":     account.Role,
+		"TENANT":   account.Tenant,
+		"TENANTS":  account.Tenants,
+		"SSO":      session.SSO,
 	})
 }
 
@@ -319,17 +321,18 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 	for _, name := range s.nodeOrder {
 		names = append(names, name)
 	}
-	writeJSON(w, map[string]interface{}{"nodes": names})
+	writeJSON(w, map[string]interface{}{"NODES": names})
 }
 
 // accountView is the safe account shape for list responses:
-// no password hash, ever.
+// no password hash, ever. Keys follow the v2 API convention
+// (UPPERCASE), matching what the dashboard parses.
 type accountView struct {
-	Username string   `json:"username"`
-	Role     string   `json:"role"`
-	Tenant   string   `json:"tenant,omitempty"`
-	Tenants  []string `json:"tenants,omitempty"`
-	Disabled bool     `json:"disabled"`
+	Username string   `json:"USERNAME"`
+	Role     string   `json:"ROLE"`
+	Tenant   string   `json:"TENANT,omitempty"`
+	Tenants  []string `json:"TENANTS,omitempty"`
+	Disabled bool     `json:"DISABLED"`
 }
 
 func toAccountView(account *Account) accountView {
@@ -382,7 +385,7 @@ func (s *Server) handleAccounts(w http.ResponseWriter, r *http.Request) {
 			apiError(w, http.StatusForbidden, "ERR_FORBIDDEN")
 			return
 		}
-		writeJSON(w, map[string]interface{}{"accounts": s.visibleAccounts(caller)})
+		writeJSON(w, map[string]interface{}{"ACCOUNTS": s.visibleAccounts(caller)})
 	case http.MethodPost:
 		s.createAccount(w, r, caller)
 	case http.MethodDelete:
@@ -433,7 +436,7 @@ func (s *Server) createAccount(w http.ResponseWriter, r *http.Request, caller *A
 		return
 	}
 	s.audit.Write(AuditEntry{User: caller.Username, Role: caller.Role, Action: "ACCOUNT_CREATE", IP: peerIP(r), Params: map[string]string{"username": account.Username, "role": account.Role}, Success: true})
-	writeJSON(w, map[string]interface{}{"account": toAccountView(account)})
+	writeJSON(w, map[string]interface{}{"ACCOUNT": toAccountView(account)})
 }
 
 func (s *Server) deleteAccount(w http.ResponseWriter, r *http.Request, caller *Account) {
@@ -468,7 +471,7 @@ func (s *Server) deleteAccount(w http.ResponseWriter, r *http.Request, caller *A
 		return
 	}
 	s.audit.Write(AuditEntry{User: caller.Username, Role: caller.Role, Action: "ACCOUNT_DELETE", IP: peerIP(r), Params: map[string]string{"username": username}, Success: true})
-	writeJSON(w, map[string]interface{}{"deleted": username})
+	writeJSON(w, map[string]interface{}{"DELETED": username})
 }
 
 // passwordChangeRequest is the password-change payload. An
@@ -520,7 +523,7 @@ func (s *Server) handleAccountPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.audit.Write(AuditEntry{User: caller.Username, Role: caller.Role, Action: "ACCOUNT_PASSWORD", IP: peerIP(r), Params: map[string]string{"username": username}, Success: true})
-	writeJSON(w, map[string]interface{}{"changed": username})
+	writeJSON(w, map[string]interface{}{"CHANGED": username})
 }
 
 // readJSONBody decodes a size-capped JSON request body.

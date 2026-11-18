@@ -57,7 +57,12 @@ type nodeClient struct {
 	// cpSecret signs caller-identity headers for two-person
 	// approval. Empty disables the mechanism for this node.
 	cpSecret string
-	http     *http.Client
+	// hostHeader is the HTTP Host header sent with every
+	// node request. A proxy node routes by Host, so this
+	// must name a domain the node serves: the configured
+	// host, else the TLS server name, else the URL host.
+	hostHeader string
+	http       *http.Client
 
 	mapMu      sync.Mutex
 	domainMap  map[string]string
@@ -99,12 +104,22 @@ func newNodeClient(node domains.ControlPlaneNode) (*nodeClient, error) {
 			return http.ErrUseLastResponse
 		},
 	}
+	hostHeader := strings.TrimSpace(node.Host)
+	if hostHeader == "" {
+		hostHeader = strings.TrimSpace(node.ServerName)
+	}
+	if hostHeader == "" {
+		if parsed, err := url.Parse(strings.TrimSpace(node.URL)); err == nil {
+			hostHeader = parsed.Hostname()
+		}
+	}
 	return &nodeClient{
 		name:        node.Name,
 		baseURL:     strings.TrimRight(strings.TrimSpace(node.URL), "/"),
 		apiSecret:   node.APISecret,
 		adminSecret: node.AdminSecret,
 		cpSecret:    node.ControlPlaneSecret,
+		hostHeader:  hostHeader,
 		http:        client,
 	}, nil
 }
@@ -138,6 +153,11 @@ func (n *nodeClient) call(method, path, rawQuery string, body []byte, username s
 	req, err := http.NewRequest(method, target, reader)
 	if err != nil {
 		return nil, err
+	}
+	// The node routes by Host: without a served domain
+	// here it answers its generic 404 page to every call.
+	if n.hostHeader != "" {
+		req.Host = n.hostHeader
 	}
 	req.Header.Set("Proxy-Secret", n.apiSecret)
 	req.Header.Set("X-SonuShield-CSRF", "1")
@@ -243,6 +263,11 @@ func (n *nodeClient) stream(path, rawQuery, username string) (io.ReadCloser, int
 	req, err := http.NewRequest(http.MethodGet, target, nil)
 	if err != nil {
 		return nil, 0, err
+	}
+	// Same Host routing as call(): the tail is a node
+	// control path and needs a served domain as Host.
+	if n.hostHeader != "" {
+		req.Host = n.hostHeader
 	}
 	req.Header.Set("Proxy-Secret", n.apiSecret)
 	req.Header.Set("X-SonuShield-CSRF", "1")

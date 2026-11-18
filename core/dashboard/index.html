@@ -4449,7 +4449,8 @@ $("accountCreateForm").addEventListener("submit", function(ev){
     tenant: $("acctTenant").value.trim(),
     tenants: tenants
   }).then(function(r){
-    showInline("accountsError", "accountsOk", "", t("accountsCreated", r.USERNAME || $("acctUsername").value.trim()));
+    var created = (r.ACCOUNT && r.ACCOUNT.USERNAME) || $("acctUsername").value.trim();
+    showInline("accountsError", "accountsOk", "", t("accountsCreated", created));
     $("acctUsername").value = ""; $("acctPassword").value = "";
     $("acctTenant").value = ""; $("acctTenants").value = "";
     loadAccounts();
@@ -4465,7 +4466,7 @@ $("accountPasswordForm").addEventListener("submit", function(ev){
     currentPassword: $("acctPwCurrent").value,
     newPassword: $("acctPwNew").value
   }).then(function(r){
-    showInline("accountsError", "accountsOk", "", t("accountsPwChanged", r.USERNAME || ""));
+    showInline("accountsError", "accountsOk", "", t("accountsPwChanged", r.CHANGED || ""));
     $("acctPwUsername").value = ""; $("acctPwCurrent").value = ""; $("acctPwNew").value = "";
   }).catch(function(err){
     showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");

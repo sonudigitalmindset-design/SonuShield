@@ -354,5 +354,14 @@ func validateControlPlane(cp *domains.ControlPlaneConfig, addErr, addWarn func(s
 				addErr("controlPlane node %q caFile cannot be read: %s", node.Name, err.Error())
 			}
 		}
+		// The node routes by Host: with neither host nor
+		// serverName set, the URL hostname is sent, and an
+		// IP address is never a served domain — every node
+		// call would answer the generic 404 page.
+		if node.Host == "" && node.ServerName == "" {
+			if parsed, err := url.Parse(strings.TrimSpace(node.URL)); err == nil && net.ParseIP(parsed.Hostname()) != nil {
+				addWarn("controlPlane node %q is reached by IP with no host or serverName set: set host to a domain the node serves", node.Name)
+			}
+		}
 	}
 }

@@ -104,6 +104,12 @@ type ControlPlaneNode struct {
 	// the URL host (e.g. connecting by IP). Empty means the
 	// URL hostname.
 	ServerName string `json:"serverName,omitempty"`
+	// Host is the HTTP Host header sent to the node. A
+	// proxy node routes requests by Host, so this must be
+	// a domain the node serves. Empty means ServerName
+	// when set (the SNI name is already a served domain),
+	// else the URL hostname.
+	Host string `json:"host,omitempty"`
 	// CAFile is a PEM bundle of CAs trusted for this node,
 	// for nodes with private-CA certificates. Empty means
 	// the system roots.
