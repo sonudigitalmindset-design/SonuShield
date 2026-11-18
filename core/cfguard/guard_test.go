@@ -79,6 +79,21 @@ func waitFor(t *testing.T, what string, cond func() bool) {
 	t.Fatalf("timed out waiting for %s", what)
 }
 
+// waitIdle waits until no API call is in flight for the
+// domain. The mock receiving a request does not mean the
+// async apply goroutine has recorded the outcome yet;
+// assertions on AppliedLevel must wait for idle, or they
+// race the goroutine under load.
+func waitIdle(t *testing.T, domain string) {
+	t.Helper()
+	waitFor(t, "guard idle", func() bool {
+		g := forDomain(domain)
+		g.mu.Lock()
+		defer g.mu.Unlock()
+		return !g.inFlight
+	})
+}
+
 func testSettings(base string) Settings {
 	return Settings{
 		Enabled:      true,
@@ -99,6 +114,7 @@ func TestRaiseAndRestore(t *testing.T) {
 	// Attack starts: exactly one PATCH to under_attack.
 	Report("example.com", true, settings)
 	waitFor(t, "raise", func() bool { return mock.count() == 1 })
+	waitIdle(t, "example.com")
 	req := mock.last()
 	if req.method != http.MethodPatch {
 		t.Fatalf("method = %s, want PATCH", req.method)
@@ -128,6 +144,7 @@ func TestRaiseAndRestore(t *testing.T) {
 	// Attack ends: one PATCH restoring the level.
 	Report("example.com", false, settings)
 	waitFor(t, "restore", func() bool { return mock.count() == 2 })
+	waitIdle(t, "example.com")
 	if req := mock.last(); req.value != "medium" {
 		t.Fatalf("restore value = %q, want medium", req.value)
 	}
@@ -193,6 +210,7 @@ func TestFailureRetriesAfterInterval(t *testing.T) {
 
 	Report("example.com", true, settings)
 	waitFor(t, "failed raise", func() bool { return mock.count() == 1 })
+	waitIdle(t, "example.com")
 	if got := AppliedLevel("example.com"); got != "" {
 		t.Fatalf("AppliedLevel after failure = %q, want empty", got)
 	}
@@ -210,6 +228,7 @@ func TestFailureRetriesAfterInterval(t *testing.T) {
 	time.Sleep(150 * time.Millisecond)
 	Report("example.com", true, settings)
 	waitFor(t, "retry raise", func() bool { return mock.count() == 2 })
+	waitIdle(t, "example.com")
 	if got := AppliedLevel("example.com"); got != "under_attack" {
 		t.Fatalf("AppliedLevel after retry = %q, want under_attack", got)
 	}
@@ -222,6 +241,7 @@ func TestHTTPErrorFailsOpen(t *testing.T) {
 	defer server.Close()
 	Report("example.com", true, testSettings(server.URL))
 	waitFor(t, "failed call", func() bool { return mock.count() == 1 })
+	waitIdle(t, "example.com")
 	if got := AppliedLevel("example.com"); got != "" {
 		t.Fatalf("AppliedLevel after HTTP error = %q, want empty", got)
 	}

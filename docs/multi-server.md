@@ -76,8 +76,11 @@ Every Redis failure fails open to local state:
 
 Check the live state with the API action
 `GET_PROXY_FEATURES`: `REDIS_CONFIGURED` reports the config
-flag, `REDIS_ACTIVE` reports a live connection. Neither
-field exposes the address or password.
+flag, `REDIS_ACTIVE` reports that a shared store was
+successfully connected at startup or reload (it is not a
+live probe: an outage after that fails open to local state
+while the flag stays true). Neither field exposes the
+address or password.
 
 ## Limits, stated plainly
 

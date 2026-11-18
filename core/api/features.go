@@ -85,8 +85,11 @@ func proxyFeaturesResponse() map[string]interface{} {
 		"REPUTATION_FEED_LAST_ERROR":       lastError,
 		// Redis shared state (Batch 3): configured means
 		// proxy.redis.enabled in config.json; active means a
-		// live Redis connection is in use right now. No
-		// address or password is ever reported.
+		// shared store was successfully connected at startup
+		// or reload. An outage after that fails open to
+		// local state while active stays true: it reports
+		// configuration, not a live probe. No address or
+		// password is ever reported.
 		"REDIS_CONFIGURED": redisConfigured,
 		"REDIS_ACTIVE":     shared.Enabled(),
 		// HTTP/3 (Batch 3): whether proxy.http3 is enabled.
