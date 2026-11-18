@@ -27,11 +27,57 @@ Every push to the `main` branch publishes an automatic prerelease build (tag `la
 
 ## First Run
 
+### Setup Wizard (Web)
+
+The easiest first run is the web-based setup wizard. Start the binary with `--wizard`:
+
+```sh
+./main --wizard
+```
+
+The wizard serves a three-step setup page on `http://127.0.0.1:8080` (localhost only; use an SSH tunnel from a remote machine, and `--wizard-listen=ADDR` to change the address). It validates your inputs, generates the internal secrets, offers a backend health check, and writes `config.json` with mode `0600`. It never overwrites an existing config without explicit confirmation, and `--wizard` refuses to start when a config already exists. The wizard also starts automatically when the binary is launched without a `config.json` and without a terminal on stdin (for example, under a process manager) — an interactive launch without a config keeps the terminal setup below instead. The wizard page is English-only.
+
+### Terminal Setup
+
 Run `./main` without a `config.json` in the same directory and SonuShield will ask you a series of setup questions (Cloudflare mode, timeouts, rate limits, then one domain) and write a `config.json` for you. Stop it with `Ctrl+C`, review the generated file, then start it again. Secrets generated during setup are random strings.
 
 If you already have a `config.json`, place it in the same directory as the `main` binary before starting.
 
 > **Note:** Example configurations use `CHANGE_ME` placeholder secrets. SonuShield refuses to start if any secret still contains `CHANGE_ME` — replace all of them with real random values first.
+
+## Command-Line Interface
+
+The binary is also a small CLI (standard-library flags only). With no arguments it runs the proxy, exactly as before; `run` is the explicit equivalent:
+
+```sh
+./main run                          # start the proxy
+./main validate [--config PATH]     # validate a config file, exit 0/1
+./main export [--config PATH] [--include-secrets]
+                                    # print the config; secrets redacted
+                                    # unless --include-secrets is given
+./main backup [--config PATH] [--output FILE] [--include-secrets]
+                                    # write a backup envelope (see below)
+./main restore [--config PATH] BACKUP_FILE
+                                    # validate and apply a backup envelope
+./main version                      # print the version (also --version)
+./main help                         # usage (also --help / -h)
+```
+
+`validate` runs the same checks as an API reload (secrets, domains, rules, certificate pairs) without starting the proxy — use it in CI or before a reload. `export` prints the config document with every secret-bearing field replaced by `REDACTED` (role-secret map keys are numbered `REDACTED-N`); `--include-secrets` prints the real values — only use it where the output stays private. `backup` writes a backup envelope to stdout or `--output` (mode `0600`); `--include-secrets` requires the passphrase in the `SONUSHIELD_BACKUP_PASSPHRASE` environment variable (never a flag) and encrypts the secrets into the envelope. `restore` validates the envelope and the resulting config before writing anything, keeps a `.bak` copy of the current file, and prints a restart instruction — it never starts the proxy. See the `EXPORT_BACKUP` / `RESTORE_BACKUP` actions in the [API Reference](api.md#proxy-actions) for the envelope format. The version string is stamped at build time with `-ldflags "-X main.version=vX.Y.Z"`; unstamped builds report `dev`.
+
+## Install Script
+
+`scripts/install.sh` installs a pinned release binary with checksum verification. It is safe to inspect before running: no hidden downloads, no pipes into a shell, no `sudo`, no `eval` — it downloads exactly the release tarball and its `.sha256` file, prints both URLs first, verifies the checksum, checks the tarball contains exactly one file named `sonushield`, smoke-checks the binary, and installs it atomically to `$PREFIX/bin/sonushield` (default prefix `/usr/local`). A version is required — there is no "latest":
+
+```sh
+./scripts/install.sh --version v1.0.0 [--prefix /usr/local] [--dry-run]
+```
+
+`--dry-run` prints what would happen without downloading or installing. `SONUSHIELD_RELEASE_BASE_URL` overrides the download base for mirrors and tests only. **No versioned releases exist yet** — the only published artifacts are the automatic `latest` prereleases, which the installer deliberately refuses (unpinned). The installer is ready for the first versioned release; until then, build from source.
+
+## Helm Chart
+
+`deploy/helm/sonushield/` is a Helm chart for Kubernetes deployment (single replica, `Recreate` strategy — the proxy keeps in-memory state). The image tag is required (`--set image.tag=...`); the default repository is `ghcr.io/sonudigitalmindset-design/sonushield`, but **no image is published yet** — build and push one first, or point `image.repository` at your own registry. Exactly one config source must be set: inline `config`, an `existingConfigMap`, or (recommended) an `existingSecret` holding `config.json`, mounted read-only via `subPath`. With no config source the pod starts in wizard bootstrap mode. TLS comes from `tls.existingSecret` mounted at `/certs`. Probes are TCP checks on port 443, and the pod runs with all capabilities dropped except `NET_BIND_SERVICE` under the RuntimeDefault seccomp profile. Note: `helm lint` with default values fails YAML parsing because the required tag leaves the template unrendered — lint with `--set image.tag=...`.
 
 ## Certificates
 

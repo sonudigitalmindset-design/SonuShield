@@ -12,7 +12,7 @@ Open it at:
 https://<your-domain>/_bProxy/<adminsecret>/dashboard
 ```
 
-In Cloudflare mode, open the same path through your Cloudflare-fronted domain as usual (the proxy itself listens on port 80 only in that mode). As with any browser request, the first visit passes through the normal cookie challenge automatically.
+In Cloudflare mode, open the same path through your Cloudflare-fronted domain as usual (the proxy itself listens on port 80 only in that mode). The dashboard path carries the admin secret, so it is served directly even at a locked stage — it never shows a challenge page.
 
 ## Authentication
 
@@ -25,8 +25,8 @@ Two secrets protect the dashboard, reusing the existing API mechanisms — no ne
 ## What It Shows and Does
 
 - **Overview:** live total and bypassed requests per second, all-time totals, CPU/RAM usage, the current stage and stage-lock state, and the top requesting IPs and unknown fingerprints in the current rate-limit window. Updates every 3 seconds.
-- **Domains:** the configured domain list with backends, schemes, live summaries, rule counts, and tenant. Select a domain to manage it everywhere in the dashboard; a detail panel shows its configuration summary and traffic, plus an edge-cache purge button when caching is enabled. A tenants panel lists per-tenant usage (requests, blocked, bandwidth estimate).
-- **Firewall rules:** the domain's rules in evaluation order, with a plain explanation of each action — plus add, edit, and delete. Changes are validated, saved to `config.json` immediately (with a rotating backup), and take effect without a reload. A rule simulator evaluates expressions against sample request fields without enforcing anything, and rule sets can be exported as JSON or imported with full validation.
+- **Domains:** the configured domain list with backends, schemes, live summaries, rule counts, and tenant. Select a domain to manage it everywhere in the dashboard; a detail panel shows its configuration summary and traffic, plus an edge-cache purge button when caching is enabled. A tenants panel lists per-tenant usage (requests, blocked, bandwidth estimate). Admins can also create a domain from a built-in template (WordPress, static site, API backend, e-commerce, plain) or bulk-import domains from JSON/CSV, with full validation — an invalid import changes nothing.
+- **Firewall rules:** the domain's rules in evaluation order, with a plain explanation of each action — plus add, edit, and delete. Changes are validated, saved to `config.json` immediately (with a rotating backup), and take effect without a reload. A rule simulator evaluates expressions against sample request fields without enforcing anything, and rule sets can be exported as JSON or imported with full validation. Edge rules (config-file-only) are not shown here; see [Edge Rules](firewall-rules.md#edge-rules).
 - **IP lists:** the domain's allow/block lists with expiry and notes, plus add and remove. Changes are validated, saved to `config.json` immediately (with a rotating backup), and take effect without a reload. Expired entries drop automatically.
 - **Stage:** the current stage, stage-lock, and under-attack state — plus controls to return to automatic switching, lock a stage, or switch under-attack mode on and off. Stage changes are runtime-only: a reload or restart resets them.
 - **Logs:** the most recent requests that passed the challenges, newest first, with clearing per domain or for all domains — plus structured-log search (filter by IP, action, event, and time window, paginated) when JSON logging is configured.
@@ -38,11 +38,15 @@ All data and actions go through the existing [API](api.md) v2 actions. The stage
 
 ## What Still Needs the Config File
 
-Secrets are never shown or accepted in the dashboard: admin/API secrets, challenge keys, the Telegram bot token, the email password, webhook URLs (which embed a token), the origin-lock secret, and SSO client credentials live only in `config.json` on the server. Admin/API secret changes need a restart. Adding or removing domains, and changing backends, schemes, certificate paths, tenant assignments, page templates, security headers, CORS policies, or proxy-wide settings (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging, GitOps, SSO), also need a `config.json` edit — after which Reload config here applies the change. The terminal HUD and commands remain available as a fallback; see [Commands](how-it-works.md#commands).
+Secrets are never shown or accepted in the dashboard: admin/API secrets, challenge keys, the Telegram bot token, the email password, webhook URLs (which embed a token), the origin-lock secret, and SSO client credentials live only in `config.json` on the server. Admin/API secret changes need a restart. Removing domains, and changing backends, schemes, certificate paths, tenant assignments, page templates, security headers, CORS policies, or proxy-wide settings (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging, GitOps, SSO, branding, Stripe, public API keys, event webhooks), also need a `config.json` edit — after which Reload config here applies the change. (Adding domains is possible from the dashboard via templates and bulk import; see above.) The terminal HUD and commands remain available as a fallback; see [Commands](how-it-works.md#commands).
 
-## Themes and Offline Use
+## Language, Themes, and Offline Use
 
 The dashboard has two themes sharing one layout: Premium Dark (default) and Official Classic Light, switched from the top bar. The choice is stored in the browser's local storage and is never sent to the server. The page is a single self-contained file embedded in the binary: no build step and no external resources (no CDN, fonts, or icon libraries), so it works fully offline and needs no extra files in Docker.
+
+A language toggle next to the theme switch changes the full UI between English and Hindi; the choice persists in the browser's local storage. Data returned by the API (domain names, IPs, log lines) is shown as-is, and technical terms stay in English inside Hindi text. The setup wizard is English-only.
+
+The dashboard is installable as a PWA: a manifest and service worker cache the app shell only (page, manifest, icons), so the installed app opens instantly. API responses and secrets are never cached — the service worker only serves the shell assets under the dashboard's own path, and every data request still goes to the server with authentication. There are no push notifications.
 
 ## Next Steps
 

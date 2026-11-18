@@ -94,6 +94,11 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `statusPage` | Bool | `true` enables the public `/_bProxy/status` and `/_bProxy/health` endpoints. Default `false`. See [Status Page](#status-page). |
 | `gitops` | Object | Config-as-code sync from a local directory. Disabled by default. See [GitOps](#gitops). |
 | `sso` | Object | OIDC login for the dashboard. Disabled by default. See [SSO for the Dashboard](#sso-for-the-dashboard). |
+| `tlsDisablePostQuantum` | Bool | `true` restricts the TLS listener to classic key exchange (X25519, P-256/384/521) and disables the post-quantum hybrid. Default `false` (hybrid enabled). See [Post-Quantum TLS](#post-quantum-tls). |
+| `branding` | Object | Operator branding for the dashboard and built-in challenge pages. Absent (default) keeps SonuShield's own presentation. See [White-Label Branding](#white-label-branding). |
+| `stripe` | Object | Stripe usage-based billing hooks for tenant metering. Disabled without a secret key. See [Stripe Billing](#stripe-billing). |
+| `publicApiKeys` | Array[Object] | API keys for the versioned public API, one per key: `{"key", "tenant", "name", "requestsPerMinute"}`. Empty (default) disables the public API. See [Public API](#public-api). |
+| `eventWebhooks` | Array[Object] | Signed event webhook endpoints for attack/audit events, in JSON, syslog, or CEF format. Empty (default) sends nothing. See [Event Webhooks and SIEM Export](#event-webhooks-and-siem-export). |
 
 Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 
@@ -178,6 +183,24 @@ Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 | `ipBlocklist` | Array[Object] | Block-list entries, same shape as `ipAllowlist`. The block list wins when both match. See [IP Allow and Block Lists](#ip-allow-and-block-lists). |
 | `pageTemplates` | Object | Custom challenge-page HTML: `{"pow": "…", "captcha": "…", "waitingRoom": "…"}`. See [Custom Challenge Pages](#custom-challenge-pages). |
 | `tenant` | String | Tenant this domain belongs to (default `"default"`). See [Multi-Tenancy and Metering](#multi-tenancy-and-metering). |
+| `memoryHardPow` | Bool | `true` serves the Argon2-based Stage 2 puzzle instead of the classic hash puzzle. Default `false`. See [Memory-Hard Proof-of-Work](#memory-hard-proof-of-work). |
+| `memoryHardPowBits` | Int | Memory-hard puzzle difficulty: leading zero bits required (default `4`, clamped `1`–`8`). |
+| `memoryHardPowMemoryKB` | Int | Memory-hard puzzle memory cost in KiB (default `512`, clamped `256`–`8192`). |
+| `memoryHardPowTime` | Int | Memory-hard puzzle time cost, Argon2 iterations (default `1`, clamped `1`–`3`). |
+| `challengeRotation` | Array[String] | Ordered challenge types to rotate (`pow`, `memoryPow`, `turnstile`, `hcaptcha`, `captcha`). Empty (default) keeps the fixed challenge chain. See [Challenge Rotation](#challenge-rotation). |
+| `challengeRotationMode` | String | `"wave"` (default: rotate at each attack wave) or `"request"` (rotate per served challenge). |
+| `brotli` | Bool | `true` enables Brotli compression of eligible responses. Default `false`. See [Brotli and Image Optimization](#brotli-and-image-optimization). |
+| `imageOptimize` | Bool | `true` enables on-the-fly image resizing/recompression. Default `false`. See [Brotli and Image Optimization](#brotli-and-image-optimization). |
+| `imageOptimizeMaxWidth` | Int | Images wider than this (pixels) are resized down (default `1920`, clamped `16`–`4096`). |
+| `imageOptimizeQuality` | Int | Re-encode quality for resized images (default `80`, clamped `40`–`95`). |
+| `poolMaxIdleConns` | Int | Origin pool: maximum idle connections kept across all hosts (`0`, default, uses the shared transport). See [Origin Pooling and Stampede Guard](#origin-pooling-and-stampede-guard). |
+| `poolMaxIdleConnsPerHost` | Int | Origin pool: maximum idle connections per host (`0` = default). |
+| `poolMaxConnsPerHost` | Int | Origin pool: maximum simultaneous connections per host (`0` = default). |
+| `poolIdleConnTimeout` | Int | Origin pool: idle-connection timeout in seconds (`0` = default 90, clamped `1`–`3600`). |
+| `stampedeGuard` | Bool | `true` collapses simultaneous identical cache misses into one origin fetch. Default `false`. Requires the edge cache. See [Origin Pooling and Stampede Guard](#origin-pooling-and-stampede-guard). |
+| `edgeRules` | Array[Object] | Fast-path precompiled rules, same `{"expression", "action"}` shape as `firewallRules`, evaluated before them. Empty (default) disables the fast path. See [Edge Rules](firewall-rules.md#edge-rules). |
+| `twilio` | Object | WhatsApp/SMS alerts via a Twilio-compatible API. Inert unless fully configured. See [WhatsApp and SMS Alerts](#whatsapp-and-sms-alerts). |
+| `branding` | Object | Per-domain branding override for built-in challenge pages. Absent (default) inherits the proxy branding. See [White-Label Branding](#white-label-branding). |
 
 ## Geo and ASN Rules
 
@@ -674,6 +697,132 @@ The watcher checks the file at most every `intervalSeconds` (default `60`, minim
 The flow is the standard authorization-code flow with PKCE (S256), state, and nonce. Discovery is fetched without following redirects, the document's issuer must exactly equal the configured issuer, and ID tokens must be RS256/ES256 signed by a provider JWKS key (HS256 and `alg: none` are rejected); issuer, audience, expiry, and nonce are all checked. Sessions are HMAC-signed cookies (`HttpOnly`, `Secure`, `SameSite=Lax`, scoped to `/_bProxy/`, 8-hour lifetime); API calls accept the session cookie only with the `X-SonuShield-CSRF: 1` header the dashboard sends. Roles come from `defaultRole` (default `viewer`) or from the `roleClaim` mapping (a string claim, or the first matching array value; unknown values fall back to the default). Sessions are never tenant-scoped. Tokens, codes, and secrets are never logged; failures log only a failure class.
 
 The client secret is config-file-only. HTTPS is required for the issuer and redirect URL, except `http` on loopback hosts (for local testing against a mock provider). An enabled-but-invalid config warns at startup and disables SSO; it never stops the proxy. The SSO paths (`/_bProxy/sso/login`, `/_bProxy/sso/callback`, `/_bProxy/sso/logout`, `/_bProxy/sso/status`) are temporary: the platform-host work will move the dashboard off protected domains, and SSO will move with it. `/_bProxy/sso/status` always answers `{"enabled": bool}` so the dashboard can offer SSO only when configured.
+
+## Post-Quantum TLS
+
+Go 1.24 enables the X25519MLKEM768 post-quantum hybrid key exchange by default, and SonuShield uses the Go default: clients that offer the hybrid group negotiate it, and clients that do not fall back to classic X25519 or P-256/384/521. No configuration is needed, and no certificate change is involved — this is key exchange only, not post-quantum signatures. The negotiation was verified with real TLS handshakes (an MLKEM-only client succeeds against the default listener and fails when the hybrid is disabled). To restrict the listener to classic key exchange — for example, for a middlebox that mishandles the larger ClientHello — set the proxy-level `tlsDisablePostQuantum: true`.
+
+**ECH is not supported.** Encrypted ClientHello needs server-side support that Go's standard `crypto/tls` does not provide as of Go 1.24, so SonuShield cannot terminate ECH itself and does not claim to. The path forward is a future Go release with ECH support, or a dedicated ECH-capable TLS terminator in front of the proxy. The Server Name Indication (SNI) in the ClientHello remains visible to network observers, as with any TLS server without ECH.
+
+## Memory-Hard Proof-of-Work
+
+With `memoryHardPow: true`, a domain's Stage 2 challenge is an Argon2id puzzle instead of the classic hash puzzle: the visitor's browser runs a pure-JavaScript Argon2id solver (embedded in the binary, no CDN, no WebAssembly) and submits the counter it found; the server verifies with a single Argon2id computation. The puzzle is bound to a single-use nonce tied to the visitor's IP, TLS fingerprint, and user-agent, and expires after 10 minutes. A provider challenge (Turnstile/hCaptcha) still takes precedence when configured; challenge rotation (below) takes precedence over both.
+
+Parameters, all per domain and clamped to the ranges in the table above:
+
+```json
+"memoryHardPow": true,
+"memoryHardPowBits": 4,
+"memoryHardPowMemoryKB": 512,
+"memoryHardPowTime": 1
+```
+
+**Choose parameters carefully — never combine high values.** The defaults target roughly half a second of solving on a laptop and one to two seconds on a phone (measured: ~31 ms per evaluation at 512 KiB / 1 iteration in a desktop JavaScript engine; 4 bits needs ~16 evaluations on average). Raising memory to 8 MiB with 3 iterations and 8 bits would take minutes on a phone and melt its battery. Start with the defaults and raise one parameter at a time, testing on a real low-end phone. The classic puzzle stays the default; this is an opt-in alternative for operators whose attackers run GPU/ASIC hash solvers.
+
+## Challenge Rotation
+
+With `challengeRotation` set, the served Stage 2 challenge type rotates through the listed types instead of always serving the same one, so an attacker cannot settle on a single solver:
+
+```json
+"challengeRotation": ["pow", "captcha"],
+"challengeRotationMode": "request"
+```
+
+Type names are case-insensitive: `pow` (classic hash puzzle), `memoryPow` (the Argon2 puzzle above, only when `memoryHardPow` is enabled), `turnstile` / `hcaptcha` (only when the domain is configured for that provider, with keys), and `captcha` (the slider captcha). Unknown names are dropped, duplicates collapse, and unavailable types are skipped; if no listed type is available, rotation is inert and the fixed chain runs. The classic puzzle is the ultimate fallback. `challengeRotationMode` is `"wave"` (default: advance at the start of each attack wave) or `"request"` (round-robin per served challenge). Rotation state resets on restart and survives reloads. One limit: each domain has a single provider configuration, so rotating between Turnstile and hCaptcha on the same domain is not possible. Off by default; the current fixed behavior is preserved when the list is empty. The rotation policy is visible read-only via `GET_DOMAIN_FEATURES`; the live current type is not exposed through the API.
+
+## Brotli and Image Optimization
+
+With `brotli: true`, eligible responses are compressed with Brotli (level 5) when the client advertises it via `Accept-Encoding`. Only GET responses are compressed, only for compressible content types, only under 1 MiB, and never for authenticated traffic (`Authorization` present), upgraded connections, or responses marked `Cache-Control: no-transform`. An explicit `br` quality of 0 is honored. ETags are weakened and `Content-MD5` dropped, as compression requires. Fail-open: any error serves the original bytes unchanged.
+
+With `imageOptimize: true`, JPEG and PNG images wider than `imageOptimizeMaxWidth` are resized down and re-encoded in their original format at `imageOptimizeQuality`. Images are capped at 5 MiB and 16 megapixels, at most 4 optimizations run concurrently, and the same GET / authenticated / `no-transform` guards apply. No format conversion happens (no WebP/AVIF output); the `Content-Type` is preserved. Both features are off by default and never alter responses for non-GET or authenticated traffic.
+
+## Origin Pooling and Stampede Guard
+
+By default all domains share one keep-alive transport to origins. Setting any of `poolMaxIdleConns`, `poolMaxIdleConnsPerHost`, `poolMaxConnsPerHost`, or `poolIdleConnTimeout` gives the domain a dedicated transport with those limits (unset values mirror the shared defaults: 10 idle total, 2 idle per host, 10 connections per host, 90-second idle timeout). Pooling never changes single-backend behavior observably — it only bounds connection reuse.
+
+With `stampedeGuard: true` and the edge cache enabled, simultaneous identical cache misses are collapsed: one request fetches from the origin while the others wait (up to 30 seconds) and are then served from the freshly filled cache, so one slow origin response does not fan out into many. Only cacheable requests are guarded. Off by default.
+
+## WhatsApp and SMS Alerts
+
+A domain can send the same attack start/stop alerts over WhatsApp or SMS through the operator's own Twilio-compatible account:
+
+```json
+"twilio": {
+  "accountSID": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "authToken": "CHANGE_ME",
+  "from": "+15005550006",
+  "to": "+15005550001",
+  "apiBase": "https://api.twilio.com",
+  "attack_start_msg": "Attack detected on {{domain.name}}",
+  "attack_stop_msg": "Attack on {{domain.name}} has stopped"
+}
+```
+
+All four of account SID, auth token, `from`, and `to` must be set; otherwise the channel is inert. Whether a message goes as WhatsApp or SMS is decided by the provider from the `from` number: prefix it with `whatsapp:` (for example `"whatsapp:+15005550006"`) for WhatsApp, or use a plain E.164 number for SMS. `apiBase` defaults to Twilio's API and only needs overriding for a compatible provider or a test mock. Message templates support the same `{{domain.name}}` placeholder as the other channels. The token is config-file-only, never returned by the API (only `TWILIO_CONFIGURED`, `TWILIO_FROM`, and `TWILIO_TO` are reported), and message contents are never logged. Live delivery needs the operator's own Twilio account; it was verified against a mock server only.
+
+## White-Label Branding
+
+Resellers can brand the dashboard and the built-in challenge pages with their own display name, logo, and accent color, proxy-wide with per-domain overrides:
+
+```json
+"branding": {
+  "displayName": "Acme Shield",
+  "logoURL": "https://cdn.example.com/logo.png",
+  "accentColor": "#123456"
+}
+```
+
+Per-domain fields override the proxy-wide ones individually; an empty field falls back to the proxy value, and the dashboard always uses the proxy-wide branding. Values are sanitised: the name is trimmed and capped at 64 characters, the logo must be an `http(s)` URL or a same-origin absolute path (no `javascript:` or protocol-relative URLs), and the accent must be a `#rgb` / `#rrggbb` hex color. Invalid values fall back silently and never break serving.
+
+**Hard limit: white-labeling never removes or hides GPL attribution.** The LICENSE file, the `/_bProxy/credits` endpoint, and the README/docs credits always stay, and the dashboard's About footer keeps its attribution line. Branding changes only the dashboard wordmark/title/mark/accent, an optional banner and accent override on the built-in challenge pages, and nothing else. Custom page templates receive no branding injection, and the PWA manifest name and favicon stay SonuShield's (they are static embedded assets). The `SonuShield` response header and alert prefixes are likewise untouched. Branding is config-file-only; there are no API actions or dashboard controls for it.
+
+## Stripe Billing
+
+For multi-tenant operators, usage-based billing hooks report metering counters to Stripe as usage records on metered subscription items:
+
+```json
+"stripe": {
+  "secretKey": "sk_live_...",
+  "apiBase": "https://api.stripe.com",
+  "reportIntervalSeconds": 3600,
+  "customers": {
+    "acme": {
+      "customerId": "cus_...",
+      "requestsItemId": "si_...",
+      "bandwidthItemId": "si_..."
+    }
+  }
+}
+```
+
+The secret key is config-file-only (only `sk_test_` / `sk_live_` keys are accepted; publishable keys are rejected) and is never logged or returned. `apiBase` defaults to Stripe's API and only needs overriding for a test mock. Each tenant maps to one Stripe customer with up to two metered subscription items — one for requests, one for bandwidth. **Units are raw**: request counts and bytes, so the operator's metered prices in Stripe must be defined in those units. Reporting is deltas-only with deterministic idempotency keys: the first sight of a tenant baselines its counters and reports nothing (never retro-bills), a failed report retries the same delta with the same key, and a counter reset on reload reports the post-reset value as a fresh delta (pre-reload unreported usage is forgotten, never double-counted). `reportIntervalSeconds` of `0` (default) disables scheduled reporting; otherwise it is clamped to 60–86400 seconds. Reporting can also be triggered on demand with the `REPORT_STRIPE_USAGE` API action, and `GET_STRIPE_STATUS` reports enablement, key mode (test/live), and the last result. Counters are estimate-grade, like the metering counters themselves: challenge, block, and error pages and WebSocket traffic are not counted, and headers are excluded. Unmapped tenants report nothing. The integration creates no customers, subscriptions, or charges — the operator sets those up in Stripe. It was verified against a mock server only; no live Stripe account was used.
+
+## Public API
+
+The versioned public API (`/_bProxy/public/v1/`) is a separate, read-only API for tenants and resellers, distinct from the internal control API. Access is by API key, configured proxy-wide:
+
+```json
+"publicApiKeys": [
+  {"key": "CHANGE_ME", "tenant": "acme", "name": "acme-read",
+   "requestsPerMinute": 100}
+]
+```
+
+Keys must be at least 16 characters; shorter keys never match. `requestsPerMinute` defaults to 60 when unset (clamped to 1–60000); `tenant` defaults to `"default"`. Keys travel as `Authorization: Bearer <key>` (preferred) or `X-API-Key`, are compared in constant time, and are never logged or returned. Endpoints: `GET v1/ping` (tenant + key name), `GET v1/usage` (tenant aggregate; `?domain=` filters to one of the tenant's domains), and `GET v1/domains` (the tenant's domains with stage and counters). Responses use a `{"ok": true, "data": …}` / `{"ok": false, "error": {"code", "message"}}` envelope with matching HTTP codes. A domain outside the caller's tenant 404s exactly like a nonexistent one. Only GET is accepted (other methods get 405); unknown endpoints and versions get a JSON 404 and are never proxied. Rate limits are per key, fixed-window, with `X-RateLimit-Limit` / `X-RateLimit-Remaining` / `X-RateLimit-Reset` headers and `Retry-After` on 429. Unauthenticated requests get JSON 401 errors at any stage (the suspect firewall block for very high suspicion levels still applies to every path); the public API is read-only and its calls are not audit-logged. Minimal Go and Python clients live in [`sdk/`](../sdk/README.md) with examples that run against a live proxy.
+
+## Event Webhooks and SIEM Export
+
+Attack start/stop and audit events can be delivered to operator-configured endpoints as signed HTTP webhooks, in JSON, syslog (RFC 5424), or CEF format for SIEM ingestion:
+
+```json
+"eventWebhooks": [
+  {"url": "https://siem.example.com/collect", "secret": "CHANGE_ME",
+   "events": ["attack.start", "attack.stop"], "format": "cef",
+   "timeoutSeconds": 10, "maxRetries": 3}
+]
+```
+
+An endpoint delivers only with an `http(s)` URL and a non-empty secret. `events` filters the event types delivered (empty means all: `attack.start`, `attack.stop`, `audit`, plus `test` from the `TEST_WEBHOOKS` action, which ignores filters). `format` is `json` (default), `syslog`, or `cef`. Delivery is a bounded ordered queue (256 events; overflow drops and counts) with exponential backoff (1s ×2, capped at 60s); transport errors and 5xx responses retry, 3xx/4xx are permanent, and redirects are never followed. At most 16 endpoints are used; extras are ignored and counted. Each delivery carries `X-SonuShield-Timestamp` (Unix seconds) and `X-SonuShield-Signature` (`v1=` + hex HMAC-SHA256 of `"<timestamp>.<body>"` with the endpoint secret) — verify both, and reject stale timestamps, on receipt. Payloads carry operational facts only (event id, type, timestamp, domain, tenant, and scrubbed audit parameters); secrets never appear in payloads. Delivery is HTTP POST only — there is no UDP/TCP syslog sender; SIEMs ingest through an HTTP collector or a relay. `GET_WEBHOOK_STATUS` reports endpoint hosts (never full URLs or secrets), queue depth, and drop counts; `TEST_WEBHOOKS` queues one `test` event per endpoint. Webhook URLs are treated as secrets in exports and backups, since they often embed tokens.
 
 ## Applying Changes
 

@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Mostly planned, not yet implemented.** Batches 5–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1, 2, and 4 and the control panel are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
+> **Mostly planned, not yet implemented.** Batches 7–8, sale-readiness, and 3 are planned work — none of it exists in the current code yet. **Batches 1, 2, 4, 5, and 6 and the control panel are implemented** (see their sections below). For what SonuShield can do today, see [Features](features.md).
 
 Work is planned in batches, in this order: 1 → 2 → control panel → 4 → 5 → 6 → 7 → 8 → sale-readiness → 3. Batch 3 is the heaviest work and comes last.
 
@@ -71,22 +71,25 @@ Still planned from this batch's original scope: firewall-level block export (nft
 - SSO login for the dashboard (OIDC, PKCE, JWKS-verified tokens; paths temporary until the platform-host work).
 - eBPF / Anycast / scrubbing-provider integration: honesty limit — kernel XDP/eBPF filtering and Anycast cannot be delivered by this userspace proxy. Delivered: health/status polling hooks, failover signaling, and [integration docs](scrubbing-integration.md) only. No eBPF/Anycast capability is claimed.
 
-## Batch 6 — Next-Generation Detection, Operations, and Business
+## Batch 6 — Next-Generation Detection, Operations, and Business ✅ Implemented
 
-- ECH and post-quantum TLS support; QUIC fingerprinting.
-- Memory-hard proof-of-work and challenge rotation.
-- Brotli compression and image optimization at the proxy.
-- Origin connection pooling and a cache stampede guard.
-- Edge rules engine (WASM / JS) for custom logic at the edge.
-- Setup wizard, domain templates, and bulk domain import.
-- CLI tool, Helm chart, and one-click installer.
-- Dashboard in Hindi and English, with PWA push notifications.
-- WhatsApp / SMS alerts.
-- White-label support.
-- Stripe billing with plans.
-- Public API and SDKs.
-- Outbound webhooks and SIEM export.
-- Full backup and one-click migration.
+- Control-plane exemption (fix from Batch 5 findings): API/dashboard requests carrying a valid secret bypass the challenge flow, so scripted clients can unlock a locked stage; wrong-secret requests keep the previous fall-through behavior exactly.
+- Post-quantum TLS: X25519MLKEM768 hybrid key exchange (Go 1.24 default), verified by real handshakes, with a `tlsDisablePostQuantum` opt-out. ECH honesty limit: Go's stdlib has no server-side ECH as of Go 1.24 — documented only, not claimed. QUIC fingerprinting honesty limit: no QUIC listener exists until Batch 3's HTTP/3 work, so only the reserved, inactive `ip.quic` field exists — no QUIC data is invented.
+- Memory-hard Argon2 proof-of-work (opt-in, phone-safe defaults, pure-JS solver, no CDN/WASM) and challenge rotation across attack waves or per request (PoW / memory-hard / Turnstile / hCaptcha / captcha, per operator policy).
+- Brotli compression and on-the-fly image optimization (both off by default, strict size/CPU bounds, never for non-GET or authenticated traffic).
+- Origin connection pooling (configurable limits, inert by default) and a cache stampede guard (single-flight collapse of identical cache misses).
+- Edge rules engine: a precompiled fast-path chain evaluated before the general rules, with identical semantics proven by differential tests. (The roadmap's original "WASM/JS" phrasing was not built; the precompiled chain is what exists.)
+- Setup wizard (web-based, localhost-only, never overwrites without confirmation), domain templates (WordPress, static, API, e-commerce, plain), and validated bulk domain import (JSON/CSV, all-or-nothing).
+- CLI (`run`/`validate`/`export`/`backup`/`restore`/`version`/`help`), Helm chart, and a checksum-verified install script with pinned versions. No versioned release or container image exists yet, so neither has been exercised against a published artifact.
+- Dashboard Hindi/English toggle (full UI strings, persisted) and PWA support for the app shell only — never API responses or secrets, and no push notifications (the roadmap's "PWA push notifications" phrasing was not built).
+- WhatsApp/SMS alerts via the operator's own Twilio-compatible account (config-file-only credentials, inert without them; mock-verified only, no live delivery tested).
+- White-label branding (display name, logo URL, accent color) for the dashboard and built-in challenge pages, with the hard limit that GPL attribution — LICENSE, the credits endpoint, README/docs credits — always stays.
+- Stripe usage-based billing hooks: per-tenant customer/subscription-item mapping, deltas-only idempotent usage reporting from metering counters (estimate-grade, raw units), test/live key modes. Mock-verified only; creates no customers, subscriptions, or charges.
+- Versioned public API v1 for tenants/resellers (API-key auth, tenant scoping, per-key rate limits, JSON errors at any stage) plus minimal Go and Python SDKs with examples that run against a live proxy.
+- Signed event webhooks (HMAC-SHA256, retry with backoff) and SIEM export formats (JSON syslog + CEF) for attack/audit events; secrets never in payloads; HTTP POST delivery only.
+- Full backup export (config + rules + IP lists + tenants; secrets redacted by default, encrypted opt-in) and validated restore/migrate — a bad backup changes nothing.
+
+Still planned from this batch's original scope: nothing — every item above is implemented, with the honesty limits noted inline.
 
 ## Batch 7 — Deeper Detection, Operations, and Trust
 

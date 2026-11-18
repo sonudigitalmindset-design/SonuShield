@@ -45,6 +45,10 @@ These fields can be used in rule expressions. Values reflect the current request
 
 > **Bool fields cannot be compared.** The rule engine's equality test has no boolean case, so `eq`/`ne` on `proxy.cloudflare`, `proxy.stage_locked`, `proxy.attack`, and `proxy.bypass_attack` never match — this is a pre-existing limitation of the gofilter engine, not a configuration problem. The fields are listed for completeness; do not build rules that depend on comparing them. (A bare field name only tests whether the field exists, which is always true, since every field is always populated.)
 
+> **`ip.quic` is reserved and inactive.** The field name is reserved for QUIC fingerprinting, which needs the HTTP/3 listener planned for Batch 3 — there is no QUIC traffic to fingerprint yet, so the field is always empty and the rule API rejects expressions that use it. Do not write rules on it; they will be rejected. This is documented here so the reservation is visible, not because the field does anything today.
+
+IP literals in expressions are written **bare, never quoted**: `ip.src eq 127.0.0.1` is valid, while `ip.src eq "127.0.0.1"` fails to compile (`invalid IP address`). String literals are quoted, as in the examples below.
+
 ## The `sh1` HTTP fingerprint
 
 `http.fingerprint` is SonuShield's own format (`sh1_<a>_<b>_<c>_<d>`), deliberately not JA4H: JA4H is part of the FoxIO JA4+ suite under a licence that needs an OEM agreement for commercial use, and a spec-compliant JA4H needs the original header transmission order, which Go's `net/http` does not preserve. The signals used, exactly:
@@ -158,6 +162,25 @@ Prefixing the action with `+` or `-` instead adjusts the *current* suspicion lev
 ```
 
 This example raises the suspicion level by `1` for requests from an unknown browser engine. A `-1` action would lower it by `1`.
+
+## Edge Rules
+
+`edgeRules` is a fast-path rule chain, configured per domain in `config.json` with the same `{"expression", "action"}` shape as `firewallRules`, evaluated before the general rules — behaving exactly as if its rules were prepended to the general list. A set action in the edge chain stops general evaluation, just like a set action in the general list; `+N`/`-N` actions adjust the level and evaluation continues. The intended use is cheap early decisions: known-good fingerprints, static allows, and other single-test rules that currently pay the rule-engine interpreter on every request.
+
+```json
+"edgeRules": [
+  {"expression": "ip.src eq 203.0.113.10", "action": "0"}
+]
+```
+
+Only a strict subset of expressions fits the fast grammar, and anything else is rejected at load time with a warning naming the rule (the rule is skipped; use `firewallRules` for it — never a panic, never a silent accept):
+
+- One comparison only: `<field> <op> <literal>`, with the word operators `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `contains`, separated by whitespace. Compound expressions (`and`/`or`/`not`, parentheses), regex `matches`, and symbolic operators (`==`, `!=`, `>`, …) are not accepted.
+- Every documented field except the boolean `proxy.*` fields (boolean comparisons never match in the engine, so compiling one would create a dead rule) and except `ip.quic` (reserved, unregistered).
+- `contains` only on string fields — on integer/IP fields it can never match in the engine either.
+- Literals parse exactly as the engine parses them for the field's type: base-0 integers (`0x`/`0o`/`0b`/leading-zero), bare IP addresses or CIDRs, and strings via Go unquoting. Backquote literals are rejected by the engine itself.
+
+Equivalence is enforced, not assumed: every accepted expression is first validated with the same engine the general rules use, so the fast path can never accept an expression the general evaluator would refuse; the compiled check then replicates the engine's comparison semantics, including its quirks (`ne` is the negation of `eq`, so it is true on missing or mistyped values; `le` on IPs compares without normalisation). Differential tests prove the two evaluators agree across the accepted grammar. Edge rules are config-file-only: they are not managed by the rule API, the simulator, or export/import, and they do not appear in the dashboard.
 
 ## Testing Rules Before Enforcing Them
 

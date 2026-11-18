@@ -158,6 +158,66 @@ The structured JSON log is searchable through the API and dashboard (filter by d
 
 Domains group per tenant, with per-tenant usage counters (requests, blocked, bandwidth estimate) and tenant-scoped API roles that see only their own domains. Configuration can sync from a local git checkout through the validated reload path — a bad synced config can never take the proxy down. The dashboard supports optional OIDC login (PKCE, JWKS-verified ID tokens, signed session cookies) alongside the existing secret-path auth. Details: [Configuration](configuration.md#multi-tenancy-and-metering).
 
+## Control-Plane Exemption
+
+API and dashboard requests carrying a valid secret (API secret, role secret, or SSO session plus CSRF header) bypass the challenge flow entirely — including the unlock call itself at a locked stage — so scripted clients can always manage the proxy. Requests with a missing or wrong secret keep the previous fall-through behavior exactly, and visitor traffic is unaffected. Details: [API Reference](api.md).
+
+## Post-Quantum TLS
+
+The TLS listener negotiates the X25519MLKEM768 post-quantum hybrid key exchange by default (Go 1.24 default), with classic fallback for clients that do not offer it; a config option restricts the listener to classic key exchange. Encrypted ClientHello (ECH) is not supported — Go's standard TLS stack does not provide it server-side — and is not claimed. Details: [Configuration](configuration.md#post-quantum-tls).
+
+## Memory-Hard Proof-of-Work and Challenge Rotation
+
+A domain can serve an Argon2id puzzle instead of the classic hash puzzle, with operator-set time/memory/difficulty bounds and a pure-JavaScript solver embedded in the binary (no CDN, no WebAssembly) — an opt-in alternative for attackers running GPU/ASIC hash solvers, with phone-safe defaults. Separately, the served challenge type can rotate across attack waves or per request (proof-of-work, memory-hard puzzle, Turnstile/hCaptcha, captcha) under an operator policy, so attackers cannot settle on one solver. Both are off by default. Details: [Configuration](configuration.md#memory-hard-proof-of-work).
+
+## Brotli and Image Optimization
+
+Eligible GET responses can be Brotli-compressed on negotiation, and JPEG/PNG images wider than a bound can be resized and re-encoded in their original format — both within strict size/CPU bounds, fail-open to the original bytes, and never applied to non-GET or authenticated traffic. Off by default. Details: [Configuration](configuration.md#brotli-and-image-optimization).
+
+## Origin Pooling and Stampede Guard
+
+Domains can get a dedicated keep-alive connection pool to their origins with configurable limits, and — with the edge cache enabled — a stampede guard that collapses simultaneous identical cache misses into one origin fetch. Single-backend behavior is unchanged when unconfigured. Details: [Configuration](configuration.md#origin-pooling-and-stampede-guard).
+
+## Edge Rules
+
+A fast-path precompiled rule chain runs before the general firewall rules for cheap early decisions, with semantics identical to the equivalent normal rules (enforced by validating every expression with the same engine and by differential tests). Only single-comparison expressions fit the grammar; anything else is rejected at load with a warning and stays a general rule. Config-file-only. Details: [Firewall Rules](firewall-rules.md#edge-rules).
+
+## Setup Wizard, Templates, and Bulk Import
+
+A web-based first-run wizard (localhost-only) creates the initial `config.json` with validated inputs, generated secrets, and a backend health check — and never overwrites an existing config. Built-in domain templates (WordPress, static site, API backend, e-commerce, plain) give sane starting presets, and domains bulk-import from JSON/CSV with all-or-nothing validation. Details: [Installation](installation.md#first-run) and [API Reference](api.md#proxy-actions).
+
+## CLI, Helm Chart, and Install Script
+
+The binary is also a CLI (`run`, `validate`, `export`, `backup`, `restore`, `version`, `help`), a Helm chart deploys it to Kubernetes with exactly one config source, and an install script installs pinned releases with checksum verification and no hidden downloads. Details: [Installation](installation.md#command-line-interface).
+
+## Dashboard Languages and PWA
+
+The dashboard UI switches fully between English and Hindi with a persisted choice, and is installable as a PWA whose service worker caches the app shell only — API responses and secrets are never cached, and there are no push notifications. Details: [Dashboard](dashboard.md#language-themes-and-offline-use).
+
+## WhatsApp / SMS Alerts
+
+Attack start/stop alerts can go out over WhatsApp or SMS through the operator's own Twilio-compatible account, with the same events and templates as the other channels. Credentials are config-file-only, the channel is inert without them, and message contents are never logged. Details: [Configuration](configuration.md#whatsapp-and-sms-alerts).
+
+## White-Label Branding
+
+Resellers can set a display name, logo URL, and accent color for the dashboard and built-in challenge pages, proxy-wide with per-domain overrides. The hard limit is absolute: LICENSE, the credits endpoint, and README/docs credits always stay, and custom templates, the PWA manifest, and the favicon are never branded. Details: [Configuration](configuration.md#white-label-branding).
+
+## Stripe Billing
+
+Usage-based billing hooks report per-tenant metering counters to Stripe as usage records on metered subscription items — deltas-only, idempotent, never retro-billing, with test/live key modes and on-demand or scheduled reporting. Keys are config-file-only; the integration creates no customers, subscriptions, or charges. Details: [Configuration](configuration.md#stripe-billing).
+
+## Public API and SDKs
+
+A versioned, read-only public API (`/_bProxy/public/v1/`) serves tenants and resellers with API-key auth, tenant scoping, and per-key rate limits — usage aggregates, domain lists, and a ping endpoint, in a stable JSON envelope. Minimal Go and Python SDKs with runnable examples live in `sdk/`. Details: [API Reference](api.md#public-api).
+
+## Webhooks and SIEM Export
+
+Attack and audit events stream to operator endpoints as signed webhooks (HMAC-SHA256, retry with backoff) in JSON, RFC 5424 syslog, or CEF format for SIEM ingestion. Payloads carry operational facts only — secrets never appear in them. Details: [Configuration](configuration.md#event-webhooks-and-siem-export).
+
+## Backup and Migration
+
+The full configuration — domains, rules, IP lists, tenants — exports as a backup envelope with secrets redacted by default or included encrypted under a passphrase (scrypt + AES-256-GCM), and restores onto another instance only after validation: a bad backup changes nothing. Available through the API and the CLI. Details: [API Reference](api.md#proxy-actions).
+
 ## Rate Limiting
 
 Per-IP and per-fingerprint rate limits within a configurable time window: total requests, unknown-fingerprint requests, failed challenge attempts, and connections opened without sending a request. Limits that are exceeded block the offender. Details: [Configuration](configuration.md#proxy-settings).

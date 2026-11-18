@@ -59,7 +59,7 @@ Requests with a missing or wrong API secret are passed through to the normal req
 
 ## Roles and Audit Log
 
-The `apisecret` authenticates as **admin**. Additional secrets mapped to roles via the proxy `apiRoles` config key authenticate as **viewer** (read-only) or **operator** (stage, rules, cache, log clearing, feed refresh, rule import, IP-list entries). Admin-only actions are `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, and `FILL_IP_CACHE`; a lower role calling one gets `ERR_FORBIDDEN`. Unknown actions return `ERR_ACTION_NOT_FOUND` for every role. Tenant-scoped secrets (`"tenant:<name>:<role>"`) keep their role but only for that tenant's domains; see [Multi-Tenancy and Metering](configuration.md#multi-tenancy-and-metering). See [API Roles and Audit Log](configuration.md#api-roles-and-audit-log) for the full permission table.
+The `apisecret` authenticates as **admin**. Additional secrets mapped to roles via the proxy `apiRoles` config key authenticate as **viewer** (read-only) or **operator** (stage, rules, cache, log clearing, feed refresh, rule import, IP-list entries). Admin-only actions are `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, `FILL_IP_CACHE`, `CREATE_DOMAIN_FROM_TEMPLATE`, `IMPORT_DOMAINS`, `REPORT_STRIPE_USAGE`, `TEST_WEBHOOKS`, `EXPORT_BACKUP`, and `RESTORE_BACKUP`; a lower role calling one gets `ERR_FORBIDDEN`. Unknown actions return `ERR_ACTION_NOT_FOUND` for every role. Tenant-scoped secrets (`"tenant:<name>:<role>"`) keep their role but only for that tenant's domains; see [Multi-Tenancy and Metering](configuration.md#multi-tenancy-and-metering). See [API Roles and Audit Log](configuration.md#api-roles-and-audit-log) for the full permission table.
 
 When SSO is configured, a valid SSO session cookie also authenticates API calls — but only when the request also carries the `X-SonuShield-CSRF: 1` header the dashboard sends. A valid cookie without that header is answered `ERR_FORBIDDEN` and never falls through to the backend. SSO sessions carry a role only and are never tenant-scoped; audit entries for them report the role with an `(sso)` suffix.
 
@@ -87,6 +87,15 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `REFRESH_REPUTATION_FEED` | Triggers a background reputation-feed refresh. Returns `REFRESH_STARTED` and `FEED_CONFIGURED`. Fail-open like the scheduled refresh; a refresh already running is not duplicated. |
 | `LIST_CONFIG_BACKUPS` | `BACKUPS`: one entry per existing config backup, newest first (`NAME`, `SIZE`, `MODIFIED` in UTC/RFC 3339). Viewer role may run it. |
 | `RESTORE_CONFIG_BACKUP` | Restores one backup (parameter `backup`, e.g. `config.json.bak.1`). Validates the backup like a reload, backs up the current file, swaps it in atomically, and reloads; on reload failure the previous file is written back. Returns `RESTORED`. Admin role only. |
+| `GET_DOMAIN_TEMPLATES` | `TEMPLATES`: the built-in domain templates (`NAME`, `TITLE`, `DESCRIPTION`, `PRESET`). Viewer role may run it. |
+| `CREATE_DOMAIN_FROM_TEMPLATE` | Creates one domain from a template (see below). Validates, persists, and reloads; on reload failure the file is rolled back. Admin role only. |
+| `IMPORT_DOMAINS` | Bulk-imports domains from JSON or CSV (see below). All-or-nothing: an invalid entry rejects the whole import. Admin role only. |
+| `GET_STRIPE_STATUS` | `ENABLED`, `INTERVAL`, `KEY_MODE` (`test` / `live` / `""`), `LAST_REPORT`. The secret key is never returned. Viewer role may run it. |
+| `REPORT_STRIPE_USAGE` | Runs one usage-reporting pass immediately (deltas only, idempotent). Returns `RESULTS` per tenant. Admin role only. |
+| `GET_WEBHOOK_STATUS` | `ENDPOINTS` (hosts only, never full URLs or secrets), `QUEUE`, `DROPPED`. Viewer role may run it. |
+| `TEST_WEBHOOKS` | Queues one `test` event per configured endpoint, ignoring event filters. Returns `QUEUED`. Admin role only. |
+| `EXPORT_BACKUP` | Returns a backup envelope (`BACKUP`) holding the full config document. Secrets are redacted by default; with `include_secrets=true` and a `passphrase` parameter they are included encrypted. Admin role only. See below. |
+| `RESTORE_BACKUP` | Restores a backup envelope (parameters `backup`, `passphrase`). Validates before applying; a bad backup changes nothing. Admin role only. Distinct from `RESTORE_CONFIG_BACKUP`. See below. |
 
 ## Domain Actions
 
@@ -107,7 +116,7 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `SEARCH_LOGS` | Searches the structured JSON log for this domain only (see below). Viewer role may run it. |
 | `SET_DOMAIN_CONFIG` | Adjusts and persists domain settings (see below). Returns the same fields as `GET_DOMAIN_CONFIG`. |
 | `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE` | Add, change, or remove one firewall rule (see below). Returns the updated `FIREWALL_RULES` list. Changes persist to `config.json`. |
-| `GET_DOMAIN_FEATURES` | `ADAPTIVE_POW`, `POW_DIFFICULTY_MIN`, `POW_DIFFICULTY_MAX`, `CHALLENGE_PROVIDER`, `CHALLENGE_KEYS_CONFIGURED` (bool — keys themselves are never returned), `WAF_MODE`, `WAF_MODE_EFFECTIVE`, `WAF_INSPECT_BODY`, `WAF_WP_LOGIN_LIMIT`. |
+| `GET_DOMAIN_FEATURES` | `ADAPTIVE_POW`, `POW_DIFFICULTY_MIN`, `POW_DIFFICULTY_MAX`, `CHALLENGE_PROVIDER`, `CHALLENGE_KEYS_CONFIGURED` (bool — keys themselves are never returned), `WAF_MODE`, `WAF_MODE_EFFECTIVE`, `WAF_INSPECT_BODY`, `WAF_WP_LOGIN_LIMIT`, `MEMORY_HARD_POW`, `MEMORY_HARD_POW_BITS`, `MEMORY_HARD_POW_MEMORY_KB`, `MEMORY_HARD_POW_TIME`, `CHALLENGE_ROTATION`, `CHALLENGE_ROTATION_MODE`. The memory-hard and rotation fields are read-only reports of the config-file policy; they cannot be set through the API. |
 | `GET_ATTACK_REPORT` | Attack summary for the domain (see below). Returns `REPORT` (JSON object) or, with `format=csv`, `REPORT_FORMAT` and `REPORT` (CSV string). |
 | `SET_DOMAIN_FEATURES` | Adjusts runtime-tunable feature settings (see below). Returns the same fields as `GET_DOMAIN_FEATURES`. |
 | `PURGE_CACHE` | Clears the domain's edge cache, or one path with the `path` parameter. Returns `PURGED` (entries removed) and `DOMAIN`. Operator role may run it. Returns `0` purged when the edge cache is disabled. |
@@ -135,7 +144,7 @@ Changes apply to the running proxy only and are **not** written back to `config.
 | `stage` | Integer `>= 0`. `0` unlocks and returns to automatic switching from Stage 1 (terminal `stage 0` parity); `1`–`3` (or higher) locks that stage. |
 | `underAttack` | `true` locks Stage 3 (under-attack mode); `false` unlocks back to automatic switching. |
 
-`GET_DOMAIN_CONFIG` returns the domain's settings without secrets: `NAME`, `BACKEND`, `SCHEME`, `CERTIFICATE` and `KEY` (file paths, read-only), the six stage thresholds, `STAGE2_DIFFICULTY` (live value), the adaptive proof-of-work and WAF-lite fields (same as `GET_DOMAIN_FEATURES`), `RULES_DRY_RUN`, `WEBHOOK_CONFIGURED`, `TELEGRAM_CONFIGURED` and `TELEGRAM_CHAT_ID`, `EMAIL_CONFIGURED` plus SMTP host/port/username/from/to/TLS, and `RULE_COUNT`. Challenge keys, the Telegram bot token, the email password, and webhook URLs (which embed a token) are never returned — only whether each is configured.
+`GET_DOMAIN_CONFIG` returns the domain's settings without secrets: `NAME`, `BACKEND`, `SCHEME`, `CERTIFICATE` and `KEY` (file paths, read-only), the six stage thresholds, `STAGE2_DIFFICULTY` (live value), the adaptive proof-of-work and WAF-lite fields (same as `GET_DOMAIN_FEATURES`), `RULES_DRY_RUN`, `WEBHOOK_CONFIGURED`, `TELEGRAM_CONFIGURED` and `TELEGRAM_CHAT_ID`, `EMAIL_CONFIGURED` plus SMTP host/port/username/from/to/TLS, `TWILIO_CONFIGURED` plus `TWILIO_FROM` and `TWILIO_TO`, and `RULE_COUNT`. Challenge keys, the Telegram bot token, the email password, the Twilio auth token, and webhook URLs (which embed a token) are never returned — only whether each is configured.
 
 `SET_DOMAIN_CONFIG` accepts these parameters (v1 `params` object or v2 query string). Only supplied parameters change; unknown parameters are rejected, and validation is all-or-nothing — on any error, nothing changes:
 
@@ -184,6 +193,36 @@ Every rule is validated before anything changes: the expression must compile in 
 
 The JSON report contains: `domain`, `generated_at`, the attack window (`window_start`, `window_end`, `window_seconds`), `stage`, `stage_manually_set`, `raw_attack`, `bypass_attack`, totals and current/peak rates, the risk-score summary (`risk_avg`, `risk_max`, `risk_samples`), `blocks_by_reason`, `challenges_by_stage`, `waf_matches_by_rule`, backend results and average latency, and the top verified/unverified IPs, unknown fingerprints, and countries. The IP, fingerprint, and country tallies are proxy-wide (the firewall tracks them globally) and are labelled as such in the field names (`*_proxy_wide`); country aggregates cover the listed top IPs only. The CSV form renders the same data as one flat table with the header `section,key,value,detail`. Reports contain metadata only — no bodies, cookies, headers, or secrets. See [Attack Reports](configuration.md#attack-reports) for the optional directory export.
 
+`CREATE_DOMAIN_FROM_TEMPLATE` takes `name`, `backend`, `scheme`, `template` (one of `plain`, `wordpress`, `static`, `api`, `ecommerce`), `certificate`, and `key`. The template supplies starting-point presets (see below); no template ships firewall rules. The resulting domain is validated like a hand-written config entry, appended to `config.json` (unknown keys preserved), and applied via the validated reload; on reload failure the file is rolled back and nothing changes. Tenant-scoped callers are forbidden, and template creation cannot assign a tenant — set tenants in `config.json`.
+
+`IMPORT_DOMAINS` takes `format` (`json` or `csv`) and `data` (the document string, 1 MB cap). JSON entries and CSV rows carry the same fields as `CREATE_DOMAIN_FROM_TEMPLATE` (CSV columns: `name,backend,scheme,template,certificate,key`). Every entry is validated and the full resulting configuration is compiled before anything is stored — an invalid entry rejects the whole import and nothing changes. Tenant assignment is not supported in import entries.
+
+Domain templates are starting points, documented as such:
+
+| Template | Preset |
+|----------|--------|
+| `plain` | Standard defaults: WAF log-only, no caching, no presets. |
+| `wordpress` | WAF log-only with body inspection, a tighter login-flood limit (10/minute), and honeypot paths for `/wp-config.php` and `/.env`. |
+| `static` | Edge caching (5-minute TTL, 256 MB) with stampede guard, Brotli, and image optimization. |
+| `api` | WAF log-only with body inspection and Brotli. No caching: API responses must not be shared between callers. |
+| `ecommerce` | WAF log-only with body inspection and Brotli, plus a honeypot path for `/.env`. No caching: carts and checkouts are personal. |
+
+`EXPORT_BACKUP` takes `include_secrets` (`true`/`false`, default `false`) and `passphrase`. With secrets excluded (default), every secret-bearing field in the returned envelope is replaced by the `REDACTED` placeholder and the envelope's `secrets` mode is `redacted`. With `include_secrets=true`, a passphrase is required and the secrets are included encrypted (scrypt + AES-256-GCM, bound to the config document); the mode is `encrypted`. The passphrase is never a URL parameter in the dashboard flow and never appears in audit logs.
+
+`RESTORE_BACKUP` takes `backup` (the envelope JSON string, 1 MB cap) and `passphrase` (required for encrypted envelopes; ignored otherwise). The envelope is validated (format, version, config present), secrets are resolved (redacted envelopes take their values from the current config file — so a redacted restore onto a fresh instance fails; encrypted envelopes decrypt with the passphrase), and any remaining placeholder at a secret path refuses the restore. The resulting config is then validated like a reload before it is written; on reload failure the previous file is written back. Returns `RESTORED`, `DOMAINS`, `SECRETS_MODE`, and `RELOADED`. The backup holds the config document only — TLS certificate/key files, GeoIP databases, and custom challenge-template files live outside it and must be copied separately when migrating, keeping their paths valid. The same envelope format is produced by the `backup` / `restore` CLI subcommands (see [Installation](installation.md#command-line-interface)).
+
+## Public API
+
+A versioned, read-only API for tenants and resellers, separate from the control API above. Base path `/_bProxy/public/v1/`, authenticated by API key (see [Public API](configuration.md#public-api)). All responses use the envelope `{"ok": true, "data": …}` on success and `{"ok": false, "error": {"code", "message"}}` on failure, with matching HTTP status codes. Only `GET` is accepted; other methods get `405`, unknown endpoints and versions get a JSON `404` and are never proxied. Unauthenticated requests get JSON `401` errors at any stage (the suspect firewall block for very high suspicion levels still applies to every path).
+
+| Endpoint | Returns |
+|----------|---------|
+| `GET v1/ping` | `tenant`, `key_name`: proves the key authenticates and shows its scope. |
+| `GET v1/usage` | Tenant aggregate: `tenant`, `requests`, `blocked`, `bytes_in`, `bytes_out`, `bytes_total`, `domains`. With `?domain=`, only that domain — a domain outside the caller's tenant 404s exactly like a nonexistent one. Counters are the metering estimates (challenge/block/error pages, WebSocket traffic, and headers excluded). |
+| `GET v1/domains` | `domains`: the tenant's domains with `name`, `stage`, `stage_name`, `stage_locked`, `under_attack`, `requests`, `blocked`, `bytes_total`. |
+
+Rate limits are per key (fixed window, default 60/minute), with `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` headers and `Retry-After` on `429`. Minimal Go and Python clients with examples live in [`sdk/`](../sdk/README.md).
+
 ## Reserved Paths
 
 These paths are handled by the proxy itself and never forwarded to the backend:
@@ -194,6 +233,8 @@ These paths are handled by the proxy itself and never forwarded to the backend:
 | `/_bProxy/fingerprint` | Plain-text details about the current request: IP, request counts, suspicion level, TLS fingerprint, JA4 and HTTP fingerprints, HTTP/2 fingerprint, and browser/bot identification. |
 | `/_bProxy/verified` | Used by the challenge pages to confirm a solved challenge. Returns `verified`. |
 | `/_bProxy/challenge-verify` | `POST` only. Receives provider challenge tokens (Turnstile / hCaptcha) from the challenge page and verifies them server-side. Other methods receive a plain 404. |
+| `/_bProxy/pow-verify` | `POST` only. Receives memory-hard puzzle solutions (single-use nonce + counter) and sets the verification cookie on success. Failures get a generic 403/404. Only meaningful when `memoryHardPow` is enabled for a domain. |
+| `/_bProxy/public/v1/…` | Versioned public API for tenants/resellers (API-key auth, read-only). See [Public API](#public-api). |
 | `/_bProxy/credits` | Attribution and license information. |
 | `/_bProxy/<adminsecret>/dashboard` | Web dashboard and control panel. Served only on the exact admin-secret path. See [Dashboard](dashboard.md). |
 | `/_bProxy/<adminsecret>/metrics` | Prometheus metrics. Served only when `metricsEnabled` is set, and only on the exact admin-secret path; scrapes are neither challenged nor counted. See [Configuration](configuration.md#prometheus-metrics). |
