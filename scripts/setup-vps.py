@@ -34,9 +34,11 @@ import secrets
 import shutil
 import subprocess
 import sys
+import time
 import urllib.request
 
 RELEASE_URL = "https://github.com/sonudigitalmindset-design/SonuShield/releases/download/latest/main"
+RELEASE_API_URL = "https://api.github.com/repos/sonudigitalmindset-design/SonuShield/releases/tags/latest"
 INSTALL_DIR = "/opt/sonushield"
 SITE_DIR = "/opt/sonushield/site"
 BINARY = "/opt/sonushield/main"
@@ -108,31 +110,80 @@ def url_host(ip):
     return f"[{ip}]" if ":" in ip else ip
 
 
+def release_asset_size():
+    """Expected size of the `main` release asset, or None if unknowable."""
+    try:
+        req = urllib.request.Request(
+            RELEASE_API_URL,
+            headers={"User-Agent": "setup-vps.py", "Accept": "application/vnd.github+json"},
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.load(resp)
+        for asset in data.get("assets", []):
+            if asset.get("name") == "main" and asset.get("size"):
+                return int(asset["size"])
+    except Exception as exc:  # noqa: BLE001 - size check is best-effort
+        print(f"  WARNING: could not get release asset size ({exc}); exact size check skipped")
+    return None
+
+
+def smoke_check(path):
+    """Run `path version`; return True only if it runs and identifies itself."""
+    try:
+        result = subprocess.run([path, "version"], capture_output=True, text=True, timeout=30)
+    except Exception as exc:  # noqa: BLE001 - any launch failure means a bad binary
+        print(f"  smoke check failed to run {path}: {exc}")
+        return False
+    if result.returncode != 0 or "SonuShield" not in result.stdout:
+        print(f"  smoke check failed (exit {result.returncode}): {result.stdout} {result.stderr}".strip())
+        return False
+    print(f"  {result.stdout.strip()}")
+    return True
+
+
 def download_binary():
     if DRY_RUN:
         print(f"  [dry-run] download {RELEASE_URL} -> {BINARY}")
         return
-    print(f"  downloading {RELEASE_URL}", flush=True)
-    # Download to a temp file and rename over the old binary: Linux refuses
-    # to open a running executable for writing ("Text file busy"), but an
-    # atomic rename over it is allowed - the running process keeps the old
-    # file, and the next (re)start picks up the new one.
+    expected = release_asset_size()
+    if expected:
+        print(f"  expected binary size: {expected} bytes")
     tmp = BINARY + ".tmp"
-    try:
-        with urllib.request.urlopen(RELEASE_URL, timeout=120) as resp, open(tmp, "wb") as fh:
-            shutil.copyfileobj(resp, fh, length=1024 * 1024)
-        size = os.path.getsize(tmp)
-        if size < 1_000_000:
-            raise SystemExit(f"ERROR: downloaded binary is only {size} bytes - refusing to use it.")
-        os.replace(tmp, BINARY)
-    except BaseException:
+    last_error = "unknown error"
+    for attempt in range(1, 4):
         try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
-    os.chmod(BINARY, 0o755)
-    print(f"  downloaded {size} bytes")
+            print(f"  downloading {RELEASE_URL} (attempt {attempt}/3)", flush=True)
+            with urllib.request.urlopen(RELEASE_URL, timeout=120) as resp, open(tmp, "wb") as fh:
+                shutil.copyfileobj(resp, fh, length=1024 * 1024)
+            size = os.path.getsize(tmp)
+            print(f"  downloaded {size} bytes")
+            if size < 1_000_000:
+                raise RuntimeError(f"downloaded file is only {size} bytes")
+            if expected and size != expected:
+                raise RuntimeError(f"downloaded {size} bytes, expected {expected} (truncated download?)")
+            os.chmod(tmp, 0o755)
+            if not smoke_check(tmp):
+                raise RuntimeError("downloaded binary failed its smoke check")
+            # Atomic rename over the old binary: Linux refuses to open a
+            # running executable for writing ("Text file busy"), but a
+            # rename over it is allowed - the running process keeps the
+            # old file, and the next (re)start picks up the new one.
+            os.replace(tmp, BINARY)
+            os.chmod(BINARY, 0o755)
+            print(f"  binary installed: {BINARY} ({size} bytes)")
+            return
+        except BaseException as exc:  # noqa: BLE001 - retry, then report
+            last_error = str(exc)
+            print(f"  attempt {attempt} failed: {last_error}")
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+            if attempt < 3:
+                print("  retrying in 5 seconds...")
+                time.sleep(5)
+    raise SystemExit(f"ERROR: binary download failed after 3 attempts: {last_error}. "
+                     "Check network/GitHub access and re-run the script.")
 
 
 def build_config(ip, admin, api, s1, s2, s3):
@@ -260,8 +311,7 @@ def main():
     else:
         os.makedirs(SITE_DIR, exist_ok=True)
     write_file(os.path.join(SITE_DIR, "index.html"), TEST_PAGE)
-    download_binary()
-    run([BINARY, "version"], check=False)
+    download_binary()  # includes exact-size check, retries, and a smoke check
 
     step("4. Secrets + config.json")
     if os.path.exists(CONFIG) and not DRY_RUN:
