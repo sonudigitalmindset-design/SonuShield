@@ -348,6 +348,31 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </form>
       </div>
+      <div class="panel">
+        <h2 data-i18n="srvImportTitle">Import from nginx / Apache</h2>
+        <p class="small muted" data-i18n="srvImportNote">Convert nginx server blocks or Apache vhosts into SonuShield domains. Only the documented subset is imported (server names, proxy backends, TLS cert paths); rewrites and other directives are reported, never silently dropped. Preview first — applying reloads the configuration, as creating a domain does.</p>
+        <form id="srvImportForm">
+          <div class="formgrid">
+            <div class="field">
+              <label for="srvImportFormat" data-i18n="importFormatLabel">Format</label>
+              <select id="srvImportFormat"><option value="nginx">nginx</option><option value="apache">Apache</option></select>
+            </div>
+            <div class="field">
+              <label for="srvImportTemplate" data-i18n="tplTemplateLabel">Template</label>
+              <input id="srvImportTemplate" type="text" spellcheck="false" autocomplete="off" value="standard">
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label for="srvImportData" data-i18n="srvImportDataLabel">Server configuration</label>
+              <textarea id="srvImportData" rows="6" spellcheck="false" autocomplete="off" placeholder="server { listen 443 ssl; server_name example.com; ssl_certificate /etc/ssl/example.crt; ssl_certificate_key /etc/ssl/example.key; location / { proxy_pass http://127.0.0.1:8080; } }"></textarea>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button type="button" id="srvImportPreviewBtn" data-i18n="srvImportPreviewBtn">Preview</button>
+            <button class="primary" type="submit" data-i18n="srvImportApplyBtn">Apply import</button>
+          </div>
+        </form>
+        <div id="srvImportResult" style="margin-top:12px"></div>
+      </div>
     </section>
 
     <section id="view-rules" class="view">
@@ -1566,7 +1591,21 @@ builderNeedRow: "Add at least one condition.",
 builderEmptyValue: "Every condition needs a value.",
 builderInvalidInt: "Integer fields need a whole number value.",
 builderInvalidIp: "IP fields need an IP address value, without quotes.",
-builderGenerated: "Expression generated into the form below:"
+builderGenerated: "Expression generated into the form below:",
+srvImportTitle: "Import from nginx / Apache",
+srvImportNote: "Convert nginx server blocks or Apache vhosts into SonuShield domains. Only the documented subset is imported (server names, proxy backends, TLS cert paths); rewrites and other directives are reported, never silently dropped. Preview first — applying reloads the configuration, as creating a domain does.",
+srvImportDataLabel: "Server configuration",
+srvImportPreviewBtn: "Preview",
+srvImportApplyBtn: "Apply import",
+srvImportColDomain: "Domain",
+srvImportColBackend: "Backend",
+srvImportColScheme: "Scheme",
+srvImportColSource: "Source",
+srvImportNone: "No importable domains found in the pasted configuration.",
+srvImportSkipped: "Skipped",
+srvImportWarnings: "Warnings",
+srvImportNotImported: "Not imported (no equivalent)",
+srvImportConfirm: "Create {0} domain(s) from this configuration? This reloads the proxy configuration."
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2246,7 +2285,21 @@ builderNeedRow: "कम से कम एक condition जोड़ें।",
 builderEmptyValue: "हर condition के लिए value चाहिए।",
 builderInvalidInt: "Integer field के लिए पूरा number चाहिए।",
 builderInvalidIp: "IP field के लिए बिना quotes के IP address चाहिए।",
-builderGenerated: "Expression नीचे वाले form में generate हो गया:"
+builderGenerated: "Expression नीचे वाले form में generate हो गया:",
+srvImportTitle: "nginx / Apache से import करें",
+srvImportNote: "nginx server block या Apache vhost को SonuShield domain में बदलें। सिर्फ documented subset import होता है (server name, proxy backend, TLS cert path); rewrite और अन्य directive report किए जाते हैं, चुपचाप छोड़े नहीं जाते। पहले preview करें — apply करने पर configuration reload होती है, जैसे domain बनाने पर होती है।",
+srvImportDataLabel: "Server configuration",
+srvImportPreviewBtn: "Preview",
+srvImportApplyBtn: "Import apply करें",
+srvImportColDomain: "Domain",
+srvImportColBackend: "Backend",
+srvImportColScheme: "Scheme",
+srvImportColSource: "Source",
+srvImportNone: "Paste किए गए configuration में कोई importable domain नहीं मिला।",
+srvImportSkipped: "छोड़े गए",
+srvImportWarnings: "चेतावनियाँ",
+srvImportNotImported: "Import नहीं हुआ (कोई समकक्ष नहीं)",
+srvImportConfirm: "इस configuration से {0} domain बनाएँ? इससे proxy configuration reload होगी।"
 }
 };
 function t(key){
@@ -2520,6 +2573,62 @@ function createFromTemplate(ev){
     loadDomains(); loadDomainPanel(); loadTenants();
   }).catch(function(err){
     showInline("tplError", "tplOk", t("errCreateDomain", err.message), "");
+  });
+}
+function renderSrvImportReport(r){
+  var h = "";
+  var domains = r.DOMAINS || [];
+  if(domains.length){
+    h += '<table><thead><tr><th>' + t("srvImportColDomain") + '</th><th>' + t("srvImportColBackend") + '</th><th>' + t("srvImportColScheme") + '</th><th>' + t("srvImportColSource") + '</th></tr></thead><tbody>';
+    domains.forEach(function(d){
+      h += "<tr><td class='mono'>" + esc(d.NAME) + "</td><td class='mono'>" + esc(d.BACKEND) + "</td><td>" + esc(d.SCHEME) + "</td><td class='small'>" + esc(d.SOURCE) + "</td></tr>";
+    });
+    h += "</tbody></table>";
+  } else {
+    h += '<div class="state">' + t("srvImportNone") + '</div>';
+  }
+  function listBlock(title, items){
+    if(!items || !items.length) return "";
+    var out = "<p class='small'><strong>" + title + "</strong></p><ul class='small'>";
+    items.forEach(function(item){ out += "<li class='mono'>" + esc(item) + "</li>"; });
+    return out + "</ul>";
+  }
+  h += listBlock(t("srvImportSkipped"), r.SKIPPED);
+  h += listBlock(t("srvImportWarnings"), r.WARNINGS);
+  h += listBlock(t("srvImportNotImported"), r.NOT_IMPORTED);
+  return h;
+}
+function previewServerImport(){
+  var payload = $("srvImportData").value.trim();
+  if(!payload) return;
+  setHTML("srvImportResult", '<div class="state">' + t("simulating") + '</div>');
+  proxyWrite("PREVIEW_SERVER_IMPORT", {format: $("srvImportFormat").value, data: payload, template: $("srvImportTemplate").value}).then(function(r){
+    setHTML("srvImportResult", renderSrvImportReport(r));
+  }).catch(function(err){
+    setHTML("srvImportResult", '<div class="state state-error">' + esc(err.message) + '</div>');
+  });
+}
+function applyServerImport(ev){
+  ev.preventDefault();
+  var payload = $("srvImportData").value.trim();
+  if(!payload) return;
+  var params = {format: $("srvImportFormat").value, data: payload, template: $("srvImportTemplate").value};
+  proxyWrite("PREVIEW_SERVER_IMPORT", params).then(function(r){
+    var count = (r.DOMAINS || []).length;
+    if(!count){
+      setHTML("srvImportResult", renderSrvImportReport(r));
+      return null;
+    }
+    if(!window.confirm(t("srvImportConfirm", count))) return null;
+    return proxyWrite("APPLY_SERVER_IMPORT", params);
+  }).then(function(r){
+    if(!r) return;
+    setHTML("srvImportResult", renderSrvImportReport(r));
+    showInline("tplError", "tplOk", "", t("domImported", r.COUNT || 0, (r.CREATED || []).join(", ")));
+    $("srvImportData").value = "";
+    loadDomains(); loadDomainPanel(); loadTenants();
+  }).catch(function(err){
+    setHTML("srvImportResult", '<div class="state state-error">' + esc(err.message) + '</div>');
   });
 }
 function importDomainsForm(ev){
@@ -3921,6 +4030,8 @@ $("rulesExportBtn").addEventListener("click", exportRules);
 $("importForm").addEventListener("submit", importRules);
 $("tplForm").addEventListener("submit", createFromTemplate);
 $("domImportForm").addEventListener("submit", importDomainsForm);
+$("srvImportForm").addEventListener("submit", applyServerImport);
+$("srvImportPreviewBtn").addEventListener("click", previewServerImport);
 $("tplTemplate").addEventListener("change", updateTplDesc);
 $("ruleCancel").addEventListener("click", function(){
   resetRuleForm();

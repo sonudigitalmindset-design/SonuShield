@@ -471,6 +471,32 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			return
 		}
 		APIResponse(writer, true, response)
+	case "PREVIEW_SERVER_IMPORT":
+		response, errCode, detail := previewServerImport(params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
+	case "APPLY_SERVER_IMPORT":
+		response, errCode, detail := applyServerImport(params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	case "GET_TENANTS":
 		APIResponse(writer, true, tenantsListResponse())
 	case "GET_TENANT_USAGE":
