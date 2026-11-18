@@ -22,7 +22,7 @@ var ConfigReloader func() error
 
 func Process(writer http.ResponseWriter, request *http.Request, domainData domains.DomainData) bool {
 
-	role, ok := proxy.RoleForSecret(request.Header.Get("proxy-secret"))
+	role, tenant, ok := proxy.ScopeForSecret(request.Header.Get("proxy-secret"))
 	if !ok {
 		auditUnauthenticated(request, "", "")
 		return false
@@ -59,15 +59,30 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 
 	// Roles: unknown actions fall through to the handlers, which
 	// answer ERR_ACTION_NOT_FOUND exactly as before.
-	if known, allowed := authorize(role, action); known && !allowed {
+	known, allowed := authorize(role, action)
+	if known && !allowed {
 		APIResponse(recorder, false, map[string]interface{}{
 			"ERROR": ERR_FORBIDDEN,
 		})
 		return true
 	}
+	// Tenant scoping (Batch 5): a tenant-scoped caller may run
+	// only GET_DOMAINS and GET_TENANT_USAGE as proxy actions.
+	// Domain actions are checked against the domain's tenant
+	// after the settings load below.
+	if known && tenant != "" && apiRequest.Domain == "" && !tenantProxyActionAllowed(action) {
+		APIResponse(recorder, false, map[string]interface{}{
+			"ERROR": ERR_FORBIDDEN,
+		})
+		return true
+	}
+	if tenant != "" {
+		// The deferred audit entry reports the scope.
+		role = role + " (tenant " + tenant + ")"
+	}
 
 	if apiRequest.Domain == "" {
-		handleProxyActions(apiRequest.Action, recorder, apiRequest.Params)
+		handleProxyActions(apiRequest.Action, recorder, apiRequest.Params, tenant)
 		return true
 	}
 
@@ -80,11 +95,18 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	}
 	domainSettings, _ := uncastedDomainSettings.(domains.DomainSettings)
 
+	if tenant != "" && domains.NormalizeTenant(domainSettings.Tenant) != domains.NormalizeTenant(tenant) {
+		APIResponse(recorder, false, map[string]interface{}{
+			"ERROR": ERR_FORBIDDEN,
+		})
+		return true
+	}
+
 	handleDomainActions(apiRequest.Action, recorder, &domainData, &domainSettings, apiRequest.Params)
 	return true
 }
 
-func handleProxyActions(action string, writer http.ResponseWriter, params map[string]string) {
+func handleProxyActions(action string, writer http.ResponseWriter, params map[string]string, tenantScope string) {
 	switch action {
 	case "GET_PROXY_STATS":
 		APIResponse(writer, true, map[string]interface{}{
@@ -164,7 +186,18 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			"FEED_CONFIGURED": feedConfigured,
 		})
 	case "GET_DOMAINS":
-		APIResponse(writer, true, domainsListResponse())
+		APIResponse(writer, true, domainsListResponse(tenantScope))
+	case "GET_TENANTS":
+		APIResponse(writer, true, tenantsListResponse())
+	case "GET_TENANT_USAGE":
+		response, errCode := tenantUsageResponse(params, tenantScope)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "CLEAR_LOGS":
 		APIResponse(writer, true, clearAllLogsResponse())
 	case "LIST_CONFIG_BACKUPS":
@@ -382,7 +415,7 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		auditDomain, auditActionName = parts[0], parts[1]
 	}
 
-	role, ok := proxy.RoleForSecret(r.Header.Get("Proxy-Secret"))
+	role, tenant, ok := proxy.ScopeForSecret(r.Header.Get("Proxy-Secret"))
 	if !ok {
 		auditUnauthenticated(r, auditActionName, auditDomain)
 		return false
@@ -402,13 +435,25 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		// /:action
 
 		action, params = parts[0], queryParams(r)
-		if known, allowed := authorize(role, action); known && !allowed {
+		known, allowed := authorize(role, action)
+		if known && !allowed {
 			APIResponse(recorder, false, map[string]interface{}{
 				"ERROR": ERR_FORBIDDEN,
 			})
 			return true
 		}
-		handleProxyActions(parts[0], recorder, queryParams(r))
+		// Tenant scoping (Batch 5): a tenant-scoped caller may
+		// run only GET_DOMAINS and GET_TENANT_USAGE here.
+		if known && tenant != "" && !tenantProxyActionAllowed(action) {
+			APIResponse(recorder, false, map[string]interface{}{
+				"ERROR": ERR_FORBIDDEN,
+			})
+			return true
+		}
+		if tenant != "" {
+			role = role + " (tenant " + tenant + ")"
+		}
+		handleProxyActions(parts[0], recorder, queryParams(r), tenant)
 		return true
 	} else {
 
@@ -429,6 +474,18 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 			return true
 		}
 		domainSettingsdomain, _ := uncastedDomainSettingsdomain.(domains.DomainSettings)
+
+		// Tenant scoping (Batch 5): the domain must belong to
+		// the caller's tenant.
+		if tenant != "" && domains.NormalizeTenant(domainSettingsdomain.Tenant) != domains.NormalizeTenant(tenant) {
+			APIResponse(recorder, false, map[string]interface{}{
+				"ERROR": ERR_FORBIDDEN,
+			})
+			return true
+		}
+		if tenant != "" {
+			role = role + " (tenant " + tenant + ")"
+		}
 
 		firewall.Mutex.RLock()
 		domainData := domains.DomainsData[parts[0]]

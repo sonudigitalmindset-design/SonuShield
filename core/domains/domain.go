@@ -86,6 +86,7 @@ type Domain struct {
 	IPAllowlist         []IPListEntry   `json:"ipAllowlist"`
 	IPBlocklist         []IPListEntry   `json:"ipBlocklist"`
 	PageTemplates       *PageTemplates  `json:"pageTemplates"`
+	Tenant              string          `json:"tenant"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -164,6 +165,7 @@ type DomainSettings struct {
 	IPAllowCompiled     []compiledIPEntry
 	IPBlockCompiled     []compiledIPEntry
 	PageTemplates       *PageTemplates
+	Tenant              string
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
@@ -215,6 +217,14 @@ type DomainData struct {
 	RiskSum   int64
 	RiskCount int64
 	RiskMax   int
+
+	// Bandwidth estimate (Batch 5): request bytes from
+	// Content-Length and response bytes counted as bodies are
+	// read, for proxied and cache-served traffic only. Challenge
+	// pages, block pages, and WebSocket traffic are not counted.
+	// Reset by reload, like the other counters.
+	BytesIn  int64
+	BytesOut int64
 }
 
 type Proxy struct {

@@ -219,6 +219,10 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		limitReader := io.LimitReader(resp.Body, 1024*1024) // 1 MB for instance
 		errBody, errErr := io.ReadAll(limitReader)
 
+		//Metering (Batch 5): the backend error body is read and
+		//discarded here, so count what arrived.
+		addDomainBytes(req.Host, 0, int64(len(errBody)))
+
 		// Close the original body
 		resp.Body.Close()
 
@@ -255,6 +259,11 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 			Body:       io.NopCloser(bytes.NewReader(buffer.Bytes())),
 		}, nil
 	}
+
+	//Metering (Batch 5): count response bytes per domain. The
+	//wrapper flushes its total when the body is closed, after
+	//the cache hook and the client copy have read through it.
+	resp.Body = &meteringReader{ReadCloser: resp.Body, domain: req.Host}
 
 	return resp, nil
 }

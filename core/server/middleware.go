@@ -759,6 +759,9 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			ApplyCORSHeaders(writer.Header(), domainSettings.CORS, request)
 			writer.Header().Set("Age", strconv.Itoa(int(age.Seconds())))
 			writer.WriteHeader(status)
+			//Metering (Batch 5): cache-served bytes count toward
+			//the domain's bandwidth estimate.
+			addDomainBytes(domainName, 0, int64(len(cachedBody)))
 			writer.Write(cachedBody)
 			return
 		}
@@ -812,6 +815,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		if proxyWebSocket(writer, request, domainSettings) {
 			return
 		}
+	}
+
+	//Metering (Batch 5): request bytes from Content-Length
+	//(headers excluded, chunked bodies uncounted). Response
+	//bytes are counted in the RoundTripper.
+	if request.ContentLength > 0 {
+		addDomainBytes(domainName, request.ContentLength, 0)
 	}
 
 	domainSettings.DomainProxy.ServeHTTP(writer, request)

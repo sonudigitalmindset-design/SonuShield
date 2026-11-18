@@ -266,6 +266,11 @@ tr.selected td{background:var(--nav-active-bg)}
         <h2 id="domTitle">—</h2>
         <div id="domBody"><div class="state">No data yet. Connect to load live data.</div></div>
       </div>
+      <div class="panel">
+        <h2>Tenants</h2>
+        <p class="small muted">Usage per tenant, from live counters. “Blocked” is approximated as total requests minus requests that passed a challenge. Bandwidth is an estimate: proxied and cache-served traffic only (challenge pages, block pages, and WebSocket traffic are not counted). Tenant assignment is config-file-only.</p>
+        <div id="tenantBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      </div>
     </section>
 
     <section id="view-rules" class="view">
@@ -754,10 +759,10 @@ function loadDomains(){
       setHTML("domList", '<div class="state">No domains configured.</div>');
       return;
     }
-    var h = '<table><thead><tr><th>Domain</th><th>Backend</th><th>Stage</th><th>Locked</th><th>Under attack</th><th>Total r/s</th><th>Bypassed r/s</th><th>Rules</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>Domain</th><th>Tenant</th><th>Backend</th><th>Stage</th><th>Locked</th><th>Under attack</th><th>Total r/s</th><th>Bypassed r/s</th><th>Rules</th></tr></thead><tbody>';
     list.forEach(function(d){
       var sel = (d.NAME === currentDomain) ? ' class="clickable selected"' : ' class="clickable"';
-      h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? "Yes" : "No") + "</td><td>" + (d.UNDER_ATTACK ? "Yes" : "No") + "</td><td>" + num(d.TOTAL_RPS) + "</td><td>" + num(d.BYPASSED_RPS) + "</td><td>" + num(d.RULE_COUNT) + "</td></tr>";
+      h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td>" + esc(d.TENANT || "default") + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? "Yes" : "No") + "</td><td>" + (d.UNDER_ATTACK ? "Yes" : "No") + "</td><td>" + num(d.TOTAL_RPS) + "</td><td>" + num(d.BYPASSED_RPS) + "</td><td>" + num(d.RULE_COUNT) + "</td></tr>";
     });
     setHTML("domList", h + "</tbody></table>");
     document.querySelectorAll("#domList tr[data-domain]").forEach(function(row){
@@ -765,6 +770,32 @@ function loadDomains(){
     });
   }).catch(function(){
     setHTML("domList", '<div class="state state-error"><strong>Could not load the domain list.</strong><br>The API secret may have been rejected.</div>');
+  });
+}
+
+function fmtBytes(n){
+  n = Number(n) || 0;
+  if(n < 1024) return n + " B";
+  if(n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+  if(n < 1024 * 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + " MB";
+  return (n / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+}
+
+function loadTenants(){
+  return proxyAction("GET_TENANT_USAGE").then(function(r){
+    var rows = r.USAGE || [];
+    if(!rows.length){
+      setHTML("tenantBody", '<div class="state">No tenants with domains.</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>Tenant</th><th>Domains</th><th>Requests</th><th>Blocked (approx.)</th><th>Bandwidth in</th><th>Bandwidth out</th><th>Bandwidth total</th></tr></thead><tbody>';
+    rows.forEach(function(u){
+      var names = (u.DOMAINS || []).map(function(d){ return esc(d); }).join(", ");
+      h += "<tr><td>" + esc(u.TENANT) + "</td><td class='mono'>" + names + "</td><td>" + num(u.REQUESTS) + "</td><td>" + num(u.BLOCKED) + "</td><td>" + fmtBytes(u.BYTES_IN) + "</td><td>" + fmtBytes(u.BYTES_OUT) + "</td><td>" + fmtBytes(u.BYTES_TOTAL) + "</td></tr>";
+    });
+    setHTML("tenantBody", h + "</tbody></table>");
+  }).catch(function(){
+    setHTML("tenantBody", '<div class="state state-error"><strong>Could not load tenant usage.</strong><br>The API secret may have been rejected.</div>');
   });
 }
 
@@ -1376,7 +1407,7 @@ function refreshAll(){
   var updating = $("updatingPill");
   updating.hidden = false;
   var jobs = [loadOverview(), loadStageState()];
-  if(currentView === "domains"){ jobs.push(loadDomains(), loadDomainPanel()); }
+  if(currentView === "domains"){ jobs.push(loadDomains(), loadDomainPanel(), loadTenants()); }
   else if(currentView === "rules"){ jobs.push(loadRules(false)); }
   else if(currentView === "iplists"){ jobs.push(loadIPLists()); }
   else if(currentView === "logs"){ jobs.push(loadLogs()); }
@@ -1448,7 +1479,7 @@ function showView(name){
   if(!connected) return;
   if(name === "settings"){ loadSettings(); loadProxyFeatures(); loadBackups(); }
   else if(name === "reports"){ loadReport(); loadAttackMap(); }
-  else if(name === "domains"){ loadDomains(); loadDomainPanel(); }
+  else if(name === "domains"){ loadDomains(); loadDomainPanel(); loadTenants(); }
   else if(name === "rules"){ loadRules(true); }
   else if(name === "iplists"){ loadIPLists(); }
   else if(name === "stage"){ loadStageState(); }

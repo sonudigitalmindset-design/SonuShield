@@ -625,6 +625,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			IPAllowlist:         domain.IPAllowlist,
 			IPBlocklist:         domain.IPBlocklist,
 			PageTemplates:       domain.PageTemplates,
+			Tenant:              domains.NormalizeTenant(domain.Tenant),
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

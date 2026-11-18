@@ -161,7 +161,7 @@ func clearAllLogsResponse() map[string]interface{} {
 	}
 }
 
-func domainsListResponse() map[string]interface{} {
+func domainsListResponse(tenantFilter string) map[string]interface{} {
 	list := []map[string]interface{}{}
 	for _, name := range domains.Domains {
 		uncasted, ok := domains.DomainsMap.Load(name)
@@ -169,12 +169,20 @@ func domainsListResponse() map[string]interface{} {
 			continue
 		}
 		settings, _ := uncasted.(domains.DomainSettings)
+		tenant := settings.Tenant
+		if tenant == "" {
+			tenant = domains.DefaultTenant
+		}
+		if tenantFilter != "" && tenant != tenantFilter {
+			continue
+		}
 		firewall.Mutex.RLock()
 		data := domains.DomainsData[name]
 		firewall.Mutex.RUnlock()
 		backend, scheme, _, _ := configDomainInfo(name)
 		list = append(list, map[string]interface{}{
 			"NAME":              name,
+			"TENANT":            tenant,
 			"BACKEND":           backend,
 			"SCHEME":            scheme,
 			"STAGE":             data.Stage,
@@ -199,6 +207,7 @@ func domainConfigResponse(domainSettings *domains.DomainSettings) map[string]int
 	firewall.Mutex.RUnlock()
 	return map[string]interface{}{
 		"NAME":        domainSettings.Name,
+		"TENANT":      domains.NormalizeTenant(domainSettings.Tenant),
 		"BACKEND":     backend,
 		"SCHEME":      scheme,
 		"CERTIFICATE": certificate,
