@@ -13,13 +13,28 @@ package firewall
 import (
 	"sonushield/core/domains"
 	"strconv"
+	"time"
 
 	"github.com/kor44/gofilter"
 )
 
+// scheduleLocation returns the domain's schedule timezone,
+// defaulting to UTC when unset (e.g. the debug
+// pseudo-domain, which has no configuration).
+func scheduleLocation(settings domains.DomainSettings) *time.Location {
+	if settings.ScheduleLocation == nil {
+		return time.UTC
+	}
+	return settings.ScheduleLocation
+}
+
 func MatchedRules(currDomain domains.DomainSettings, variables gofilter.Message) []string {
 	matched := []string{}
+	now := time.Now().In(scheduleLocation(currDomain))
 	for index, rule := range currDomain.CustomRules {
+		if rule.Schedule != nil && !rule.Schedule.ActiveAt(now) {
+			continue
+		}
 		if rule.Filter.Apply(variables) {
 			if index < len(currDomain.RawCustomRules) {
 				matched = append(matched, currDomain.RawCustomRules[index].Expression)

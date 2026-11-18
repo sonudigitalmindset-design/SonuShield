@@ -111,7 +111,17 @@ func validateRule(rule domains.JsonRule) error {
 	if err := validateRuleExpression(rule.Expression); err != nil {
 		return err
 	}
-	return validateRuleAction(rule.Action)
+	if err := validateRuleAction(rule.Action); err != nil {
+		return err
+	}
+	// Schedules (Batch 7): an invalid cron expression is
+	// rejected at write time, so bad schedules cannot enter
+	// through the control panel. Hand-edited configs with
+	// bad schedules still load (fail-safe, always active).
+	if err := domains.ValidateSchedule(rule.Schedule); err != nil {
+		return errors.New("schedule is invalid: " + err.Error())
+	}
+	return nil
 }
 
 // compileRules compiles a whole rule list. Every rule is checked, so
@@ -123,7 +133,15 @@ func compileRules(raw []domains.JsonRule) ([]domains.Rule, error) {
 		if err != nil {
 			return nil, errors.New("rule " + strconv.Itoa(i) + " does not compile: " + err.Error())
 		}
-		compiled = append(compiled, domains.Rule{Filter: filter, Action: rawRule.Action})
+		var schedule *domains.Schedule
+		if strings.TrimSpace(rawRule.Schedule) != "" {
+			parsed, err := domains.ParseSchedule(rawRule.Schedule)
+			if err != nil {
+				return nil, errors.New("rule " + strconv.Itoa(i) + " schedule is invalid: " + err.Error())
+			}
+			schedule = parsed
+		}
+		compiled = append(compiled, domains.Rule{Filter: filter, Action: rawRule.Action, Schedule: schedule})
 	}
 	return compiled, nil
 }

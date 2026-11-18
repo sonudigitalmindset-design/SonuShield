@@ -499,6 +499,26 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "SET_MAINTENANCE", "GET_MAINTENANCE":
+		var response map[string]interface{}
+		var errCode, detail string
+		switch action {
+		case "SET_MAINTENANCE":
+			response, errCode, detail = setMaintenanceResponse(domainSettings.Name, params)
+		case "GET_MAINTENANCE":
+			response, errCode, detail = getMaintenanceResponse(domainSettings.Name, params)
+		}
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	case "PURGE_CACHE":
 		response, errCode := purgeCacheResponse(domainSettings, params)
 		if errCode != "" {

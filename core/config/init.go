@@ -171,9 +171,25 @@ func Load() {
 				panic("[ " + utils.PrimaryColor("!") + " ] [ Error Loading Custom Firewall Rules For " + domain.Name + " ( Rule " + strconv.Itoa(index) + " ) : " + utils.PrimaryColor(err.Error()) + " ]")
 			}
 
+			//Scheduled rules (Batch 7): an invalid schedule
+			//warns and leaves the rule always active (fail
+			//safe); the API rejects invalid schedules at
+			//write time, so this only triggers for
+			//hand-edited configs.
+			var ruleSchedule *domains.Schedule
+			if strings.TrimSpace(fwRule.Schedule) != "" {
+				parsed, scheduleErr := domains.ParseSchedule(fwRule.Schedule)
+				if scheduleErr != nil {
+					fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Invalid Schedule For Rule " + strconv.Itoa(index) + " On " + domain.Name + " : " + scheduleErr.Error() + " - rule stays always active. ]")
+				} else {
+					ruleSchedule = parsed
+				}
+			}
+
 			firewallRules = append(firewallRules, domains.Rule{
-				Filter: rule,
-				Action: fwRule.Action,
+				Filter:   rule,
+				Action:   fwRule.Action,
+				Schedule: ruleSchedule,
 			})
 		}
 
@@ -191,6 +207,20 @@ func Load() {
 		shadowRules, rawShadowRules, shadowWarnings := firewall.CompileShadowRules(domain.ShadowRules)
 		for _, warning := range shadowWarnings {
 			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Shadow Rules For " + domain.Name + " : " + warning + " ]")
+		}
+
+		//Scheduled rules + maintenance windows (Batch 7):
+		//both parse leniently. An invalid timezone falls
+		//back to UTC with a warning; invalid windows are
+		//dropped with a warning.
+		scheduleLocation, tzErr := domains.ParseScheduleTimezone(domain.ScheduleTimezone)
+		if tzErr != nil {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Invalid scheduleTimezone For " + domain.Name + " : " + tzErr.Error() + " - falling back to UTC. ]")
+			scheduleLocation = time.UTC
+		}
+		maintenanceWindows, maintenanceWarnings := domains.ParseMaintenanceWindows(domain.MaintenanceWindows)
+		for _, warning := range maintenanceWarnings {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Maintenance Windows For " + domain.Name + " : " + warning + " ]")
 		}
 
 		dProxy := httputil.NewSingleHostReverseProxy(&url.URL{
@@ -223,6 +253,9 @@ func Load() {
 			ShadowRules:     shadowRules,
 			RawShadowRules:  rawShadowRules,
 			ShadowWaf:       domain.ShadowWaf,
+
+			ScheduleLocation:   scheduleLocation,
+			MaintenanceWindows: maintenanceWindows,
 
 			DomainProxy:        dProxy,
 			DomainCertificates: cert,

@@ -129,6 +129,13 @@ type Domain struct {
 	DisableRawStage3    int              `json:"disableRawStage3"`
 	DisableBypassStage2 int              `json:"disableBypassStage2"`
 	DisableRawStage2    int              `json:"disableRawStage2"`
+	// Scheduled rules + maintenance windows (Batch 7).
+	// ScheduleTimezone is an IANA name (default UTC; invalid
+	// falls back to UTC with a warning). MaintenanceWindows
+	// are scheduled maintenance periods; see
+	// MaintenanceWindow.
+	ScheduleTimezone  string              `json:"scheduleTimezone"`
+	MaintenanceWindows []MaintenanceWindow `json:"maintenanceWindows"`
 }
 
 type DomainSettings struct {
@@ -138,6 +145,12 @@ type DomainSettings struct {
 	RawCustomRules []JsonRule
 	EdgeRules      []EdgeRule
 	ShadowRules    []Rule
+	// ScheduleLocation is the parsed scheduleTimezone (UTC
+	// when unset or invalid). MaintenanceWindows holds the
+	// parsed scheduled windows; invalid windows are dropped
+	// with a warning at load time.
+	ScheduleLocation   *time.Location
+	MaintenanceWindows []ParsedMaintenanceWindow
 	RawShadowRules []JsonRule
 	ShadowWaf      bool
 
@@ -422,6 +435,30 @@ type TwilioSettings struct {
 type JsonRule struct {
 	Expression string `json:"expression"`
 	Action     string `json:"action"`
+	// Schedule is an optional 5-field cron expression; the
+	// rule only applies when the schedule matches in the
+	// domain's scheduleTimezone. Empty means always active.
+	// Schedules apply to general rules only; edge rules
+	// ignore them.
+	Schedule string `json:"schedule,omitempty"`
+}
+
+// MaintenanceWindow is one scheduled maintenance period in
+// the domain configuration. Start and End are RFC 3339
+// timestamps; Message is shown on the maintenance page
+// (empty uses the default text).
+type MaintenanceWindow struct {
+	Start   string `json:"start"`
+	End     string `json:"end"`
+	Message string `json:"message,omitempty"`
+}
+
+// ParsedMaintenanceWindow is a validated maintenance
+// window held in the runtime settings.
+type ParsedMaintenanceWindow struct {
+	Start   time.Time
+	End     time.Time
+	Message string
 }
 
 // FormGuardConfig is the per-domain form spam guard
@@ -457,6 +494,10 @@ type OSSignature struct {
 type Rule struct {
 	Filter *gofilter.Filter
 	Action string
+	// Schedule is the parsed cron schedule, or nil when the
+	// rule has none (or its schedule was invalid at load
+	// time, in which case the rule stays always active).
+	Schedule *Schedule
 }
 
 type RequestLog struct {

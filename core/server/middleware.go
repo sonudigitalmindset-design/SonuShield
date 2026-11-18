@@ -228,6 +228,18 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	settingsQuery, _ := domains.DomainsMap.Load(domainName)
 	domainSettings := settingsQuery.(domains.DomainSettings)
 
+	//Maintenance windows (Batch 7): a scheduled window or an
+	//operator override serves a 503 maintenance page for
+	//ordinary traffic. Control-plane paths are exempt so the
+	//API, dashboard, and challenge verification keep working
+	//while the site itself is down for maintenance.
+	if !strings.HasPrefix(request.URL.Path, "/_bProxy/") {
+		if active, message := maintenanceActive(domainName, domainSettings); active {
+			serveMaintenancePage(writer, message)
+			return
+		}
+	}
+
 	//Start the suspicious level where the stage currently is
 	susLv := domainData.Stage
 
@@ -644,7 +656,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		//decisions never affect traffic: susLv is untouched,
 		//and the WAF pattern check has no side effects.
 		if len(domainSettings.ShadowRules) != 0 || domainSettings.ShadowWaf {
-			shadowSusLv, shadowMatched := firewall.EvalShadowRules(domainSettings.ShadowRules, domainSettings.RawShadowRules, requestVariables, preRuleSusLv)
+			scheduleNow := time.Now()
+			if domainSettings.ScheduleLocation != nil {
+				scheduleNow = scheduleNow.In(domainSettings.ScheduleLocation)
+			}
+			shadowSusLv, shadowMatched := firewall.EvalShadowRules(domainSettings.ShadowRules, domainSettings.RawShadowRules, requestVariables, preRuleSusLv, scheduleNow)
 			shadowWAF := ""
 			if domainSettings.ShadowWaf {
 				shadowWAF = firewall.MatchWAFPatterns(request, domainSettings.WAFInspectBody)

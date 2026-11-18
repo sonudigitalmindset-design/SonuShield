@@ -3,13 +3,21 @@ package firewall
 import (
 	"fmt"
 	"sonushield/core/domains"
+	"time"
 
 	"github.com/kor44/gofilter"
 )
 
 func EvalFirewallRule(currDomain domains.DomainSettings, variables gofilter.Message, susLv int) int {
 	result := susLv
+	//Scheduled rules (Batch 7): a rule whose schedule does
+	//not match the current time in the domain's timezone is
+	//skipped entirely, as if it were not configured.
+	now := time.Now().In(scheduleLocation(currDomain))
 	for index, rule := range currDomain.CustomRules {
+		if rule.Schedule != nil && !rule.Schedule.ActiveAt(now) {
+			continue
+		}
 		if rule.Filter.Apply(variables) {
 			var stop bool
 			result, stop = applyRuleAction(rule.Action, index, result)

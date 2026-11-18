@@ -63,6 +63,8 @@ var actionMinRole = map[string]string{
 	"GET_SHADOW_REPORT":                proxy.RoleViewer,
 	"GET_LATENCY":                      proxy.RoleViewer,
 	"GET_POSTMORTEM":                   proxy.RoleViewer,
+	"SET_MAINTENANCE":                  proxy.RoleOperator,
+	"GET_MAINTENANCE":                  proxy.RoleOperator,
 	"GET_SECURITY_GRADE":               proxy.RoleViewer,
 	"GET_CERT_STATUS":                  proxy.RoleViewer,
 	"GET_SUBDOMAIN_STATUS":             proxy.RoleViewer,

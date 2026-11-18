@@ -172,6 +172,11 @@ func CompileEdgeRules(raw []domains.JsonRule) ([]domains.EdgeRule, []string) {
 	compiled := make([]domains.EdgeRule, 0, len(raw))
 	var warnings []string
 	for i, rawRule := range raw {
+		// Schedules (Batch 7) apply to general rules only;
+		// an edge rule carrying one warns and ignores it.
+		if strings.TrimSpace(rawRule.Schedule) != "" {
+			warnings = append(warnings, fmt.Sprintf("edge rule %d (%q): schedule is ignored for edge rules; use firewallRules for scheduled rules", i, rawRule.Expression))
+		}
 		rule, err := CompileEdgeRule(rawRule.Expression, rawRule.Action)
 		if err != nil {
 			warnings = append(warnings, fmt.Sprintf("edge rule %d (%q): %v; skipped, use firewallRules for this expression", i, rawRule.Expression, err))

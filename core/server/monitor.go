@@ -531,16 +531,30 @@ func reloadFromConfig(cfg *domains.Configuration) {
 
 		firewallRules := []domains.Rule{}
 		rawFirewallRules := domains.Config.Domains[i].FirewallRules
-		for _, fwRule := range domains.Config.Domains[i].FirewallRules {
+		for index, fwRule := range domains.Config.Domains[i].FirewallRules {
 
 			rule, err := gofilter.NewFilter(fwRule.Expression)
 			if err != nil {
 				panic("[ " + utils.PrimaryColor("!") + " ] [ Error Loading Custom Firewall Rules: " + utils.PrimaryColor(err.Error()) + " ]")
 			}
 
+			//Scheduled rules (Batch 7): an invalid schedule
+			//warns and leaves the rule always active (fail
+			//safe), mirroring Load.
+			var ruleSchedule *domains.Schedule
+			if strings.TrimSpace(fwRule.Schedule) != "" {
+				parsed, scheduleErr := domains.ParseSchedule(fwRule.Schedule)
+				if scheduleErr != nil {
+					fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Invalid Schedule For Rule " + strconv.Itoa(index) + " On " + domain.Name + " : " + scheduleErr.Error() + " - rule stays always active. ]")
+				} else {
+					ruleSchedule = parsed
+				}
+			}
+
 			firewallRules = append(firewallRules, domains.Rule{
-				Filter: rule,
-				Action: fwRule.Action,
+				Filter:   rule,
+				Action:   fwRule.Action,
+				Schedule: ruleSchedule,
 			})
 		}
 
@@ -558,6 +572,18 @@ func reloadFromConfig(cfg *domains.Configuration) {
 		shadowRules, rawShadowRules, shadowWarnings := firewall.CompileShadowRules(domain.ShadowRules)
 		for _, warning := range shadowWarnings {
 			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Shadow Rules For " + domain.Name + " : " + warning + " ]")
+		}
+
+		//Scheduled rules + maintenance windows (Batch 7):
+		//lenient parsing, mirroring Load.
+		scheduleLocation, tzErr := domains.ParseScheduleTimezone(domain.ScheduleTimezone)
+		if tzErr != nil {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Invalid scheduleTimezone For " + domain.Name + " : " + tzErr.Error() + " - falling back to UTC. ]")
+			scheduleLocation = time.UTC
+		}
+		maintenanceWindows, maintenanceWarnings := domains.ParseMaintenanceWindows(domain.MaintenanceWindows)
+		for _, warning := range maintenanceWarnings {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Maintenance Windows For " + domain.Name + " : " + warning + " ]")
 		}
 
 		dProxy := httputil.NewSingleHostReverseProxy(&url.URL{
@@ -590,6 +616,9 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			ShadowRules:     shadowRules,
 			RawShadowRules:  rawShadowRules,
 			ShadowWaf:       domain.ShadowWaf,
+
+			ScheduleLocation:   scheduleLocation,
+			MaintenanceWindows: maintenanceWindows,
 
 			DomainProxy:        dProxy,
 			DomainCertificates: cert,

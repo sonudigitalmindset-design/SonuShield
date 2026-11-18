@@ -34,6 +34,7 @@ package firewall
 
 import (
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -61,7 +62,19 @@ func CompileShadowRules(raw []domains.JsonRule) (compiled []domains.Rule, kept [
 			warnings = append(warnings, "shadow rule "+strconv.Itoa(index)+" skipped: invalid action "+strconv.Quote(rawRule.Action))
 			continue
 		}
-		compiled = append(compiled, domains.Rule{Filter: filter, Action: rawRule.Action})
+		// Schedules (Batch 7): an invalid schedule warns and
+		// leaves the shadow rule always active, mirroring the
+		// live load path.
+		var ruleSchedule *domains.Schedule
+		if strings.TrimSpace(rawRule.Schedule) != "" {
+			parsed, scheduleErr := domains.ParseSchedule(rawRule.Schedule)
+			if scheduleErr != nil {
+				warnings = append(warnings, "shadow rule "+strconv.Itoa(index)+" schedule invalid: "+scheduleErr.Error()+" - rule stays always active")
+			} else {
+				ruleSchedule = parsed
+			}
+		}
+		compiled = append(compiled, domains.Rule{Filter: filter, Action: rawRule.Action, Schedule: ruleSchedule})
 		kept = append(kept, rawRule)
 	}
 	return compiled, kept, warnings
@@ -85,11 +98,17 @@ func ShadowOutcome(susLv int) string {
 // resulting level plus the expressions of every rule that
 // matched. It shares applyRuleAction with the live evaluator
 // so actions behave identically; unlike EvalFirewallRule it
-// reports all matches, not just the deciding ones.
-func EvalShadowRules(rules []domains.Rule, raw []domains.JsonRule, variables gofilter.Message, susLv int) (int, []string) {
+// reports all matches, not just the deciding ones. now is
+// the current time in the domain's schedule timezone;
+// scheduled-out rules are skipped, mirroring live
+// evaluation.
+func EvalShadowRules(rules []domains.Rule, raw []domains.JsonRule, variables gofilter.Message, susLv int, now time.Time) (int, []string) {
 	result := susLv
 	matched := []string{}
 	for index, rule := range rules {
+		if rule.Schedule != nil && !rule.Schedule.ActiveAt(now) {
+			continue
+		}
 		if !rule.Filter.Apply(variables) {
 			continue
 		}
