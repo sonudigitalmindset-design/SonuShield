@@ -8,6 +8,7 @@ import (
 	"sonushield/core/dashboard"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/privacy"
 	"sonushield/core/proxy"
 	"sonushield/core/utils"
 	"strings"
@@ -269,9 +270,11 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 		ipsCookie := firewall.AccessIpsCookie
 		firewall.Mutex.RUnlock()
 
+		// Privacy mode (Batch 7): anonymize the reported
+		// tallies (counts summed per masked key).
 		APIResponse(writer, true, map[string]interface{}{
-			"TOTAL_IP_REQUESTS":     ipsAll,
-			"CHALLENGE_IP_REQUESTS": ipsCookie,
+			"TOTAL_IP_REQUESTS":     privacy.MaskCounts(ipsAll),
+			"CHALLENGE_IP_REQUESTS": privacy.MaskCounts(ipsCookie),
 		})
 	//Only returns UNK Fingerprints
 	case "GET_FINGERPRINT_REQUESTS":

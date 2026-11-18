@@ -16,6 +16,7 @@ import (
 
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/privacy"
 )
 
 // shadowReportResponse builds the GET_SHADOW_REPORT response.
@@ -28,9 +29,15 @@ func shadowReportResponse(domainSettings *domains.DomainSettings, params map[str
 	report := firewall.ShadowReport(domainSettings.Name)
 	recent := make([]map[string]interface{}, 0, len(report.Recent))
 	for _, decision := range report.Recent {
+		ip := decision.IP
+		// Privacy mode (Batch 7): anonymize recent-decision
+		// IPs on the way out.
+		if privacy.Enabled() {
+			ip = privacy.MaskIP(ip)
+		}
 		recent = append(recent, map[string]interface{}{
 			"TIME":           decision.Time.Format(time.RFC3339),
-			"IP":             decision.IP,
+			"IP":             ip,
 			"METHOD":         decision.Method,
 			"PATH":           decision.Path,
 			"LIVE_OUTCOME":   decision.LiveOutcome,

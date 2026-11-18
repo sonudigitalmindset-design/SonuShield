@@ -8,6 +8,7 @@ import (
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/logging"
+	"sonushield/core/privacy"
 	"sonushield/core/proxy"
 	"sonushield/core/server"
 	"sonushield/core/utils"
@@ -35,6 +36,11 @@ func Load() {
 	}
 	defer file.Close()
 	json.NewDecoder(file).Decode(&domains.Config)
+
+	//Privacy mode (Batch 7): set before logging.Configure
+	//runs below, so the retention cap applies from the
+	//first log file onward.
+	privacy.Set(domains.Config.Proxy.PrivacyMode)
 
 	proxy.Cloudflare = domains.Config.Proxy.Cloudflare
 

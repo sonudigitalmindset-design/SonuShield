@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/privacy"
 	"sonushield/core/proxy"
 	"os"
 	"strconv"
@@ -20,6 +21,13 @@ var (
 
 // Only run in locked thread
 func AddLogs(entry domains.DomainLog, domainName string) {
+	// Privacy mode (Batch 7): the in-memory recent-log ring
+	// never holds raw IPs or user-agents, so GET_LOGS and
+	// the terminal monitor display masked data.
+	if privacy.Enabled() {
+		entry.IP = privacy.MaskIP(entry.IP)
+		entry.Useragent = ""
+	}
 	domainData := domains.DomainsData[domainName]
 	domainData.LastLogs = append(domainData.LastLogs, entry)
 	domains.DomainsData[domainName] = domainData

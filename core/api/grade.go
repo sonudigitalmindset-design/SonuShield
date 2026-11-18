@@ -6,8 +6,7 @@ package api
 // configuration: secret strength and hygiene, certificate
 // validity, header/CORS/WAF coverage, stage thresholds,
 // webhook transport security, and a few informational facts
-// (post-quantum TLS, SSO, metrics; privacy mode is added
-// with item 16). It is a
+// (post-quantum TLS, privacy mode, SSO, metrics). It is a
 // CONFIGURATION AUDIT, not a penetration test: it never
 // probes the network, never phones home, never attempts an
 // exploit, and never prints a secret value — checks report
@@ -268,6 +267,15 @@ func runGradeChecks(cfg *domains.Configuration) []gradeCheck {
 	})
 	// (A privacy-mode informational check is added with
 	// privacy mode itself in item 16.)
+	privacyDetail := "privacy mode is off"
+	if proxy.PrivacyMode {
+		privacyDetail = "privacy mode is on: IPs are anonymized and user-agents are not stored"
+	}
+	checks = append(checks, gradeCheck{
+		ID: "privacy-mode", Title: "Privacy mode", Severity: "info",
+		Status: "info", Detail: privacyDetail,
+		Guidance: "Enable proxy.privacyMode to minimize stored PII.",
+	})
 	ssoDetail := "SSO/OIDC is not configured"
 	if proxy.SSO != nil {
 		ssoDetail = "SSO/OIDC is configured"

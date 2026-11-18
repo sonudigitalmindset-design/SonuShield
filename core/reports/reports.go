@@ -30,6 +30,7 @@ import (
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/metrics"
+	"sonushield/core/privacy"
 )
 
 // DefaultTop is the number of top entries listed when the caller
@@ -105,10 +106,15 @@ type Report struct {
 // write lock (checkAttack) must NOT call this synchronously: the
 // lock is not reentrant. Use ExportOnAttackEnd, which copies from a
 // goroutine after the lock is released.
+//
+// Privacy mode (Batch 7): the IP tallies are anonymized
+// (counts summed per masked key, so totals are preserved);
+// fingerprint tallies are pseudonymous signals and pass
+// through unchanged.
 func CopyTallies() (verified, unverified, fingerprints map[string]int) {
 	firewall.Mutex.RLock()
 	defer firewall.Mutex.RUnlock()
-	return copyCounts(firewall.AccessIps), copyCounts(firewall.AccessIpsCookie), copyCounts(firewall.UnkFps)
+	return privacy.MaskCounts(copyCounts(firewall.AccessIps)), privacy.MaskCounts(copyCounts(firewall.AccessIpsCookie)), copyCounts(firewall.UnkFps)
 }
 
 func copyCounts(src map[string]int) map[string]int {

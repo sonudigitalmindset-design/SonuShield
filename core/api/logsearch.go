@@ -31,6 +31,7 @@ import (
 	"sort"
 	"sonushield/core/firewall"
 	"sonushield/core/logging"
+	"sonushield/core/privacy"
 	"strconv"
 	"strings"
 	"time"
@@ -193,6 +194,14 @@ func searchLogsResponse(domainScope string, params map[string]string) (map[strin
 	capped := false
 	scanned, truncated := scanLogEntries(files, filter, func(entry logging.Entry) bool {
 		total++
+		// Privacy mode (Batch 7): entries written before
+		// privacy mode was enabled still hold raw IPs and
+		// user-agents on disk; mask them on the way out.
+		// The ip filter above matches stored values.
+		if privacy.Enabled() {
+			entry.IP = privacy.MaskIP(entry.IP)
+			entry.UserAgent = ""
+		}
 		if len(kept) < maxSearchMatches {
 			kept = append(kept, entry)
 		} else {

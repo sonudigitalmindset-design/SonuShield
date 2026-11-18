@@ -366,6 +366,11 @@ type Proxy struct {
 	CertAlerts       bool                    `json:"certAlerts"`
 	CertAlertDays    int                     `json:"certAlertDays"`
 	SubdomainMonitor *SubdomainMonitorConfig `json:"subdomainMonitor"`
+	// Privacy mode (Batch 7). When true, IPs are
+	// anonymized and user-agents dropped in stored logs,
+	// reports, and API responses, and log retention is
+	// capped at 2 files. Off by default.
+	PrivacyMode bool `json:"privacyMode"`
 }
 
 // SubdomainMonitorConfig watches operator-supplied domain

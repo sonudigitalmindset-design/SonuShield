@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"os"
 	"sonushield/core/firewall"
+	"sonushield/core/privacy"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -179,6 +180,12 @@ func Configure(format, path string, maxBytesSetting int64, maxFilesSetting int) 
 	if maxFiles > maxMaxFiles {
 		maxFiles = maxMaxFiles
 	}
+	// Privacy mode (Batch 7): retention is capped at 2 files
+	// (current + one rotated), regardless of the configured
+	// value. The privacy flag is set before Configure runs.
+	if privacy.Enabled() && maxFiles > 2 {
+		maxFiles = 2
+	}
 
 	opened, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
@@ -225,6 +232,14 @@ func Log(entry Entry) {
 	}
 	if entry.IP != "" && entry.Country == "" {
 		entry.Country, entry.ASN = firewall.LookupGeo(entry.IP)
+	}
+	// Privacy mode (Batch 7): anonymize the stored IP and
+	// drop the user-agent entirely. The GeoIP lookup above
+	// runs on the raw IP first, so country/ASN (coarse,
+	// non-identifying) are still recorded.
+	if privacy.Enabled() {
+		entry.IP = privacy.MaskIP(entry.IP)
+		entry.UserAgent = ""
 	}
 
 	data, err := json.Marshal(entry)
@@ -291,6 +306,11 @@ func Audit(entry AuditEntry) {
 	entry.Level = "info"
 	if !entry.Success {
 		entry.Level = "warn"
+	}
+	// Privacy mode (Batch 7): anonymize the operator IP in
+	// both the file entry and the stdout fallback below.
+	if privacy.Enabled() {
+		entry.IP = privacy.MaskIP(entry.IP)
 	}
 	data, err := json.Marshal(entry)
 	if err != nil {

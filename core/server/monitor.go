@@ -23,6 +23,7 @@ import (
 	"sonushield/core/firewall"
 	"sonushield/core/logging"
 	"sonushield/core/pnc"
+	"sonushield/core/privacy"
 	"sonushield/core/proxy"
 	"sonushield/core/reports"
 	"sonushield/core/timeline"
@@ -457,6 +458,10 @@ func reloadFromConfig(cfg *domains.Configuration) {
 
 	domains.Config = cfg
 	domains.Domains = []string{}
+
+	// Privacy mode (Batch 7): set before logging.Configure
+	// runs below, mirroring Load.
+	privacy.Set(domains.Config.Proxy.PrivacyMode)
 
 	proxy.Cloudflare = domains.Config.Proxy.Cloudflare
 
