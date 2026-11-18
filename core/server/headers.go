@@ -113,8 +113,11 @@ func HandlePreflight(writer http.ResponseWriter, req *http.Request, cfg *domains
 
 // ModifyResponseHook is the ReverseProxy ModifyResponse hook for
 // every domain: security headers first (so cached copies carry
-// them), then the edge-cache store, then per-request CORS headers
-// (which must never be cached).
+// them), then image optimization (so the cache stores optimized
+// bytes), then the edge-cache store, then Brotli compression (so
+// the cache stores uncompressed bytes), then per-request CORS
+// headers (which must never be cached). See optimize.go for the
+// ordering rationale and the guards each step applies.
 func ModifyResponseHook(resp *http.Response) error {
 	if resp == nil || resp.Request == nil {
 		return nil
@@ -125,7 +128,9 @@ func ModifyResponseHook(resp *http.Response) error {
 	}
 	settings, _ := uncasted.(domains.DomainSettings)
 	ApplySecurityHeaders(resp.Header, settings.SecurityHeaders)
+	applyImageOptimization(resp, settings)
 	CacheModifyResponse(resp)
+	applyBrotli(resp, settings)
 	ApplyCORSHeaders(resp.Header, settings.CORS, resp.Request)
 	return nil
 }

@@ -58,6 +58,10 @@ type Domain struct {
 	EdgeCache           bool             `json:"edgeCache"`
 	EdgeCacheTTL        int              `json:"edgeCacheTTL"`
 	EdgeCacheMaxMB      int              `json:"edgeCacheMaxMB"`
+	Brotli              bool             `json:"brotli"`
+	ImageOptimize       bool             `json:"imageOptimize"`
+	ImageOptimizeMaxWidth int             `json:"imageOptimizeMaxWidth"`
+	ImageOptimizeQuality int             `json:"imageOptimizeQuality"`
 	WaitingRoom         bool             `json:"waitingRoom"`
 	WaitingRoomThreshold int              `json:"waitingRoomThreshold"`
 	WaitingRoomAdmit    int              `json:"waitingRoomAdmit"`
@@ -144,6 +148,10 @@ type DomainSettings struct {
 	EdgeCache           bool
 	EdgeCacheTTL        int
 	EdgeCacheMaxMB      int
+	Brotli              bool
+	ImageOptimize       bool
+	ImageOptimizeMaxWidth int
+	ImageOptimizeQuality int
 	WaitingRoom         bool
 	WaitingRoomThreshold int
 	WaitingRoomAdmit    int

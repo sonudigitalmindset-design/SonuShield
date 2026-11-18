@@ -3,6 +3,7 @@ module sonushield
 go 1.24.0
 
 require (
+	github.com/andybalholm/brotli v1.2.0
 	github.com/kor44/gofilter v0.0.0-20171111115139-75787865c72c
 	github.com/oschwald/geoip2-golang v1.13.0
 	github.com/shirou/gopsutil/v4 v4.25.12
