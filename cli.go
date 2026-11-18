@@ -267,6 +267,8 @@ func redactConfigForExport(cfg *domains.Configuration) {
 		redact(&responder.Twilio.AuthToken)
 		redact(&responder.Webhook.URL)
 	}
+	// Origin-signal shared secret.
+	redact(&cfg.Proxy.OriginSignals.Secret)
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

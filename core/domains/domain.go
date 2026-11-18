@@ -369,6 +369,7 @@ type Proxy struct {
 	BGPMonitor      BGPMonitorConfig  `json:"bgpMonitor"`
 	Synthetic       SyntheticConfig   `json:"synthetic"`
 	OnCall          OnCallConfig      `json:"oncall"`
+	OriginSignals   OriginSignalsConfig `json:"originSignals"`
 	SSO             *SSOConfig      `json:"sso"`
 	Stripe          StripeConfig    `json:"stripe"`
 	PublicAPIKeys   []PublicAPIKey  `json:"publicApiKeys"`
