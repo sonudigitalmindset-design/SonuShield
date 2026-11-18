@@ -18,6 +18,8 @@ These fields can be used in rule expressions. Values reflect the current request
 | `ip.fingerprint` | String | The client's raw TLS fingerprint (`Cloudflare` in Cloudflare mode). |
 | `ip.ja4` | String | The client's JA4 fingerprint, computed by SonuShield (`""` in Cloudflare mode). Only comparable with other SonuShield-computed JA4 values. |
 | `ip.reputation` | String | `"listed"` if the client IP is on the local blocklist or the fetched reputation feed, `""` otherwise. |
+| `ip.risk` | Int | The composite risk score for the request, `0`–`100` (see [Risk Score](configuration.md#risk-score)). A heuristic for ranking, never a verdict — do not block on it alone without understanding the weights. |
+| `ip.timing` | String | Timing/behavior verdict for the client IP: `"regular"` (inhumanly regular intervals), `"burst"` (50+ requests in a 1-second window), or `""` (no anomaly). See [Timing and Behavior Detection](configuration.md#timing-and-behavior-detection). |
 | `ip.searchbot` | String | Search-bot verification result for the request: `"verified"` (claimed Googlebot/Bingbot and reverse+forward DNS confirmed it), `"fake"` (claimed it and verification failed), `"unchecked"` (DNS lookup failed, fail-open), or `""` (no search-bot user-agent claimed, or the check is disabled). See [Fake Search-Bot Verification](configuration.md#fake-search-bot-verification). |
 | `ip.http_requests` | Int | The client's forwarded HTTP requests in the current rate-limit window. |
 | `ip.challenge_requests` | Int | The client's challenge attempts in the current rate-limit window. |
@@ -29,7 +31,7 @@ These fields can be used in rule expressions. Values reflect the current request
 | `http.path` | String | The path requested by the client (for example `/pictures/dogs`). |
 | `http.user_agent` | String | The user agent sent by the client. **Important:** always lowercased. |
 | `http.cookie` | String | The cookie string sent by the client. |
-| `http.fingerprint` | String | The `sh1` HTTP request fingerprint (sorted header names and other request properties). SonuShield's own format, comparable only within SonuShield. |
+| `http.fingerprint` | String | The `sh1` HTTP request fingerprint: sorted header names, cookie presence, and client-preference signals (see below). SonuShield's own format, comparable only within SonuShield; values from before Batch 5 (three sections) are not comparable with current values (four sections). |
 | `http.http2` | String | The HTTP/2 connection fingerprint (`""` for HTTP/1.x requests). Built only from signals Go's stack exposes: protocol version, TLS version/cipher, ALPN, a hash of the sorted header names, and presence flags for common headers. HTTP/2 SETTINGS order/values, WINDOW_UPDATE, and PRIORITY frames are not observable through Go's `net/http` and are not included; HTTP/1 header order is not preserved by Go either, so no header-order fingerprinting is claimed for HTTP/1. See `/_bProxy/fingerprint` for the current request's value. |
 | `proxy.stage` | Int | The stage the reverse proxy is currently in. |
 | `proxy.cloudflare` | Bool | `true` if the proxy is in Cloudflare mode. |
@@ -42,6 +44,17 @@ These fields can be used in rule expressions. Values reflect the current request
 > **Do not use** `ip.requests`, `http.headers`, or `http.body` in rules. These names are registered in the rule engine but are never given values, so rules using them will not behave as expected.
 
 > **Bool fields cannot be compared.** The rule engine's equality test has no boolean case, so `eq`/`ne` on `proxy.cloudflare`, `proxy.stage_locked`, `proxy.attack`, and `proxy.bypass_attack` never match — this is a pre-existing limitation of the gofilter engine, not a configuration problem. The fields are listed for completeness; do not build rules that depend on comparing them. (A bare field name only tests whether the field exists, which is always true, since every field is always populated.)
+
+## The `sh1` HTTP fingerprint
+
+`http.fingerprint` is SonuShield's own format (`sh1_<a>_<b>_<c>_<d>`), deliberately not JA4H: JA4H is part of the FoxIO JA4+ suite under a licence that needs an OEM agreement for commercial use, and a spec-compliant JA4H needs the original header transmission order, which Go's `net/http` does not preserve. The signals used, exactly:
+
+- **Section a:** HTTP method (first 2 chars), HTTP version, cookie present/absent, referer present/absent, header count (excluding Cookie/Referer), and the first Accept-Language tag.
+- **Section b:** truncated SHA-256 of the sorted, comma-joined, lowercase header names, excluding Cookie and Referer.
+- **Section c:** truncated SHA-256 of the sorted, comma-joined cookie *names*. Cookie values are never included.
+- **Section d** (added in Batch 5): truncated SHA-256 of the joined, normalised client-preference signals — the sorted Accept-Encoding tokens (q-values stripped), the full Accept-Language value (q-values stripped, lowercased, order preserved), the Upgrade-Insecure-Requests value, and the Sec-Fetch-Site and Sec-Fetch-Mode values. These are stable per client configuration, carry no identity, and are hashed so no raw header value is stored.
+
+No browser fingerprinting scripts, no evercookies, no cross-site tracking: only the headers of the request being evaluated, hashed. Section d means current values are not comparable with pre-Batch-5 three-section values.
 
 ## Comparison Operators
 

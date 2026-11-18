@@ -51,25 +51,25 @@ Browser-based management with zero terminal interaction needed for day-to-day op
 
 Still planned from this batch's original scope: firewall-level block export (nftables / fail2ban). The JSON rule export/import above covers rule-set portability, not firewall-level blocklists.
 
-## Batch 5 — Detection, Management, Business
+## Batch 5 — Detection, Management, Business ✅ Implemented
 
-- Risk-score engine combining fingerprint, behavior, and reputation signals.
-- Client-side fingerprinting (canvas, WebGL, mouse/keyboard behavior).
-- Cross-domain reputation sharing.
-- Timing and velocity detection for bot request patterns.
+- Risk-score engine combining fingerprint, behavior, and reputation signals (fixed documented weights; `ip.risk` rule field, logs, reports).
+- Client fingerprinting: the `sh1` HTTP fingerprint extended with additional stable, privacy-respecting request signals (Accept-Encoding/Language patterns, client-preference headers). Deliberately **not** canvas, WebGL, or mouse/keyboard behavior scripts — no browser fingerprinting, no evercookies, no cross-site tracking.
+- Cross-domain reputation sharing (opt-in per domain, fail-open).
+- Timing and velocity detection for bot request patterns (log-only by default, enforcement opt-in).
 - Per-session rate limits (friendlier to users sharing one IP, e.g. mobile networks).
-- Slowloris and request-smuggling guards.
-- Payload size and depth limits, decompression-bomb protection.
-- Origin lock (backend accepts only signed proxy requests).
-- Security headers and CORS management at the proxy.
-- IP manager UI (allow/block lists, expiring bans, bulk import).
-- Custom challenge pages per domain, including Hindi language support.
-- Log search and a geographic attack map.
-- Public status page.
-- Multi-tenancy and usage metering.
-- GitOps configuration sync.
-- SSO login for the dashboard.
-- eBPF / Anycast / scrubbing-provider integration (heaviest items, need dedicated infrastructure).
+- Slowloris and request-smuggling guards (connection cap added; slow-header timeout and ambiguous-framing normalisation inherited from Go — see [Configuration](configuration.md#slowloris-and-request-smuggling-guards)).
+- Payload size limits globally and per route (32 MiB default, clean `413`). No JSON depth limiting was added; no request decompression happens, so there is no decompression-bomb surface.
+- Origin lock (shared-secret header on every backend request; config-file-only secret).
+- Security headers and CORS management at the proxy (fail-closed CORS validation).
+- IP manager UI (allow/block lists, expiring entries, API + dashboard). Single-entry management only — no bulk import.
+- Custom challenge pages per domain, including Hindi language support (safe placeholder set, scripts stripped).
+- Log search and a geographic attack map (GeoIP-gated, schematic SVG, zero external assets).
+- Public status page plus a bare health endpoint.
+- Multi-tenancy and usage metering (tenant-scoped API roles, bandwidth estimates).
+- GitOps configuration sync (validated reload path, one-way).
+- SSO login for the dashboard (OIDC, PKCE, JWKS-verified tokens; paths temporary until the platform-host work).
+- eBPF / Anycast / scrubbing-provider integration: honesty limit — kernel XDP/eBPF filtering and Anycast cannot be delivered by this userspace proxy. Delivered: health/status polling hooks, failover signaling, and [integration docs](scrubbing-integration.md) only. No eBPF/Anycast capability is claimed.
 
 ## Batch 6 — Next-Generation Detection, Operations, and Business
 

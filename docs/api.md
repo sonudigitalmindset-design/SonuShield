@@ -59,7 +59,9 @@ Requests with a missing or wrong API secret are passed through to the normal req
 
 ## Roles and Audit Log
 
-The `apisecret` authenticates as **admin**. Additional secrets mapped to roles via the proxy `apiRoles` config key authenticate as **viewer** (read-only) or **operator** (stage, rules, cache, log clearing, feed refresh, rule import). Admin-only actions are `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, and `FILL_IP_CACHE`; a lower role calling one gets `ERR_FORBIDDEN`. Unknown actions return `ERR_ACTION_NOT_FOUND` for every role. See [API Roles and Audit Log](configuration.md#api-roles-and-audit-log) for the full permission table.
+The `apisecret` authenticates as **admin**. Additional secrets mapped to roles via the proxy `apiRoles` config key authenticate as **viewer** (read-only) or **operator** (stage, rules, cache, log clearing, feed refresh, rule import, IP-list entries). Admin-only actions are `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, and `FILL_IP_CACHE`; a lower role calling one gets `ERR_FORBIDDEN`. Unknown actions return `ERR_ACTION_NOT_FOUND` for every role. Tenant-scoped secrets (`"tenant:<name>:<role>"`) keep their role but only for that tenant's domains; see [Multi-Tenancy and Metering](configuration.md#multi-tenancy-and-metering). See [API Roles and Audit Log](configuration.md#api-roles-and-audit-log) for the full permission table.
+
+When SSO is configured, a valid SSO session cookie also authenticates API calls — but only when the request also carries the `X-SonuShield-CSRF: 1` header the dashboard sends. A valid cookie without that header is answered `ERR_FORBIDDEN` and never falls through to the backend. SSO sessions carry a role only and are never tenant-scoped; audit entries for them report the role with an `(sso)` suffix.
 
 Every API call is audit-logged (role, action, domain, scrubbed parameters, peer IP, result) — to the structured log file when JSON logging is configured, otherwise as a compact stdout line. Secret-like parameters are dropped, values are truncated, and presented secrets are never logged, including for rejected calls (audited as role `unauthenticated`).
 
@@ -75,7 +77,11 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `GET_IP_CACHE` | `IP_CACHE` |
 | `FILL_IP_CACHE` | Diagnostic action: fills the IP cache with test entries. |
 | `RELOAD` | Validates `config.json` and, only if it is valid, reloads it into the running proxy. Returns `RELOADED`. On an invalid file returns `ERR_RELOAD_FAILED` and the running config is untouched. A successful reload resets request counters and stage locks, like the terminal `reload` command; admin/API secret changes still need a restart. |
-| `GET_DOMAINS` | `DOMAINS`: one summary per configured domain (`NAME`, `BACKEND`, `SCHEME`, `STAGE`, `STAGE_LOCKED`, `UNDER_ATTACK`, `TOTAL_RPS`, `BYPASSED_RPS`, `TOTAL_REQUESTS`, `BYPASSED_REQUESTS`, `RULE_COUNT`). |
+| `GET_DOMAINS` | `DOMAINS`: one summary per configured domain (`NAME`, `BACKEND`, `SCHEME`, `STAGE`, `STAGE_LOCKED`, `UNDER_ATTACK`, `TOTAL_RPS`, `BYPASSED_RPS`, `TOTAL_REQUESTS`, `BYPASSED_REQUESTS`, `RULE_COUNT`, `TENANT`). Tenant-scoped callers see only their own tenant's domains. |
+| `SEARCH_LOGS` | Searches the structured JSON log (see below). Accepts an optional `domain` parameter. Viewer role may run it. |
+| `GET_ATTACK_MAP` | Top countries by blocks + challenges in a recent window (see below). Viewer role may run it. |
+| `GET_TENANTS` | `TENANTS`: one entry per tenant (`TENANT`, `DOMAINS`, `DOMAIN_COUNT`). Viewer role may run it. |
+| `GET_TENANT_USAGE` | `USAGE`: per-tenant request, blocked, and bandwidth counters (see below). Accepts an optional `tenant` parameter. Viewer role may run it. Tenant-scoped callers are forced to their own tenant. |
 | `CLEAR_LOGS` | Clears the in-memory recent-request logs for all domains. Returns `LOGS_CLEARED` and `DOMAINS_CLEARED`. |
 | `GET_PROXY_FEATURES` | `QUIET_MODE`, `AUTO_SSL`, `AUTO_SSL_ACTIVE`, `GEO_COUNTRY_LOADED`, `GEO_ASN_LOADED`, `REPUTATION_FEED_CONFIGURED`, `REPUTATION_FEED_INTERVAL_MINUTES`, `REPUTATION_LOCAL_IPS`, `REPUTATION_LOCAL_NETWORKS`, `REPUTATION_FEED_IPS`, `REPUTATION_FEED_NETWORKS`, `REPUTATION_BUMP`, `REPUTATION_FEED_LAST_SUCCESS` (unix time, `0` = never), `REPUTATION_FEED_LAST_ERROR` (`""` = none). |
 | `REFRESH_REPUTATION_FEED` | Triggers a background reputation-feed refresh. Returns `REFRESH_STARTED` and `FEED_CONFIGURED`. Fail-open like the scheduled refresh; a refresh already running is not duplicated. |
@@ -95,7 +101,10 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `CLEAR_LOGS` | Clears the in-memory recent-request logs for this domain. Returns `LOGS_CLEARED` and `DOMAIN`. |
 | `GET_STAGE` | `STAGE`, `STAGE_LOCKED`, `UNDER_ATTACK`, `RAW_ATTACK`, `BYPASS_ATTACK`, `BUFFER_COOLDOWN`, `STAGE2_DIFFICULTY`. |
 | `SET_STAGE` | Sets the stage (see below). Returns the same fields as `GET_STAGE`. Runtime-only: a reload or restart resets it. |
-| `GET_DOMAIN_CONFIG` | The domain's non-secret settings (see below). Secrets are never returned. |
+| `GET_DOMAIN_CONFIG` | The domain's non-secret settings (see below). Secrets are never returned. `ORIGIN_LOCK_CONFIGURED` reports whether an origin-lock secret is set; `TENANT` reports the domain's tenant. |
+| `GET_IP_LISTS` | `ALLOWLIST` and `BLOCKLIST`: the domain's live (unexpired) IP-list entries. Viewer role may run it. |
+| `ADD_IP_ENTRY` / `REMOVE_IP_ENTRY` | Add or remove one IP-list entry (see below). Changes persist to `config.json`. Operator role may run them. |
+| `SEARCH_LOGS` | Searches the structured JSON log for this domain only (see below). Viewer role may run it. |
 | `SET_DOMAIN_CONFIG` | Adjusts and persists domain settings (see below). Returns the same fields as `GET_DOMAIN_CONFIG`. |
 | `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE` | Add, change, or remove one firewall rule (see below). Returns the updated `FIREWALL_RULES` list. Changes persist to `config.json`. |
 | `GET_DOMAIN_FEATURES` | `ADAPTIVE_POW`, `POW_DIFFICULTY_MIN`, `POW_DIFFICULTY_MAX`, `CHALLENGE_PROVIDER`, `CHALLENGE_KEYS_CONFIGURED` (bool — keys themselves are never returned), `WAF_MODE`, `WAF_MODE_EFFECTIVE`, `WAF_INSPECT_BODY`, `WAF_WP_LOGIN_LIMIT`. |
@@ -158,6 +167,14 @@ Every rule is validated before anything changes: the expression must compile in 
 
 `IMPORT_RULES` takes `rules` (required: a JSON array of `{"expression", "action"}` objects, 1 MB cap) and `mode` (`replace` by default, or `append`). Every imported rule is validated like rule CRUD, and the whole resulting list is compiled before anything is stored — an invalid import is rejected with `ERR_INVALID_PARAM` and nothing changes. A `replace` import with an empty array clears the rule set. Valid imports persist to `config.json` (same atomic write and rotating backups) and take effect immediately, without a reload.
 
+`ADD_IP_ENTRY` takes `list` (`allowlist` or `blocklist`, required), `target` (bare IP or CIDR, required), `expires` (optional Unix timestamp, `0` = never; a past timestamp is rejected), and `note` (optional, 200 characters max). Adding an entry whose target string already exists on that list updates it in place. `REMOVE_IP_ENTRY` takes `list` and `target`; removing a missing entry is rejected with `ERR_INVALID_PARAM`. Both validate all parameters before changing anything, persist to `config.json` (same atomic write and rotating backups as rule edits), rebuild the compiled prefix sets, and apply immediately. Expired entries are never returned by `GET_IP_LISTS`.
+
+`SEARCH_LOGS` searches the structured JSON log files (current plus rotated, newest first). It requires JSON logging (`logFormat: "json"` plus `logFile`); without it, the action fails with `ERR_JSON_LOGS_NOT_CONFIGURED`. As a proxy action it searches all domains, or one domain with the `domain` parameter; as a domain action it is scoped to that domain. Filters (all optional): `ip`, `action`, and `event` (exact match), `from` and `to` (Unix timestamps). Pagination: `page` (default `1`) and `perPage` (default `50`, max `200`). The scan is bounded: at most 200,000 lines scanned and 5,000 matches kept. The response reports `ENTRIES` (newest first), `TOTAL`, `PAGE`, `PER_PAGE`, `SCANNED`, `FILES`, `TRUNCATED`, and `LOGS_CONFIGURED`.
+
+`GET_ATTACK_MAP` counts `block` and `challenge` log events by country over a recent window. Parameters (both optional): `top` (default `10`, clamped `1`–`50`) and `window` in seconds (default `3600`, clamped `60`–`86400`). The response reports `COUNTRIES` (`COUNTRY`, `BLOCKS`, `CHALLENGES`, `TOTAL`, most-attacked first), `GEO_CONFIGURED`, `LOGS_CONFIGURED`, `SCANNED`, and `TRUNCATED`. Without a GeoIP database it returns an empty list with `GEO_CONFIGURED: false` (not an error); without JSON logs, an empty list with `LOGS_CONFIGURED: false`. Unknown parameters are ignored.
+
+`GET_TENANT_USAGE` reports `USAGE`, one entry per tenant: `TENANT`, `DOMAINS`, `REQUESTS`, `BLOCKED` (approximated as total minus bypassed, clamped at zero), `BYTES_IN`, `BYTES_OUT`, and `BYTES_TOTAL`. With no `tenant` parameter it reports all tenants (or, for a tenant-scoped caller, only its own); with a `tenant` parameter it reports that tenant, and a tenant-scoped caller asking for another tenant gets `ERR_FORBIDDEN`. Bandwidth is an estimate: challenge, block, and error pages and WebSocket traffic are not counted, and headers are excluded.
+
 `GET_ATTACK_REPORT` accepts these parameters (v1 `params` object or v2 query string). Unknown parameters are rejected with `ERR_INVALID_PARAM`:
 
 | Parameter | Values |
@@ -165,7 +182,7 @@ Every rule is validated before anything changes: the expression must compile in 
 | `format` | `json` (default) or `csv`. |
 | `top` | Integer `1`–`50`: how many top IPs and fingerprints to list (default `10`). |
 
-The JSON report contains: `domain`, `generated_at`, the attack window (`window_start`, `window_end`, `window_seconds`), `stage`, `stage_manually_set`, `raw_attack`, `bypass_attack`, totals and current/peak rates, `blocks_by_reason`, `challenges_by_stage`, `waf_matches_by_rule`, backend results and average latency, and the top verified/unverified IPs, unknown fingerprints, and countries. The IP, fingerprint, and country tallies are proxy-wide (the firewall tracks them globally) and are labelled as such in the field names (`*_proxy_wide`); country aggregates cover the listed top IPs only. The CSV form renders the same data as one flat table with the header `section,key,value,detail`. Reports contain metadata only — no bodies, cookies, headers, or secrets. See [Attack Reports](configuration.md#attack-reports) for the optional directory export.
+The JSON report contains: `domain`, `generated_at`, the attack window (`window_start`, `window_end`, `window_seconds`), `stage`, `stage_manually_set`, `raw_attack`, `bypass_attack`, totals and current/peak rates, the risk-score summary (`risk_avg`, `risk_max`, `risk_samples`), `blocks_by_reason`, `challenges_by_stage`, `waf_matches_by_rule`, backend results and average latency, and the top verified/unverified IPs, unknown fingerprints, and countries. The IP, fingerprint, and country tallies are proxy-wide (the firewall tracks them globally) and are labelled as such in the field names (`*_proxy_wide`); country aggregates cover the listed top IPs only. The CSV form renders the same data as one flat table with the header `section,key,value,detail`. Reports contain metadata only — no bodies, cookies, headers, or secrets. See [Attack Reports](configuration.md#attack-reports) for the optional directory export.
 
 ## Reserved Paths
 
@@ -180,6 +197,9 @@ These paths are handled by the proxy itself and never forwarded to the backend:
 | `/_bProxy/credits` | Attribution and license information. |
 | `/_bProxy/<adminsecret>/dashboard` | Web dashboard and control panel. Served only on the exact admin-secret path. See [Dashboard](dashboard.md). |
 | `/_bProxy/<adminsecret>/metrics` | Prometheus metrics. Served only when `metricsEnabled` is set, and only on the exact admin-secret path; scrapes are neither challenged nor counted. See [Configuration](configuration.md#prometheus-metrics). |
+| `/_bProxy/status` | Public status page (opt-in via `statusPage`): uptime and per-domain health, no sensitive data. Answered before challenge/rate limiting. See [Configuration](configuration.md#status-page). |
+| `/_bProxy/health` | Bare liveness check (same `statusPage` opt-in): exactly `{"status":"ok"}`. For scrubbing providers and load balancers. |
+| `/_bProxy/sso/login`, `/_bProxy/sso/callback`, `/_bProxy/sso/logout`, `/_bProxy/sso/status` | OIDC login flow for the dashboard (only when SSO is configured; `status` always answers `{"enabled": bool}`). Temporary paths until the platform-host work moves the dashboard off protected domains. See [Configuration](configuration.md#sso-for-the-dashboard). |
 
 The `/_bProxy/` path prefix and the challenge cookie names are kept unchanged from the original project for compatibility with existing integrations.
 

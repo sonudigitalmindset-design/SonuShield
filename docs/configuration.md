@@ -89,6 +89,11 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `logMaxFiles` | Int | Total log files kept including the current one (default `5`; clamped to `1`–`100`). |
 | `apiRoles` | Map[String]String | Additional API secrets mapped to roles (`viewer`, `operator`, `admin`). The main `apisecret` is always admin. See [API Roles and Audit Log](#api-roles-and-audit-log). |
 | `configBackups` | Int | Number of rotating `config.json` backups kept (default `5`; clamped to `1`–`20`). See [Configuration Backups and Rollback](#configuration-backups-and-rollback). |
+| `maxConnsPerIP` | Int | Maximum simultaneous connections per client IP (`0`, default, disables the cap). See [Slowloris and Request-Smuggling Guards](#slowloris-and-request-smuggling-guards). |
+| `maxRequestBody` | Int | Global maximum request-body size in bytes (default `33554432`, 32 MiB; a negative value means unlimited). See [Payload Limits](#payload-limits). |
+| `statusPage` | Bool | `true` enables the public `/_bProxy/status` and `/_bProxy/health` endpoints. Default `false`. See [Status Page](#status-page). |
+| `gitops` | Object | Config-as-code sync from a local directory. Disabled by default. See [GitOps](#gitops). |
+| `sso` | Object | OIDC login for the dashboard. Disabled by default. See [SSO for the Dashboard](#sso-for-the-dashboard). |
 
 Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 
@@ -157,6 +162,22 @@ Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 | `graphqlMaxDepth` | Int | Maximum GraphQL query nesting depth (`0` = no limit). |
 | `graphqlMaxFields` | Int | Maximum GraphQL field count (`0` = no limit). |
 | `rulesDryRun` | Bool | `true` logs rule matches without enforcing them. Default `false`. See [Firewall Rules](firewall-rules.md#testing-rules-before-enforcing-them). |
+| `riskHighRiskCountries` | Array[String] | ISO country codes treated as high-risk in the composite risk score (empty default: geography contributes nothing). Requires a GeoIP country database. See [Risk Score](#risk-score). |
+| `riskHighRiskASNs` | Array[Int] | AS numbers treated as high-risk in the composite risk score (empty default). Requires a GeoIP ASN database. See [Risk Score](#risk-score). |
+| `shareReputation` | Bool | `true` lets this domain both contribute to and consume the proxy-wide shared reputation store. Default `false`. See [Cross-Domain Reputation Sharing](#cross-domain-reputation-sharing). |
+| `sharedReputationSusLv` | Int | Suspicion-level bump for requests whose IP or fingerprint was flagged on another opted-in domain (default `1`). |
+| `timingEnforce` | Bool | `true` applies a suspicion bump when inhuman request timing is detected. Default `false` (detection is logged but never enforced). See [Timing and Behavior Detection](#timing-and-behavior-detection). |
+| `timingSusLv` | Int | Suspicion-level bump for timing anomalies when `timingEnforce` is set (default `1`). |
+| `sessionRatelimit` | Int | Maximum requests per challenge-cookie session per rate-limit window (`0`, default, disables the limit). See [Per-Session Limits](#per-session-limits). |
+| `maxBodyBytes` | Int | Maximum request-body size in bytes for this domain (`0` inherits the proxy limit; a negative value means unlimited). See [Payload Limits](#payload-limits). |
+| `bodyLimits` | Array[Object] | Per-route body limits: `{"prefix": "/upload", "maxBytes": 104857600}`. The longest matching prefix wins. See [Payload Limits](#payload-limits). |
+| `originLockSecret` | String | Shared secret the proxy adds as `X-SonuShield-Origin` on every backend request. Empty (default) disables the header. Config-file-only; never logged or returned by the API. See [Origin Lock](#origin-lock). |
+| `securityHeaders` | Map[String]String | Response headers set (overwriting backend values) on every proxied response. Empty (default) changes nothing. See [Security Headers and CORS](#security-headers-and-cors). |
+| `cors` | Object | Per-domain CORS policy. Absent (default) disables CORS handling. Invalid policies fail closed. See [Security Headers and CORS](#security-headers-and-cors). |
+| `ipAllowlist` | Array[Object] | Allow-list entries: `{"target": "203.0.113.0/24", "expires": 0, "note": ""}`. See [IP Allow and Block Lists](#ip-allow-and-block-lists). |
+| `ipBlocklist` | Array[Object] | Block-list entries, same shape as `ipAllowlist`. The block list wins when both match. See [IP Allow and Block Lists](#ip-allow-and-block-lists). |
+| `pageTemplates` | Object | Custom challenge-page HTML: `{"pow": "…", "captcha": "…", "waitingRoom": "…"}`. See [Custom Challenge Pages](#custom-challenge-pages). |
+| `tenant` | String | Tenant this domain belongs to (default `"default"`). See [Multi-Tenancy and Metering](#multi-tenancy-and-metering). |
 
 ## Geo and ASN Rules
 
@@ -457,8 +478,8 @@ The main `apisecret` always authenticates as **admin**. `apiRoles` adds further 
 
 | Role | May run |
 |------|---------|
-| `viewer` | Read-only actions: all `GET_*`, `GET_DOMAINS`, `GET_PROXY_FEATURES`, `GET_ATTACK_REPORT`, `LIST_CONFIG_BACKUPS`, `SIMULATE_RULE`, `EXPORT_RULES`. |
-| `operator` | Everything a viewer can, plus `SET_STAGE`, `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE`, `CLEAR_LOGS`, `REFRESH_REPUTATION_FEED`, `PURGE_CACHE`, `IMPORT_RULES`. |
+| `viewer` | Read-only actions: all `GET_*`, `GET_DOMAINS`, `GET_PROXY_FEATURES`, `GET_ATTACK_REPORT`, `LIST_CONFIG_BACKUPS`, `SIMULATE_RULE`, `EXPORT_RULES`, `GET_IP_LISTS`, `SEARCH_LOGS`, `GET_ATTACK_MAP`, `GET_TENANTS`, `GET_TENANT_USAGE`. |
+| `operator` | Everything a viewer can, plus `SET_STAGE`, `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE`, `CLEAR_LOGS`, `REFRESH_REPUTATION_FEED`, `PURGE_CACHE`, `IMPORT_RULES`, `ADD_IP_ENTRY` / `REMOVE_IP_ENTRY`. |
 | `admin` | Everything, including `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, and `FILL_IP_CACHE`. |
 
 Unknown role names are ignored with a startup warning; empty secrets never match. A role calling an action above its level gets `ERR_FORBIDDEN`; unknown actions still get `ERR_ACTION_NOT_FOUND` for every role. Role changes take effect on reload (unlike `apisecret` itself, which needs a restart).
@@ -468,6 +489,191 @@ Every control-plane API call is written to the audit log: role, action, domain, 
 ## Configuration Backups and Rollback
 
 Every write to `config.json` (dashboard/API edits) rotates the backup set first: the previous file becomes `config.json.bak`, the older backups shift to `config.json.bak.1`, `.bak.2`, and so on, up to `configBackups` (default `5`). The [`LIST_CONFIG_BACKUPS` / `RESTORE_CONFIG_BACKUP`](api.md#proxy-actions) API actions (and the dashboard's Settings view) list and restore them. A restore validates the backup with the same checks as a reload, backs up the current file, swaps the backup in atomically, and reloads; if the reload fails, the previous file is written back and reloaded again, so a restore can never leave the running proxy disagreeing with the file. Backup names are validated strictly, so no path outside the backup set can be restored. Restoring is an admin-only action.
+
+## Risk Score
+
+Every request gets a composite risk score from `0` to `100`, combining the signals known at evaluation time. It is a heuristic for ranking and clustering — **never a guarantee**: a high score never proves a request is malicious, and a low score never proves it is safe. The score is exposed as the `ip.risk` [firewall rule field](firewall-rules.md), as `risk_score` in structured logs, and as average/max/sample-count in [attack reports](#attack-reports).
+
+Weights (fixed; there are no hidden inputs):
+
+| Signal | Contribution |
+|--------|--------------|
+| Suspicion level at arrival (the domain's stage) | Stage 0 → 0, stage 1 → 10, stage 2 → 30, stage 3 → 50, stage 4+ → 70 |
+| Known browser fingerprint | −10 |
+| Bot-listed fingerprint | +25 |
+| Unknown fingerprint | +15 |
+| Listed on the local reputation blocklist or feed | +25 |
+| Shared reputation (flagged on another opted-in domain) | +15 |
+| Timing anomaly (inhumanly regular or bursty) | +20 |
+| Challenge failures in the window | More than 10 → +10, more than 50 → +20 |
+| Country in `riskHighRiskCountries` | +15 |
+| ASN in `riskHighRiskASNs` | +15 |
+
+The result is clamped to `0`–`100`. Geography contributes nothing unless the operator configures the high-risk lists (and a GeoIP database); an unconfigured database or a missing record is never penalised. In Cloudflare mode there is no TLS fingerprint and the browser is reported as `Cloudflare`, which counts as known (no penalty, no bonus). Same-request honeypot and fake-bot hits are not inputs: they raise the suspicion level directly after the score is computed, so the score is a snapshot of the signals known at evaluation time.
+
+## Cross-Domain Reputation Sharing
+
+Domains on the same proxy can share IP/fingerprint reputation: an attacker blocked on one domain starts with elevated suspicion on the others. Both directions are opt-in per domain — a domain that has not set `shareReputation: true` neither contributes nor consumes — and the store only ever adds suspicion, never blocks. Entries expire after 10 minutes. Sharing fails open: if the store is unavailable, requests are evaluated normally. Only blocks from the WAF and the suspect-block path are recorded; rate-limit and fingerprint-list blocks are already proxy-wide signals and are not recorded again.
+
+## Timing and Behavior Detection
+
+The proxy watches per-IP request timing for inhuman patterns and logs them as `timing` events in the structured log (at most once per IP per minute). Two patterns are detected, with deliberately conservative thresholds so legitimate bursts are not flagged:
+
+- **Regular:** 12 or more requests with a coefficient of variation under `0.08` and a mean interval under 500 ms. Slow exact polling (intervals of 1 second or more) is never flagged.
+- **Burst:** 50 or more requests inside a 1-second window.
+
+Detection is log-only by default. Set `timingEnforce: true` to also apply the `timingSusLv` suspicion bump (default `1`) when an anomaly is detected. The timing verdict is also available to firewall rules as the `ip.timing` field (`""`, `"regular"`, or `"burst"`).
+
+## Per-Session Limits
+
+`sessionRatelimit` caps requests per challenge-cookie session within the rate-limit window, in addition to the per-IP limits — so one abusive session behind a shared NAT does not punish every user on that IP. The session key is a hash of the challenge-cookie value; the raw cookie is never stored or logged. Requests without a session cookie are unaffected. Over-limit requests are blocked with code `R4` (`session_ratelimit`). `0` (default) disables the limit.
+
+## Slowloris and Request-Smuggling Guards
+
+What is added here versus what Go's HTTP server already provides:
+
+| Protection | Source |
+|------------|--------|
+| Slow headers: `timeout.read_header` bounds how long a connection may idle while sending headers | Inherited (pre-existing setting) |
+| Ambiguous `Content-Length` / `Transfer-Encoding` framing: Go's server drops `Content-Length` when `Transfer-Encoding: chunked` is present, rejects unsupported transfer encodings with `400`, and the reverse proxy re-frames the body when forwarding, so the origin never sees the ambiguous shape | Inherited from Go; verified live |
+| Middleware backstop: a request that somehow arrives with both a transfer encoding and a positive content length is answered `400` | Added (defense in depth; expected never to fire, since Go normalises the framing first) |
+| Per-IP concurrent-connection cap (`maxConnsPerIP`): connections over the cap are closed immediately on accept, so one slow client cannot exhaust connection capacity | Added; `0` (default) disables it, and no tracking happens at all when disabled |
+
+The connection cap counts connections from accept until close or WebSocket hijack, keyed by client IP (IPv6 handled correctly). There is no separate slow-body timeout: bodies are bounded by the [payload limits](#payload-limits), and the `read` timeout bounds total read time.
+
+## Payload Limits
+
+Request bodies are limited globally and per route, with a clean `413` response when a declared `Content-Length` exceeds the limit. The default limit is **32 MiB** (`33554432` bytes), which normal uploads stay well under. Resolution for a request, most specific first: the longest matching `bodyLimits` prefix → the domain `maxBodyBytes` → the proxy `maxRequestBody` → the 32 MiB default. At each level, a negative value means unlimited and `0` means inherit. Invalid route entries (empty prefix, non-positive size) are skipped with a warning.
+
+Chunked (unknown-length) bodies are capped with a read limit as a backstop: an over-limit chunked body fails while being proxied and the client sees the generic backend-error page rather than the clean `413` — a documented asymmetry of streaming bodies. The proxy never decompresses request bodies, so there is no request-side decompression-bomb surface.
+
+## Origin Lock
+
+`originLockSecret` makes the proxy add an `X-SonuShield-Origin` header carrying the secret on every backend request, so the origin can reject traffic that bypassed the proxy. Any client-sent header of the same name is stripped first, unconditionally. The secret is config-file-only: it is never logged, never returned by the API (the API reports only whether one is configured), and never accepted through the dashboard.
+
+Origin-side check, Nginx:
+
+```nginx
+# Inside the server block that serves the proxied site.
+# Replace CHANGE_ME with the same secret as originLockSecret.
+if ($http_x_sonushield_origin != "CHANGE_ME") {
+    return 403;
+}
+```
+
+Origin-side check, Apache (requires `mod_rewrite`):
+
+```apache
+RewriteEngine On
+RewriteCond %{HTTP:X-SonuShield-Origin} !=CHANGE_ME
+RewriteRule ^ - [F]
+```
+
+Replace `CHANGE_ME` with the real secret in both snippets, and keep the secret out of version control. Firewall the origin to the proxy's IPs as well: the header is a second layer, not the only one.
+
+## Security Headers and CORS
+
+`securityHeaders` sets response headers (overwriting any backend value) on every proxied response, before the edge-cache store, so cached copies carry them too. Example:
+
+```json
+"securityHeaders": {
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin"
+}
+```
+
+Header names must be valid tokens and values must not contain CR/LF; invalid entries are skipped with a startup warning. Empty (default) changes nothing.
+
+`cors` configures a per-domain CORS policy:
+
+```json
+"cors": {
+  "allowedOrigins": ["https://app.example.com"],
+  "allowedMethods": ["GET", "POST"],
+  "allowedHeaders": ["Authorization", "Content-Type"],
+  "exposedHeaders": ["X-Total-Count"],
+  "allowCredentials": false,
+  "maxAge": 600
+}
+```
+
+An invalid policy fails closed for that domain with a log line: no origins, an unparseable origin, an origin with a path, or a wildcard origin combined with credentials all disable CORS for the domain. Origins are normalised to `scheme://host`; methods default to `GET, HEAD, POST`; `maxAge` is clamped to `0`–`86400`. CORS headers are applied per request (after the cache store, so cached copies never contain another request's origin, and re-applied when a cached response is served); `Vary: Origin` is always added when CORS is configured and the request carries an `Origin`. Preflight (`OPTIONS` + `Origin` + `Access-Control-Request-Method`) requests are answered directly, without challenge, before rate limiting: a disallowed origin, method, or header set gets `403` with no CORS headers.
+
+## IP Allow and Block Lists
+
+`ipAllowlist` and `ipBlocklist` hold entries of `{"target": "203.0.113.0/24", "expires": 0, "note": ""}`. A target is a bare IP or a CIDR; `expires` is a Unix timestamp (`0` = never). Expired entries are skipped by matching and dropped from listings; invalid entries are warned about and skipped at load. The block list wins when both match an IP. An allow-listed IP starts at suspicion level `0` and bypasses the per-IP rate-limit blocks and the fingerprint block; a block-listed IP is blocked immediately (`IPBL`).
+
+Lists are managed without editing the file via the authenticated [`GET_IP_LISTS` / `ADD_IP_ENTRY` / `REMOVE_IP_ENTRY`](api.md#domain-actions) actions and the dashboard's IP lists view, with the same atomic-write discipline as rule edits. No list is ever bundled: every entry is operator-supplied.
+
+## Custom Challenge Pages
+
+`pageTemplates` replaces the built-in challenge pages with operator-provided HTML:
+
+```json
+"pageTemplates": {
+  "pow": "<html>…{{publicSalt}}…{{challenge}}…{{difficulty}}…</html>",
+  "captcha": "<html>…{{captchaImage}}…{{maskImage}}…{{publicPart}}…</html>",
+  "waitingRoom": "<html>…{{position}}…</html>"
+}
+```
+
+Placeholders are substituted with HTML-escaped values, and `{{message}}` is accepted (optional) on every template. Required placeholders: PoW needs `{{publicSalt}}`, `{{challenge}}`, and `{{difficulty}}`; captcha needs `{{captchaImage}}`, `{{maskImage}}`, and `{{publicPart}}`; the waiting room needs `{{position}}`. A template missing its required placeholders is disabled with a warning and the built-in page is served instead.
+
+Safety rules: `<script>` tags are stripped from templates with a warning — no arbitrary script execution beyond the existing proof-of-work flow, whose fixed solver script is appended to PoW templates automatically. Captcha templates must keep the element IDs the built-in captcha script expects: `captcha`, `mask`, `captcha-slider`, `text`, `successMessage`, `failMessage`, `box`, and `center`. The Turnstile/hCaptcha provider page is not customisable. Terse plain-text block messages (rate-limit and block notices) stay in English.
+
+The built-in PoW, captcha, provider-verifying, and waiting-room pages are also available in Hindi, served when the request's `Accept-Language` starts with `hi`, with English fallback.
+
+## Status Page
+
+`statusPage: true` enables two public, unauthenticated endpoints, answered before any challenge or rate limiting:
+
+- `GET /_bProxy/status` — `{"status": "ok", "uptime_seconds": N, "domains": [{"name": "…", "healthy": true}]}`. Exactly those three top-level keys: no IPs, secrets, config, request counts, rates, or stages. A domain is `healthy` when its backend pool has at least one eligible backend (with health checks on, a backend passing probes; with them off, a backend not in failure cooldown).
+- `GET /_bProxy/health` — exactly `{"status": "ok"}`, a bare liveness check for scrubbing providers and load balancers.
+
+Both are off by default; when off, the paths fall through to the normal request flow. See [Scrubbing-Center Integration](scrubbing-integration.md).
+
+## Multi-Tenancy and Metering
+
+Domains are grouped per tenant with the `tenant` key (default `"default"`). Tenant-scoped API roles bind a secret to one tenant: `"apiRoles": {"<secret>": "tenant:acme:viewer"}`. A tenant-scoped caller sees only its own domains (`GET_DOMAINS` is filtered, `GET_DOMAIN_CONFIG` reports the domain's tenant) and may run only `GET_DOMAINS` and `GET_TENANT_USAGE` as proxy actions; asking for another tenant's usage is forbidden. Single-tenant configs behave exactly as before.
+
+Per-tenant usage counters (requests, blocked, bytes in/out) are exposed via [`GET_TENANTS` / `GET_TENANT_USAGE`](api.md#proxy-actions) and the dashboard's Domains view. Bandwidth is an estimate: challenge, block, and error pages and WebSocket traffic are not counted, and headers are excluded. Blocked counts are approximated as total minus bypassed, clamped at zero.
+
+## GitOps
+
+`gitops` watches a local directory (typically a git checkout, synced by an external tool — the proxy never shells out to git) for `config.json` changes and applies them through the validated reload path:
+
+```json
+"gitops": {
+  "enabled": true,
+  "directory": "/srv/sonushield-config",
+  "intervalSeconds": 60
+}
+```
+
+The watcher checks the file at most every `intervalSeconds` (default `60`, minimum `10`). A changed file is parsed and validated with the same checks as an API reload before anything is written; a bad synced config is logged and skipped, and can never take the proxy down. A valid file replaces `config.json` atomically (the previous file is kept as `config.json.bak`) and is applied via the validated safe reload. Sync is one-way: dashboard/API edits survive until the next git change overwrites them, so do not edit the same keys from both sides while GitOps is enabled. Enabling, disabling, or retargeting the watcher takes effect on the next reload without a restart. Disabled by default.
+
+## SSO for the Dashboard
+
+`sso` enables OIDC login for the dashboard, coexisting with the existing secret-path auth — either method grants access when configured, and secret-path auth keeps working alone:
+
+```json
+"sso": {
+  "enabled": true,
+  "issuer": "https://idp.example.com",
+  "clientId": "sonushield-dashboard",
+  "clientSecret": "CHANGE_ME",
+  "redirectUrl": "https://proxy.example.com/_bProxy/sso/callback",
+  "scopes": ["openid", "profile"],
+  "defaultRole": "viewer",
+  "roleClaim": "groups",
+  "roleMapping": {"sso-admins": "admin", "sso-ops": "operator"}
+}
+```
+
+The flow is the standard authorization-code flow with PKCE (S256), state, and nonce. Discovery is fetched without following redirects, the document's issuer must exactly equal the configured issuer, and ID tokens must be RS256/ES256 signed by a provider JWKS key (HS256 and `alg: none` are rejected); issuer, audience, expiry, and nonce are all checked. Sessions are HMAC-signed cookies (`HttpOnly`, `Secure`, `SameSite=Lax`, scoped to `/_bProxy/`, 8-hour lifetime); API calls accept the session cookie only with the `X-SonuShield-CSRF: 1` header the dashboard sends. Roles come from `defaultRole` (default `viewer`) or from the `roleClaim` mapping (a string claim, or the first matching array value; unknown values fall back to the default). Sessions are never tenant-scoped. Tokens, codes, and secrets are never logged; failures log only a failure class.
+
+The client secret is config-file-only. HTTPS is required for the issuer and redirect URL, except `http` on loopback hosts (for local testing against a mock provider). An enabled-but-invalid config warns at startup and disables SSO; it never stops the proxy. The SSO paths (`/_bProxy/sso/login`, `/_bProxy/sso/callback`, `/_bProxy/sso/logout`, `/_bProxy/sso/status`) are temporary: the platform-host work will move the dashboard off protected domains, and SSO will move with it. `/_bProxy/sso/status` always answers `{"enabled": bool}` so the dashboard can offer SSO only when configured.
 
 ## Applying Changes
 

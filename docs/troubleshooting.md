@@ -48,6 +48,12 @@ Common problems and how to fix them. If your issue is not listed here, check the
 
 **`RELOAD` fails with `ERR_RELOAD_FAILED`.** The reload validates `config.json` before applying it, and rejects the file when secrets are missing or contain `CHANGE_ME`, no domain is configured, a firewall rule does not compile or has an unusable action, or a certificate pair cannot be loaded. The `ERROR_DETAIL` field names the problem; the running proxy is untouched. Fix the file and reload again. (A successful reload resets request counters and stage locks, like the terminal `reload` command.)
 
+**API calls return a challenge page when a stage is locked.** API routes sit behind the challenge flow: at a locked Stage 2 or 3, an API call that carries only the API secret (and at most a Stage-1 cookie) receives the proof-of-work or captcha page instead of an API response. Browsers can solve the challenge and then reach the API; scripted clients cannot. Unlock the stage from the terminal (`stage 0`), or restart the proxy (a restart resets stage locks). This is pre-existing behavior, not a Batch 5 change.
+
+**SSO sign-in fails.** Check the startup log for an `SSO disabled: …` warning — an enabled-but-invalid SSO config disables SSO rather than stopping the proxy. Common causes: the issuer or redirect URL is not HTTPS (HTTP is allowed only for loopback hosts), the discovery document's `issuer` does not exactly equal the configured issuer, or the identity provider returns no `id_token`. The sign-in failure page is deliberately generic; the server log records only the failure class, never tokens. See [SSO for the Dashboard](configuration.md#sso-for-the-dashboard).
+
+**Log search fails with `ERR_JSON_LOGS_NOT_CONFIGURED`.** `SEARCH_LOGS` and the dashboard's log search need structured JSON logging: set `logFormat: "json"` and `logFile` in the proxy config, then reload. The attack map likewise needs JSON logs, plus a GeoIP database for country data — without either it returns an empty list rather than an error.
+
 ## Rules behave unexpectedly
 
 **Unsupported field names.** Do not use `ip.requests`, `http.headers`, or `http.body` in rules — these names are registered but never given values, so rules using them will not behave as expected. (`ip.country`, `ip.asn`, `ip.ja4`, `ip.reputation`, and `http.fingerprint` are populated — see below.) See the [field list](firewall-rules.md#fields).

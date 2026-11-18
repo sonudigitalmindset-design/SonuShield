@@ -134,6 +134,30 @@ Additional API secrets map to `viewer`, `operator`, and `admin` roles, and every
 
 A rule expression can be evaluated against sample request fields without enforcing anything, and a domain can run its rules in dry-run mode — matches logged, no action taken. Rule sets export as JSON and import with full validation (invalid imports change nothing). All three are in the dashboard's Firewall rules view. Details: [API Reference](api.md#domain-actions).
 
+## Risk Score, Shared Reputation, and Behavior Detection
+
+Every request gets a composite risk score (0–100) from suspicion level, fingerprint trust, reputation, geography, and behavior signals, with fixed documented weights — usable in firewall rules as `ip.risk`, and summarised in logs and attack reports. It is a heuristic, never a verdict. Domains can opt in to sharing IP/fingerprint reputation with each other, and inhuman request timing (perfectly regular intervals, superhuman bursts) is detected with conservative thresholds — log-only by default, enforcement opt-in. Details: [Configuration](configuration.md#risk-score).
+
+## Per-Session Limits, Connection Caps, and Payload Limits
+
+Rate limits can be keyed to the challenge-cookie session as well as the IP, so one abusive session behind shared NAT does not punish everyone on that IP. A per-IP concurrent-connection cap blunts slow-connection attacks, and request bodies are limited globally and per route (32 MiB default) with a clean `413`. Ambiguous `Content-Length`/`Transfer-Encoding` framing is normalised by Go's server and re-framed by the proxy, so the origin never sees it. Details: [Configuration](configuration.md#per-session-limits).
+
+## Origin Lock, Security Headers, and CORS
+
+The proxy can add a shared-secret header on every backend request so the origin rejects traffic that bypassed the proxy, apply configurable response security headers, and enforce per-domain CORS policies with fail-closed validation and direct preflight answers. All are off by default. Details: [Configuration](configuration.md#origin-lock).
+
+## IP Manager, Custom Challenge Pages, and Hindi
+
+Allow/block lists with optional expiry are managed from the dashboard or API and persisted to the config file — no list is ever bundled. Challenge pages (proof-of-work, captcha, waiting room) accept operator-provided HTML templates with a safe placeholder set and no arbitrary scripts, and the built-in challenge pages are available in Hindi by `Accept-Language`, with English fallback. Details: [Configuration](configuration.md#ip-allow-and-block-lists).
+
+## Log Search, Attack Map, and Status Page
+
+The structured JSON log is searchable through the API and dashboard (filter by domain, IP, action, and time window; bounded and paginated), and an attack overview shows top countries from GeoIP data only when the operator configured a database — schematic SVG only, zero external assets. An opt-in public status page reports uptime and per-domain health with no sensitive data, plus a bare `/_bProxy/health` liveness check for scrubbing providers and load balancers. Details: [Configuration](configuration.md#status-page) and [Scrubbing-Center Integration](scrubbing-integration.md).
+
+## Multi-Tenancy, Metering, GitOps, and SSO
+
+Domains group per tenant, with per-tenant usage counters (requests, blocked, bandwidth estimate) and tenant-scoped API roles that see only their own domains. Configuration can sync from a local git checkout through the validated reload path — a bad synced config can never take the proxy down. The dashboard supports optional OIDC login (PKCE, JWKS-verified ID tokens, signed session cookies) alongside the existing secret-path auth. Details: [Configuration](configuration.md#multi-tenancy-and-metering).
+
 ## Rate Limiting
 
 Per-IP and per-fingerprint rate limits within a configurable time window: total requests, unknown-fingerprint requests, failed challenge attempts, and connections opened without sending a request. Limits that are exceeded block the offender. Details: [Configuration](configuration.md#proxy-settings).
