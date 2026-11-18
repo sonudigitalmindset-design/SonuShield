@@ -51,4 +51,8 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	// IP allow/block lists are compiled here (Load and reload
 	// both run InitRuntime); invalid entries warn and are skipped.
 	settings.RebuildIPLists()
+	// Page templates are validated here: script tags are
+	// stripped and templates missing required placeholders are
+	// disabled with a warning, falling back to built-in pages.
+	settings.PageTemplates = ValidatePageTemplates(domain.Name, domain.PageTemplates)
 }

@@ -39,7 +39,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"html"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -189,7 +188,8 @@ func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, s
 
 	writer.Header().Set("Content-Type", "text/html")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-	fmt.Fprint(writer, `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verifying&hellip;</title><style>body{font-family:Arial,sans-serif;color:#333;display:flex;height:100vh;margin:0;align-items:center;justify-content:center;background:#f5f5f5}p{text-align:center}</style></head><body><p id="msg">Please wait while we verify your browser.</p><form id="v" method="post" action="/_bProxy/challenge-verify"><input type="hidden" name="nonce" value="`+html.EscapeString(nonce)+`"><input type="hidden" name="token" id="token"></form><div id="widget"></div><script>function onSolved(t){document.getElementById("token").value=t;document.getElementById("v").submit();}function onError(){document.getElementById("msg").textContent="Verification failed. Please reload and try again.";}</script>`+widgetScript+`<noscript><p>JavaScript is required to verify your browser.</p></noscript></body></html>`)
+	//Built-in page text is English/Hindi by Accept-Language.
+	fmt.Fprint(writer, providerPage(stringsFor(request), nonce, widgetScript))
 	return true
 }
 

@@ -624,6 +624,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			CORS:                domain.CORS,
 			IPAllowlist:         domain.IPAllowlist,
 			IPBlocklist:         domain.IPBlocklist,
+			PageTemplates:       domain.PageTemplates,
 		}
 		domains.InitRuntime(&settings, domain)
 		domains.DomainsMap.Store(domain.Name, settings)

@@ -85,6 +85,7 @@ type Domain struct {
 	CORS                *CORSConfig     `json:"cors"`
 	IPAllowlist         []IPListEntry   `json:"ipAllowlist"`
 	IPBlocklist         []IPListEntry   `json:"ipBlocklist"`
+	PageTemplates       *PageTemplates  `json:"pageTemplates"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -162,6 +163,7 @@ type DomainSettings struct {
 	IPBlocklist         []IPListEntry
 	IPAllowCompiled     []compiledIPEntry
 	IPBlockCompiled     []compiledIPEntry
+	PageTemplates       *PageTemplates
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.
