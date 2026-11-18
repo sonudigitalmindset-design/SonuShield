@@ -56,20 +56,38 @@ func startHTTP3Server() {
 	if domains.Config == nil || !domains.Config.Proxy.HTTP3.Enabled {
 		return
 	}
+	srv := newHTTP3Server(http.HandlerFunc(Middleware))
+	addr := domains.Config.Proxy.HTTP3.Addr
+	if addr == "" {
+		addr = ":443"
+	}
+	srv.Addr = addr
+	go func() {
+		defer pnc.PanicHndl()
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Println("[ ! ] [ HTTP/3 listener failed, continuing without HTTP/3 ]")
+		}
+	}()
+}
+
+// newHTTP3Server builds the production HTTP/3 server: the
+// same TLS configuration as the TCP listener (per-SNI
+// certificates, the ClientHello fingerprint hook, curve
+// preferences), 0-RTT disabled, and ConnContext attaching
+// the QUIC connection for ip.quic fingerprinting. Factored
+// out of startHTTP3Server so the in-process end-to-end
+// test (http3_e2e_test.go) serves the exact production
+// server over a fake packet connection.
+func newHTTP3Server(handler http.Handler) *http3.Server {
 	tlsConf := http3.ConfigureTLSConfig(&tls.Config{
 		GetConfigForClient: firewall.Fingerprint,
 		GetCertificate:     domains.GetCertificate,
 		Renegotiation:      tls.RenegotiateOnceAsClient,
 		CurvePreferences:   tlsCurvePreferences(),
 	})
-	addr := domains.Config.Proxy.HTTP3.Addr
-	if addr == "" {
-		addr = ":443"
-	}
-	srv := &http3.Server{
-		Addr:      addr,
+	return &http3.Server{
 		TLSConfig: tlsConf,
-		Handler:   http.HandlerFunc(Middleware),
+		Handler:   handler,
 		QUICConfig: &quic.Config{
 			// 0-RTT is never accepted: early data is
 			// replayable, and replayed requests must not
@@ -83,12 +101,6 @@ func startHTTP3Server() {
 			return firewall.ContextWithQUICConn(ctx, conn)
 		},
 	}
-	go func() {
-		defer pnc.PanicHndl()
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Println("[ ! ] [ HTTP/3 listener failed, continuing without HTTP/3 ]")
-		}
-	}()
 }
 
 // http3Enabled reports whether HTTP/3 serving is

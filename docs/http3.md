@@ -84,13 +84,23 @@ stay empty for HTTP/3 requests.
 - **The UDP listener fails open.** If UDP port 443 cannot
   bind, one generic line is logged and the proxy keeps
   serving TCP. A bind failure never stops the proxy.
-- **Verification.** HTTP/3 serving and the `ip.quic` field
-  are verified live in the Batch 3 smoke harness with a
-  real quic-go HTTP/3 client against the real proxy binary
-  (handshake, fingerprint value, rule matching, Alt-Svc,
-  and TLS fingerprint population). Browser interop was not
-  tested on this VM (no browser); verify with a real
-  browser against your own deployment.
+- **Verification.** The development VM blocks UDP
+  `sendmsg` entirely (even on loopback), so a real QUIC
+  handshake over sockets could not run here, and no such
+  claim is made. What is verified: (1) an in-process
+  end-to-end test (`core/server/http3_e2e_test.go`)
+  serves the exact production `http3.Server` over an
+  in-memory packet connection and drives it with a real
+  quic-go client — the QUIC + TLS 1.3 handshake, the
+  ClientHello fingerprint hook (legacy + JA4), the
+  `ip.quic` fingerprint value (`q1:00000001:13-1301:h3:0000`
+  in the test), and gofilter rule matching against it
+  all pass; (2) the Batch 3 smoke harness verifies the
+  live proxy binds the UDP listener, serves Alt-Svc, and
+  does not match `ip.quic` rules for TCP traffic. UDP
+  socket delivery and browser interop were NOT tested;
+  verify both against your own deployment before
+  enabling HTTP/3 in production.
 - **No ECH.** As with the TCP listener, Go has no
   server-side Encrypted ClientHello support; the SNI in
   the QUIC handshake is visible to network observers. See
