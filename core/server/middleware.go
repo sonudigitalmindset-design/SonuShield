@@ -961,6 +961,27 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		defer release()
 	}
 
+	//Signed URLs + hotlink protection (Batch 7). Checked here,
+	//after challenges and before the fair queue, so rejected
+	//requests never consume a queue slot. Both answer with a
+	//generic 403; the signature secret is never logged.
+	if firewall.SignedURLRequired(domainSettings.SignedURLSecret, domainSettings.SignedURLPaths, request.URL.Path) && !firewall.VerifySignedURL(domainSettings.SignedURLSecret, request) {
+		metrics.ObserveBlock(domainName, "signed_url")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "signed_url", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusForbidden)
+		SendResponse("Forbidden.", buffer, writer)
+		return
+	}
+	if domainSettings.HotlinkProtect && firewall.HotlinkBlocked(request, domainSettings.HotlinkPaths, domainSettings.HotlinkAllowlist) {
+		metrics.ObserveBlock(domainName, "hotlink")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "hotlink", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusForbidden)
+		SendResponse("Forbidden.", buffer, writer)
+		return
+	}
+
 	//Fair queuing (Batch 7). Admits origin-bound requests
 	//round-robin across client IPs when all slots are busy;
 	//inert at normal load (immediate admission) and a no-op

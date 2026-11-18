@@ -57,6 +57,11 @@ type Domain struct {
 	HoneypotSusLv       int              `json:"honeypotSusLv"`
 	CanaryPaths         []string         `json:"canaryPaths"`
 	CanaryTokens        []string         `json:"canaryTokens"`
+	SignedURLSecret     string           `json:"signedURLSecret"`
+	SignedURLPaths      []string         `json:"signedURLPaths"`
+	HotlinkProtect      bool             `json:"hotlinkProtect"`
+	HotlinkPaths        []string         `json:"hotlinkPaths"`
+	HotlinkAllowlist    []string         `json:"hotlinkAllowlist"`
 	FakeBotCheck        bool             `json:"fakeBotCheck"`
 	FakeBotSusLv        int              `json:"fakeBotSusLv"`
 	TarpitDelayMs       int              `json:"tarpitDelayMs"`
@@ -167,6 +172,11 @@ type DomainSettings struct {
 	HoneypotSusLv       int
 	CanaryPaths         []string
 	CanaryTokens        []string
+	SignedURLSecret     string
+	SignedURLPaths      []string
+	HotlinkProtect      bool
+	HotlinkPaths        []string
+	HotlinkAllowlist    []string
 	FakeBotCheck        bool
 	FakeBotSusLv        int
 	TarpitDelayMs       int

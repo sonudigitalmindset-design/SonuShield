@@ -115,6 +115,11 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		"BEHAVIOR_CHECK":   domainSettings.BehaviorCheck,
 		"BEHAVIOR_ENFORCE": domainSettings.BehaviorEnforce,
 		"INVISIBLE_MARKERS": domainSettings.InvisibleMarkers,
+		// Signed URLs + hotlink protection (Batch 7). The
+		// secret is never returned: only whether signing is
+		// configured.
+		"SIGNED_URL_CONFIGURED": len(domainSettings.SignedURLPaths) > 0 && domainSettings.SignedURLSecret != "",
+		"HOTLINK_PROTECT":       domainSettings.HotlinkProtect,
 		"CANARY_CONFIGURED": len(domainSettings.CanaryPaths) > 0 || len(domainSettings.CanaryTokens) > 0,
 	}
 }
