@@ -2,7 +2,7 @@
 
 Every SonuShield feature, with an animated diagram and an advanced explanation: how it works, its exact configuration, and its honest limits. Diagrams are animated schematics (SMIL only, so they animate on GitHub) — each one shows its feature's mechanism in motion.
 
-**46 features across 3 groups published so far.** The remaining groups are rendered and verified one by one and will land here in follow-up commits — nothing is listed before its diagram has been render-checked. No feature here is aspirational: every claim traces to code or existing documentation, and limits state plainly what is disabled by default, mock-verified, or untested.
+**114 features** across 9 groups. 94 animated diagrams are live; the remaining 20 diagrams are being render-verified and land in a follow-up commit — their explanations are already here. No feature here is aspirational: every claim traces to code or existing documentation, and limits state plainly what is disabled by default, mock-verified, or untested.
 
 ## Detection & Fingerprinting
 
@@ -28,6 +28,38 @@ How SonuShield identifies clients and scores requests before deciding anything.
 - [Session Hijack Detection](features/detection.md#session-hijack)
 - [ML Anomaly Detector (experimental)](features/detection.md#anomaly-detector)
 
+## Challenges
+
+The staged challenges visitors may meet, and the ways they adapt.
+
+- [Staged Challenges](features/challenges.md#staged-challenges)
+- [Adaptive Proof-of-Work](features/challenges.md#adaptive-pow)
+- [Memory-Hard Proof-of-Work (Argon2id)](features/challenges.md#memory-hard-pow)
+- [Challenge Rotation](features/challenges.md#challenge-rotation)
+- [Turnstile / hCaptcha Challenges](features/challenges.md#challenge-providers)
+- [Passkey Challenge (WebAuthn)](features/challenges.md#passkey-challenge)
+- [Custom Challenge Pages + Hindi](features/challenges.md#custom-challenge-pages)
+- [Quiet Mode](features/challenges.md#quiet-mode)
+- [Challenge-Flow Exemption](features/challenges.md#challenge-exemption)
+
+## Firewall Rules & Enforcement
+
+The rule engine, its testing tools, and the enforcement layers around it.
+
+- [gofilter Firewall Rules](features/firewall.md#gofilter-firewall)
+- [Rule Simulator & Dry-Run](features/firewall.md#rule-simulator)
+- [Firewall Export / Import](features/firewall.md#firewall-export-import)
+- [Edge Rules Engine](features/firewall.md#edge-rules)
+- [Community Rule Packs](features/firewall.md#community-packs)
+- [Cloudflare Settings Import](features/firewall.md#cloudflare-import)
+- [Nginx / Apache Import](features/firewall.md#nginx-apache-import)
+- [WAF-lite](features/firewall.md#waf-lite)
+- [Tarpit](features/firewall.md#tarpit)
+- [IP Manager](features/firewall.md#ip-manager)
+- [Per-Session Limits](features/firewall.md#per-session-limits)
+- [Scheduled Rules & Maintenance Windows](features/firewall.md#scheduled-rules)
+- [Signed URLs & Hotlink Protection](features/firewall.md#signed-urls)
+
 ## Edge, Caching & Performance
 
 Rate limits, queues, caches, backends, and the request path under load.
@@ -44,6 +76,20 @@ Rate limits, queues, caches, backends, and the request path under load.
 - [Payload Limits](features/performance.md#payload-limits)
 - [Slowloris & Smuggling Guards](features/performance.md#slowloris-guards)
 - [Shadow Mode](features/performance.md#shadow-mode)
+
+## API & Origin Security
+
+Guards for API routes, origins, and the traffic between proxy and backend.
+
+- [API Protection (JWT, Keys, GraphQL)](features/api-security.md#api-protection)
+- [Mobile App Attestation](features/api-security.md#mobile-attestation)
+- [OpenAPI Request Validation](features/api-security.md#openapi-validation)
+- [DLP Scanning](features/api-security.md#dlp-scanning)
+- [CSP Report Collector](features/api-security.md#csp-reports)
+- [Origin Lock](features/api-security.md#origin-lock)
+- [Security Headers & CORS](features/api-security.md#security-headers)
+- [Form Spam Guard](features/api-security.md#form-spam-guard)
+- [Threat Sharing Network](features/api-security.md#threat-sharing)
 
 ## Operations & Management
 
@@ -64,6 +110,58 @@ Running, configuring, and managing the proxy day to day.
 - [Privacy Mode](features/operations.md#privacy-mode)
 - [On-Call Rotation](features/operations.md#on-call)
 - [API v1 & v2](features/operations.md#api-v1-v2)
+
+## Observability & Alerts
+
+Metrics, logs, reports, alerts, and external monitoring signals.
+
+- [Prometheus Metrics](features/observability.md#prometheus-metrics)
+- [Telegram & Email Alerts](features/observability.md#alerts)
+- [Twilio WhatsApp / SMS Alerts](features/observability.md#twilio-alerts)
+- [Attack Reports](features/observability.md#attack-reports)
+- [Structured JSON Logs](features/observability.md#structured-logs)
+- [Log Search](features/observability.md#log-search)
+- [Attack Map](features/observability.md#attack-map)
+- [Status Page & Health Endpoint](features/observability.md#status-page)
+- [Latency / TTFB & SLA](features/observability.md#latency-sla)
+- [Attack Timeline & Postmortem](features/observability.md#attack-timeline)
+- [Security Grade Scan](features/observability.md#security-grade)
+- [Certificate & Subdomain Alerts](features/observability.md#cert-alerts)
+- [BGP Alerts](features/observability.md#bgp-alerts)
+- [Live Log Tail (SSE)](features/observability.md#live-log-tail)
+- [Real-User Monitoring (RUM)](features/observability.md#rum-beacon)
+- [Synthetic Checks](features/observability.md#synthetic-checks)
+
+## Platform, Tenancy & Billing
+
+Multi-tenancy, the control plane, accounts, branding, and billing hooks.
+
+- [Control Plane Service](features/platform.md#control-plane)
+- [Accounts & Roles (Control Plane)](features/platform.md#accounts-roles)
+- [SSO on the Control Host](features/platform.md#sso-control-host)
+- [Node Switcher](features/platform.md#node-switcher)
+- [Dashboard Mode](features/platform.md#dashboard-mode)
+- [Multi-Tenancy](features/platform.md#multi-tenancy)
+- [Metering](features/platform.md#metering)
+- [Roles & Audit Log](features/platform.md#roles-audit)
+- [SSO / OIDC Dashboard Login](features/platform.md#sso-oidc)
+- [White-Label Branding](features/platform.md#white-label)
+- [Stripe Billing Hooks](features/platform.md#stripe-hooks)
+- [Public API & SDKs](features/platform.md#public-api-sdks)
+- [Webhooks & SIEM Export](features/platform.md#webhooks-siem)
+
+## Resilience & Transports
+
+Deployment modes, shared state, transports, and upstream protection.
+
+- [Redis Shared Rate-Limit & Cache](features/resilience.md#redis-shared-state)
+- [HTTP/3 & QUIC](features/resilience.md#http3)
+- [Cloudflare Auto Under Attack Mode](features/resilience.md#cf-auto-uam)
+- [Automatic SSL (Let's Encrypt)](features/resilience.md#auto-ssl)
+- [Post-Quantum TLS (X25519MLKEM768)](features/resilience.md#pq-tls)
+- [Scrubbing-Center Hooks](features/resilience.md#scrubbing-hooks)
+- [Terminal HUD](features/resilience.md#terminal-hud)
+- [Cloudflare Mode](features/resilience.md#cloudflare-mode)
 
 ---
 
