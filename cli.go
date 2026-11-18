@@ -5,6 +5,8 @@ package main
 //	sonushield run [--wizard] [--wizard-listen=ADDR]
 //	sonushield validate [--config PATH]
 //	sonushield export [--config PATH] [--include-secrets]
+//	sonushield backup [--config PATH] [--output PATH] [--include-secrets]
+//	sonushield restore [--config PATH] BACKUP_FILE
 //	sonushield version
 //	sonushield help
 //
@@ -23,6 +25,16 @@ package main
 // on stderr. When a secret-bearing config field is added, it
 // must be added to redactConfigForExport as well.
 //
+// backup and restore move whole configurations between
+// instances (see core/backup). backup writes a versioned
+// envelope with secrets redacted; --include-secrets encrypts
+// them under the SONUSHIELD_BACKUP_PASSPHRASE environment
+// variable (never a flag: flags leak into shell history and
+// process listings). restore validates the envelope before
+// writing anything, keeps a .bak copy of the replaced file,
+// and never starts the proxy: restart it to apply the
+// restored config. Neither command touches the network.
+//
 // version prints the stamped version (dev when built without
 // -ldflags) and the Go toolchain version. Release builds stamp
 // it with: go build -ldflags "-X main.version=vX.Y.Z".
@@ -33,10 +45,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"runtime"
-	"sort"
+	"sonushield/core/backup"
 	"sonushield/core/domains"
 	"sonushield/core/server"
+	"sort"
 	"strings"
 )
 
@@ -58,6 +72,15 @@ Usage:
   sonushield export [--config PATH] [--include-secrets]
       Print the config as indented JSON. Secrets are redacted
       unless --include-secrets is given.
+  sonushield backup [--config PATH] [--output PATH] [--include-secrets]
+      Write a backup envelope (config, rules, IP lists,
+      tenants). Secrets are redacted unless --include-secrets
+      is given, in which case they are encrypted under the
+      SONUSHIELD_BACKUP_PASSPHRASE environment variable.
+  sonushield restore [--config PATH] BACKUP_FILE
+      Validate a backup envelope and write it as the config
+      (keeping a .bak copy). A bad backup changes nothing.
+      Encrypted backups need SONUSHIELD_BACKUP_PASSPHRASE.
   sonushield version
       Print version information.
   sonushield help
@@ -82,6 +105,10 @@ func cliDispatch() (bool, int) {
 		return true, runValidate(os.Stdout, os.Stderr, args[1:])
 	case "export":
 		return true, runExport(os.Stdout, os.Stderr, args[1:])
+	case "backup":
+		return true, runBackup(os.Stdout, os.Stderr, args[1:])
+	case "restore":
+		return true, runRestore(os.Stdout, os.Stderr, args[1:])
 	case "version", "--version", "-version":
 		fmt.Fprintf(os.Stdout, "SonuShield %s (go %s)\n", version, runtime.Version())
 		return true, 0
@@ -239,4 +266,135 @@ func redactConfigForExport(cfg *domains.Configuration) {
 			redact(&d.APIKeys[j].Key)
 		}
 	}
+}
+
+const backupPassphraseEnv = "SONUSHIELD_BACKUP_PASSPHRASE"
+
+func runBackup(stdout, stderr io.Writer, args []string) int {
+	fs := flag.NewFlagSet("backup", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	configPath := fs.String("config", "config.json", "config file to back up")
+	outputPath := fs.String("output", "", "write the envelope to this file (default: stdout)")
+	includeSecrets := fs.Bool("include-secrets", false, "encrypt secrets into the envelope under "+backupPassphraseEnv)
+	fs.Usage = func() {
+		fmt.Fprintln(stderr, "Usage: sonushield backup [--config PATH] [--output PATH] [--include-secrets]")
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	if fs.NArg() != 0 {
+		fs.Usage()
+		return 2
+	}
+	passphrase := ""
+	if *includeSecrets {
+		passphrase = os.Getenv(backupPassphraseEnv)
+		if passphrase == "" {
+			fmt.Fprintln(stderr, "backup: --include-secrets needs "+backupPassphraseEnv+" set")
+			return 1
+		}
+		fmt.Fprintln(stderr, "backup: envelope includes encrypted secrets; guard the file and the passphrase.")
+	}
+	data, err := os.ReadFile(*configPath)
+	if err != nil {
+		fmt.Fprintln(stderr, "backup: "+err.Error())
+		return 1
+	}
+	envelope, err := backup.Create(data, passphrase)
+	if err != nil {
+		fmt.Fprintln(stderr, "backup: "+err.Error())
+		return 1
+	}
+	envelope = append(envelope, '\n')
+	if *outputPath == "" {
+		stdout.Write(envelope)
+		return 0
+	}
+	// 0600: the envelope may carry encrypted secrets.
+	if err := os.WriteFile(*outputPath, envelope, 0600); err != nil {
+		fmt.Fprintln(stderr, "backup: "+err.Error())
+		return 1
+	}
+	fmt.Fprintf(stdout, "backup written to %s\n", *outputPath)
+	return 0
+}
+
+// writeFileAtomic writes data to path via a temp file in the
+// same directory plus rename, preserving path's existing mode
+// when it exists, else using 0600.
+func writeFileAtomic(path string, data []byte) error {
+	mode := os.FileMode(0600)
+	if info, err := os.Stat(path); err == nil {
+		mode = info.Mode().Perm()
+	}
+	dir := filepath.Dir(path)
+	tmp, err := os.CreateTemp(dir, ".sonushield-restore-*")
+	if err != nil {
+		return err
+	}
+	tmpName := tmp.Name()
+	defer os.Remove(tmpName)
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Chmod(mode); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmpName, path)
+}
+
+func runRestore(stdout, stderr io.Writer, args []string) int {
+	fs := flag.NewFlagSet("restore", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	configPath := fs.String("config", "config.json", "config file to write")
+	fs.Usage = func() {
+		fmt.Fprintln(stderr, "Usage: sonushield restore [--config PATH] BACKUP_FILE")
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	if fs.NArg() != 1 {
+		fs.Usage()
+		return 2
+	}
+	envelope, err := os.ReadFile(fs.Arg(0))
+	if err != nil {
+		fmt.Fprintln(stderr, "restore: "+err.Error())
+		return 1
+	}
+	current, _ := os.ReadFile(*configPath) // absent on a fresh instance: fine
+	resolved, err := backup.PrepareRestore(envelope, current, os.Getenv(backupPassphraseEnv))
+	if err != nil {
+		fmt.Fprintln(stderr, "restore: "+err.Error())
+		return 1
+	}
+	var cfg domains.Configuration
+	if err := json.Unmarshal(resolved, &cfg); err != nil {
+		fmt.Fprintln(stderr, "restore: restored config is not valid: "+err.Error())
+		return 1
+	}
+	if err := server.ValidateConfig(&cfg); err != nil {
+		fmt.Fprintln(stderr, "restore: restored config failed validation: "+err.Error())
+		return 1
+	}
+	// Everything validated: keep a .bak copy, then swap.
+	if len(current) > 0 {
+		if err := os.WriteFile(*configPath+".bak", current, 0600); err != nil {
+			fmt.Fprintln(stderr, "restore: cannot write backup copy: "+err.Error())
+			return 1
+		}
+	}
+	if err := writeFileAtomic(*configPath, append(append([]byte{}, resolved...), '\n')); err != nil {
+		fmt.Fprintln(stderr, "restore: "+err.Error())
+		return 1
+	}
+	fmt.Fprintf(stdout, "%s restored: %d domain(s). Restart the proxy to apply it.\n", *configPath, len(cfg.Domains))
+	return 0
 }

@@ -84,6 +84,8 @@ var actionMinRole = map[string]string{
 	"REPORT_STRIPE_USAGE":              proxy.RoleAdmin,
 	"GET_WEBHOOK_STATUS":               proxy.RoleViewer,
 	"TEST_WEBHOOKS":                    proxy.RoleAdmin,
+	"EXPORT_BACKUP":                    proxy.RoleAdmin,
+	"RESTORE_BACKUP":                   proxy.RoleAdmin,
 }
 
 func roleLevel(role string) int {
@@ -187,7 +189,7 @@ func auditPeerIP(request *http.Request) string {
 	return host
 }
 
-var scrubbedParamSubstrings = []string{"secret", "token", "password", "key"}
+var scrubbedParamSubstrings = []string{"secret", "token", "password", "key", "passphrase"}
 
 // scrubParams drops secret-like params and truncates the rest, so
 // the audit log can never carry a credential. A nil or empty map

@@ -354,6 +354,25 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			return
 		}
 		APIResponse(writer, true, response)
+	case "EXPORT_BACKUP", "RESTORE_BACKUP":
+		var response map[string]interface{}
+		var errCode, detail string
+		if action == "EXPORT_BACKUP" {
+			response, errCode, detail = exportBackupResponse(params)
+		} else {
+			response, errCode, detail = restoreEnvelopeResponse(params)
+		}
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	case "CLEAR_LOGS":
 		APIResponse(writer, true, clearAllLogsResponse())
 	case "LIST_CONFIG_BACKUPS":
@@ -370,7 +389,7 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 	case "GET_ATTACK_MAP":
 		APIResponse(writer, true, attackMapResponse(params))
 	case "RESTORE_CONFIG_BACKUP":
-		response, errCode, detail := restoreBackupResponse(params)
+		response, errCode, detail := restoreEnvelopeResponse(params)
 		if errCode != "" {
 			results := map[string]interface{}{
 				"ERROR": errCode,
