@@ -85,22 +85,57 @@ button{cursor:pointer}
 /* Theme switching + hover states ease through color tokens only — never layout. */
 body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out)}
 .pill .dot{transition:background-color var(--dur-med) var(--ease-out)}
-/* View + feedback entrances: gentle fade with a small rise. transform-only, no layout shift. */
+/* Connected-status dot breathes with a soft ring pulse. */
+.pill.ok .dot{animation:dotGlow 2.4s var(--ease-in-out) infinite}
+@keyframes dotGlow{50%{box-shadow:0 0 0 5px rgba(34,197,94,.14)}}
+/* View entrances are choreographed: the view fades, the heading drops in,
+   stat cards cascade, then panels rise. Transform/opacity only — no layout shift. */
 .view.active{animation:viewIn var(--dur-slow) var(--ease-out)}
-@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes viewIn{from{opacity:0}to{opacity:1}}
+.view.active h1{animation:headIn .5s var(--ease-out) both}
+@keyframes headIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.view.active .cards .card{animation:cardIn .55s var(--ease-out) both}
+.view.active .cards .card:nth-child(1){animation-delay:.05s}
+.view.active .cards .card:nth-child(2){animation-delay:.1s}
+.view.active .cards .card:nth-child(3){animation-delay:.15s}
+.view.active .cards .card:nth-child(4){animation-delay:.2s}
+.view.active .cards .card:nth-child(5){animation-delay:.25s}
+.view.active .cards .card:nth-child(6){animation-delay:.3s}
+.view.active .cards .card:nth-child(7){animation-delay:.35s}
+.view.active .cards .card:nth-child(8){animation-delay:.4s}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.view.active .panel{animation:panelIn .55s var(--ease-out) .2s both}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* Stat values pop briefly when a poll updates them (JS adds .tick on change). */
+.card .value.tick{animation:valueTick .5s var(--ease-out)}
+@keyframes valueTick{0%{transform:scale(1)}30%{transform:scale(1.07);color:var(--accent-text)}100%{transform:scale(1)}}
 .banner.show,.inline-err.show,.inline-ok.show{animation:bannerIn var(--dur-med) var(--ease-out)}
-@keyframes bannerIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-/* Async loading shimmer: a soft highlight sweep over the loading placeholder. */
-.state.loading{position:relative;overflow:hidden}
+@keyframes bannerIn{from{opacity:0;transform:translateY(-6px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* Async loading states: a spinner + a breathing border + the highlight sweep. */
+.state.loading{position:relative;overflow:hidden;animation:statePulse 1.6s var(--ease-in-out) infinite}
+.state.loading::before{content:"";display:inline-block;width:12px;height:12px;margin-right:8px;vertical-align:-1px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);animation:spin .7s linear infinite}
+@keyframes statePulse{50%{border-color:var(--accent)}}
 .state.loading::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 20%,rgba(128,140,160,.14) 50%,transparent 80%);transform:translateX(-100%);animation:shimmer 1.6s var(--ease-in-out) infinite}
 @keyframes shimmer{to{transform:translateX(100%)}}
-/* Bars grow from zero to their measured width when a panel renders. */
-.bar-row .fill{animation:barIn .6s var(--ease-out)}
+/* Bars grow from zero when a panel renders, then glide to new widths on polls. */
+.bar-row .fill{animation:barIn .6s var(--ease-out);transition:width .5s var(--ease-out)}
 @keyframes barIn{from{width:0}}
+/* Nav active indicator: an accent bar that grows vertically into place. */
+.navbtn{position:relative}
+.navbtn::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--accent);transform:scaleY(0);transform-origin:center;transition:transform var(--dur-med) var(--ease-out)}
+.navbtn.active::before{transform:scaleY(1)}
+/* Buttons lift on hover and settle on press; table rows cross-fade on hover. */
+button,.btn{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
+button:hover:not(:disabled),.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+button:active:not(:disabled),.btn:active{transform:translateY(0)}
+td{transition:background-color var(--dur-fast) var(--ease-out)}
 @media (prefers-reduced-motion:reduce){
-  .spinner,.view.active,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill{animation:none}
+  .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .cards .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading{animation:none}
+  .state.loading::before{animation:none}
   .state.loading::after{display:none}
-  body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot{transition:none}
+  .navbtn::before{transition:none}
+  body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot,td{transition:none}
+  button:hover:not(:disabled),.btn:hover{transform:none}
 }
 .themeseg{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:2px;background:var(--panel);gap:2px}
 .themeseg button{border:none;background:transparent;color:var(--muted);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
@@ -119,7 +154,7 @@ input,select,textarea{color:var(--text);background:var(--input-bg);border:1px so
 .navbtn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;margin:2px 0;padding:8px 12px;border:1px solid transparent;background:transparent;border-radius:var(--radius);color:var(--muted);font-size:14px}
 .navbtn svg{flex:none}
 .navbtn:hover{background:var(--panel-2);color:var(--text)}
-.navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+.navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
 .navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
 .main{flex:1;padding:var(--space-3) var(--space-4) 40px;min-width:0}
 .main > section, .main > .banner{max-width:1180px}
@@ -2631,6 +2666,18 @@ function actionExplain(action){
 }
 
 function setText(id, text){ var el = $(id); if(el) el.textContent = text; }
+/* setStat: like setText, but pops the value briefly when a poll changes it.
+   Motion-only: the text update itself is identical, and the animation is
+   disabled entirely under prefers-reduced-motion. */
+function setStat(id, text){
+  var el = $(id);
+  if(!el) return;
+  if(el.textContent === text) return;
+  el.textContent = text;
+  el.classList.remove("tick");
+  void el.offsetWidth;
+  el.classList.add("tick");
+}
 function setHTML(id, html){ var el = $(id); if(el) el.innerHTML = html; }
 
 function loadOverview(){
@@ -2644,11 +2691,11 @@ function loadOverview(){
   var pFps = proxyAction("GET_FINGERPRINT_REQUESTS").catch(function(){ return null; });
   return Promise.all([pStats, pRps, pBrps, pTot, pByp, pIps, pFps]).then(function(r){
     var stats = r[0], rps = r[1], brps = r[2], tot = r[3], byp = r[4], ips = r[5], fps = r[6];
-    if(stats){ setText("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setText("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); }
-    if(rps) setText("cTotalRps", num(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND));
-    if(brps) setText("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
-    if(tot) setText("cTotal", num(tot.TOTAL_REQUESTS));
-    if(byp) setText("cBypassed", num(byp.BYPASSED_REQUESTS));
+    if(stats){ setStat("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setStat("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); }
+    if(rps) setStat("cTotalRps", num(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND));
+    if(brps) setStat("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
+    if(tot) setStat("cTotal", num(tot.TOTAL_REQUESTS));
+    if(byp) setStat("cBypassed", num(byp.BYPASSED_REQUESTS));
     if(ips){
       setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, t("colIp"), t("colRequests")));
     }
