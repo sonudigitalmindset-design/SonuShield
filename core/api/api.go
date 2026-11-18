@@ -140,6 +140,12 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 		role, tenant, ssoAuthed = ssoRole, "", true
 	}
 
+	// Two-person approval (Batch 7): the raw role and the
+	// caller identity hash, captured before the audit
+	// suffixes below mutate role.
+	rawRole := role
+	hash := callerHash(request, ssoAuthed, request.Header.Get("proxy-secret"))
+
 	reqBody, err := io.ReadAll(request.Body)
 	if err != nil {
 		APIResponse(recorder, false, map[string]interface{}{
@@ -189,6 +195,14 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	}
 
 	if apiRequest.Domain == "" {
+		// Two-person approval (Batch 7): meta-actions first,
+		// then the gate for sensitive actions.
+		if approvalIntercept(recorder, request, rawRole, tenant, hash, apiRequest.Action, apiRequest.Domain, apiRequest.Params) {
+			return true
+		}
+		if gateApproval(recorder, request, rawRole, tenant, hash, apiRequest.Action, apiRequest.Domain, apiRequest.Params) {
+			return true
+		}
 		handleProxyActions(apiRequest.Action, recorder, apiRequest.Params, tenant)
 		return true
 	}
@@ -209,6 +223,12 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 		return true
 	}
 
+	if approvalIntercept(recorder, request, rawRole, tenant, hash, apiRequest.Action, apiRequest.Domain, apiRequest.Params) {
+		return true
+	}
+	if gateApproval(recorder, request, rawRole, tenant, hash, apiRequest.Action, apiRequest.Domain, apiRequest.Params) {
+		return true
+	}
 	handleDomainActions(apiRequest.Action, recorder, &domainData, &domainSettings, apiRequest.Params)
 	return true
 }
@@ -740,6 +760,11 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		role, tenant, ssoAuthed = ssoRole, "", true
 	}
 
+	// Two-person approval (Batch 7): raw role and caller
+	// identity, captured before the audit suffixes below.
+	rawRole := role
+	hash := callerHash(r, ssoAuthed, r.Header.Get("Proxy-Secret"))
+
 	if len(parts) == 1 {
 
 		// /:action
@@ -765,6 +790,12 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		}
 		if ssoAuthed {
 			role = role + " (sso)"
+		}
+		if approvalIntercept(recorder, r, rawRole, tenant, hash, parts[0], "", queryParams(r)) {
+			return true
+		}
+		if gateApproval(recorder, r, rawRole, tenant, hash, parts[0], "", queryParams(r)) {
+			return true
 		}
 		handleProxyActions(parts[0], recorder, queryParams(r), tenant)
 		return true
@@ -804,6 +835,12 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		domainData := domains.DomainsData[parts[0]]
 		firewall.Mutex.RUnlock()
 
+		if approvalIntercept(recorder, r, rawRole, tenant, hash, parts[1], parts[0], queryParams(r)) {
+			return true
+		}
+		if gateApproval(recorder, r, rawRole, tenant, hash, parts[1], parts[0], queryParams(r)) {
+			return true
+		}
 		handleDomainActions(parts[1], recorder, &domainData, &domainSettingsdomain, queryParams(r))
 		return true
 	}

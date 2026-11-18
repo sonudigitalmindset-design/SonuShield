@@ -113,10 +113,14 @@ func tenantUsageResponse(params map[string]string, tenantScope string) (map[stri
 
 // tenantProxyActionAllowed reports whether a tenant-scoped caller
 // may run a proxy action. Tenant callers see only their own
-// domains (GET_DOMAINS, filtered) and their own usage.
+// domains (GET_DOMAINS, filtered) and their own usage. The
+// approval meta-actions (Batch 7) are allowed because the
+// handlers enforce tenant matching themselves: a tenant
+// caller only ever sees, approves, or rejects their own
+// tenant's requests.
 func tenantProxyActionAllowed(action string) bool {
 	switch action {
-	case "GET_DOMAINS", "GET_TENANT_USAGE":
+	case "GET_DOMAINS", "GET_TENANT_USAGE", "APPROVE_ACTION", "REJECT_ACTION", "LIST_APPROVALS":
 		return true
 	default:
 		return false

@@ -371,6 +371,13 @@ type Proxy struct {
 	// reports, and API responses, and log retention is
 	// capped at 2 files. Off by default.
 	PrivacyMode bool `json:"privacyMode"`
+	// Two-person approval (Batch 7). When true, sensitive
+	// control actions need a second distinct approver
+	// before executing. ApprovalExpirySeconds is the
+	// pending-approval lifetime (<= 0 means 300). Off by
+	// default; single-operator setups are unaffected.
+	TwoPersonApproval   bool `json:"twoPersonApproval"`
+	ApprovalExpirySeconds int `json:"approvalExpirySeconds"`
 }
 
 // SubdomainMonitorConfig watches operator-supplied domain

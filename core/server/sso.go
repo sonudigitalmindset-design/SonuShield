@@ -78,6 +78,16 @@ const (
 
 func init() {
 	api.SSOSessionValidator = ssoSessionRole
+	// Two-person approval (Batch 7): the API hashes the
+	// session cookie value to tell SSO callers apart. The
+	// value itself never leaves this function.
+	api.SSOSessionCookieValue = func(r *http.Request) string {
+		cookie, err := r.Cookie(ssoSessionCookie)
+		if err != nil {
+			return ""
+		}
+		return cookie.Value
+	}
 }
 
 // ssoHTTP is the client for discovery and token requests. It
