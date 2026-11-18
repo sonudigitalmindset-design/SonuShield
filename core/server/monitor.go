@@ -25,6 +25,7 @@ import (
 	"sonushield/core/pnc"
 	"sonushield/core/proxy"
 	"sonushield/core/reports"
+	"sonushield/core/timeline"
 	"sonushield/core/utils"
 )
 
@@ -145,6 +146,10 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 				// takes the write lock held by this loop.
 				reports.ExportOnAttackEnd(domainName, domainData)
 				logging.Log(logging.Entry{Event: "attack_end", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
+				// Attack timeline (Batch 7): finish the
+				// current attack with the monitor's peaks,
+				// before they are reset below.
+				timeline.EndAttack(domainName, timeline.Event{Kind: "attack_end", Detail: "attack ended, cooldown expired", Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond}, domainData.PeakRequestsPerSecond, domainData.PeakRequestsBypassedPerSecond)
 				domainData.PeakRequestsPerSecond = 0
 				domainData.PeakRequestsBypassedPerSecond = 0
 				domainData.RequestLogger = []domains.RequestLog{}
@@ -168,6 +173,9 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 					})
 					go utils.SendAlerts(domainData, domainSettings, int(0))
 					logging.Log(logging.Entry{Event: "attack_start", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
+					// Attack timeline (Batch 7): a bypassing
+					// attack started; stage moved 1 -> 2.
+					timeline.StartAttack(domainName, timeline.Event{Kind: "attack_start", Detail: "bypassing attack started, escalated to stage 2", Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 					//Challenge rotation (Batch 6): a new wave begins.
 					advanceChallengeRotation(domainName, domainSettings)
 				}
@@ -178,17 +186,20 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 			// Stage 2 is getting bypassed
 			if domainData.RequestsBypassedPerSecond > domainSettings.BypassStage2 {
 				domainData.Stage = 3
+				timeline.RecordEvent(domainName, timeline.Event{Kind: "stage_change", Detail: "stage 2 bypassed, escalated to stage 3", Stage: 3, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 
 				// Stage 2 is no longer getting bypassed
 			} else if domainData.RequestsBypassedPerSecond < domainSettings.DisableBypassStage2 && domainData.RequestsPerSecond < domainSettings.DisableRawStage2 && domainData.BypassAttack {
 				domainData.BypassAttack = false
 				domainData.RawAttack = false
 				domainData.Stage = 1
+				timeline.RecordEvent(domainName, timeline.Event{Kind: "stage_change", Detail: "attack subsided, de-escalated to stage 1", Stage: 1, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 			}
 		case 3:
 			// Stage 3 is no longer getting bypassed
 			if domainData.RequestsBypassedPerSecond < domainSettings.DisableBypassStage3 && domainData.RequestsPerSecond < domainSettings.DisableRawStage3 {
 				domainData.Stage = 2
+				timeline.RecordEvent(domainName, timeline.Event{Kind: "stage_change", Detail: "stage 3 no longer bypassed, de-escalated to stage 2", Stage: 2, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 			}
 		}
 
@@ -207,6 +218,9 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 				})
 				go utils.SendAlerts(domainData, domainSettings, int(0))
 				logging.Log(logging.Entry{Event: "attack_start", Domain: domainName, Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond, PeakRPS: domainData.PeakRequestsPerSecond, PeakRPSAllowed: domainData.PeakRequestsBypassedPerSecond})
+				// Attack timeline (Batch 7): a raw (non-bypassing)
+				// attack started.
+				timeline.StartAttack(domainName, timeline.Event{Kind: "attack_start", Detail: "raw attack started", Stage: domainData.Stage, RPS: domainData.RequestsPerSecond, RPSAllowed: domainData.RequestsBypassedPerSecond})
 				//Challenge rotation (Batch 6): a new wave begins.
 				advanceChallengeRotation(domainName, domainSettings)
 			}
