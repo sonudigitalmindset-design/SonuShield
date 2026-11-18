@@ -48,6 +48,48 @@ func attemptSSOAuth(request *http.Request) (role string, ok bool, csrfMissing bo
 	return role, true, false
 }
 
+// AuthenticatedControlRequest reports whether r is a control-plane
+// request (API v1, API v2, or the dashboard) carrying valid
+// authentication: a known API secret (the main apisecret or a
+// role secret) in the version's secret header, or a valid SSO
+// session cookie plus the CSRF header. The dashboard path is
+// authenticated by the path itself, which contains the admin
+// secret, exactly as the reserved-path handler treats it.
+//
+// The middleware uses this to exempt authenticated control-plane
+// requests from the challenge flow: at a locked Stage 2/3 a
+// scripted client cannot solve a challenge, so without the
+// exemption even the unlock call is answered with a challenge
+// page. A valid SSO cookie WITHOUT the CSRF header does not
+// count: such a call falls through to the normal flow, where
+// Process/ProcessV2 answer 403 exactly as before. Any other
+// request (missing or wrong secret, non-control-plane path)
+// reports false and keeps the current fall-through/challenge
+// behavior unchanged.
+func AuthenticatedControlRequest(request *http.Request) bool {
+	path := request.URL.Path
+	if proxy.AdminSecret != "" {
+		if path == "/_bProxy/"+proxy.AdminSecret+"/api/v1" {
+			if _, _, ok := proxy.ScopeForSecret(request.Header.Get("proxy-secret")); ok {
+				return true
+			}
+			_, ok, _ := attemptSSOAuth(request)
+			return ok
+		}
+		if path == "/_bProxy/"+proxy.AdminSecret+"/dashboard" {
+			return true
+		}
+	}
+	if strings.HasPrefix(path, "/_bProxy/api/v2") {
+		if _, _, ok := proxy.ScopeForSecret(request.Header.Get("Proxy-Secret")); ok {
+			return true
+		}
+		_, ok, _ := attemptSSOAuth(request)
+		return ok
+	}
+	return false
+}
+
 func Process(writer http.ResponseWriter, request *http.Request, domainData domains.DomainData) bool {
 
 	role, tenant, ok := proxy.ScopeForSecret(request.Header.Get("proxy-secret"))

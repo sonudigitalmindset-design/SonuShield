@@ -99,6 +99,39 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Authenticated control-plane requests (Batch 6). API and
+	// dashboard requests carrying a valid secret bypass the
+	// challenge flow entirely: at a locked Stage 2/3 a scripted
+	// client cannot solve a challenge, so without this exemption
+	// even the unlock call itself is answered with a challenge
+	// page. Requests with a missing or wrong secret fall through
+	// to the normal flow exactly as before (challenged or proxied
+	// like any other request), and non-control-plane paths are
+	// unaffected. Like metrics, exempt requests are neither
+	// challenged nor counted in request statistics; the API
+	// handlers audit them exactly as they do on the late path.
+	// If a handler declines (a secret changed mid-flight), the
+	// request falls through to the normal flow below.
+	if api.AuthenticatedControlRequest(request) {
+		firewall.Mutex.RLock()
+		earlyData := domains.DomainsData[domainName]
+		firewall.Mutex.RUnlock()
+		switch request.URL.Path {
+		case "/_bProxy/" + proxy.AdminSecret + "/api/v1":
+			if api.Process(writer, request, earlyData) {
+				return
+			}
+		case "/_bProxy/" + proxy.AdminSecret + "/dashboard":
+			dashboard.Serve(writer)
+			return
+		}
+		if strings.HasPrefix(request.URL.Path, "/_bProxy/api/v2") {
+			if api.ProcessV2(writer, request) {
+				return
+			}
+		}
+	}
+
 	// Log paths must never carry the admin secret, which is a path
 	// segment of the API, dashboard, and metrics routes. Redact it
 	// once here; every structured-log entry below uses logPath.
