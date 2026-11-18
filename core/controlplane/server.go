@@ -31,6 +31,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"sonushield/core/dashboard"
@@ -48,6 +49,12 @@ type Server struct {
 	audit      *AuditWriter
 	limiter    *loginLimiter
 	tlsEnabled bool
+
+	// OIDC provider cache + in-flight login states (SSO).
+	ssoProviderMu sync.Mutex
+	ssoProvider   *cpOIDCProvider
+	ssoStateMu    sync.Mutex
+	ssoStates     map[string]*cpSSOState
 }
 
 // LoadControlPlaneConfig reads a config file and returns its
@@ -100,6 +107,7 @@ func NewServer(configPath string) (*Server, error) {
 		audit:      audit,
 		limiter:    newLoginLimiter(),
 		tlsEnabled: tlsEnabled,
+		ssoStates:  map[string]*cpSSOState{},
 	}
 	for _, nodeCfg := range cfg.Nodes {
 		client, err := newNodeClient(nodeCfg)
@@ -135,12 +143,11 @@ func (s *Server) warnStartup() {
 	}
 }
 
-// ssoEnabled reports whether OIDC login is available on this
-// control plane. Placeholder: SSO handlers land in the next
-// commit, so this reports false until then and the login page
-// offers no SSO button.
+// ssoEnabled reports whether OIDC login is configured and
+// valid on this control plane.
 func (s *Server) ssoEnabled() bool {
-	return false
+	_, ok := s.ssoConfig()
+	return ok
 }
 
 // authenticate validates the request's session cookie and
