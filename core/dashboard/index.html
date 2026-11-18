@@ -52,6 +52,10 @@ __CP_BOOTSTRAP__
   --radius:8px; --radius-lg:12px;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  /* Motion language (shared with the docs diagrams): one easing, one duration scale. */
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-in-out:cubic-bezier(.45,0,.55,1);
+  --dur-fast:.15s; --dur-med:.25s; --dur-slow:.4s;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -78,7 +82,26 @@ button{cursor:pointer}
 .pill.bad .dot{background:var(--bad-text)}
 .spinner{width:12px;height:12px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);animation:spin .7s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+/* Theme switching + hover states ease through color tokens only — never layout. */
+body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out)}
+.pill .dot{transition:background-color var(--dur-med) var(--ease-out)}
+/* View + feedback entrances: gentle fade with a small rise. transform-only, no layout shift. */
+.view.active{animation:viewIn var(--dur-slow) var(--ease-out)}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.banner.show,.inline-err.show,.inline-ok.show{animation:bannerIn var(--dur-med) var(--ease-out)}
+@keyframes bannerIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+/* Async loading shimmer: a soft highlight sweep over the loading placeholder. */
+.state.loading{position:relative;overflow:hidden}
+.state.loading::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 20%,rgba(128,140,160,.14) 50%,transparent 80%);transform:translateX(-100%);animation:shimmer 1.6s var(--ease-in-out) infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+/* Bars grow from zero to their measured width when a panel renders. */
+.bar-row .fill{animation:barIn .6s var(--ease-out)}
+@keyframes barIn{from{width:0}}
+@media (prefers-reduced-motion:reduce){
+  .spinner,.view.active,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill{animation:none}
+  .state.loading::after{display:none}
+  body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot{transition:none}
+}
 .themeseg{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:2px;background:var(--panel);gap:2px}
 .themeseg button{border:none;background:transparent;color:var(--muted);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
 .themeseg button[aria-pressed="true"]{background:var(--nav-active-bg);color:var(--text);box-shadow:var(--shadow-sm)}
@@ -2782,7 +2805,7 @@ function renderSrvImportReport(r){
 function previewServerImport(){
   var payload = $("srvImportData").value.trim();
   if(!payload) return;
-  setHTML("srvImportResult", '<div class="state">' + t("simulating") + '</div>');
+  setHTML("srvImportResult", '<div class="state loading">' + t("simulating") + '</div>');
   proxyWrite("PREVIEW_SERVER_IMPORT", {format: $("srvImportFormat").value, data: payload, template: $("srvImportTemplate").value}).then(function(r){
     setHTML("srvImportResult", renderSrvImportReport(r));
   }).catch(function(err){
@@ -3224,7 +3247,7 @@ function builderValidate(){
     setHTML("builderResult", '<div class="state state-error">' + esc(built.error) + '</div>');
     return;
   }
-  setHTML("builderResult", '<div class="state">' + t("simulating") + '</div>');
+  setHTML("builderResult", '<div class="state loading">' + t("simulating") + '</div>');
   domainWrite(currentDomain, "SIMULATE_RULE", {expression: built.expr, sample: ""}).then(function(r){
     var fields = (r.FIELDS_USED || []).map(function(f){ return esc(f); }).join(", ") || t("noneWord");
     setHTML("builderResult", '<div class="state">' + (r.MATCH ? "<strong>" + t("simMatch") + "</strong> " + t("simMatchDetail") : "<strong>" + t("simNoMatch") + "</strong> " + t("simNoMatchDetail"))
@@ -3237,7 +3260,7 @@ function simulateRule(){
   var expr = $("simExpr").value.trim();
   if(!expr) return;
   showInline("rulesError", "rulesOk", "", "");
-  setHTML("simResult", '<div class="state">' + t("simulating") + '</div>');
+  setHTML("simResult", '<div class="state loading">' + t("simulating") + '</div>');
   domainWrite(currentDomain, "SIMULATE_RULE", {expression: expr, sample: $("simSample").value}).then(function(r){
     var fields = (r.FIELDS_USED || []).map(function(f){ return esc(f); }).join(", ") || t("noneWord");
     setHTML("simResult", '<div class="state">' + (r.MATCH ? "<strong>" + t("simMatch") + "</strong> " + t("simMatchDetail") : "<strong>" + t("simNoMatch") + "</strong> " + t("simNoMatchDetail"))
@@ -3428,7 +3451,7 @@ function logSearchParams(){
 
 function runLogSearch(){
   var q = buildQuery(logSearchParams());
-  setHTML("logSearchBody", '<div class="state">' + t("searching") + '</div>');
+  setHTML("logSearchBody", '<div class="state loading">' + t("searching") + '</div>');
   setText("lsMeta", "");
   return apiV2("/_bProxy/api/v2/" + encodeURIComponent(currentDomain) + "/SEARCH_LOGS?" + q).then(function(r){
     var entries = r.ENTRIES || [];
@@ -3485,7 +3508,7 @@ function attackMapSVG(countries, max){
 function loadAttackMap(){
   var win = $("mapWindow").value;
   var top = $("mapTop").value || "10";
-  setHTML("mapBody", '<div class="state">' + t("loadingMap") + '</div>');
+  setHTML("mapBody", '<div class="state loading">' + t("loadingMap") + '</div>');
   setText("mapMeta", "");
   return apiV2("/_bProxy/api/v2/GET_ATTACK_MAP?window=" + encodeURIComponent(win) + "&top=" + encodeURIComponent(top)).then(function(r){
     if(!r.LOGS_CONFIGURED){
@@ -3666,7 +3689,7 @@ function reportTopValue(){
 
 function loadReport(){
   showInline("reportError", null, "", "");
-  setHTML("reportBody", '<div class="state">' + t("loadingReport") + '</div>');
+  setHTML("reportBody", '<div class="state loading">' + t("loadingReport") + '</div>');
   return domainAction(currentDomain, "GET_ATTACK_REPORT?format=json&top=" + reportTopValue()).then(function(r){
     renderReport(r.REPORT || {});
   }).catch(function(err){
@@ -3924,7 +3947,7 @@ function renderPostmortem(r){
 
 function loadPostmortem(format){
   var q = buildQuery({which: $("pmWhich").value, format: format || "json", top: String(pmTopValue())});
-  setHTML("pmBody", '<div class="state">' + t("loadingReport") + '</div>');
+  setHTML("pmBody", '<div class="state loading">' + t("loadingReport") + '</div>');
   return domainAction(currentDomain, "GET_POSTMORTEM?" + q).then(function(r){
     if(format === "text"){
       setHTML("pmBody", "<pre>" + esc(r.REPORT_TEXT || "") + "</pre>");
