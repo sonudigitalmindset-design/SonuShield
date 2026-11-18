@@ -114,6 +114,7 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		// never returned: only whether any are configured.
 		"BEHAVIOR_CHECK":   domainSettings.BehaviorCheck,
 		"BEHAVIOR_ENFORCE": domainSettings.BehaviorEnforce,
+		"INVISIBLE_MARKERS": domainSettings.InvisibleMarkers,
 		"CANARY_CONFIGURED": len(domainSettings.CanaryPaths) > 0 || len(domainSettings.CanaryTokens) > 0,
 	}
 }

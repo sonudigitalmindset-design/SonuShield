@@ -317,6 +317,7 @@ func Load() {
 			BehaviorCheck:         domain.BehaviorCheck,
 			BehaviorEnforce:       domain.BehaviorEnforce,
 			BehaviorSusLv:         domain.BehaviorSusLv,
+			InvisibleMarkers:      domain.InvisibleMarkers,
 			SessionRatelimit:      domain.SessionRatelimit,
 			MaxBodyBytes:          domain.MaxBodyBytes,
 			BodyLimits:            domain.BodyLimits,

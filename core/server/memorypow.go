@@ -75,6 +75,8 @@ import (
 	"golang.org/x/crypto/argon2"
 
 	"sonushield/core/domains"
+	"sonushield/core/firewall"
+	"sonushield/core/logging"
 )
 
 //go:embed argon2pow.js
@@ -104,6 +106,7 @@ type pendingMemoryPow struct {
 	ip          string
 	tlsFp       string
 	userAgent   string
+	markers     bool
 	expires     time.Time
 }
 
@@ -240,6 +243,7 @@ func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, 
 		ip:          ip,
 		tlsFp:       tlsFp,
 		userAgent:   userAgent,
+		markers:     settings.InvisibleMarkers,
 	})
 	if nonce == "" {
 		return false
@@ -248,7 +252,7 @@ func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, 
 	writer.Header().Set("Content-Type", "text/html")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	//Built-in page text is English/Hindi by Accept-Language.
-	fmt.Fprint(writer, withBehaviorScript(memoryPowPage(stringsFor(request), resolveBranding(settings), nonce, hex.EncodeToString(salt), bits, memoryKB, timeCost), settings, domainName))
+	fmt.Fprint(writer, withBehaviorScript(withInvisibleMarkers(memoryPowPage(stringsFor(request), resolveBranding(settings), nonce, hex.EncodeToString(salt), bits, memoryKB, timeCost, settings.InvisibleMarkers), settings, domainName), settings, domainName))
 	return true
 }
 
@@ -256,7 +260,7 @@ func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, 
 // writes a response (redirect on success, short generic plain-text
 // error otherwise) and reports whether it handled the request.
 // Non-POST requests get a plain 404; no page is ever rendered here.
-func HandleMemoryPowVerify(writer http.ResponseWriter, request *http.Request, ip, tlsFp string) bool {
+func HandleMemoryPowVerify(writer http.ResponseWriter, request *http.Request, domainName, ip, tlsFp string) bool {
 	if request.URL.Path != "/_bProxy/pow-verify" {
 		return false
 	}
@@ -277,6 +281,19 @@ func HandleMemoryPowVerify(writer http.ResponseWriter, request *http.Request, ip
 	if !ok {
 		// Unknown, expired, replayed, or client-mismatched nonce.
 		// Answer generically without revealing which.
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(writer, "404 Not Found")
+		return true
+	}
+
+	// Honeypot form field (Batch 7): honoured only when the
+	// challenge was served with markers enabled. A filled
+	// field fails verification generically and marks the IP
+	// as automated for the domain.
+	if entry.markers && request.Form.Get("website") != "" {
+		firewall.MarkMarkerHit(domainName, ip)
+		logging.Log(logging.Entry{Event: "marker", Domain: domainName, IP: ip, Action: "marker_honeypot", Method: request.Method, Path: "/_bProxy/pow-verify", UserAgent: request.UserAgent()})
 		writer.Header().Set("Content-Type", "text/plain")
 		writer.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(writer, "404 Not Found")
@@ -310,11 +327,17 @@ func HandleMemoryPowVerify(writer http.ResponseWriter, request *http.Request, ip
 // form the solver submits, and the embedded Argon2id solver with
 // the salt and parameters substituted. The solver script is fixed
 // server-side content; the page carries no branding.
-func memoryPowPage(s pageStrings, brand domains.Branding, nonce, saltHex string, bits, memoryKB, timeCost uint32) string {
+func memoryPowPage(s pageStrings, brand domains.Branding, nonce, saltHex string, bits, memoryKB, timeCost uint32, markers bool) string {
 	script := strings.ReplaceAll(argon2powJS, "__ARGON_SALT_HEX__", saltHex)
 	script = strings.ReplaceAll(script, "__ARGON_BITS__", strconv.FormatUint(uint64(bits), 10))
 	script = strings.ReplaceAll(script, "__ARGON_MEMORY_KB__", strconv.FormatUint(uint64(memoryKB), 10))
 	script = strings.ReplaceAll(script, "__ARGON_TIME__", strconv.FormatUint(uint64(timeCost), 10))
+	// Honeypot form field (Batch 7): present only when the
+	// domain enabled invisible markers.
+	honeypot := ""
+	if markers {
+		honeypot = markerHoneypotField
+	}
 	return `<!doctype html><html lang="` +
 		s.lang +
 		`"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>` +
@@ -329,7 +352,9 @@ func memoryPowPage(s pageStrings, brand domains.Branding, nonce, saltHex string,
 		s.powSubtext +
 		`</div></div><div class="subtext" id="mpow-status"></div><form id="mpow-form" method="post" action="/_bProxy/pow-verify"><input type="hidden" name="nonce" value="` +
 		html.EscapeString(nonce) +
-		`"><input type="hidden" name="solution" id="mpow-solution"></form><script>` +
+		`"><input type="hidden" name="solution" id="mpow-solution">` +
+		honeypot +
+		`</form><script>` +
 		script +
 		`</script><noscript><p>` +
 		s.verifyNoJS +

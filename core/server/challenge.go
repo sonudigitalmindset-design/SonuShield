@@ -46,6 +46,8 @@ import (
 	"time"
 
 	"sonushield/core/domains"
+	"sonushield/core/firewall"
+	"sonushield/core/logging"
 )
 
 type pendingChallenge struct {
@@ -56,6 +58,7 @@ type pendingChallenge struct {
 	ip          string
 	tlsFp       string
 	userAgent   string
+	markers     bool
 	expires     time.Time
 }
 
@@ -172,6 +175,7 @@ func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, s
 		ip:          ip,
 		tlsFp:       tlsFp,
 		userAgent:   userAgent,
+		markers:     settings.InvisibleMarkers,
 	})
 	if nonce == "" {
 		return false
@@ -189,7 +193,7 @@ func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, s
 	writer.Header().Set("Content-Type", "text/html")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	//Built-in page text is English/Hindi by Accept-Language.
-	fmt.Fprint(writer, withBehaviorScript(providerPage(stringsFor(request), resolveBranding(settings), nonce, widgetScript), settings, domainName))
+	fmt.Fprint(writer, withBehaviorScript(withInvisibleMarkers(providerPage(stringsFor(request), resolveBranding(settings), nonce, widgetScript, settings.InvisibleMarkers), settings, domainName), settings, domainName))
 	return true
 }
 
@@ -197,7 +201,7 @@ func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, s
 // writes a response (redirect on success, short generic plain-text error
 // otherwise) and reports whether it handled the request. Non-POST requests
 // get a plain 404; no page is ever rendered here.
-func HandleChallengeVerify(writer http.ResponseWriter, request *http.Request, ip, tlsFp string) bool {
+func HandleChallengeVerify(writer http.ResponseWriter, request *http.Request, domainName, ip, tlsFp string) bool {
 	if request.URL.Path != "/_bProxy/challenge-verify" {
 		return false
 	}
@@ -218,6 +222,19 @@ func HandleChallengeVerify(writer http.ResponseWriter, request *http.Request, ip
 	if !ok {
 		// Unknown, expired, replayed, or client-mismatched nonce. Answer
 		// generically without revealing which.
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(writer, "404 Not Found")
+		return true
+	}
+
+	// Honeypot form field (Batch 7): honoured only when the
+	// challenge was served with markers enabled. A filled
+	// field fails verification generically and marks the IP
+	// as automated for the domain.
+	if entry.markers && request.Form.Get("website") != "" {
+		firewall.MarkMarkerHit(domainName, ip)
+		logging.Log(logging.Entry{Event: "marker", Domain: domainName, IP: ip, Action: "marker_honeypot", Method: request.Method, Path: "/_bProxy/challenge-verify", UserAgent: request.UserAgent()})
 		writer.Header().Set("Content-Type", "text/plain")
 		writer.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(writer, "404 Not Found")

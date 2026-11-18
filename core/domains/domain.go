@@ -100,6 +100,7 @@ type Domain struct {
 	BehaviorCheck       bool             `json:"behaviorCheck"`
 	BehaviorEnforce     bool             `json:"behaviorEnforce"`
 	BehaviorSusLv       int              `json:"behaviorSusLv"`
+	InvisibleMarkers    bool             `json:"invisibleMarkers"`
 	SessionRatelimit    int              `json:"sessionRatelimit"`
 	MaxBodyBytes        int64           `json:"maxBodyBytes"`
 	BodyLimits          []BodyLimit     `json:"bodyLimits"`
@@ -200,6 +201,7 @@ type DomainSettings struct {
 	BehaviorCheck         bool
 	BehaviorEnforce       bool
 	BehaviorSusLv         int
+	InvisibleMarkers      bool
 	SessionRatelimit      int
 	MaxBodyBytes          int64
 	BodyLimits            []BodyLimit

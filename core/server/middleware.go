@@ -291,7 +291,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//the cookie check below: the client has no verification cookie yet.
 	//A reserved /_bProxy/ path like /_bProxy/verified, not a management
 	//page; it only answers POSTs carrying a valid single-use nonce.
-	if HandleChallengeVerify(writer, request, ip, tlsFp) {
+	if HandleChallengeVerify(writer, request, domainName, ip, tlsFp) {
 		return
 	}
 
@@ -299,7 +299,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//reasoning as the provider verification above: the client has
 	//no verification cookie yet, so this runs before the cookie
 	//check below.
-	if HandleMemoryPowVerify(writer, request, ip, tlsFp) {
+	if HandleMemoryPowVerify(writer, request, domainName, ip, tlsFp) {
 		return
 	}
 
@@ -308,6 +308,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//page, before it holds a verification cookie. Answers
 	//404 unless the domain enabled behaviorCheck.
 	if HandleBehaviorBeacon(writer, request, domainName, ip, domainSettings) {
+		return
+	}
+
+	//Invisible marker endpoint (Batch 7). Same early
+	//placement: following the hidden link marks the client
+	//as automated. Always answers 404.
+	if HandleMarkerHit(writer, request, domainName, ip, domainSettings) {
 		return
 	}
 
@@ -496,6 +503,19 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			settingsCopy := domainSettings
 			go utils.SendNotice(settingsCopy, "Canary token tripped on "+domainName, "A "+canaryMatch.Kind+" decoy was used from IP "+ip+" on path "+canaryMatch.Path+". The request was blocked. No token value is included in this notice.")
 		}
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusForbidden)
+		SendResponse("Forbidden.", buffer, writer)
+		return
+	}
+
+	//Invisible markers (Batch 7). An IP that followed a hidden
+	//marker link or filled a honeypot field is blocked while
+	//its record lasts (one hour). With the feature disabled
+	//no record can exist, so this is a no-op.
+	if domainSettings.InvisibleMarkers && firewall.MarkerHit(domainName, ip) {
+		metrics.ObserveBlock(domainName, "marker")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "marker", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 		writer.Header().Set("Content-Type", "text/plain")
 		writer.WriteHeader(http.StatusForbidden)
 		SendResponse("Forbidden.", buffer, writer)

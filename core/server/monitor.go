@@ -670,6 +670,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			BehaviorCheck:         domain.BehaviorCheck,
 			BehaviorEnforce:       domain.BehaviorEnforce,
 			BehaviorSusLv:         domain.BehaviorSusLv,
+			InvisibleMarkers:      domain.InvisibleMarkers,
 			SessionRatelimit:      domain.SessionRatelimit,
 			MaxBodyBytes:          domain.MaxBodyBytes,
 			BodyLimits:            domain.BodyLimits,

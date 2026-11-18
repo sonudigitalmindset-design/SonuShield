@@ -181,9 +181,9 @@ func serveClassicPowChallenge(writer http.ResponseWriter, request *http.Request,
 	//validated custom template replaces the visible part.
 	pageStr := stringsFor(request)
 	if tpl := settings.PageTemplates; tpl != nil && tpl.PoW != "" {
-		SendResponse(withBehaviorScript(renderPowTemplate(tpl.PoW, pageStr, publicSalt, hashedEncryptedIP, difficulty), settings, domainName), buffer, writer)
+		SendResponse(withBehaviorScript(withInvisibleMarkers(renderPowTemplate(tpl.PoW, pageStr, publicSalt, hashedEncryptedIP, difficulty), settings, domainName), settings, domainName), buffer, writer)
 	} else {
-		SendResponse(withBehaviorScript(powPage(pageStr, resolveBranding(settings), publicSalt, hashedEncryptedIP, difficulty), settings, domainName), buffer, writer)
+		SendResponse(withBehaviorScript(withInvisibleMarkers(powPage(pageStr, resolveBranding(settings), publicSalt, hashedEncryptedIP, difficulty), settings, domainName), settings, domainName), buffer, writer)
 	}
 }
 

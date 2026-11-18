@@ -99,9 +99,9 @@ func serveCaptchaChallenge(writer http.ResponseWriter, request *http.Request, se
 	//validated custom template replaces the visible part.
 	pageStr := stringsFor(request)
 	if tpl := settings.PageTemplates; tpl != nil && tpl.Captcha != "" {
-		SendResponse(withBehaviorScript(renderCaptchaTemplate(tpl.Captcha, pageStr, ip, publicPart, captchaData, maskData), settings, domainName), buffer, writer)
+		SendResponse(withBehaviorScript(withInvisibleMarkers(renderCaptchaTemplate(tpl.Captcha, pageStr, ip, publicPart, captchaData, maskData), settings, domainName), settings, domainName), buffer, writer)
 	} else {
-		SendResponse(withBehaviorScript(captchaPage(pageStr, resolveBranding(settings), ip, publicPart, captchaData, maskData), settings, domainName), buffer, writer)
+		SendResponse(withBehaviorScript(withInvisibleMarkers(captchaPage(pageStr, resolveBranding(settings), ip, publicPart, captchaData, maskData), settings, domainName), settings, domainName), buffer, writer)
 	}
 	return
 }

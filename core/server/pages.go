@@ -273,13 +273,19 @@ func captchaSolverScript(ip, publicPart, captchaData, maskData string) string {
 }
 
 // providerPage renders the built-in Turnstile/hCaptcha verification page. The widget script is built by the caller; this function only places it.
-func providerPage(s pageStrings, brand domains.Branding, nonce, widgetScript string) string {
+func providerPage(s pageStrings, brand domains.Branding, nonce, widgetScript string, markers bool) string {
 	// The page body is a centered flex row for the provider
 	// widget; pin the brand banner to the top so it never
 	// disturbs the widget layout. Empty when unbranded.
 	banner := brandBanner(brand)
 	if banner != "" {
 		banner = `<div style="position:absolute;top:32px;left:0;right:0">` + banner + `</div>`
+	}
+	// Honeypot form field (Batch 7): present only when the
+	// domain enabled invisible markers.
+	honeypot := ""
+	if markers {
+		honeypot = markerHoneypotField
 	}
 	return `<!doctype html><html lang="` +
 		s.lang +
@@ -291,7 +297,9 @@ func providerPage(s pageStrings, brand domains.Branding, nonce, widgetScript str
 		s.verifyMessage +
 		`</p><form id="v" method="post" action="/_bProxy/challenge-verify"><input type="hidden" name="nonce" value="` +
 		html.EscapeString(nonce) +
-		`"><input type="hidden" name="token" id="token"></form><div id="widget"></div><script>function onSolved(t){document.getElementById("token").value=t;document.getElementById("v").submit();}function onError(){document.getElementById("msg").textContent="` +
+		`"><input type="hidden" name="token" id="token">` +
+		honeypot +
+		`</form><div id="widget"></div><script>function onSolved(t){document.getElementById("token").value=t;document.getElementById("v").submit();}function onError(){document.getElementById("msg").textContent="` +
 		s.verifyFailed +
 		`";}</script>` +
 		widgetScript +
