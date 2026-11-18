@@ -53,6 +53,8 @@ type Domain struct {
 	WAFMode             string           `json:"wafMode"`
 	HoneypotPaths       []string         `json:"honeypotPaths"`
 	HoneypotSusLv       int              `json:"honeypotSusLv"`
+	CanaryPaths         []string         `json:"canaryPaths"`
+	CanaryTokens        []string         `json:"canaryTokens"`
 	FakeBotCheck        bool             `json:"fakeBotCheck"`
 	FakeBotSusLv        int              `json:"fakeBotSusLv"`
 	TarpitDelayMs       int              `json:"tarpitDelayMs"`
@@ -154,6 +156,8 @@ type DomainSettings struct {
 	WAFWpLoginLimit     int
 	HoneypotPaths       []string
 	HoneypotSusLv       int
+	CanaryPaths         []string
+	CanaryTokens        []string
 	FakeBotCheck        bool
 	FakeBotSusLv        int
 	TarpitDelayMs       int

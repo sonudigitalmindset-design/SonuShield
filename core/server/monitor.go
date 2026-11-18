@@ -626,6 +626,8 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			WAFWpLoginLimit:      domain.WAFWpLoginLimit,
 			HoneypotPaths:        domain.HoneypotPaths,
 			HoneypotSusLv:        domain.HoneypotSusLv,
+			CanaryPaths:          domain.CanaryPaths,
+			CanaryTokens:         domain.CanaryTokens,
 			FakeBotCheck:         domain.FakeBotCheck,
 			FakeBotSusLv:         domain.FakeBotSusLv,
 			TarpitDelayMs:        domain.TarpitDelayMs,

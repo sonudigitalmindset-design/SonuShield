@@ -37,6 +37,27 @@ func SendEmail(domainData domains.DomainData, domainSettings domains.DomainSetti
 		return
 	}
 
+	subject := "SonuShield DDoS alert: " + domainSettings.Name + " — attack started"
+	template := email.AttackStartMsg
+	if notificationType == 1 {
+		subject = "SonuShield DDoS alert: " + domainSettings.Name + " — attack stopped"
+		template = email.AttackStopMsg
+	}
+	subject = stripHeaderNewlines(subject)
+	body := alertText(template, domainData, domainSettings.Name, notificationType)
+
+	sendEmailText(email, subject, body)
+}
+
+// sendEmailText delivers one message over the operator's SMTP
+// settings. It is the shared transport for attack alerts and
+// generic notices (utils.SendNotice); credentials are used only
+// for SMTP authentication and are never logged.
+func sendEmailText(email domains.EmailSettings, subject, body string) {
+	if email.SMTPHost == "" || email.To == "" {
+		return
+	}
+
 	port := email.SMTPPort
 	if port <= 0 {
 		port = 587
@@ -87,15 +108,7 @@ func SendEmail(domainData domains.DomainData, domainSettings domains.DomainSetti
 	}
 	from = stripHeaderNewlines(from)
 	to := stripHeaderNewlines(email.To)
-
-	subject := "SonuShield DDoS alert: " + domainSettings.Name + " — attack started"
-	template := email.AttackStartMsg
-	if notificationType == 1 {
-		subject = "SonuShield DDoS alert: " + domainSettings.Name + " — attack stopped"
-		template = email.AttackStopMsg
-	}
 	subject = stripHeaderNewlines(subject)
-	body := alertText(template, domainData, domainSettings.Name, notificationType)
 
 	if err := client.Mail(from); err != nil {
 		fmt.Println("[ ! ] [ Email alert failed ]")

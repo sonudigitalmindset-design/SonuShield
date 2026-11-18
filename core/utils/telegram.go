@@ -36,6 +36,18 @@ func SendTelegram(domainData domains.DomainData, domainSettings domains.DomainSe
 	}
 	text := alertText(template, domainData, domainSettings.Name, notificationType)
 
+	sendTelegramText(telegram, text)
+}
+
+// sendTelegramText posts one plain-text message. It is the
+// shared transport for attack alerts and generic notices
+// (utils.SendNotice); the token is used only in the request
+// URL and is never logged.
+func sendTelegramText(telegram domains.TelegramSettings, text string) {
+	if telegram.BotToken == "" || telegram.ChatID == "" {
+		return
+	}
+
 	payload, err := json.Marshal(map[string]string{
 		"chat_id": telegram.ChatID,
 		"text":    text,

@@ -42,6 +42,19 @@ func SendTwilio(domainData domains.DomainData, domainSettings domains.DomainSett
 	}
 	text := alertText(template, domainData, domainSettings.Name, notificationType)
 
+	sendTwilioText(twilio, text)
+}
+
+// sendTwilioText posts one message through the operator's
+// Twilio-compatible account. It is the shared transport for
+// attack alerts and generic notices (utils.SendNotice); the
+// auth token is sent only as HTTP Basic auth and is never
+// logged.
+func sendTwilioText(twilio domains.TwilioSettings, text string) {
+	if twilio.AccountSID == "" || twilio.AuthToken == "" || twilio.From == "" || twilio.To == "" {
+		return
+	}
+
 	base := strings.TrimRight(twilio.APIBase, "/")
 	if base == "" {
 		base = "https://api.twilio.com"

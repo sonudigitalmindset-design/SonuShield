@@ -481,6 +481,27 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		logging.Log(logging.Entry{Event: "honeypot", Domain: domainName, IP: ip, Action: "honeypot", Rule: logPath, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 
+	//Canary tokens (Batch 7). A request that uses an
+	//operator-configured decoy path or credential is blocked
+	//immediately at maximum suspicion: no legitimate visitor
+	//ever touches a decoy. The notice never includes a token
+	//value. With nothing configured this is a no-op.
+	if canaryMatch, canaryHit := firewall.CheckCanary(request, domainSettings.CanaryPaths, domainSettings.CanaryTokens); canaryHit {
+		if domainSettings.ShareReputation {
+			firewall.RecordSharedReputation(ip, tlsFp, domainName)
+		}
+		metrics.ObserveBlock(domainName, "canary")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "canary_" + canaryMatch.Kind, Rule: canaryMatch.Path, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		if firewall.CanaryShouldAlert(ip) {
+			settingsCopy := domainSettings
+			go utils.SendNotice(settingsCopy, "Canary token tripped on "+domainName, "A "+canaryMatch.Kind+" decoy was used from IP "+ip+" on path "+canaryMatch.Path+". The request was blocked. No token value is included in this notice.")
+		}
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.WriteHeader(http.StatusForbidden)
+		SendResponse("Forbidden.", buffer, writer)
+		return
+	}
+
 	//Fake search-bot verification. Only when the operator enabled
 	//it: a claimed Googlebot/Bingbot that DNS does not confirm
 	//raises suspicion. DNS failures fail open ("unchecked") and add

@@ -109,6 +109,12 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		"WAF_MODE_EFFECTIVE": firewall.ResolveWAFMode(domainSettings.WAFMode),
 		"WAF_INSPECT_BODY":   domainSettings.WAFInspectBody,
 		"WAF_WP_LOGIN_LIMIT": domainSettings.WAFWpLoginLimit,
+		// Behavior signal and canary decoys (Batch 7),
+		// read-only here. Canary paths and token values are
+		// never returned: only whether any are configured.
+		"BEHAVIOR_CHECK":   domainSettings.BehaviorCheck,
+		"BEHAVIOR_ENFORCE": domainSettings.BehaviorEnforce,
+		"CANARY_CONFIGURED": len(domainSettings.CanaryPaths) > 0 || len(domainSettings.CanaryTokens) > 0,
 	}
 }
 

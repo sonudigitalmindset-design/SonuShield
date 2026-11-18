@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"sonushield/core/domains"
 	"sonushield/core/pnc"
 	"sonushield/core/proxy"
 	"net/http"
 	"strings"
+	"time"
 
 	quickchartgo "github.com/henomis/quickchart-go"
 )
@@ -247,6 +249,44 @@ func SendWebhook(domainData domains.DomainData, domainSettings domains.DomainSet
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	client.Do(req)
+}
+
+// sendDiscordText posts one plain embed to the operator's
+// Discord webhook. It is the notice transport for
+// utils.SendNotice; unlike SendWebhook it carries no charts or
+// attack statistics, just a title and a description.
+func sendDiscordText(webhook domains.WebhookSettings, title, body string) {
+	if webhook.URL == "" {
+		return
+	}
+	webhookContent := Webhook{
+		Content:  "",
+		Username: webhook.Name,
+		Avatar:   webhook.Avatar,
+		Embeds: []WebhookEmbed{
+			{
+				Title:       title,
+				Description: body,
+				Color:       5814783,
+			},
+		},
+	}
+	webhookPayload, err := json.Marshal(webhookContent)
+	if err != nil {
+		return
+	}
+	req, err := http.NewRequest("POST", webhook.URL, bytes.NewBuffer(webhookPayload))
+	if err != nil {
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	io.Copy(io.Discard, resp.Body)
+	resp.Body.Close()
 }
 
 type Webhook struct {
