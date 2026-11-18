@@ -242,6 +242,30 @@ Certificate-expiry alerts and DNS monitoring for operator-listed subdomains; cro
 
 Privacy mode minimizes stored PII — masked IPs, no user-agents, shortened retention — consistently across logs, reports, and the dashboard. Two-person approval requires a second distinct approver for sensitive control actions, with expiry and audit logging. Both off by default. Details: [Configuration](configuration.md#privacy-mode).
 
+## App Attestation and Passkeys
+
+Mobile app attestation verifies Play Integrity / App Attest style JWTs on operator-configured API paths, with the operator's own keys and verdict rules; fail-closed when configured without material. The passkey challenge offers a WebAuthn assertion as a Stage 3 alternative to the captcha for enrolled users — public keys only, no registration ceremony in the proxy. Both off by default. Details: [Configuration](configuration.md#mobile-app-attestation).
+
+## Stuffing, Hijack, and API Validation
+
+Credential stuffing detection correlates failed logins across IPs (per-IP and distributed thresholds, log-only by default, never an outright block). Session hijack detection flags a session cookie that changes two or more bound signals (IP, TLS/HTTP fingerprint, country). OpenAPI validation checks API requests against an operator-supplied JSON spec with per-route fail-open/fail-closed modes, failing safe on invalid specs. Details: [Configuration](configuration.md#credential-stuffing-detection).
+
+## DLP, CSP Reports, and Threat Sharing
+
+DLP scanning redacts or blocks operator-configured secret patterns in outbound responses — matched content is never logged. The CSP report collector stores bounded, trimmed violation reports with API and dashboard views. The opt-in threat-sharing network exchanges indicators (IPs/fingerprints, reason, expiry) between explicitly peered instances over HMAC-signed endpoints, with no central server and no bundled feeds. Details: [Configuration](configuration.md#dlp-scanning).
+
+## BGP Alerts, Live Tail, Synthetic Checks, and RUM
+
+BGP monitoring alerts once per transition when the operator's prefixes gain an unexpected origin (RIPEstat by default, or a custom API), fail-open. The dashboard live log tail streams sanitized entries over SSE with role auth. Synthetic checks request the operator's domains through the proxy and alert on failure or latency breaches without polluting attack statistics. The RUM beacon collects navigation-timing buckets only — no URLs with query strings, no IPs, privacy-mode aware — with aggregated views in the API and dashboard. Details: [Configuration](configuration.md#bgp-alerts).
+
+## On-Call, Rule Builder, Plugins, and Imports
+
+On-call rotation routes alerts to the responder on schedule (with escalation after N unacknowledged minutes) and falls back to all channels when nobody is on call. The visual rule builder generates validated gofilter expressions from field/operator/value pickers, server-validated before saving like typed rules. A WordPress plugin surfaces proxy status in wp-admin and forwards login failures; a hosting-panel client provisions domains via the control API. Nginx/Apache configs import with a dry-run preview that reports every unparseable directive. Details: [Configuration](configuration.md#on-call-rotation).
+
+## Cache Analytics and Config Validation
+
+The edge cache reports hit/miss/byte counters per domain and supports selective purge by exact path, prefix, or `Cache-Tag`. The standalone `validate` mode fully checks a config file (structure, secrets presence without printing them, certificates, backends, rules, feature sanity) with clear exit codes, and a CI workflow runs build, vet, and the validator on every push and pull request — no secrets needed. Details: [Configuration](configuration.md#cache-analytics-and-purge).
+
 ## Rate Limiting
 
 Per-IP and per-fingerprint rate limits within a configurable time window: total requests, unknown-fingerprint requests, failed challenge attempts, and connections opened without sending a request. Limits that are exceeded block the offender. Details: [Configuration](configuration.md#proxy-settings).

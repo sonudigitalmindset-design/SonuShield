@@ -102,6 +102,15 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `LIST_RULE_PACKS` | `PACKS` (imported-pack registry records: name, version, source, description, domain, rule count, mode, import time), `COUNT`. Viewer role may run it. |
 | `APPROVE_ACTION` / `REJECT_ACTION` | Approve (and execute) or reject a pending two-person approval (parameter `APPROVAL_ID`). Operator role may run them. See below. |
 | `LIST_APPROVALS` | `ENABLED`, `APPROVALS` (pending requests: id, action, domain, requester role, tenant, created/expiry times — stored parameters are never returned), `COUNT`. Viewer role may run it. |
+| `GET_SHARING_STATUS` | `ENABLED`, `PEERS` (names and URLs only — secrets are never returned), `PULL_INTERVAL_SECONDS`, `PUSH_ON_CANARY`, `INDICATORS` (per peer: indicator count, last pull time), `LOCAL_INDICATORS`. Viewer role may run it. |
+| `ADD_INDICATOR` / `REMOVE_INDICATOR` | Add or remove one local threat indicator (`type` `ip`/`fingerprint`, `value`, `reason`, `expires_seconds`). Operator role may run them. |
+| `PULL_INDICATORS` / `PUSH_INDICATORS` | Pull indicators from all peers now, or push local indicators to all peers now. Returns per-peer `RESULTS`. Operator role may run them. |
+| `GET_BGP_STATUS` | `ENABLED`, `SOURCE`, `CHECK_INTERVAL_SECONDS`, `PREFIXES` (per prefix: `PREFIX`, `ANNOUNCED`, `ORIGINS`, `UNEXPECTED`, `LAST_CHECKED`). Viewer role may run it. |
+| `GET_SYNTHETIC_STATUS` | `ENABLED`, `INTERVAL_SECONDS`, `CHECKS` (per check: `NAME`, `URL`, `STATUS`, `LAST_CHECKED`, `LAST_LATENCY_MS`, `CONSECUTIVE_FAILURES`, `LAST_ERROR`). Viewer role may run it. |
+| `GET_ONCALL_STATUS` | `ENABLED`, `RESPONDERS` (names only — channel settings are never returned), `CURRENT` (the responder on call now, or `\"\"`), `OPEN_ALERTS` (id, title, started, acknowledged). Viewer role may run it. |
+| `ACK_ALERT` | Acknowledges one tracked alert (parameter `id`), silencing its escalation. Returns `ACKED`. Operator role may run it. |
+| `PREVIEW_SERVER_IMPORT` | Dry-run conversion of nginx/Apache config text (`format` `nginx`/`apache`, `data`) into domain entries. Read-only; returns `DOMAINS`, `SKIPPED`, `WARNINGS`, `NOT_IMPORTED`. Operator role may run it. See below. |
+| `APPLY_SERVER_IMPORT` | Creates the converted domains (same parameters as the preview, plus optional `template`). All-or-nothing, validated, persisted, reloaded. Admin role only. See below. |
 
 ## Domain Actions
 
@@ -122,10 +131,10 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `SEARCH_LOGS` | Searches the structured JSON log for this domain only (see below). Viewer role may run it. |
 | `SET_DOMAIN_CONFIG` | Adjusts and persists domain settings (see below). Returns the same fields as `GET_DOMAIN_CONFIG`. |
 | `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE` | Add, change, or remove one firewall rule (see below). Returns the updated `FIREWALL_RULES` list. Changes persist to `config.json`. |
-| `GET_DOMAIN_FEATURES` | `ADAPTIVE_POW`, `POW_DIFFICULTY_MIN`, `POW_DIFFICULTY_MAX`, `CHALLENGE_PROVIDER`, `CHALLENGE_KEYS_CONFIGURED` (bool — keys themselves are never returned), `WAF_MODE`, `WAF_MODE_EFFECTIVE`, `WAF_INSPECT_BODY`, `WAF_WP_LOGIN_LIMIT`, `MEMORY_HARD_POW`, `MEMORY_HARD_POW_BITS`, `MEMORY_HARD_POW_MEMORY_KB`, `MEMORY_HARD_POW_TIME`, `CHALLENGE_ROTATION`, `CHALLENGE_ROTATION_MODE`, `BEHAVIOR_CHECK`, `BEHAVIOR_ENFORCE`, `INVISIBLE_MARKERS`, `SIGNED_URL_CONFIGURED` (bool — the secret is never returned), `HOTLINK_PROTECT`, `CANARY_CONFIGURED` (bool — paths and token values are never returned). The memory-hard, rotation, behavior, marker, signed-URL, hotlink, and canary fields are read-only reports of the config-file policy; they cannot be set through the API. |
+| `GET_DOMAIN_FEATURES` | `ADAPTIVE_POW`, `POW_DIFFICULTY_MIN`, `POW_DIFFICULTY_MAX`, `CHALLENGE_PROVIDER`, `CHALLENGE_KEYS_CONFIGURED` (bool — keys themselves are never returned), `WAF_MODE`, `WAF_MODE_EFFECTIVE`, `WAF_INSPECT_BODY`, `WAF_WP_LOGIN_LIMIT`, `MEMORY_HARD_POW`, `MEMORY_HARD_POW_BITS`, `MEMORY_HARD_POW_MEMORY_KB`, `MEMORY_HARD_POW_TIME`, `CHALLENGE_ROTATION`, `CHALLENGE_ROTATION_MODE`, `BEHAVIOR_CHECK`, `BEHAVIOR_ENFORCE`, `INVISIBLE_MARKERS`, `SIGNED_URL_CONFIGURED` (bool — the secret is never returned), `HOTLINK_PROTECT`, `CANARY_CONFIGURED` (bool — paths and token values are never returned), `ATTESTATION_CONFIGURED` (bool — the secret or JWKS URL is never returned), `PASSKEY_CONFIGURED` (bool — no credential material is returned). The memory-hard, rotation, behavior, marker, signed-URL, hotlink, and canary fields are read-only reports of the config-file policy; they cannot be set through the API. |
 | `GET_ATTACK_REPORT` | Attack summary for the domain (see below). Returns `REPORT` (JSON object) or, with `format=csv`, `REPORT_FORMAT` and `REPORT` (CSV string). |
 | `SET_DOMAIN_FEATURES` | Adjusts runtime-tunable feature settings (see below). Returns the same fields as `GET_DOMAIN_FEATURES`. |
-| `PURGE_CACHE` | Clears the domain's edge cache, or one path with the `path` parameter. Returns `PURGED` (entries removed) and `DOMAIN`. Operator role may run it. Returns `0` purged when the edge cache is disabled. |
+| `PURGE_CACHE` | Clears the domain's edge cache, or one subset with exactly one selector parameter: `path` (one URL path, with any query string), `prefix` (every path starting with the prefix), or `tag` (entries recorded with that `Cache-Tag` value). Returns `PURGED` (entries removed) and `DOMAIN`. Operator role may run it. Returns `0` purged when the edge cache is disabled. |
 | `SIMULATE_RULE` | Evaluates one rule expression against sample request fields without enforcing anything (see below). Returns `MATCH` and `FIELDS_USED`. Viewer role may run it. |
 | `EXPORT_RULES` | `RULES` (the domain's rule set as `{"expression", "action"}` objects), `DOMAIN`, `RULE_COUNT`. Viewer role may run it. |
 | `IMPORT_RULES` | Replaces or appends the domain's rule set from a JSON array (see below). Returns the updated `FIREWALL_RULES` list and `IMPORTED`. Operator role may run it. |
@@ -136,6 +145,16 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `IMPORT_RULE_PACK` | Imports a rule pack from a file path or URL (see below). Returns `PACK_NAME`, `PACK_VERSION`, `IMPORTED`, and possibly `REGISTRY_WARNING`. Operator role may run it. |
 | `CF_PREVIEW_IMPORT` | Read-only Cloudflare import preview (see below). Operator role may run it. |
 | `CF_APPLY_IMPORT` | Applies a Cloudflare import (see below). Returns `APPLIED`, `SKIPPED_COUNT`, `SKIPPED`, `MODE`, and the updated `FIREWALL_RULES`. Admin role only. |
+| `ENROLL_PASSKEY` | Enrolls one passkey credential (parameters `credential_id`, `public_key_jwk`, `user_handle`, `label`). Public-key material only; never a secret. Admin role only. |
+| `LIST_PASSKEYS` | `PASSKEYS`: enrolled credential metadata (`CREDENTIAL_ID`, `LABEL`, `USER_HANDLE`, `SIGN_COUNT`, `ENROLLED_AT`). Viewer role may run it. |
+| `REMOVE_PASSKEY` | Removes one enrolled credential (parameter `credential_id`). Operator role may run it. |
+| `GET_STUFFING_STATUS` | `ENABLED`, `PATHS`, `MODE`, `PER_IP_THRESHOLD`, `DISTRIBUTED_THRESHOLD`, `WINDOW_SECONDS`, `RECENT_FAILURES`, `PER_IP_TRIPS`, `DISTRIBUTED_TRIPS`. Counts only. Viewer role may run it. |
+| `GET_HIJACK_STATUS` | `ENABLED`, `COOKIE`, `MODE`, `BINDINGS`, `FLAGGED`. Counts only — no cookie values or fingerprints. Viewer role may run it. |
+| `GET_OPENAPI_STATUS` | `ENABLED`, `SPEC_FILE`, `PREFIXES`, `MODE`, `ROUTES`, `SPEC_VALID`, `SPEC_ERROR`. Viewer role may run it. |
+| `GET_DLP_STATUS` | `ENABLED`, `PATTERNS` (names only), `ACTION`, `MAX_SCAN_BYTES`, `SCANNED`, `REDACTED`, `BLOCKED`. Pattern names and counts only — never matched content. Viewer role may run it. |
+| `GET_CSP_REPORTS` | Stored CSP violation reports, newest first (`limit` parameter, 1–200, default 50). Viewer role may run it. |
+| `GET_RUM_STATS` | Aggregated navigation-timing percentiles and bucket histograms (overall and per path), plus `SAMPLES` and `PATHS`. Viewer role may run it. |
+| `GET_CACHE_STATS` | Edge-cache counters: `HITS`, `MISSES`, `BYTES_SERVED`, `STORES`, `EVICTIONS`, `PURGES`, `STALE_SERVES`, `ENTRIES`, `BYTES`. Viewer role may run it. |
 
 `SET_DOMAIN_FEATURES` accepts these parameters (v1 `params` object or v2 query string). Only supplied parameters change; unknown parameters are rejected, and validation is all-or-nothing — on any error, nothing changes:
 
@@ -240,6 +259,14 @@ Domain templates are starting points, documented as such:
 
 When two-person approval is enabled (`proxy.twoPersonApproval`), a gated action's first call does not execute: it returns `success: false` with `ERR_APPROVAL_REQUIRED`, an `APPROVAL_ID`, and `EXPIRES_AT`. `APPROVE_ACTION` (parameter `APPROVAL_ID`) executes the stored action only when called by a different caller who also satisfies the action's role and tenant scoping; `REJECT_ACTION` rejects it (the requester may cancel their own request). Failed approval/rejection checks leave the request pending. Gated actions: `RESTORE_CONFIG_BACKUP`, `RESTORE_BACKUP`, `IMPORT_RULES`, `IMPORT_DOMAINS`, `IMPORT_RULE_PACK`, `CF_APPLY_IMPORT`, and `CREATE_DOMAIN_FROM_TEMPLATE`. When the feature is off, all of these execute immediately. Pending state is in-memory with lazy expiry; every approval event is audit-logged.
 
+`PREVIEW_SERVER_IMPORT` takes `format` (`nginx` or `apache`, required) and `data` (the config text, required, 1 MB cap). It returns `DOMAINS` (the converted domain entries, in the same shape as `IMPORT_DOMAINS` accepts), `SKIPPED` (blocks with reasons), `WARNINGS` (certificate/key pairing drops, wildcard names, malformed backends), and `NOT_IMPORTED` (directives outside the documented subset). `APPLY_SERVER_IMPORT` takes the same parameters plus an optional `template` name applied to every created domain, and creates the domains through the bulk-import machinery: all-or-nothing, validated against the existing domain rules, persisted to `config.json`, and reloaded. On reload failure the file is rolled back.
+
+`ENROLL_PASSKEY` takes `credential_id` (base64url, required), `public_key_jwk` (a JSON JWK object as a string, required), `user_handle` (base64url, required), and `label` (optional). The credential is appended to the domain's `credentialsFile` atomically. `LIST_PASSKEYS` returns metadata only — no public key material. `REMOVE_PASSKEY` takes `credential_id`.
+
+`GET_CSP_REPORTS` takes `limit` (`1`–`200`, default `50`) and returns the stored reports newest first, each with the retained fields only (document/blocked URIs query-stripped, directives, source file/position, status, disposition, received time).
+
+`GET_RUM_STATS` returns `SAMPLES` (total beacons), `PATHS` (per-path aggregates, top 10), and percentile figures (`P50`/`P75`/`P95`) for DNS, connect, TLS, TTFB, DOM, and load, plus the bucket histograms they were computed from. With no samples it returns zeroed figures. In privacy mode the per-path breakdown is empty.
+
 ## Public API
 
 A versioned, read-only API for tenants and resellers, separate from the control API above. Base path `/_bProxy/public/v1/`, authenticated by API key (see [Public API](configuration.md#public-api)). All responses use the envelope `{"ok": true, "data": …}` on success and `{"ok": false, "error": {"code", "message"}}` on failure, with matching HTTP status codes. Only `GET` is accepted; other methods get `405`, unknown endpoints and versions get a JSON `404` and are never proxied. Unauthenticated requests get JSON `401` errors at any stage (the suspect firewall block for very high suspicion levels still applies to every path).
@@ -265,6 +292,13 @@ These paths are handled by the proxy itself and never forwarded to the backend:
 | `/_bProxy/pow-verify` | `POST` only. Receives memory-hard puzzle solutions (single-use nonce + counter) and sets the verification cookie on success. Failures get a generic 403/404. Only meaningful when `memoryHardPow` is enabled for a domain. |
 | `/_bProxy/public/v1/…` | Versioned public API for tenants/resellers (API-key auth, read-only). See [Public API](#public-api). |
 | `/_bProxy/credits` | Attribution and license information. |
+| `/_bProxy/passkey-verify` | `POST` only. Receives WebAuthn assertion responses from the passkey challenge page and verifies them server-side, setting the verification cookie on success. Other methods receive a plain 404. Only meaningful when passkey is configured with enrolled credentials; otherwise the captcha is served. |
+| `/_bProxy/csp-report` | `POST` only. Receives CSP violation reports (legacy and Reporting API formats), storing a bounded, trimmed subset. Always answers `204` for a parseable report. Non-POST requests receive a plain 404. |
+| `/_bProxy/threat-sharing/indicators` | `GET`/`POST` for the opt-in threat-sharing network. HMAC-signed; bad signatures get `401`. When sharing is disabled the path is not handled. |
+| `/_bProxy/rum` | `POST` only. Receives real-user timing beacons; always answers `204`. |
+| `/_bProxy/rum.js` | `GET` only. The RUM snippet the operator embeds on origin pages. Never injected into origin content. |
+| `/_bProxy/origin-signal` | `POST` only. Origin-side failure signals (login failures) authenticated by a shared-secret header; feeds the credential-stuffing detector. When no secret is configured the path is not handled. |
+| `/_bProxy/<adminsecret>/log-tail` | Authenticated server-sent-events stream of live log entries for the dashboard. Served only on the exact admin-secret path. |
 | `/_bProxy/<adminsecret>/dashboard` | Web dashboard and control panel. Served only on the exact admin-secret path. See [Dashboard](dashboard.md). |
 | `/_bProxy/<adminsecret>/metrics` | Prometheus metrics. Served only when `metricsEnabled` is set, and only on the exact admin-secret path; scrapes are neither challenged nor counted. See [Configuration](configuration.md#prometheus-metrics). |
 | `/_bProxy/status` | Public status page (opt-in via `statusPage`): uptime and per-domain health, no sensitive data. Answered before challenge/rate limiting. See [Configuration](configuration.md#status-page). |

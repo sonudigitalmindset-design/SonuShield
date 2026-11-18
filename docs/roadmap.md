@@ -111,32 +111,32 @@ Still planned from this batch's original scope: nothing — every item above is 
 - Privacy mode: IP anonymization and no user-agent storage in logs/reports, shortened retention, applied consistently across logs, reports, metrics, and dashboard. Off by default.
 - Two-person approval for sensitive control actions (config/backup restore, rule/domain/pack imports, Cloudflare apply, template domain creation), with pending state, expiry, and audit logging. Off by default.
 
-## Batch 8 — Attestation, APIs, and Control Panel Depth
+## Batch 8 — Attestation, APIs, and Control Panel Depth ✅ Implemented
 
-- Mobile app attestation: Play Integrity / App Attest verification at the proxy.
-- Passkey challenge for visitors (prove humanity once, trusted for days).
-- Credential stuffing detection across distributed IPs.
-- Session hijack detection (re-challenge on mid-session IP/device change).
-- OpenAPI schema validation for APIs.
-- DLP scanning of responses (block leaked secrets, keys, and ID patterns).
-- CSP report collector with policy suggestions.
-- Opt-in threat-sharing network between SonuShield deployments.
-- BGP hijack alerts for the operator's prefixes.
-- Live log tail in the dashboard.
-- Synthetic checks from multiple regions.
-- Real-user monitoring (RUM) beacon.
-- On-call rotation and escalation policies.
-- Visual rule builder (no-code).
-- WordPress and hosting-panel (cPanel/Plesk) plugins.
-- Nginx/Apache config import.
-- Cache analytics with purge by tag.
-- Config validator with CI check.
+- Mobile app attestation: Play Integrity / App Attest style JWT verification (signature, issuer, audience, expiry, verdict claim) on operator-configured API paths, with the operator's own JWKS URL or HS256 secret. Fail-closed when configured without material. JWT-form assertions only — Apple App Attest CBOR is not parsed — and verified against mock tokens only; real-device attestation is untested here.
+- Passkey challenge: an optional WebAuthn assertion challenge as a Stage 3 alternative to the captcha for enrolled users (server-side verification, single-use nonces, sign-counter checks, credentials stored only as public-key material). Falls back to the captcha when nothing is enrolled. Registration ceremony is not implemented — enrollment is out-of-band via the API.
+- Credential stuffing detection: per-IP and distributed failed-login correlation (velocity thresholds, configurable paths/statuses/window), log-only by default, opt-in +2 suspicion in block mode, never an outright block. No bundled credential data, no bodies or usernames inspected.
+- Session hijack detection: flags a session cookie only when two or more bound signals (IP, TLS/HTTP fingerprint, country) differ; log-only by default, never blocks on a single signal change; raw cookie values are never stored.
+- OpenAPI validation: operator-supplied JSON OpenAPI 3.x specs (paths, methods, required params, schema types) with per-route log/block modes; invalid specs fail safe with a warning and no enforcement. Schema subset documented; `allOf`/`oneOf`/`anyOf`, discriminators, and `format` are not evaluated.
+- DLP scanning: operator-configured regex patterns over outbound response bodies (redact or block), no bundled patterns, matched content never logged/stored/returned; oversized or encoded bodies pass unscanned (fail open).
+- CSP report collector: legacy and Reporting API formats, bounded per-domain storage (200 reports) with trimmed fields, API + dashboard views; reports never influence enforcement.
+- Opt-in threat-sharing network: HMAC-signed indicator exchange between explicitly peered instances — no central server, no bundled feeds, no PII; peer errors fail open; a shared indicator raises suspicion by one level, never blocks alone.
+- BGP alerts: route-announcement monitoring for the operator's prefixes via RIPEstat (default, no credentials) or a custom API, alerting once per transition to an unexpected origin; fail-open, coarse-grained by the source's aggregation interval.
+- Live log tail: authenticated SSE stream for the dashboard, reusing role auth, bounded buffer, sanitized entries only (audit entries never streamed).
+- Synthetic checks: scheduled self-checks through the proxy (GET/HEAD, TLS verified) alerting once per failure/latency transition over existing channels; checks are ordinary requests and never touch attack statistics. Single-instance only — not multi-region.
+- RUM beacon: navigation-timing buckets only, no query strings, no IPs stored, privacy-mode aware, with aggregated API + dashboard views. The snippet is served for operator embedding only — never injected into origin content, not added to challenge pages.
+- On-call rotation: timezone-aware schedules with handover, escalation after N unacknowledged minutes, acknowledgement via API; falls back to all configured channels when nobody is on call.
+- Visual rule builder: dashboard field/operator/value pickers generating gofilter expressions, validated server-side before saving exactly like typed rules; only documented populated fields offered.
+- WordPress and hosting-panel plugins: a WordPress plugin (status in wp-admin, login-failure forwarding with an operator secret) and a cPanel/Plesk-compatible API client with install docs and hook sketches. Untested in a real WordPress/panel environment — documented as such.
+- Nginx/Apache config import: a documented subset (server names, backends, TLS paths) with a dry-run preview showing exactly what would change; unparseable directives are reported, never silently dropped.
+- Cache analytics with purge by path, prefix, or `Cache-Tag`, via API + dashboard; counters only.
+- Config validator (`sonushield validate`, with optional `--probe-backends`) plus a GitHub Actions CI workflow running build, vet, and the validator on pushes/PRs — no secrets needed.
 
 ## Sale-Readiness
 
 Quality work needed before the project can be evaluated seriously by a larger organization:
 
-- Automated tests and a CI pipeline.
+- Automated tests (still pending) and a CI pipeline (✅ done in Batch 8: build + vet + config validator on pushes/PRs).
 - Security audit.
 - Real, measured benchmarks (no estimates).
 - Architecture documentation and a changelog.
