@@ -21,6 +21,9 @@ These fields can be used in rule expressions. Values reflect the current request
 | `ip.risk` | Int | The composite risk score for the request, `0`–`100` (see [Risk Score](configuration.md#risk-score)). A heuristic for ranking, never a verdict — do not block on it alone without understanding the weights. |
 | `ip.timing` | String | Timing/behavior verdict for the client IP: `"regular"` (inhumanly regular intervals), `"burst"` (50+ requests in a 1-second window), or `""` (no anomaly). See [Timing and Behavior Detection](configuration.md#timing-and-behavior-detection). |
 | `ip.searchbot` | String | Search-bot verification result for the request: `"verified"` (claimed Googlebot/Bingbot and reverse+forward DNS confirmed it), `"fake"` (claimed it and verification failed), `"unchecked"` (DNS lookup failed, fail-open), or `""` (no search-bot user-agent claimed, or the check is disabled). See [Fake Search-Bot Verification](configuration.md#fake-search-bot-verification). |
+| `ip.os` | String | The client's OS family label from passive TCP fingerprinting, or `"unknown"` when no operator signature matches (or no signatures are configured). See [Passive OS Fingerprinting](configuration.md#passive-os-fingerprinting). |
+| `ip.tcpinfo` | String | A compact rendering of the raw TCP signals used for OS fingerprinting (MSS values, RTT, negotiated options), or `""` when unavailable (non-Linux platforms, Cloudflare mode). |
+| `ip.behavior` | String | Mouse/scroll behavior verdict for the client: `"human"`, `"bot"`, or `""` (no signal collected or the check is disabled). See [Behavior Check](configuration.md#behavior-check). |
 | `ip.http_requests` | Int | The client's forwarded HTTP requests in the current rate-limit window. |
 | `ip.challenge_requests` | Int | The client's challenge attempts in the current rate-limit window. |
 | `http.host` | String | The hostname of the current domain. |
@@ -182,12 +185,23 @@ Only a strict subset of expressions fits the fast grammar, and anything else is 
 
 Equivalence is enforced, not assumed: every accepted expression is first validated with the same engine the general rules use, so the fast path can never accept an expression the general evaluator would refuse; the compiled check then replicates the engine's comparison semantics, including its quirks (`ne` is the negation of `eq`, so it is true on missing or mistyped values; `le` on IPs compares without normalisation). Differential tests prove the two evaluators agree across the accepted grammar. Edge rules are config-file-only: they are not managed by the rule API, the simulator, or export/import, and they do not appear in the dashboard.
 
+## Scheduled Rules
+
+A rule can carry a `schedule` field — a 5-field cron expression (minute, hour, day of month, month, day of week) that limits when the rule is active:
+
+```json
+{"expression": "ip.country eq \"XX\"", "action": "4", "schedule": "0 22-6 * * *"}
+```
+
+Schedules support `*`, comma-separated lists, ranges, and steps (`*/15`, `9-17/2`); day-of-week 7 means Sunday, and month/weekday names are not supported. When both day-of-month and day-of-week are restricted, either matching activates the rule (Vixie OR semantics). Schedules are evaluated in the domain's `scheduleTimezone` (IANA name, default UTC). A rule outside its schedule is skipped entirely. Edge rules ignore schedules. An invalid schedule in `config.json` warns at load and the rule stays always-active; the API and dashboard reject invalid schedules outright. The rule simulator is expression-only and ignores schedules — it answers whether the expression matches, not whether the rule is currently active.
+
 ## Testing Rules Before Enforcing Them
 
-Two tools help you check rules without affecting visitors:
+Three tools help you check rules without affecting visitors:
 
-- The **rule simulator** ([`SIMULATE_RULE`](api.md#domain-actions), also in the dashboard's Firewall rules view) evaluates one expression against sample request fields you supply and reports match/no-match plus which fields the expression used. It enforces nothing. It evaluates with the same engine and the same field types as live traffic, so its answer matches what the live proxy would do — including the bool-comparison limitation above.
+- The **rule simulator** ([`SIMULATE_RULE`](api.md#domain-actions), also in the dashboard's Firewall rules view) evaluates one expression against sample request fields you supply and reports match/no-match plus which fields the expression used. It enforces nothing. It evaluates with the same engine and the same field types as live traffic, so its answer matches what the live proxy would do — including the bool-comparison limitation above. It ignores rule schedules (see above).
 - **Dry-run mode** (`rulesDryRun` per domain, also settable in the dashboard's Settings view) evaluates the domain's rules on live traffic and logs matches as `dryrun` entries (with the suspicion level the rules *would* have set) but leaves the suspicion level unchanged, so no request is challenged or blocked by rules. Dry-run entries appear in the structured log when JSON logging is enabled; see [Structured Logs](configuration.md#structured-logs).
+- **Shadow mode** (`shadowRules` / `shadowWaf` per domain) evaluates a second ruleset alongside live enforcement and logs what it *would* have decided, with a comparison report from [`GET_SHADOW_REPORT`](api.md#domain-actions). Unlike dry-run mode, live enforcement stays fully active. See [Shadow Mode](configuration.md#shadow-mode).
 
 ## Next Steps
 

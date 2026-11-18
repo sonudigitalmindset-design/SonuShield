@@ -99,6 +99,13 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `stripe` | Object | Stripe usage-based billing hooks for tenant metering. Disabled without a secret key. See [Stripe Billing](#stripe-billing). |
 | `publicApiKeys` | Array[Object] | API keys for the versioned public API, one per key: `{"key", "tenant", "name", "requestsPerMinute"}`. Empty (default) disables the public API. See [Public API](#public-api). |
 | `eventWebhooks` | Array[Object] | Signed event webhook endpoints for attack/audit events, in JSON, syslog, or CEF format. Empty (default) sends nothing. See [Event Webhooks and SIEM Export](#event-webhooks-and-siem-export). |
+| `osSignatures` | Array[Object] | Operator-supplied passive OS signatures: `{"label", "sndMss", "rcvMss", "wscale", "timestamps", "sack"}`. Empty (default) means every client reports `ip.os` as `unknown`. See [Passive OS Fingerprinting](#passive-os-fingerprinting). |
+| `certAlerts` | Bool | `true` enables certificate-expiry alerts on the existing alert channels. Default `false`. See [Certificate and Subdomain Alerts](#certificate-and-subdomain-alerts). |
+| `certAlertDays` | Int | Days before expiry at which the first alert fires (default `14` when `0` or negative). |
+| `subdomainMonitor` | Object | Subdomain DNS monitoring: `{"enabled", "domains", "intervalMinutes", "failureThreshold"}`. Disabled by default. See [Certificate and Subdomain Alerts](#certificate-and-subdomain-alerts). |
+| `privacyMode` | Bool | `true` minimizes stored PII: masked IPs and no user-agents in logs and reports, shortened log retention. Default `false`. See [Privacy Mode](#privacy-mode). |
+| `twoPersonApproval` | Bool | `true` requires a second distinct approver for sensitive control actions. Default `false`. See [Two-Person Approval](#two-person-approval). |
+| `approvalExpirySeconds` | Int | Seconds a pending approval waits before expiring (default `300` when `0` or negative). |
 
 Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 
@@ -201,6 +208,29 @@ Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 | `edgeRules` | Array[Object] | Fast-path precompiled rules, same `{"expression", "action"}` shape as `firewallRules`, evaluated before them. Empty (default) disables the fast path. See [Edge Rules](firewall-rules.md#edge-rules). |
 | `twilio` | Object | WhatsApp/SMS alerts via a Twilio-compatible API. Inert unless fully configured. See [WhatsApp and SMS Alerts](#whatsapp-and-sms-alerts). |
 | `branding` | Object | Per-domain branding override for built-in challenge pages. Absent (default) inherits the proxy branding. See [White-Label Branding](#white-label-branding). |
+| `behaviorCheck` | Bool | `true` collects a privacy-respecting mouse/scroll signal on challenge pages only. Default `false`. See [Behavior Check](#behavior-check). |
+| `behaviorEnforce` | Bool | `true` applies the suspicion bump for bot-like behavior. Default `false` (log-only signal). |
+| `behaviorSusLv` | Int | Suspicion-level bump for bot-like behavior when enforced (default `1`). |
+| `canaryPaths` | Array[String] | Decoy paths whose use immediately raises maximum suspicion and fires an alert. Empty (default) disables path canaries. See [Canary Tokens](#canary-tokens). |
+| `canaryTokens` | Array[String] | Decoy credentials (fake API keys) whose use immediately raises maximum suspicion and fires an alert. Empty (default) disables token canaries. Token values are never logged or returned. |
+| `invisibleMarkers` | Bool | `true` adds honeypot fields and invisible links to challenge pages the proxy serves. Default `false`. Never injected into origin content. See [Invisible Markers](#invisible-markers). |
+| `fairQueue` | Bool | `true` shares backend capacity fairly across client IPs under overload. Default `false`. See [Fair Queuing](#fair-queuing). |
+| `fairQueueMaxInflight` | Int | Maximum simultaneous backend requests admitted by the fair queue (`0` disables the queue even when `fairQueue` is set). |
+| `fairQueueWaitMs` | Int | Maximum milliseconds a request waits in the fair queue before a 503 (default `5000`). |
+| `shadowRules` | Array | Rules evaluated in shadow mode: matches are logged, never enforced. Empty (default) disables shadow rules. See [Shadow Mode](#shadow-mode). |
+| `shadowWaf` | Bool | `true` also evaluates WAF-lite patterns in shadow mode. Default `false`. |
+| `signedURLSecret` | String | HMAC secret for signed URLs on protected paths. Empty (default) disables signed-URL checks. Config-file-only; never logged or returned. See [Signed URLs and Hotlink Protection](#signed-urls-and-hotlink-protection). |
+| `signedURLPaths` | Array[String] | Path prefixes that require a valid signed URL. Empty (default) disables the check. |
+| `hotlinkProtect` | Bool | `true` enables Referer-based hotlink protection for asset paths. Default `false`. |
+| `hotlinkPaths` | Array[String] | Path prefixes protected against hotlinking. Empty (default) protects nothing. |
+| `hotlinkAllowlist` | Array[String] | Hosts allowed to hotlink protected assets (case-insensitive, ports ignored). The domain itself is always allowed. |
+| `formGuard` | Object | Form spam guard: `{"paths", "honeypotField", "minSeconds", "maxPerMinute", "mode"}`. Absent (default) disables the guard. See [Form Spam Guard](#form-spam-guard). |
+| `slaTarget` | Float | SLA target as a percentage (default `99.9`, clamped). Used by the latency/SLA report. See [Latency and SLA](#latency-and-sla). |
+| `scheduleTimezone` | String | IANA timezone name used to evaluate rule schedules for this domain (default `UTC`). Invalid names warn and fall back to UTC. See [Scheduled Rules and Maintenance Windows](#scheduled-rules-and-maintenance-windows). |
+| `maintenanceWindows` | Array[Object] | Scheduled maintenance windows: `{"start", "end", "message"}` with RFC 3339 timestamps. Empty (default) disables scheduled maintenance. |
+| `cloudflareApiToken` | String | Cloudflare API token for rule import. Config-file-only; never logged or returned. Empty (default) disables Cloudflare import. See [Cloudflare Import](#cloudflare-import). |
+| `cloudflareZoneId` | String | Cloudflare zone ID for rule import. Required with `cloudflareApiToken`. |
+| `cloudflareApiBase` | String | Cloudflare API base URL (default `https://api.cloudflare.com`). Override only for testing against a mock. |
 
 ## Geo and ASN Rules
 
@@ -823,6 +853,160 @@ Attack start/stop and audit events can be delivered to operator-configured endpo
 ```
 
 An endpoint delivers only with an `http(s)` URL and a non-empty secret. `events` filters the event types delivered (empty means all: `attack.start`, `attack.stop`, `audit`, plus `test` from the `TEST_WEBHOOKS` action, which ignores filters). `format` is `json` (default), `syslog`, or `cef`. Delivery is a bounded ordered queue (256 events; overflow drops and counts) with exponential backoff (1s ×2, capped at 60s); transport errors and 5xx responses retry, 3xx/4xx are permanent, and redirects are never followed. At most 16 endpoints are used; extras are ignored and counted. Each delivery carries `X-SonuShield-Timestamp` (Unix seconds) and `X-SonuShield-Signature` (`v1=` + hex HMAC-SHA256 of `"<timestamp>.<body>"` with the endpoint secret) — verify both, and reject stale timestamps, on receipt. Payloads carry operational facts only (event id, type, timestamp, domain, tenant, and scrubbed audit parameters); secrets never appear in payloads. Delivery is HTTP POST only — there is no UDP/TCP syslog sender; SIEMs ingest through an HTTP collector or a relay. `GET_WEBHOOK_STATUS` reports endpoint hosts (never full URLs or secrets), queue depth, and drop counts; `TEST_WEBHOOKS` queues one `test` event per endpoint. Webhook URLs are treated as secrets in exports and backups, since they often embed tokens.
+
+## Passive OS Fingerprinting
+
+SonuShield can classify a client's OS family from passively observable TCP signals, using only what the kernel genuinely exposes through `TCP_INFO` on Linux: the send and receive MSS, the smoothed RTT, and the negotiated options bitmask (timestamps, SACK, window scaling, ECN). Classification is by operator-supplied signatures in `proxy.osSignatures`:
+
+```json
+"osSignatures": [
+  {"label": "linux", "sndMss": 1460, "wscale": true, "timestamps": true, "sack": true}
+]
+```
+
+A signature matches when every non-zero/non-nil field matches; the first matching signature wins. With no signatures configured, `ip.os` is always `unknown` — the proxy ships no signature database and invents no values. The result is available to firewall rules as `ip.os` (the label, or `unknown`) and `ip.tcpinfo` (a compact rendering of the raw signals), and is shown on the `/_bProxy/fingerprint` page.
+
+Honesty limits: Go's `net/http` does not expose raw TCP headers, so classic p0f signals are **not** available — TTL, the DF flag, TCP option order, the window-scale *value*, and the initial window size cannot be observed. On non-Linux platforms the collector is a stub and `ip.os` stays `unknown`. No signals are collected in Cloudflare mode (the proxy never sees the client TCP connection).
+
+## Behavior Check
+
+When `behaviorCheck` is set on a domain, challenge pages the proxy serves include a small script that reports only whether the mouse moved, whether the page scrolled, and a coarse elapsed-time bucket — sent once via `sendBeacon` when the page unloads. No coordinates, no keystrokes, no cross-site tracking, and no identifier beyond the existing challenge cookie. The signal is collected only on challenge pages, never on normal pages.
+
+A client is flagged as bot-like only when it shows no mouse or scroll activity *and* completes the challenge in under 1.5 seconds; slower no-interaction clients are inconclusive and never flagged. By default the signal is log-only (and adds a small risk-score contribution); `behaviorEnforce` applies the `behaviorSusLv` suspicion bump. The verdict is available to rules as `ip.behavior` (`human`, `bot`, or empty).
+
+## Canary Tokens
+
+Decoy paths and credentials that no legitimate visitor should ever touch. Configure per domain:
+
+```json
+"canaryPaths": ["/admin-old", "/wp-admin-backup"],
+"canaryTokens": ["sk-live-decoy-..."]
+```
+
+Hitting a canary path (exact, case-sensitive match) or presenting a canary token as a bearer token, API key, or `api_key`/`apikey` parameter immediately answers a generic 403, raises maximum suspicion, and fires an alert on the existing alert channels (rate-limited to one per IP per hour). Token values are never logged, never returned by the API, and never included in alerts. With none configured, canaries are fully inert.
+
+## Invisible Markers
+
+When `invisibleMarkers` is set on a domain, challenge pages the proxy serves gain two traps: a hidden link to a nonce URL (the endpoint always answers 404) and a honeypot form field on the verification forms. Interacting with either marks the client as automated: the IP is blocked with a generic 403 and an alert fires. Markers are added only to pages the proxy itself serves — never to origin content — and are off by default.
+
+## Fair Queuing
+
+When `fairQueue` is set with a positive `fairQueueMaxInflight`, backend capacity is shared fairly across client IPs under overload: each IP gets its own FIFO queue, and admission proceeds round-robin, one request per IP per turn (deficit round-robin with quantum 1 and equal weights — there is no cost or size weighting). At normal load the queue is a fast path with no observable effect. Requests that wait longer than `fairQueueWaitMs` (default 5000) receive a 503 with `Retry-After`. Cache hits, challenges, reserved paths, and WebSocket upgrades bypass the queue.
+
+## Shadow Mode
+
+Shadow mode evaluates a second set of rules — and optionally the WAF-lite patterns — without ever acting on the result, so an operator can see what a new ruleset *would* have done:
+
+```json
+"shadowRules": [{"expression": "ip.country eq \"XX\"", "action": "4"}],
+"shadowWaf": true
+```
+
+Shadow matches are logged as `shadow` entries, and `GET_SHADOW_REPORT` compares shadow outcomes against live outcomes (would-block / would-challenge / would-allow counts, disagreements, per-rule tallies, and the last 50 decisions). Shadow rules support the same `schedule` field as live rules. Shadow mode is distinct from `rulesDryRun`, which disables live enforcement; shadow evaluation runs alongside live enforcement and never affects traffic.
+
+## Signed URLs and Hotlink Protection
+
+Protected paths can require an HMAC-signed URL with an expiry. The operator secret is config-only:
+
+```json
+"signedURLSecret": "a-long-random-secret",
+"signedURLPaths": ["/downloads/", "/private/"]
+```
+
+A signed URL carries `exp` (Unix expiry) and `sig` (hex HMAC-SHA256 of `path + "\n" + exp` with the secret). Verification is strict: absolute expiry, 64-hex signature, constant-time comparison, and no clock-skew allowance. Invalid or expired signatures get a generic 403. The secret is never logged or returned, and is redacted from backups and config exports.
+
+Hotlink protection checks the `Referer` of GET/HEAD requests to `hotlinkPaths`: missing referers are allowed, the domain itself and `hotlinkAllowlist` hosts are allowed (case-insensitive, ports ignored), and everything else gets a generic 403. Both features are off by default.
+
+## Form Spam Guard
+
+An opt-in per-path guard for POST endpoints, configured per domain:
+
+```json
+"formGuard": {
+  "paths": ["/contact", "/comment"],
+  "honeypotField": "website",
+  "minSeconds": 3,
+  "maxPerMinute": 30,
+  "mode": "log"
+}
+```
+
+Three signals: a honeypot field (bots fill hidden fields humans never see), submission timing (a signed timestamp cookie set on GETs to guarded paths; submissions faster than `minSeconds` are suspicious), and a per-IP rate limit per path. Defaults are generous — `minSeconds` 3, `maxPerMinute` 30 — and a missing, invalid, or stale timing cookie never condemns a request. `mode` is `log` (default, log-only) or `block` (generic 403). The guard only inspects URL-encoded form bodies for the honeypot and timing checks; the rate limit applies to all POSTs to guarded paths.
+
+## Latency and SLA
+
+Every domain's latency is tracked in a ring of the last 512 sampled requests, with no configuration needed: proxy latency (middleware entry to the first backend attempt), TTFB (first attempt to response headers), and total time (first attempt until the body is fully read). Retries inflate TTFB honestly — the clock starts at the first attempt. `GET_LATENCY` reports p50/p95/p99 for TTFB and total, mean proxy latency, the origin success rate over the retained window (labelled as such — it is not wall-clock uptime), the `slaTarget` percentage (default 99.9), and the remaining error budget. Oversized Brotli/image-optimized responses and abandoned bodies are not sampled. The dashboard's Insights view shows the same figures.
+
+## Attack Timeline and Postmortem
+
+Each attack gets a timeline: attack start/end, stage changes, and peaks, recorded from the existing attack lifecycle — no new data collection. `GET_POSTMORTEM` returns the last finished attack (or the current one, with `which=current`) as JSON or readable text, combining the attack-scoped timeline and peaks with the proxy-wide top sources and latency samples. The timeline holds at most 200 events per attack and the last 10 finished attacks per domain.
+
+## Security Grade Scan
+
+`GET_SECURITY_GRADE` grades the current configuration — secret strength (length and placeholder checks only, never values), certificate validity, HSTS, WAF coverage, stage thresholds, CORS, challenge-provider keys, debug exposure, webhook/feed URL schemes, and informational checks for post-quantum TLS, SSO, metrics exposure, and privacy mode. Each check reports a status (pass/warn/fail/info), severity, detail, and fix guidance, and the overall grade (A–F) is computed from the scored checks with caps: any high-severity failure caps the grade at C, any failure caps it at B. The scan is a configuration audit, not a penetration test: it makes no network probes and never phones home.
+
+## Certificate and Subdomain Alerts
+
+Certificate-expiry alerting and subdomain monitoring reuse the existing alert channels (Discord, Telegram, email, Twilio) via the generic notice path:
+
+```json
+"certAlerts": true,
+"certAlertDays": 14,
+"subdomainMonitor": {
+  "enabled": true,
+  "domains": ["app.example.com", "api.example.com"],
+  "intervalMinutes": 60,
+  "failureThreshold": 3
+}
+```
+
+Cert checks run hourly: one alert per certificate per calendar day once the certificate is within `certAlertDays` of expiry. Unreadable certificates are not alerted hourly — they are reported by the grade scan and `GET_CERT_STATUS`. Subdomain checks resolve only the operator-listed names through the system DNS (there is no CT-log lookup): the first successful lookup sets a silent baseline, address changes alert, and failures alert after `failureThreshold` consecutive failures. Checks are fail-open: a DNS failure never affects traffic. `intervalMinutes` below 5 is raised to 5. Both features are off by default; `GET_CERT_STATUS` and `GET_SUBDOMAIN_STATUS` report current state on demand.
+
+## Scheduled Rules and Maintenance Windows
+
+Rules can carry a cron-style `schedule` (5 fields: minute, hour, day of month, month, day of week — `*`, lists, ranges, and steps; day-of-week 7 means Sunday; month/weekday names are not supported). Day-of-month and day-of-week follow Vixie OR semantics: a rule is active when either field matches. Schedules are evaluated in the domain's `scheduleTimezone` (IANA name, default UTC). A rule whose schedule is not currently active is skipped as if it did not exist; edge rules ignore schedules. An invalid schedule in the config file warns at load and the rule stays always-active (fail safe); the API rejects invalid schedules on rule creation. The rule simulator is expression-only and ignores schedules.
+
+Maintenance windows serve a plain 503 page (with `Retry-After: 60`) for ordinary traffic while `/_bProxy/` control-plane paths keep working:
+
+```json
+"maintenanceWindows": [
+  {"start": "2026-11-20T02:00:00Z", "end": "2026-11-20T04:00:00Z", "message": "Scheduled maintenance"}
+]
+```
+
+Windows are end-exclusive; invalid windows are dropped with a warning. The dashboard's Stage view (or `SET_MAINTENANCE` / `GET_MAINTENANCE`) can also enable an on-demand override — in-memory, surviving reloads but not restarts — with an optional message (max 500 characters) and duration in minutes (`0` = until disabled).
+
+## Community Rule Packs
+
+Rule packs are operator-supplied JSON documents with pack metadata plus a rules array:
+
+```json
+{"name": "bot-pack", "version": "1.0", "source": "https://example.com/pack.json",
+ "description": "…", "rules": [{"expression": "…", "action": "4"}]}
+```
+
+`IMPORT_RULE_PACK` fetches a pack from a server file path or an http/https URL (1 MB cap, 10-second timeout, at most 3 redirects) and validates every rule exactly like a rule import — all-or-nothing, in `replace` (default) or `append` mode. Pack metadata is recorded in a registry kept in `config.json` under `proxy.rulePacks` (metadata only, no rule contents) and listed by `LIST_RULE_PACKS`. SonuShield ships no bundled packs and claims no community endorsement; packs are operator-chosen. URL fetching is fail-open: a fetch failure aborts the import and changes nothing.
+
+## Cloudflare Import
+
+Firewall rules can be imported from the Cloudflare API using the operator's own token and zone ID (`cloudflareApiToken`, `cloudflareZoneId`, config-only, never logged or returned). `CF_PREVIEW_IMPORT` is read-only: it fetches the zone's firewall rules, translates the documented expression subset (`ip.src`, `http.request.uri.path`, `http.user_agent`, `http.request.method`, `cf.client.bot`; comparison, `contains`/`matches`/`starts_with`/`ends_with`/`in` operators; `and`/`or`/`not` and parentheses) into SonuShield rule equivalents, and reports exactly what would change — translated rules with any caveat notes, skipped rules with reasons, and settings with no SonuShield equivalent that are not imported. `CF_APPLY_IMPORT` re-fetches and re-translates, then applies in `append` (default) or `replace` mode. Action mapping: block → `4`, challenge variants → `2`, allow → `0`; log/skip actions are skipped. `cf.client.bot` translates to a check on the known-bot fingerprint list, which is not the same as Cloudflare Bot Management — the preview notes this caveat on every affected rule. The import reads only; it never writes back to Cloudflare.
+
+## Privacy Mode
+
+When `privacyMode` is set proxy-wide, stored PII is minimized consistently:
+
+- Log entries (JSON logs and the in-memory log list): IP addresses are masked (IPv4 last octet to 0, IPv6 last 64 bits zeroed) and user-agents are dropped. Masking happens after the GeoIP lookup, so country/ASN are still recorded.
+- Reports and the `GET_IP_REQUESTS` response: IP tallies are masked, with collisions summed so totals stay correct.
+- Log search results: entries are masked on the way out, including entries written before the mode was enabled.
+- Audit entries: IPs are masked in the file entry and the stdout fallback.
+- Log retention: the number of kept log files is capped at 2.
+- Metrics carry no IP labels, with or without privacy mode.
+
+Live enforcement state (rate limiting, connection tracking, IP reputation) necessarily keeps exact IPs to function; it is never written to disk or returned unmasked while privacy mode is on. Fingerprints are retained as pseudonymous signals. The `/_bProxy/fingerprint` page shows a visitor their own data back to them and stores nothing. Privacy mode is off by default and takes effect on load and reload.
+
+## Two-Person Approval
+
+When `twoPersonApproval` is set proxy-wide, sensitive control actions require a second distinct approver before executing: config restore, backup restore, rule import, domain import, rule-pack import, Cloudflare apply, and domain creation from a template. The first call returns a pending response with an approval ID and expiry; a different caller (identified by the hash of the presented secret, or the SSO session for dashboard SSO logins) must approve with `APPROVE_ACTION` before the action executes. The approver must also satisfy the action's role and tenant scoping. `REJECT_ACTION` rejects (or lets the requester cancel their own request), `LIST_APPROVALS` lists pending requests (stored parameters are never returned), and expired requests are pruned and audit-logged. All approval events are written to the audit log. Pending state is in-memory and does not survive a restart. With the feature off, every action executes immediately and single-operator setups are unaffected.
 
 ## Applying Changes
 

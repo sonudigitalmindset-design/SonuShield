@@ -91,25 +91,25 @@ Still planned from this batch's original scope: firewall-level block export (nft
 
 Still planned from this batch's original scope: nothing — every item above is implemented, with the honesty limits noted inline.
 
-## Batch 7 — Deeper Detection, Operations, and Trust
+## Batch 7 — Deeper Detection, Operations, and Trust ✅ Implemented
 
-- Passive OS fingerprinting from TCP behavior, a signal independent of TLS.
-- Mouse and scroll behavior checks to separate humans from bots.
-- Canary tokens: planted fake API keys whose use triggers an instant ban and alert.
-- Per-visitor invisible page markers for tracing leaked content.
-- Fair queuing so heavy users slow down without affecting light users.
-- Shadow mode: mirror live traffic to a test backend for rule testing.
-- Signed URLs and hotlink protection for images and files.
-- Form spam guard using hidden fields and submission velocity.
-- Backend latency and TTFB tracking (p50/p95/p99) with SLA history.
-- Attack timeline with automatic postmortem generation.
-- Security grade scan for the site's own headers and settings.
-- Certificate Transparency and dangling-subdomain alerts.
-- Scheduled rules and one-click maintenance mode.
-- Community rule packs (WordPress, API, gaming presets).
-- Cloudflare settings import.
-- Privacy mode: IP anonymization and log retention controls.
-- Two-person approval for dangerous actions.
+- Passive OS fingerprinting from genuinely observable TCP signals only (MSS, RTT, negotiated options via `TCP_INFO` on Linux), classified by operator-supplied signatures — no bundled signature database, unknown stays unknown. Classic p0f signals (TTL, DF flag, option order, window-scale value, initial window) are not observable through Go's stack and are documented as unavailable.
+- Mouse/scroll behavior check, collected only on challenge pages the proxy serves (presence + coarse timing buckets, no coordinates or keystrokes), log-only by default.
+- Canary tokens: operator-configured decoy paths and fake credentials whose use immediately raises maximum suspicion and fires an alert. Disabled with none configured.
+- Invisible markers: honeypot form fields and invisible links injected only into challenge/verification pages the proxy serves, never into origin content. Off by default.
+- Fair queuing: per-IP FIFO queues with round-robin admission (deficit round-robin, quantum 1, equal weights — no cost/size weighting claimed) under overload; inert at normal load.
+- Shadow mode: shadow rules and shadow WAF evaluation alongside live enforcement, logging what *would* have happened, with a comparison report. Shadow decisions never affect traffic. (Not traffic mirroring to a test backend — evaluation only.)
+- Signed URLs (HMAC + expiry, strict verification, no clock-skew allowance) and Referer-based hotlink protection with an allowlist. Both off by default.
+- Form spam guard: honeypot fields, submission-timing analysis, and per-form rate limits, opt-in per path, log-only mode available, generous defaults.
+- Latency/TTFB tracking (p50/p95/p99, proxy vs origin split) and SLA reporting via API and dashboard, with the measurement points documented exactly.
+- Attack timeline and auto-generated postmortem (JSON + readable text) from existing logs/metrics — no new data collection.
+- Security grade scan: a configuration audit (TLS, headers, challenge coverage, secret hygiene without printing secrets, debug exposure), honestly labelled as not a penetration test. Never phones home.
+- Certificate-expiry alerts and subdomain monitoring for operator-supplied names via system DNS (no CT-log lookup), fail-open, reusing existing alert channels.
+- Scheduled rules (cron-style, timezone-aware, fail-safe on parse errors) and maintenance windows (scheduled or on-demand via API/dashboard).
+- Community rule packs: importable from operator-supplied files/URLs, validated all-or-nothing, with metadata recorded. No bundled packs, no endorsement claimed.
+- Cloudflare import: firewall rules from the operator's own API token (config-only, never logged), with a read-only dry-run preview before applying. Read-only until confirmed.
+- Privacy mode: IP anonymization and no user-agent storage in logs/reports, shortened retention, applied consistently across logs, reports, metrics, and dashboard. Off by default.
+- Two-person approval for sensitive control actions (config/backup restore, rule/domain/pack imports, Cloudflare apply, template domain creation), with pending state, expiry, and audit logging. Off by default.
 
 ## Batch 8 — Attestation, APIs, and Control Panel Depth
 

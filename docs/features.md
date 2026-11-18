@@ -218,6 +218,30 @@ Attack and audit events stream to operator endpoints as signed webhooks (HMAC-SH
 
 The full configuration — domains, rules, IP lists, tenants — exports as a backup envelope with secrets redacted by default or included encrypted under a passphrase (scrypt + AES-256-GCM), and restores onto another instance only after validation: a bad backup changes nothing. Available through the API and the CLI. Details: [API Reference](api.md#proxy-actions).
 
+## Passive OS Fingerprinting, Behavior Checks, Canaries, and Markers
+
+Four opt-in detection signals, all inert unless configured: passive OS classification from genuinely observable TCP signals (operator-supplied signatures; unknown stays unknown), a privacy-respecting mouse/scroll signal collected only on challenge pages, canary decoy paths and credentials that trigger instant maximum suspicion plus an alert, and invisible honeypot markers on challenge pages only. Details: [Configuration](configuration.md#passive-os-fingerprinting).
+
+## Fair Queuing and Shadow Mode
+
+Under overload, backend capacity is shared fairly across client IPs (per-IP FIFO queues, round-robin admission); at normal load the queue is invisible. Shadow mode evaluates a second ruleset and the WAF patterns alongside live enforcement and reports what *would* have happened — without ever affecting traffic. Details: [Configuration](configuration.md#fair-queuing).
+
+## Signed URLs, Hotlink Protection, and Form Spam Guard
+
+HMAC-signed URLs with expiry for protected paths, Referer-based hotlink protection with an allowlist, and an opt-in form spam guard (honeypot fields, submission timing, per-form rate limits) with a log-only mode. All off by default. Details: [Configuration](configuration.md#signed-urls-and-hotlink-protection).
+
+## Latency, Postmortems, and Security Grade
+
+Per-domain latency tracking (TTFB/total percentiles, proxy-vs-origin split) with SLA reporting, attack timelines with auto-generated postmortems, and a configuration security-grade scan — all via the API and the dashboard's Insights view. The grade scan is a configuration audit, not a penetration test. Details: [Configuration](configuration.md#latency-and-sla).
+
+## Certificate Alerts, Schedules, Packs, and Cloudflare Import
+
+Certificate-expiry alerts and DNS monitoring for operator-listed subdomains; cron-style scheduled rules and maintenance windows; importable community rule packs (operator-chosen, none bundled); and Cloudflare firewall-rule import with a read-only preview before applying. Details: [Configuration](configuration.md#certificate-and-subdomain-alerts).
+
+## Privacy Mode and Two-Person Approval
+
+Privacy mode minimizes stored PII — masked IPs, no user-agents, shortened retention — consistently across logs, reports, and the dashboard. Two-person approval requires a second distinct approver for sensitive control actions, with expiry and audit logging. Both off by default. Details: [Configuration](configuration.md#privacy-mode).
+
 ## Rate Limiting
 
 Per-IP and per-fingerprint rate limits within a configurable time window: total requests, unknown-fingerprint requests, failed challenge attempts, and connections opened without sending a request. Limits that are exceeded block the offender. Details: [Configuration](configuration.md#proxy-settings).
