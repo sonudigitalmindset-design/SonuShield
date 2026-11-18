@@ -454,6 +454,10 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	httpFp := firewall.ComputeHTTPFingerprint(request)
 	h2Fp := firewall.ComputeHTTP2Fingerprint(request)
+	//QUIC fingerprint: always empty until Batch 3 adds a QUIC
+	//listener; the field is reserved, not populated. See
+	//firewall/quic.go.
+	quicFp := firewall.ComputeQUICFingerprint(request)
 	//repListed was computed above, next to the risk score.
 	repValue := ""
 	if repListed {
@@ -473,6 +477,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.bot":                botFp,
 			"ip.fingerprint":        tlsFp,
 			"ip.ja4":                ja4Fp,
+			"ip.quic":               quicFp,
 			"ip.reputation":         repValue,
 			"ip.searchbot":          searchBot,
 			"ip.risk":               riskScore,
