@@ -351,6 +351,27 @@ names, or challenge flow semantics.
   verify structure and motion, not taste. The live pages still
   need an eyeball.
 
+### Dashboard real-time graphs (UI/UX Pro Max chart guidance)
+
+- Overview: the requests sparkline is now a full real-time chart
+  (labelled requests/sec axis, time axis, 60-sample / 3-minute
+  history, legend with dash-differentiated series, designed empty
+  state, one-time draw-in). New server-load panel: CPU and RAM
+  percent-over-time charts on a fixed 0-100% scale with now/min/max
+  summaries, fed by the proxy stats the 3s poll already fetches.
+- More graphs from already-loaded data, no new API calls: bars for
+  requests per second by domain and requests by tenant; bars above
+  the attack report's blocks/challenges/WAF count tables; RUM
+  average-time-per-phase bars; latency percentile bars (TTFB vs
+  total); an RPS-vs-allowed line chart on the attack timeline; and
+  shadow-outcome bars. Views with no in-page series data (rules, IP
+  lists, stage, settings, approvals, accounts, about) intentionally
+  got none, and the attack map, grade, and certificate tables were
+  left as adequate. All charts use the skill tokens, viewBox
+  scaling, and the existing reduced-motion guard; chart legibility
+  at real widths is unverified by eye (no browser on the build VM).
+  Service-worker shell bumped to v8.
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without

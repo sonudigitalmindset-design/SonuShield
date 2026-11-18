@@ -219,23 +219,51 @@ tbody tr:hover td{background:var(--panel-2)}
 .bar-row .fill{height:100%;background:var(--accent)}
 .bar-row .val{width:150px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
 
-/* Traffic chart (Overview): SVG sparkline drawn from the 3s poll totals. */
+/* Traffic chart (Overview): SVG line chart drawn from the 3s poll totals.
+   Charts scale to the card width through the viewBox (uniform scaling,
+   so axis text never stretches); heights come from the aspect ratio. */
 .chart-legend{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted)}
 .legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .legend-dot{width:10px;height:10px;border-radius:2px;flex:none}
 .legend-total{background:var(--accent)}
 .legend-bypass{background:var(--bypass)}
 .chart-wrap{position:relative}
-.chart-svg{width:100%;height:120px;display:block}
+.chart-svg{width:100%;height:auto;display:block}
 .chart-area{fill:var(--accent);fill-opacity:.08}
 :root[data-theme="dark"] .chart-area{fill-opacity:.18}
+.chart-area-ram{fill:var(--info);fill-opacity:.08}
+:root[data-theme="dark"] .chart-area-ram{fill-opacity:.18}
 .chart-line-total{stroke:var(--accent)}
 /* The bypassed series is dashed as well as grey, so the two series stay
    distinguishable without relying on color alone. */
 .chart-line-bypass{stroke:var(--bypass);stroke-dasharray:5 3}
+.chart-line-cpu{stroke:var(--accent)}
+.chart-line-ram{stroke:var(--info)}
 /* Chart furniture: axis + gridlines always render, so a zero-traffic
    chart reads as a working chart at zero rather than a broken one. */
 .chart-grid,.chart-axis{stroke:var(--border);stroke-width:1;vector-effect:non-scaling-stroke}
+.chart-label{font-size:12px;fill:var(--faint);font-family:var(--font)}
+.chart-sm .chart-label{font-size:11px}
+.chart-ylabel{text-anchor:end}
+.chart-xlabel{text-anchor:middle}
+.chart-xlabel.start{text-anchor:start}
+.chart-xlabel.end{text-anchor:end}
+/* Server charts: two charts side by side, stacking on narrow screens. */
+.server-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px}
+.chart-subhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:4px 0 6px}
+.chart-subhead .chart-title{font-size:13px;font-weight:600}
+.chart-summary{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Bar charts: the attack-map .bar-row pattern with wider labels for
+   domain names, reasons, and metric names. Values stay visible as text. */
+.bar-row.wide .lbl{width:180px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row.wide .val{width:96px}
+.bar-row .fill.alt{background:var(--info)}
+.bar-row .fill.bad{background:var(--bad-text)}
+.bar-row .fill.warn{background:var(--amber)}
+.bar-row .fill.ok{background:var(--ok-text)}
+.chart-caption{font-size:12.5px;font-weight:600;color:var(--muted);margin:2px 0 8px}
+.chart-legend-gap{margin-bottom:8px}
+.chart-block{margin:4px 0 16px}
 
 /* Notes, states, banner */
 .note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
@@ -283,6 +311,9 @@ tr.selected td{background:var(--nav-active-bg)}
   .main{padding:16px 16px 32px}
   .topbar{padding:8px 12px;gap:8px;flex-wrap:wrap}
   .panel{padding:14px 16px}
+  .server-grid{grid-template-columns:1fr}
+  .bar-row.wide .lbl{width:120px}
+  .bar-row.wide .val{width:76px}
 }
 </style>__BRAND_STYLE__
 </head>
@@ -372,8 +403,29 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </div>
         <div class="chart-wrap">
-          <svg id="trafficChart" class="chart-svg" viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-hidden="true" hidden></svg>
+          <svg id="trafficChart" class="chart-svg" viewBox="0 0 1200 200" role="img" aria-hidden="true" hidden></svg>
           <div class="state" id="trafficEmpty" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+        </div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-head">
+          <h2 data-i18n="chartServerTitle">Server load</h2>
+        </div>
+        <div class="server-grid">
+          <div>
+            <div class="chart-subhead"><span class="chart-title" data-i18n="cardCpu">CPU usage</span><span class="chart-summary" id="cpuSummary"></span></div>
+            <div class="chart-wrap">
+              <svg id="cpuChart" class="chart-svg chart-sm" viewBox="0 0 600 170" role="img" aria-hidden="true" hidden></svg>
+              <div class="state" id="cpuEmpty" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+            </div>
+          </div>
+          <div>
+            <div class="chart-subhead"><span class="chart-title" data-i18n="cardRam">RAM usage</span><span class="chart-summary" id="ramSummary"></span></div>
+            <div class="chart-wrap">
+              <svg id="ramChart" class="chart-svg chart-sm" viewBox="0 0 600 170" role="img" aria-hidden="true" hidden></svg>
+              <div class="state" id="ramEmpty" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="panel">
@@ -1848,7 +1900,20 @@ purgeSelectorPath: "Exact path",
 purgeSelectorPrefix: "Path prefix",
 purgeSelectorTag: "Cache tag",
 purgeValuePlaceholder: "/page or prefix or tag",
-purgeSelectiveBtn: "Purge selected"
+purgeSelectiveBtn: "Purge selected",
+chartReqAxis: "requests/sec",
+chartNow: "now",
+chartServerTitle: "Server load",
+chartNowMinMax: "now {0} · min {1} · max {2}",
+chartDomainsRps: "Requests per second by domain",
+chartTenantsReq: "Requests by tenant",
+chartRumAvg: "Average time per phase (ms)",
+chartLatPct: "Latency percentiles (ms)",
+chartPmRps: "Requests per second during the attack",
+chartShadowOutcomes: "Shadow outcomes",
+chartWouldBlock: "Would block",
+chartWouldChallenge: "Would challenge",
+chartWouldAllow: "Would allow"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2597,7 +2662,20 @@ purgeSelectorPath: "Exact path",
 purgeSelectorPrefix: "Path prefix",
 purgeSelectorTag: "Cache tag",
 purgeValuePlaceholder: "/page या prefix या tag",
-purgeSelectiveBtn: "चुना हुआ purge करें"
+purgeSelectiveBtn: "चुना हुआ purge करें",
+chartReqAxis: "requests/sec",
+chartNow: "अभी",
+chartServerTitle: "सर्वर लोड",
+chartNowMinMax: "अभी {0} · न्यूनतम {1} · अधिकतम {2}",
+chartDomainsRps: "डोमेन के अनुसार requests per second",
+chartTenantsReq: "टेनेंट के अनुसार requests",
+chartRumAvg: "प्रत्येक phase का औसत समय (ms)",
+chartLatPct: "Latency percentiles (ms)",
+chartPmRps: "हमले के दौरान requests per second",
+chartShadowOutcomes: "Shadow outcomes",
+chartWouldBlock: "ब्लॉक होता",
+chartWouldChallenge: "चैलेंज होता",
+chartWouldAllow: "अलाउ होता"
 }
 };
 function t(key){
@@ -2742,18 +2820,142 @@ function setStat(id, text){
 }
 function setHTML(id, html){ var el = $(id); if(el) el.innerHTML = html; }
 
-/* Traffic sparkline: the last 40 poll samples (2 minutes) of the totals
-   the 3s poll already fetches. No new API calls, no libraries — a plain
-   inline SVG redrawn from the poll data. History resets per domain. */
+/* Shared chart builders: every chart on this page is a plain inline
+   SVG (or HTML bars) drawn from data the dashboard already fetches.
+   No new API calls, no libraries. Histories are bounded client-side
+   buffers fed from the 3s poll, reset per domain like trafficHist.
+   buildLineChart/hBars are pure string builders (no DOM access) so
+   their geometry is unit-testable; callers own the DOM + animation. */
+var CHART_MAX_SAMPLES = 60;
+var reducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+function capPush(arr, item, cap){
+  arr.push(item);
+  if(arr.length > cap) arr.shift();
+  return arr;
+}
+/* niceCeil: round a data maximum up to a 1/2/5 x 10^k value so axis
+   labels stay readable (e.g. 137 -> 200, 0.4 -> 0.5). */
+function niceCeil(v){
+  if(!(v > 0)) return 1;
+  var p = Math.pow(10, Math.floor(Math.log(v) / Math.LN10));
+  var f = v / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+}
+function fmtAxisNum(v){
+  if(!isFinite(v)) return "0";
+  if(Math.abs(v) >= 100) return String(Math.round(v));
+  if(Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+  return String(Math.round(v * 10) / 10);
+}
+function fmtAgo(sec){
+  sec = Math.max(0, Math.round(sec));
+  if(sec < 60) return "−" + sec + "s";
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return "−" + m + "m" + (s ? " " + s + "s" : "");
+}
+/* X labels for a poll-fed time chart: oldest sample to now, at four
+   evenly spaced fractions. n = sample count, stepSec = poll seconds. */
+function timeXLabels(n, stepSec){
+  var span = (n - 1) * stepSec;
+  return [
+    {frac: 0, text: fmtAgo(span)},
+    {frac: 1 / 3, text: fmtAgo(span * 2 / 3)},
+    {frac: 2 / 3, text: fmtAgo(span / 3)},
+    {frac: 1, text: esc(t("chartNow"))}
+  ];
+}
+/* buildLineChart(cfg): SVG inner markup for a multi-series line chart.
+   cfg: {w, h, padL, padR, padT, padB, yMax, yTicks, yFmt, yUnit|null,
+         xLabels: [{frac, text, anchor?}], series: [{values, lineClass,
+         areaClass|null}]}. All text must already be escaped; yFmt
+   formats tick values. Series are drawn in order (first = back). */
+function buildLineChart(cfg){
+  var plotW = cfg.w - cfg.padL - cfg.padR;
+  var plotH = cfg.h - cfg.padT - cfg.padB;
+  var n = 0, s;
+  for(s = 0; s < cfg.series.length; s++) n = Math.max(n, cfg.series[s].values.length);
+  function X(j){ return cfg.padL + plotW * (n <= 1 ? 0 : j / (n - 1)); }
+  function Y(v){ return cfg.padT + plotH * (1 - v / cfg.yMax); }
+  var out = [], ti, y;
+  for(ti = 0; ti < cfg.yTicks.length; ti++){
+    y = Y(cfg.yTicks[ti]);
+    out.push('<line class="chart-grid" x1="' + cfg.padL + '" y1="' + y.toFixed(1) + '" x2="' + (cfg.w - cfg.padR) + '" y2="' + y.toFixed(1) + '"/>');
+    out.push('<text class="chart-label chart-ylabel" x="' + (cfg.padL - 6) + '" y="' + (y + 4).toFixed(1) + '">' + cfg.yFmt(cfg.yTicks[ti]) + '</text>');
+  }
+  out.push('<line class="chart-axis" x1="' + cfg.padL + '" y1="' + (cfg.padT + plotH).toFixed(1) + '" x2="' + (cfg.w - cfg.padR) + '" y2="' + (cfg.padT + plotH).toFixed(1) + '"/>');
+  if(cfg.yUnit) out.push('<text class="chart-label" x="' + cfg.padL + '" y="' + Math.max(11, cfg.padT - 8) + '">' + cfg.yUnit + '</text>');
+  var xi;
+  for(xi = 0; xi < cfg.xLabels.length; xi++){
+    var lb = cfg.xLabels[xi];
+    var cls = "chart-label chart-xlabel" + (lb.anchor ? " " + lb.anchor : "");
+    out.push('<text class="' + cls + '" x="' + (cfg.padL + plotW * lb.frac).toFixed(1) + '" y="' + (cfg.h - 5) + '">' + lb.text + '</text>');
+  }
+  for(s = 0; s < cfg.series.length; s++){
+    var ser = cfg.series[s], pts = [], j;
+    for(j = 0; j < ser.values.length; j++) pts.push(X(j).toFixed(1) + "," + Y(ser.values[j]).toFixed(1));
+    if(!pts.length) continue;
+    if(ser.areaClass){
+      out.push('<path class="' + ser.areaClass + '" d="M' + X(0).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' L' + pts.join(' L') + ' L' + X(ser.values.length - 1).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' Z"/>');
+    }
+    out.push('<polyline class="' + ser.lineClass + '" points="' + pts.join(" ") + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>');
+  }
+  return out.join("");
+}
+/* animateDrawIn: draw an SVG's polylines in once via a
+   stroke-dashoffset transition. Callers guard it with their own
+   drawn flag + the reduced-motion check; any failure here leaves
+   the lines fully visible, and the next rebuild drops the inline
+   styles (so a dashed series gets its dashes back). */
+function animateDrawIn(svg){
+  try{
+    var lines = svg.querySelectorAll("polyline"), k;
+    for(k = 0; k < lines.length; k++){
+      var len = lines[k].getTotalLength();
+      lines[k].style.strokeDasharray = String(len);
+      lines[k].style.strokeDashoffset = String(len);
+    }
+    void svg.getBoundingClientRect();
+    for(k = 0; k < lines.length; k++){
+      lines[k].style.transition = "stroke-dashoffset .45s cubic-bezier(.22,1,.36,1)";
+      lines[k].style.strokeDashoffset = "0";
+    }
+  }catch(e){}
+}
+/* hBars: horizontal bars from [label, value] rows (optional 3rd item
+   = extra fill class, e.g. "alt"). Labels are escaped here; values
+   are formatted by opts.fmt (default num). Returns "" when there is
+   nothing positive to show, so callers can fall back to their tables
+   or empty states. Bars reuse the .bar-row pattern (entrance + glide
+   + reduced-motion handling come from the stylesheet). */
+function hBars(rows, opts){
+  opts = opts || {};
+  var fmt = opts.fmt || num;
+  var list = (rows || []).slice(0, opts.limit || 10);
+  var max = 0, i;
+  for(i = 0; i < list.length; i++) if(list[i][1] > max) max = list[i][1];
+  if(!list.length || !(max > 0)) return "";
+  var h = "";
+  for(i = 0; i < list.length; i++){
+    var pct = Math.max(0, Math.min(100, (list[i][1] / max) * 100));
+    h += '<div class="bar-row wide"><span class="lbl">' + esc(list[i][0]) + '</span><span class="track"><span class="fill' + (list[i][2] ? " " + list[i][2] : "") + '" style="display:block;width:' + pct.toFixed(1) + '%"></span></span><span class="val">' + fmt(list[i][1]) + '</span></div>';
+  }
+  return h;
+}
+function countRows(mapObj){
+  var rows = Object.keys(mapObj || {}).map(function(k){ return [k, Number(mapObj[k]) || 0]; });
+  rows.sort(function(a, b){ return b[1] - a[1]; });
+  return rows;
+}
+
+/* Traffic chart: the last 60 poll samples (3 minutes) of the totals
+   the 3s poll already fetches. History resets per domain. */
 var trafficHist = [];
 var trafficDom = null;
 var trafficDrawn = false;
-var reducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 function pushTraffic(dom, total, bypassed){
   if(dom !== trafficDom){ trafficHist = []; trafficDom = dom; trafficDrawn = false; }
   if(!isFinite(total) || !isFinite(bypassed)) return;
-  trafficHist.push([total, bypassed]);
-  if(trafficHist.length > 40) trafficHist.shift();
+  capPush(trafficHist, [total, bypassed], CHART_MAX_SAMPLES);
   drawTraffic();
 }
 function drawTraffic(){
@@ -2761,48 +2963,69 @@ function drawTraffic(){
   if(!svg || !empty) return;
   if(trafficHist.length < 2){ svg.hidden = true; empty.hidden = false; return; }
   svg.hidden = false; empty.hidden = true;
-  var W = 600, H = 120, PAD = 6, max = 1, i;
+  var max = 1, i;
   for(i = 0; i < trafficHist.length; i++){
     if(trafficHist[i][0] > max) max = trafficHist[i][0];
     if(trafficHist[i][1] > max) max = trafficHist[i][1];
   }
-  function pts(idx){
-    var n = trafficHist.length, out = [];
-    for(var j = 0; j < n; j++){
-      var x = PAD + (W - 2 * PAD) * (n === 1 ? 0 : j / (n - 1));
-      var y = H - PAD - (H - 2 * PAD) * (trafficHist[j][idx] / max);
-      out.push(x.toFixed(1) + "," + y.toFixed(1));
-    }
-    return out.join(" ");
-  }
-  var totalPts = pts(0), bypPts = pts(1);
-  var area = "M" + PAD + "," + (H - PAD) + " L" + totalPts.split(" ").join(" L") + " L" + (W - PAD) + "," + (H - PAD) + " Z";
-  svg.innerHTML = '<line class="chart-grid" x1="' + PAD + '" y1="' + (H / 3).toFixed(1) + '" x2="' + (W - PAD) + '" y2="' + (H / 3).toFixed(1) + '"/>' +
-    '<line class="chart-grid" x1="' + PAD + '" y1="' + (2 * H / 3).toFixed(1) + '" x2="' + (W - PAD) + '" y2="' + (2 * H / 3).toFixed(1) + '"/>' +
-    '<line class="chart-axis" x1="' + PAD + '" y1="' + (H - PAD) + '" x2="' + (W - PAD) + '" y2="' + (H - PAD) + '"/>' +
-    '<path class="chart-area" d="' + area + '"/>' +
-    '<polyline class="chart-line-total" points="' + totalPts + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
-    '<polyline class="chart-line-bypass" points="' + bypPts + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>';
-  // First render per domain: draw the lines in once via a
-  // stroke-dashoffset transition. Later polls rebuild the polylines
-  // without the inline dash styles, so the draw-in never replays.
-  // Skipped entirely under prefers-reduced-motion: the lines render
-  // immediately and any failure here leaves them fully visible.
+  var yMax = niceCeil(max);
+  svg.innerHTML = buildLineChart({
+    w: 1200, h: 200, padL: 64, padR: 16, padT: 28, padB: 26,
+    yMax: yMax, yTicks: [0, yMax / 2, yMax], yFmt: fmtAxisNum,
+    yUnit: esc(t("chartReqAxis")),
+    xLabels: timeXLabels(trafficHist.length, 3),
+    series: [
+      {values: trafficHist.map(function(p){ return p[0]; }), lineClass: "chart-line-total", areaClass: "chart-area"},
+      {values: trafficHist.map(function(p){ return p[1]; }), lineClass: "chart-line-bypass", areaClass: null}
+    ]
+  });
+  // First render per domain: draw the lines in once. Later polls
+  // rebuild the polylines without the inline dash styles, so the
+  // draw-in never replays. Skipped entirely under
+  // prefers-reduced-motion.
   if(!trafficDrawn && !reducedMotion){
     trafficDrawn = true;
-    try{
-      var lines = svg.querySelectorAll("polyline"), k;
-      for(k = 0; k < lines.length; k++){
-        var len = lines[k].getTotalLength();
-        lines[k].style.strokeDasharray = String(len);
-        lines[k].style.strokeDashoffset = String(len);
-      }
-      void svg.getBoundingClientRect();
-      for(k = 0; k < lines.length; k++){
-        lines[k].style.transition = "stroke-dashoffset .45s cubic-bezier(.22,1,.36,1)";
-        lines[k].style.strokeDashoffset = "0";
-      }
-    }catch(e){}
+    animateDrawIn(svg);
+  }
+}
+
+/* Server charts: CPU/RAM percent over time from the proxy stats the
+   3s poll already fetches. Fixed 0-100% scale, same 60-sample bounded
+   history, reset per domain like trafficHist. Values are clamped to
+   0-100 for plotting; the summary line shows now/min/max. */
+var serverHist = [];
+var serverDom = null;
+var serverDrawn = false;
+function pushServer(dom, cpu, ram){
+  if(dom !== serverDom){ serverHist = []; serverDom = dom; serverDrawn = false; }
+  if(!isFinite(cpu) || !isFinite(ram)) return;
+  capPush(serverHist, [Math.min(100, Math.max(0, cpu)), Math.min(100, Math.max(0, ram))], CHART_MAX_SAMPLES);
+  drawServer();
+}
+function drawServerChart(svgId, emptyId, summaryId, idx, lineClass, areaClass){
+  var svg = $(svgId), empty = $(emptyId);
+  if(!svg || !empty) return;
+  if(serverHist.length < 2){ svg.hidden = true; empty.hidden = false; setText(summaryId, ""); return; }
+  svg.hidden = false; empty.hidden = true;
+  var values = serverHist.map(function(p){ return p[idx]; });
+  var min = values[0], max = values[0], i;
+  for(i = 1; i < values.length; i++){ if(values[i] < min) min = values[i]; if(values[i] > max) max = values[i]; }
+  setText(summaryId, t("chartNowMinMax", values[values.length - 1].toFixed(1) + "%", min.toFixed(1) + "%", max.toFixed(1) + "%"));
+  svg.innerHTML = buildLineChart({
+    w: 600, h: 170, padL: 46, padR: 10, padT: 14, padB: 24,
+    yMax: 100, yTicks: [0, 50, 100], yFmt: function(v){ return fmtAxisNum(v) + "%"; },
+    yUnit: null,
+    xLabels: timeXLabels(serverHist.length, 3),
+    series: [{values: values, lineClass: lineClass, areaClass: areaClass}]
+  });
+}
+function drawServer(){
+  drawServerChart("cpuChart", "cpuEmpty", "cpuSummary", 0, "chart-line-cpu", "chart-area");
+  drawServerChart("ramChart", "ramEmpty", "ramSummary", 1, "chart-line-ram", "chart-area-ram");
+  if(!serverDrawn && !reducedMotion && serverHist.length >= 2){
+    serverDrawn = true;
+    animateDrawIn($("cpuChart"));
+    animateDrawIn($("ramChart"));
   }
 }
 
@@ -2817,7 +3040,7 @@ function loadOverview(){
   var pFps = proxyAction("GET_FINGERPRINT_REQUESTS").catch(function(){ return null; });
   return Promise.all([pStats, pRps, pBrps, pTot, pByp, pIps, pFps]).then(function(r){
     var stats = r[0], rps = r[1], brps = r[2], tot = r[3], byp = r[4], ips = r[5], fps = r[6];
-    if(stats){ setStat("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setStat("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); }
+    if(stats){ setStat("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setStat("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); pushServer(dom, parseFloat(stats.CPU_USAGE), parseFloat(stats.RAM_USAGE)); }
     if(rps) setStat("cTotalRps", num(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND));
     if(brps) setStat("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     if(tot) setStat("cTotal", num(tot.TOTAL_REQUESTS));
@@ -2865,7 +3088,16 @@ function loadDomains(){
       var sel = (d.NAME === currentDomain) ? ' class="clickable selected"' : ' class="clickable"';
       h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td>" + esc(d.TENANT || "default") + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? t("yes") : t("no")) + "</td><td>" + (d.UNDER_ATTACK ? t("yes") : t("no")) + "</td><td>" + num(d.TOTAL_RPS) + "</td><td>" + num(d.BYPASSED_RPS) + "</td><td>" + num(d.RULE_COUNT) + "</td></tr>";
     });
-    setHTML("domList", h + "</tbody></table>");
+    /* Requests-per-second bars across domains, from the same list.
+       Only with 2+ domains: a single bar at 100% says nothing. */
+    var domBars = "";
+    if(list.length >= 2){
+      var domRows = list.map(function(d){ return [d.NAME, Number(d.TOTAL_RPS) || 0]; });
+      domRows.sort(function(a, b){ return b[1] - a[1]; });
+      var bars = hBars(domRows, {limit: 8});
+      if(bars) domBars = '<div class="chart-block"><p class="chart-caption">' + t("chartDomainsRps") + '</p>' + bars + '</div>';
+    }
+    setHTML("domList", domBars + h + "</tbody></table>");
     document.querySelectorAll("#domList tr[data-domain]").forEach(function(row){
       row.addEventListener("click", function(){ setDomain(row.getAttribute("data-domain")); });
     });
@@ -2894,7 +3126,15 @@ function loadTenants(){
       var names = (u.DOMAINS || []).map(function(d){ return esc(d); }).join(", ");
       h += "<tr><td>" + esc(u.TENANT) + "</td><td class='mono'>" + names + "</td><td>" + num(u.REQUESTS) + "</td><td>" + num(u.BLOCKED) + "</td><td>" + fmtBytes(u.BYTES_IN) + "</td><td>" + fmtBytes(u.BYTES_OUT) + "</td><td>" + fmtBytes(u.BYTES_TOTAL) + "</td></tr>";
     });
-    setHTML("tenantBody", h + "</tbody></table>");
+    /* Requests bars across tenants, from the same rows. */
+    var tenBars = "";
+    if(rows.length >= 2){
+      var tenRows = rows.map(function(u){ return [u.TENANT, Number(u.REQUESTS) || 0]; });
+      tenRows.sort(function(a, b){ return b[1] - a[1]; });
+      var bars = hBars(tenRows, {limit: 8});
+      if(bars) tenBars = '<div class="chart-block"><p class="chart-caption">' + t("chartTenantsReq") + '</p>' + bars + '</div>';
+    }
+    setHTML("tenantBody", tenBars + h + "</tbody></table>");
   }).catch(function(){
     setHTML("tenantBody", '<div class="state state-error"><strong>' + t("errLoadTenants") + '</strong><br>' + t("errSecretRejected") + '</div>');
   });
@@ -3824,6 +4064,13 @@ function countTable(mapObj, keyLabel){
   rows.forEach(function(r){ h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td>" + num(r[1]) + "</td></tr>"; });
   return h + "</tbody></table>";
 }
+/* countPanel: the count table with a bar chart above it, from the same
+   map. Bars show the same values as the table; with nothing recorded
+   only the table's empty text renders. */
+function countPanel(mapObj, keyLabel){
+  var bars = hBars(countRows(mapObj), {limit: 8});
+  return (bars ? '<div class="chart-block">' + bars + '</div>' : "") + countTable(mapObj, keyLabel);
+}
 
 function renderReport(rep){
   var h = '<div class="cards">'
@@ -3832,9 +4079,9 @@ function renderReport(rep){
     + '<div class="card"><div class="label">' + t("repCardPeak") + '</div><div class="value">' + num(rep.peak_requests_per_second) + '</div><div class="foot">' + t("repCardPeakFoot", num(rep.peak_bypassed_per_second)) + '</div></div>'
     + '<div class="card"><div class="label">' + t("stageTitle") + '</div><div class="value">' + esc(String(rep.stage)) + '</div><div class="foot">' + (rep.stage_manually_set ? t("repLocked") : t("repAutomatic")) + (rep.raw_attack || rep.bypass_attack ? t("repUnderAttack") : "") + '</div></div>'
     + '</div>';
-  h += '<div class="panel"><h2>' + t("repBlocks") + '</h2>' + countTable(rep.blocks_by_reason, t("repReason")) + '</div>';
-  h += '<div class="panel"><h2>' + t("repChallenges") + '</h2>' + countTable(rep.challenges_by_stage, t("stageTitle")) + '</div>';
-  h += '<div class="panel"><h2>' + t("repWaf") + '</h2>' + countTable(rep.waf_matches_by_rule, t("colRule")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repBlocks") + '</h2>' + countPanel(rep.blocks_by_reason, t("repReason")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repChallenges") + '</h2>' + countPanel(rep.challenges_by_stage, t("stageTitle")) + '</div>';
+  h += '<div class="panel"><h2>' + t("repWaf") + '</h2>' + countPanel(rep.waf_matches_by_rule, t("colRule")) + '</div>';
   h += '<div class="panel"><h2>' + t("colBackend") + '</h2><table><tbody>'
     + "<tr><td>" + t("repReqOk") + "</td><td>" + num(rep.backend_requests_ok) + "</td></tr>"
     + "<tr><td>" + t("repReqFailed") + "</td><td>" + num(rep.backend_requests_failed) + "</td></tr>"
@@ -4036,7 +4283,13 @@ function loadRUM(){
       return;
     }
     var order = ["dns", "connect", "tls", "ttfb", "dom", "load"];
-    var h = '<table><thead><tr><th>' + t("rumMetric") + '</th><th>' + t("rumSamples") + '</th><th>' + t("rumAvg") + '</th><th>' + t("rumP50") + '</th><th>' + t("rumP95") + '</th></tr></thead><tbody>';
+    var rumRows = order.map(function(name){
+      var m = (r.METRICS && r.METRICS[name]) || {};
+      return [name, Number(m.AVERAGE) || 0];
+    });
+    var rumBars = hBars(rumRows, {fmt: fmtMs, limit: 6});
+    var h = (rumBars ? '<div class="chart-block"><p class="chart-caption">' + t("chartRumAvg") + '</p>' + rumBars + '</div>' : "")
+      + '<table><thead><tr><th>' + t("rumMetric") + '</th><th>' + t("rumSamples") + '</th><th>' + t("rumAvg") + '</th><th>' + t("rumP50") + '</th><th>' + t("rumP95") + '</th></tr></thead><tbody>';
     order.forEach(function(name){
       var m = (r.METRICS && r.METRICS[name]) || {};
       h += "<tr><td class='mono'>" + esc(name) + "</td><td>" + num(m.SAMPLES || 0) + "</td><td>" + fmtMs(m.AVERAGE || 0) + "</td><td>" + fmtMs(m.P50 || 0) + "</td><td>" + fmtMs(m.P95 || 0) + "</td></tr>";
@@ -4064,6 +4317,16 @@ function loadLatency(){
       + '<div class="card"><div class="label">' + t("latCardProxy") + '</div><div class="value">' + fmtMs(r.PROXY_MEAN_MS) + '</div><div class="foot">' + t("latMean") + '</div></div>'
       + '<div class="card"><div class="label">' + t("latCardUptime") + '</div><div class="value">' + fmtPct(r.UPTIME_PCT) + '</div><div class="foot">' + t("latSlaTarget", fmtPct(r.SLA_TARGET_PCT)) + '</div></div>'
       + '</div>';
+    var latRows = [
+      ["TTFB · p50", Number(r.TTFB_P50_MS) || 0, ""],
+      ["TTFB · p95", Number(r.TTFB_P95_MS) || 0, ""],
+      ["TTFB · p99", Number(r.TTFB_P99_MS) || 0, ""],
+      ["Total · p50", Number(r.TOTAL_P50_MS) || 0, "alt"],
+      ["Total · p95", Number(r.TOTAL_P95_MS) || 0, "alt"],
+      ["Total · p99", Number(r.TOTAL_P99_MS) || 0, "alt"]
+    ];
+    var latBars = hBars(latRows, {fmt: fmtMs, limit: 6});
+    if(latBars) h += '<div class="chart-block"><p class="chart-caption">' + t("chartLatPct") + '</p>' + latBars + '</div>';
     h += '<table><tbody>'
       + "<tr><td>" + t("latTtfbRow") + "</td><td>" + fmtMs(r.TTFB_P50_MS) + " / " + fmtMs(r.TTFB_P95_MS) + " / " + fmtMs(r.TTFB_P99_MS) + "</td></tr>"
       + "<tr><td>" + t("latTotalRow") + "</td><td>" + fmtMs(r.TOTAL_P50_MS) + " / " + fmtMs(r.TOTAL_P95_MS) + " / " + fmtMs(r.TOTAL_P99_MS) + "</td></tr>"
@@ -4096,6 +4359,35 @@ function renderPostmortem(r){
     + '<div class="card"><div class="label">' + t("pmMaxStage") + '</div><div class="value">' + esc(String(r.MAX_STAGE)) + '</div><div class="foot">' + (r.FINISHED ? t("pmFinished") : t("pmOngoing")) + '</div></div>'
     + '</div>';
   var events = r.TIMELINE || [];
+  /* Timeline chart: RPS vs allowed RPS across the attack's events,
+     from the same timeline rows the table below renders. */
+  if(events.length >= 2){
+    var pmRps = [], pmAllowed = [], pmMax = 1, ei;
+    for(ei = 0; ei < events.length; ei++){
+      var rv = Number(events[ei].RPS) || 0, av = Number(events[ei].RPS_ALLOWED) || 0;
+      pmRps.push(rv); pmAllowed.push(av);
+      if(rv > pmMax) pmMax = rv;
+      if(av > pmMax) pmMax = av;
+    }
+    var pmYMax = niceCeil(pmMax);
+    h += '<div class="chart-block"><p class="chart-caption">' + t("chartPmRps") + '</p>'
+      + '<div class="chart-legend chart-legend-gap"><span class="legend-item"><span class="legend-dot legend-total"></span><span>' + t("pmRps") + '</span></span><span class="legend-item"><span class="legend-dot legend-bypass"></span><span>' + t("pmRpsAllowed") + '</span></span></div>'
+      + '<svg class="chart-svg" viewBox="0 0 1200 200" role="img" aria-hidden="true">'
+      + buildLineChart({
+          w: 1200, h: 200, padL: 64, padR: 16, padT: 28, padB: 26,
+          yMax: pmYMax, yTicks: [0, pmYMax / 2, pmYMax], yFmt: fmtAxisNum,
+          yUnit: esc(t("chartReqAxis")),
+          xLabels: [
+            {frac: 0, text: esc(fmtWhen(events[0].TIME)), anchor: "start"},
+            {frac: 1, text: esc(fmtWhen(events[events.length - 1].TIME)), anchor: "end"}
+          ],
+          series: [
+            {values: pmRps, lineClass: "chart-line-total", areaClass: "chart-area"},
+            {values: pmAllowed, lineClass: "chart-line-bypass", areaClass: null}
+          ]
+        })
+      + '</svg></div>';
+  }
   if(events.length){
     h += '<table><thead><tr><th>' + t("pmTime") + '</th><th>' + t("pmKind") + '</th><th>' + t("pmDetail") + '</th><th>' + t("pmStageCol") + '</th><th>' + t("pmRps") + '</th><th>' + t("pmRpsAllowed") + '</th></tr></thead><tbody>';
     events.forEach(function(e){
@@ -4158,6 +4450,12 @@ function loadShadow(){
       + "<tr><td>" + t("shadowOutcomes") + "</td><td>" + t("shadowOutcomeCounts", num(r.WOULD_BLOCK), num(r.WOULD_CHALLENGE), num(r.WOULD_ALLOW)) + "</td></tr>"
       + "<tr><td>" + t("shadowDisagree") + "</td><td>" + num(r.DISAGREEMENTS) + "</td></tr>"
       + "</tbody></table>";
+    var shBars = hBars([
+      [t("chartWouldBlock"), Number(r.WOULD_BLOCK) || 0, "bad"],
+      [t("chartWouldChallenge"), Number(r.WOULD_CHALLENGE) || 0, "warn"],
+      [t("chartWouldAllow"), Number(r.WOULD_ALLOW) || 0, "ok"]
+    ], {limit: 3});
+    if(shBars) h += '<div class="chart-block"><p class="chart-caption">' + t("chartShadowOutcomes") + '</p>' + shBars + '</div>';
     h += '<div class="panel"><h2>' + t("shadowRuleMatches") + '</h2>' + countTable(r.RULE_MATCHES, t("colRule")) + '</div>';
     var recent = r.RECENT || [];
     if(!recent.length){
