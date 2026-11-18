@@ -57,4 +57,9 @@ var (
 	Last10SecondTimestamp  int
 
 	Initialised = false
+
+	// StartTime is when the process started, set once by
+	// config.Load. It is never reset by a reload, so the status
+	// page uptime spans the whole process lifetime.
+	StartTime time.Time
 )

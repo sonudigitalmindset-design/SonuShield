@@ -74,6 +74,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Public status page (Batch 5). Opt-in via proxy.statusPage,
+	//handled before any challenge or rate limiting, like metrics.
+	//When disabled, the request falls through exactly as before.
+	if IsStatusRequest(request) {
+		ServeStatus(writer)
+		return
+	}
+
 	// Log paths must never carry the admin secret, which is a path
 	// segment of the API, dashboard, and metrics routes. Redact it
 	// once here; every structured-log entry below uses logPath.

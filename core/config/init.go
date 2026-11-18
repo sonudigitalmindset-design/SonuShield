@@ -38,6 +38,13 @@ func Load() {
 
 	proxy.Cloudflare = domains.Config.Proxy.Cloudflare
 
+	// Process start time for the status page (Batch 5). Set
+	// once; a reload never resets it, so uptime spans the
+	// whole process lifetime.
+	if proxy.StartTime.IsZero() {
+		proxy.StartTime = time.Now()
+	}
+
 	proxy.CookieSecret = domains.Config.Proxy.Secrets["cookie"]
 	if strings.Contains(proxy.CookieSecret, "CHANGE_ME") {
 		panic("[ " + utils.PrimaryColor("!") + " ] [ Cookie Secret Contains 'CHANGE_ME', Refusing To Load ]")

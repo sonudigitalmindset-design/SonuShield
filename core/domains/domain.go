@@ -244,6 +244,7 @@ type Proxy struct {
 	ConfigBackups   int               `json:"configBackups"`
 	MaxConnsPerIP   int               `json:"maxConnsPerIP"`
 	MaxRequestBody  int64            `json:"maxRequestBody"`
+	StatusPage      bool             `json:"statusPage"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }
