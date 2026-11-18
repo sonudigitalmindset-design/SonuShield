@@ -13,7 +13,7 @@ How to get SonuShield running: requirements, building, certificates, running it,
 
 ## Quick Setup Script (testing VPS)
 
-`scripts/setup-vps.py` automates the whole testing install on an Ubuntu VPS: it detects the server's public IP, installs dependencies, downloads the `latest` prerelease binary, writes a `config.json` (Cloudflare mode, plain HTTP, the VPS IP as the domain) with fresh random secrets, validates it, and installs systemd services for the proxy and a test backend page. Review it before running — it prints every step, and `--dry-run` previews without changing anything:
+`scripts/setup-vps.py` automates the whole testing install on an Ubuntu VPS: it detects the server's public IP, installs dependencies, generates a self-signed certificate for a local hostname (default `test.local` — add `<ip> test.local` to your PC's hosts file; browsers send no SNI for bare IP literals, and SonuShield selects certificates by SNI), downloads the `latest` prerelease binary (size-verified, smoke-checked), writes a `config.json` with fresh random secrets, validates it, and installs systemd services for the proxy and a test backend page. Review it before running — it prints every step, and `--dry-run` previews without changing anything. `--plain-http` selects the old IP-based Cloudflare-mode setup, which is not recommended: challenge cookies carry the `Secure` flag, so challenge pages redirect-loop over plain HTTP.
 
 ```sh
 curl -L -o setup-vps.py https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/scripts/setup-vps.py
@@ -21,7 +21,7 @@ sudo python3 setup-vps.py            # real run, needs root
 python3 setup-vps.py --dry-run       # preview only
 ```
 
-Testing only: plain HTTP with no TLS fingerprinting. See the script's header comment for details.
+Testing only: the certificate is self-signed, so browsers warn once before proceeding. See the script's header comment for details.
 
 ## Build from Source
 

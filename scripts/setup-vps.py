@@ -1,23 +1,36 @@
 #!/usr/bin/env python3
-"""SonuShield one-shot testing setup for an Ubuntu VPS (IP + HTTP, no domain).
+"""SonuShield one-shot testing setup for an Ubuntu VPS.
+
+Default mode is HTTPS with a self-signed certificate and a local hostname
+(test.local). Why a hostname, not the bare IP? Browsers send no SNI for
+IP-literal URLs, and SonuShield selects certificates by SNI - so plain
+https://<IP>/ cannot complete a handshake. A hosts-file nickname costs
+nothing, needs no real domain or DNS, and makes the full product work:
+TLS fingerprinting, Secure challenge cookies, dashboard, everything.
+The script prints the one hosts-file line to add on your PC.
 
 What it does, in order:
   1. Detects the VPS public IP (override with --ip).
-  2. Installs curl, git, ufw, python3 and opens ports 22/80/443.
-  3. Downloads the automatic `latest` prerelease binary from GitHub.
-  4. Creates a test backend page, a config.json with fresh random secrets
-     (Cloudflare mode = plain HTTP on port 80, the VPS IP as the domain),
-     and a mode-0600 secrets file.
+  2. Installs curl, git, ufw, python3, openssl and opens ports 22/80/443.
+  3. Creates a test backend page, a self-signed certificate for the
+     hostname (SAN: DNS + IP), and downloads the automatic `latest`
+     prerelease binary (exact-size verified, retried, smoke-checked).
+  4. Writes a config.json with fresh random secrets (plain-HTTP mode is
+     Cloudflare mode with the VPS IP as the domain; HTTPS mode uses the
+     hostname and the certificate) and a mode-0600 secrets file.
   5. Runs `main validate` and STOPS if validation fails.
-  6. Installs and starts systemd units for SonuShield and the test site.
-  7. Prints the site URL and the dashboard URL.
+  6. Installs and restarts systemd units for SonuShield and the test site.
+  7. Prints the site URL, the dashboard URL, and the PC hosts-file line.
 
-TESTING ONLY: plain HTTP, so the dashboard secret travels unencrypted, and
-Cloudflare mode disables TLS fingerprinting (one detection layer less).
-Never use this setup for a real site with real users.
+TESTING ONLY: the certificate is self-signed (browsers show a warning
+once; proceed past it). The --plain-http mode is NOT recommended:
+challenge cookies carry the Secure flag, which browsers reject over
+plain HTTP, so challenge-protected pages redirect-loop. It exists only
+for API/dashboard checks that carry a valid secret.
 
 Usage (run as root on the VPS):
-    sudo python3 setup-vps.py [--ip 1.2.3.4] [--force]
+    sudo python3 setup-vps.py [--ip 1.2.3.4] [--host test.local] [--force]
+    sudo python3 setup-vps.py --plain-http --ip 1.2.3.4 [--force]
     python3 setup-vps.py --dry-run        # preview only, changes nothing
 
 If /opt/sonushield/config.json already exists, the script refuses to
@@ -41,6 +54,7 @@ RELEASE_URL = "https://github.com/sonudigitalmindset-design/SonuShield/releases/
 RELEASE_API_URL = "https://api.github.com/repos/sonudigitalmindset-design/SonuShield/releases/tags/latest"
 INSTALL_DIR = "/opt/sonushield"
 SITE_DIR = "/opt/sonushield/site"
+CERT_DIR = "/opt/sonushield/certs"
 BINARY = "/opt/sonushield/main"
 CONFIG = "/opt/sonushield/config.json"
 SECRETS_FILE = "/root/sonushield-secrets.txt"
@@ -186,10 +200,26 @@ def download_binary():
                      "Check network/GitHub access and re-run the script.")
 
 
-def build_config(ip, admin, api, s1, s2, s3):
+def generate_cert(host, ip, cert_path, key_path):
+    """Self-signed certificate for testing: SAN covers the hostname + IP."""
+    if DRY_RUN:
+        print(f"  [dry-run] openssl self-signed cert for {host} (+IP:{ip})")
+        return
+    run([
+        "openssl", "req", "-x509", "-newkey", "rsa:2048",
+        "-keyout", key_path, "-out", cert_path,
+        "-days", "365", "-nodes",
+        "-subj", f"/CN={host}",
+        "-addext", f"subjectAltName=DNS:{host},IP:{ip}",
+    ])
+    run(["chmod", "600", key_path])
+    print(f"  certificate: {cert_path} (self-signed, testing only)")
+
+
+def build_config(name, https, cert_path, key_path, admin, api, s1, s2, s3):
     return {
         "proxy": {
-            "cloudflare": True,
+            "cloudflare": not https,
             "adminsecret": admin,
             "apisecret": api,
             "secrets": {"captcha": s1, "cookie": s2, "javascript": s3},
@@ -204,11 +234,11 @@ def build_config(ip, admin, api, s1, s2, s3):
         },
         "domains": [
             {
-                "name": ip,
+                "name": name,
                 "backend": "127.0.0.1:8000",
                 "scheme": "http",
-                "certificate": "",
-                "key": "",
+                "certificate": cert_path if https else "",
+                "key": key_path if https else "",
                 "webhook": {"url": "", "name": "", "avatar": "",
                             "attack_start_msg": "", "attack_stop_msg": ""},
                 "firewallRules": [
@@ -264,8 +294,12 @@ TEST_PAGE = "<h1>SonuShield test OK</h1><p>Agar ye dikh raha hai to proxy kaam k
 
 def main():
     global DRY_RUN
-    parser = argparse.ArgumentParser(description="Set up SonuShield for testing on an Ubuntu VPS (IP + HTTP).")
-    parser.add_argument("--ip", help="VPS public IP to use as the domain (default: auto-detect)")
+    parser = argparse.ArgumentParser(description="Set up SonuShield for testing on an Ubuntu VPS (HTTPS + local hostname by default).")
+    parser.add_argument("--ip", help="VPS public IP (default: auto-detect, IPv4 preferred)")
+    parser.add_argument("--host", default="test.local",
+                        help="hostname for the HTTPS setup; add '<ip> <host>' to your PC hosts file (default: test.local)")
+    parser.add_argument("--plain-http", action="store_true",
+                        help="plain-HTTP Cloudflare-mode setup with the VPS IP as the domain (NOT recommended: challenge pages redirect-loop over HTTP)")
     parser.add_argument("--force", action="store_true",
                         help="overwrite an existing config.json (a .bak copy is kept)")
     parser.add_argument("--dry-run", action="store_true",
@@ -275,6 +309,8 @@ def main():
 
     if not DRY_RUN and os.geteuid() != 0:
         raise SystemExit("ERROR: run as root (sudo python3 setup-vps.py) or use --dry-run to preview.")
+
+    https = not args.plain_http
 
     step("1. Detecting VPS public IP")
     ip = args.ip
@@ -292,11 +328,19 @@ def main():
             else:
                 raise SystemExit("ERROR: could not detect the VPS public IP. Re-run with --ip 1.2.3.4")
     print(f"  VPS IP: {ip}")
+    if https:
+        print(f"  Mode: HTTPS, hostname {args.host} (add '{ip} {args.host}' to your PC hosts file)")
+    else:
+        print("  Mode: plain HTTP (WARNING: challenge pages redirect-loop over HTTP - HTTPS mode is recommended)")
+
+    name = args.host if https else ip
+    scheme = "https" if https else "http"
+    display = args.host if https else url_host(ip)
 
     step("2. Installing packages + firewall")
     env = dict(os.environ, DEBIAN_FRONTEND="noninteractive")
     run(["apt-get", "update"], env=env)
-    run(["apt-get", "install", "-y", "curl", "git", "ufw", "python3"], env=env)
+    run(["apt-get", "install", "-y", "curl", "git", "ufw", "python3", "openssl"], env=env)
     for port in ("22/tcp", "80/tcp", "443/tcp"):
         result = run(["ufw", "allow", port], check=False)
         if result is not None and result.returncode != 0:
@@ -305,12 +349,17 @@ def main():
     if result is not None and result.returncode != 0:
         print("  WARNING: ufw enable failed (continuing anyway - ports may already be open)")
 
-    step("3. Folders + test page + binary")
+    step("3. Folders + test page + certificate + binary")
     if DRY_RUN:
-        print(f"  [dry-run] mkdir -p {INSTALL_DIR} {SITE_DIR}")
+        print(f"  [dry-run] mkdir -p {INSTALL_DIR} {SITE_DIR} {CERT_DIR}")
     else:
         os.makedirs(SITE_DIR, exist_ok=True)
+        os.makedirs(CERT_DIR, exist_ok=True)
     write_file(os.path.join(SITE_DIR, "index.html"), TEST_PAGE)
+    cert_path = os.path.join(CERT_DIR, "server.crt")
+    key_path = os.path.join(CERT_DIR, "server.key")
+    if https:
+        generate_cert(args.host, ip, cert_path, key_path)
     download_binary()  # includes exact-size check, retries, and a smoke check
 
     step("4. Secrets + config.json")
@@ -328,12 +377,11 @@ def main():
     else:
         admin, api = secrets.token_hex(16), secrets.token_hex(16)
         s1, s2, s3 = secrets.token_hex(16), secrets.token_hex(16), secrets.token_hex(16)
-    write_file(CONFIG, json.dumps(build_config(ip, admin, api, s1, s2, s3), indent=4) + "\n", mode=0o600)
-    host = url_host(ip)
+    write_file(CONFIG, json.dumps(build_config(name, https, cert_path, key_path, admin, api, s1, s2, s3), indent=4) + "\n", mode=0o600)
     secrets_text = (
         f"VPS IP: {ip}\n"
-        f"Site: http://{host}/\n"
-        f"Dashboard: http://{host}/_bProxy/{admin}/dashboard\n"
+        f"Site: {scheme}://{display}/\n"
+        f"Dashboard: {scheme}://{display}/_bProxy/{admin}/dashboard\n"
         f"adminsecret: {admin}\n"
         f"apisecret: {api}\n"
     )
@@ -368,13 +416,17 @@ def main():
                 print(f"  WARNING: {unit} is not active - the test page may not load")
 
     step("DONE - testing setup complete")
-    host = url_host(ip)
-    print(f"  Site:      http://{host}/")
-    print(f"  Dashboard: http://{host}/_bProxy/{admin}/dashboard")
+    print(f"  Site:      {scheme}://{display}/")
+    print(f"  Dashboard: {scheme}://{display}/_bProxy/{admin}/dashboard")
     print(f"  Secrets:   {SECRETS_FILE}  (mode 0600 - never share this file)")
     print("  Status:    systemctl status sonushield --no-pager")
     print("  Logs:      journalctl -u sonushield -f")
-    print("  NOTE: testing only - plain HTTP, no TLS fingerprinting in Cloudflare mode.")
+    if https:
+        print(f"  On your PC, add this line to the hosts file: {ip} {args.host}")
+        print("  (Windows: run Notepad as administrator, open C:\\Windows\\System32\\drivers\\etc\\hosts)")
+        print("  The browser will warn about the self-signed certificate once - proceed past it (Advanced -> Proceed).")
+    else:
+        print("  NOTE: plain-HTTP mode - challenge pages redirect-loop over HTTP; prefer the default HTTPS mode.")
     return 0
 
 
