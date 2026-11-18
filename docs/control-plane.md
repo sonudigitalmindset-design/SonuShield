@@ -169,6 +169,7 @@ Unknown values fail safe to `"off"` with a single startup warning (and a `sonush
 - **Sessions depend on `sessionSecret`.** Set a long random value; without one, sessions die on restart.
 - **Node connections should be verified.** Prefer HTTPS node URLs with `caFile` for private CAs. `insecureSkipVerify` is for test setups only.
 - **Rate limiting is per control-plane process, per IP.** Behind a reverse proxy, the client IP seen is the proxy's unless the deployment forwards it — the control plane reads the direct peer address and does not trust `X-Forwarded-For`.
+- **Put the control host behind network allow-listing.** The login limiter slows guessing from one IP (5 failures per 5 minutes) but cannot slow a distributed guessing attack across many IPs, and there is no CAPTCHA or second factor. Restrict who can reach the control host at the network level (firewall rules, VPN, or allow-listed office IPs) so the login page is not exposed to the whole internet.
 - **The audit log is local.** Ship or back it up with your usual tooling; the control plane does not replicate it.
 - **No visitor traffic.** The control plane answers management routes only; unknown paths get a bare 404, and it never forwards a request to an origin backend.
 
