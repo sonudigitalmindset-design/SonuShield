@@ -95,6 +95,9 @@ type Domain struct {
 	SharedReputationSusLv int            `json:"sharedReputationSusLv"`
 	TimingEnforce       bool             `json:"timingEnforce"`
 	TimingSusLv         int              `json:"timingSusLv"`
+	BehaviorCheck       bool             `json:"behaviorCheck"`
+	BehaviorEnforce     bool             `json:"behaviorEnforce"`
+	BehaviorSusLv       int              `json:"behaviorSusLv"`
 	SessionRatelimit    int              `json:"sessionRatelimit"`
 	MaxBodyBytes        int64           `json:"maxBodyBytes"`
 	BodyLimits          []BodyLimit     `json:"bodyLimits"`
@@ -190,6 +193,9 @@ type DomainSettings struct {
 	SharedReputationSusLv int
 	TimingEnforce         bool
 	TimingSusLv           int
+	BehaviorCheck         bool
+	BehaviorEnforce       bool
+	BehaviorSusLv         int
 	SessionRatelimit      int
 	MaxBodyBytes          int64
 	BodyLimits            []BodyLimit

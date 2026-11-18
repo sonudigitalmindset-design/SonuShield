@@ -163,7 +163,7 @@ func verifyProviderToken(provider, secret, token, remoteIP string) (bool, error)
 // Stage 2 request. It stores a single-use nonce and returns silently
 // (rendering nothing) only when nonce generation fails, in which case the
 // caller falls back to the proof-of-work page.
-func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, encryptedIP, ip, tlsFp, userAgent string) bool {
+func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainName, encryptedIP, ip, tlsFp, userAgent string) bool {
 	nonce := storePendingChallenge(pendingChallenge{
 		encryptedIP: encryptedIP,
 		redirectURL: request.URL.RequestURI(),
@@ -189,7 +189,7 @@ func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, s
 	writer.Header().Set("Content-Type", "text/html")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	//Built-in page text is English/Hindi by Accept-Language.
-	fmt.Fprint(writer, providerPage(stringsFor(request), resolveBranding(settings), nonce, widgetScript))
+	fmt.Fprint(writer, withBehaviorScript(providerPage(stringsFor(request), resolveBranding(settings), nonce, widgetScript), settings, domainName))
 	return true
 }
 

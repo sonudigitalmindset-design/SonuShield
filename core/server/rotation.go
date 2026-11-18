@@ -158,7 +158,7 @@ func rotationNextType(settings domains.DomainSettings) string {
 // custom PoW template. Shared by the fixed challenge chain and by
 // rotation (the "pow" type and the ultimate fallback). It always
 // writes a response.
-func serveClassicPowChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainData domains.DomainData, encryptedIP, hashedEncryptedIP string, buffer *bytes.Buffer) {
+func serveClassicPowChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainData domains.DomainData, domainName, encryptedIP, hashedEncryptedIP string, buffer *bytes.Buffer) {
 	//Adaptive PoW: scale the difficulty with current load so a
 	//legitimate visitor is barely delayed under normal conditions
 	//and bots face a harder puzzle during an attack. Disabled by
@@ -181,9 +181,9 @@ func serveClassicPowChallenge(writer http.ResponseWriter, request *http.Request,
 	//validated custom template replaces the visible part.
 	pageStr := stringsFor(request)
 	if tpl := settings.PageTemplates; tpl != nil && tpl.PoW != "" {
-		SendResponse(renderPowTemplate(tpl.PoW, pageStr, publicSalt, hashedEncryptedIP, difficulty), buffer, writer)
+		SendResponse(withBehaviorScript(renderPowTemplate(tpl.PoW, pageStr, publicSalt, hashedEncryptedIP, difficulty), settings, domainName), buffer, writer)
 	} else {
-		SendResponse(powPage(pageStr, resolveBranding(settings), publicSalt, hashedEncryptedIP, difficulty), buffer, writer)
+		SendResponse(withBehaviorScript(powPage(pageStr, resolveBranding(settings), publicSalt, hashedEncryptedIP, difficulty), settings, domainName), buffer, writer)
 	}
 }
 
@@ -208,18 +208,18 @@ func serveRotatedChallenge(writer http.ResponseWriter, request *http.Request, se
 	}
 	switch types[int(index)%len(types)] {
 	case rotationTypeMemoryPow:
-		if ServeMemoryPowChallenge(writer, request, settings, encryptedIP, ip, tlsFp, userAgent) {
+		if ServeMemoryPowChallenge(writer, request, settings, domainName, encryptedIP, ip, tlsFp, userAgent) {
 			return true
 		}
 	case rotationTypeTurnstile, rotationTypeHCaptcha:
-		if ServeProviderChallenge(writer, request, settings, encryptedIP, ip, tlsFp, userAgent) {
+		if ServeProviderChallenge(writer, request, settings, domainName, encryptedIP, ip, tlsFp, userAgent) {
 			return true
 		}
 	case rotationTypeCaptcha:
-		serveCaptchaChallenge(writer, request, settings, encryptedIP, ip, buffer)
+		serveCaptchaChallenge(writer, request, settings, domainName, encryptedIP, ip, buffer)
 		return true
 	}
 	// "pow", or any type whose serving failed: classic puzzle.
-	serveClassicPowChallenge(writer, request, settings, domainData, encryptedIP, hashedEncryptedIP, buffer)
+	serveClassicPowChallenge(writer, request, settings, domainData, domainName, encryptedIP, hashedEncryptedIP, buffer)
 	return true
 }

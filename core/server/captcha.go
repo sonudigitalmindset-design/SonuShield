@@ -33,7 +33,7 @@ import (
 // and the public part, generates (or reuses a cached) captcha and
 // mask image, and serves the built-in page or the validated custom
 // captcha template. It always writes a response.
-func serveCaptchaChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, encryptedIP, ip string, buffer *bytes.Buffer) {
+func serveCaptchaChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainName, encryptedIP, ip string, buffer *bytes.Buffer) {
 	secretPart := encryptedIP[:6]
 	publicPart := encryptedIP[6:]
 
@@ -99,9 +99,9 @@ func serveCaptchaChallenge(writer http.ResponseWriter, request *http.Request, se
 	//validated custom template replaces the visible part.
 	pageStr := stringsFor(request)
 	if tpl := settings.PageTemplates; tpl != nil && tpl.Captcha != "" {
-		SendResponse(renderCaptchaTemplate(tpl.Captcha, pageStr, ip, publicPart, captchaData, maskData), buffer, writer)
+		SendResponse(withBehaviorScript(renderCaptchaTemplate(tpl.Captcha, pageStr, ip, publicPart, captchaData, maskData), settings, domainName), buffer, writer)
 	} else {
-		SendResponse(captchaPage(pageStr, resolveBranding(settings), ip, publicPart, captchaData, maskData), buffer, writer)
+		SendResponse(withBehaviorScript(captchaPage(pageStr, resolveBranding(settings), ip, publicPart, captchaData, maskData), settings, domainName), buffer, writer)
 	}
 	return
 }

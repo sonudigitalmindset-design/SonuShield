@@ -25,6 +25,10 @@ package firewall
 //	  or fingerprint.
 //	Timing anomaly (Batch 5 item 4): +20 when the IP's request
 //	  timing looks inhumanly regular or bursty.
+//	Behavior signal (Batch 7 item 2): +15 when the challenge
+//	  page beacon reported no pointer interaction in the fast
+//	  elapsed bucket. Only possible when the operator enabled
+//	  behaviorCheck for the domain.
 //	Challenge failures: more than 10 failed verifications +10,
 //	  more than 50 +20.
 //	High-risk geography (operator-configured only): +15 when the
@@ -45,6 +49,7 @@ type RiskInputs struct {
 	ReputationListed   bool
 	SharedReputation   bool
 	TimingAnomaly      bool
+	BehaviorBot        bool
 	ChallengeFailures  int
 	Country            string
 	ASN                int
@@ -86,6 +91,9 @@ func ComputeRiskScore(in RiskInputs) int {
 	}
 	if in.TimingAnomaly {
 		score += 20
+	}
+	if in.BehaviorBot {
+		score += 15
 	}
 	if in.ChallengeFailures > 50 {
 		score += 20

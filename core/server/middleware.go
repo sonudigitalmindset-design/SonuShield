@@ -303,6 +303,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Mouse/scroll behavior beacon (Batch 7). Same placement:
+	//the client reports interaction facts from a challenge
+	//page, before it holds a verification cookie. Answers
+	//404 unless the domain enabled behaviorCheck.
+	if HandleBehaviorBeacon(writer, request, domainName, ip, domainSettings) {
+		return
+	}
+
 	//Demonstration of how to use "susLv". Essentially allows you to challenge specific requests with a higher challenge
 
 	reqUa := request.UserAgent()
@@ -370,6 +378,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//(a suspicion bump) is opt-in per domain.
 	timingVerdict := firewall.ObserveTiming(ip)
 
+	//Mouse/scroll behavior signal (Batch 7). Consulted only
+	//when the domain enabled behaviorCheck; the beacon only
+	//runs on challenge pages the proxy itself serves.
+	behaviorVerdict, behaviorLogThis := "", false
+	if domainSettings.BehaviorCheck {
+		behaviorVerdict, behaviorLogThis = firewall.BehaviorVerdict(domainName, ip)
+	}
+
 	//Composite risk score (Batch 5). A snapshot of the signals
 	//known at evaluation time; see firewall/risk.go for the
 	//weights. It is a firewall rule field (ip.risk), is carried in
@@ -384,6 +400,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		ReputationListed:   repListed,
 		SharedReputation:   sharedRep,
 		TimingAnomaly:      timingVerdict.Anomaly,
+		BehaviorBot:        behaviorVerdict == "bot",
 		ChallengeFailures:  ipCountCookie,
 		Country:            geoCountry,
 		ASN:                geoASN,
@@ -411,6 +428,19 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 				timingBump = 1
 			}
 			susLv += timingBump
+		}
+	}
+
+	if behaviorVerdict == "bot" {
+		if behaviorLogThis {
+			logging.Log(logging.Entry{Event: "behavior", Domain: domainName, IP: ip, Action: "behavior_bot", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		}
+		if domainSettings.BehaviorEnforce {
+			behaviorBump := domainSettings.BehaviorSusLv
+			if behaviorBump <= 0 {
+				behaviorBump = 1
+			}
+			susLv += behaviorBump
 		}
 	}
 
@@ -501,6 +531,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.quic":               quicFp,
 			"ip.os":                 osLabel,
 			"ip.tcpinfo":            tcpInfoStr,
+			"ip.behavior":           behaviorVerdict,
 			"ip.reputation":         repValue,
 			"ip.searchbot":          searchBot,
 			"ip.risk":               riskScore,
@@ -637,7 +668,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			//their own keys. Falls back to proof-of-work when the
 			//provider is not configured or nonce generation fails.
 			if ChallengeProviderConfigured(domainSettings) {
-				if ServeProviderChallenge(writer, request, domainSettings, encryptedIP, ip, tlsFp, reqUa) {
+				if ServeProviderChallenge(writer, request, domainSettings, domainName, encryptedIP, ip, tlsFp, reqUa) {
 					return
 				}
 			}
@@ -647,17 +678,17 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			//provider challenge above takes precedence. Falls back
 			//to the classic puzzle when nonce generation fails.
 			if domainSettings.MemoryHardPow {
-				if ServeMemoryPowChallenge(writer, request, domainSettings, encryptedIP, ip, tlsFp, reqUa) {
+				if ServeMemoryPowChallenge(writer, request, domainSettings, domainName, encryptedIP, ip, tlsFp, reqUa) {
 					return
 				}
 			}
 
-			serveClassicPowChallenge(writer, request, domainSettings, domainData, encryptedIP, hashedEncryptedIP, buffer)
+			serveClassicPowChallenge(writer, request, domainSettings, domainData, domainName, encryptedIP, hashedEncryptedIP, buffer)
 			return
 		case 3:
 			metrics.ObserveChallenge(domainName, 3)
 			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
-			serveCaptchaChallenge(writer, request, domainSettings, encryptedIP, ip, buffer)
+			serveCaptchaChallenge(writer, request, domainSettings, domainName, encryptedIP, ip, buffer)
 			return
 		default:
 			writer.Header().Set("Content-Type", "text/plain")

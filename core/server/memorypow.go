@@ -224,7 +224,7 @@ func memoryPowSolutionValid(salt []byte, solution string, bits, memoryKB, timeCo
 // It stores a single-use nonce and returns silently (rendering
 // nothing) only when nonce or salt generation fails, in which
 // case the caller falls back to the classic proof-of-work page.
-func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, encryptedIP, ip, tlsFp, userAgent string) bool {
+func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainName, encryptedIP, ip, tlsFp, userAgent string) bool {
 	salt := make([]byte, 16)
 	if _, err := rand.Read(salt); err != nil {
 		return false
@@ -248,7 +248,7 @@ func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, 
 	writer.Header().Set("Content-Type", "text/html")
 	writer.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	//Built-in page text is English/Hindi by Accept-Language.
-	fmt.Fprint(writer, memoryPowPage(stringsFor(request), resolveBranding(settings), nonce, hex.EncodeToString(salt), bits, memoryKB, timeCost))
+	fmt.Fprint(writer, withBehaviorScript(memoryPowPage(stringsFor(request), resolveBranding(settings), nonce, hex.EncodeToString(salt), bits, memoryKB, timeCost), settings, domainName))
 	return true
 }
 
