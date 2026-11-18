@@ -114,6 +114,27 @@ func Enabled() bool {
 	return enabled.Load() && !failed.Load()
 }
 
+// LogFiles returns the structured-log file paths newest-first
+// (current file, then rotated files that exist), or nil when
+// structured logging is not configured. Used by the log-search
+// and attack-map API actions (Batch 5). The list is a snapshot:
+// a rotation during a scan may rarely miss or repeat a line.
+func LogFiles() []string {
+	mu.Lock()
+	defer mu.Unlock()
+	if filePath == "" {
+		return nil
+	}
+	files := []string{filePath}
+	for i := 1; i < maxFiles; i++ {
+		path := fmt.Sprintf("%s.%d", filePath, i)
+		if _, err := os.Stat(path); err == nil {
+			files = append(files, path)
+		}
+	}
+	return files
+}
+
 // Configure (re)configures structured logging from the proxy
 // settings. It is called from config.Load() at startup and from
 // ReloadConfig() on reload, so a reload picks up new log settings

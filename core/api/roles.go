@@ -72,6 +72,8 @@ var actionMinRole = map[string]string{
 	"GET_IP_LISTS":                     proxy.RoleViewer,
 	"ADD_IP_ENTRY":                     proxy.RoleOperator,
 	"REMOVE_IP_ENTRY":                  proxy.RoleOperator,
+	"SEARCH_LOGS":                      proxy.RoleViewer,
+	"GET_ATTACK_MAP":                   proxy.RoleViewer,
 }
 
 func roleLevel(role string) int {

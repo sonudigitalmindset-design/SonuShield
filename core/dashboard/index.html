@@ -124,6 +124,11 @@ tbody tr:hover td{background:var(--panel-2)}
 .badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg)}
 .badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg)}
 .badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg)}
+.bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
+.bar-row .lbl{width:44px;flex:none;font-family:var(--mono);font-size:12.5px}
+.bar-row .track{flex:1;height:10px;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.bar-row .fill{height:100%;background:var(--accent)}
+.bar-row .val{width:150px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
 
 /* Notes, states, banner */
 .note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
@@ -430,6 +435,27 @@ tr.selected td{background:var(--nav-active-bg)}
       </div>
       <div class="inline-err" id="logsError" role="alert"></div>
       <div id="logsBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      <div class="panel">
+        <h2>Search structured logs</h2>
+        <p class="small muted">Searches the JSON log files on the server (current + rotated, newest first) — including blocked and challenged requests, which the list above does not show. Requires <code>proxy.logFormat</code> set to <code>json</code> and <code>proxy.logFile</code> set in <code>config.json</code>. Filters match exactly.</p>
+        <form id="logSearchForm">
+          <div class="formgrid">
+            <div class="field"><label for="lsIp">IP</label><input id="lsIp" type="text" spellcheck="false" autocomplete="off" placeholder="203.0.113.5"></div>
+            <div class="field"><label for="lsEvent">Event</label><input id="lsEvent" type="text" spellcheck="false" autocomplete="off" placeholder="block"></div>
+            <div class="field"><label for="lsAction">Action</label><input id="lsAction" type="text" spellcheck="false" autocomplete="off" placeholder="ratelimit"></div>
+            <div class="field"><label for="lsFrom">From</label><input id="lsFrom" type="datetime-local"></div>
+            <div class="field"><label for="lsTo">To</label><input id="lsTo" type="datetime-local"></div>
+            <div class="field"><label for="lsPerPage">Per page</label><select id="lsPerPage"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="200">200</option></select></div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit">Search</button>
+            <button type="button" id="lsPrev" disabled>Previous page</button>
+            <button type="button" id="lsNext" disabled>Next page</button>
+            <span class="small muted" id="lsMeta"></span>
+          </div>
+        </form>
+        <div id="logSearchBody" style="margin-top:12px"><div class="state">No search run yet.</div></div>
+      </div>
     </section>
 
     <section id="view-settings" class="view">
@@ -503,6 +529,19 @@ tr.selected td{background:var(--nav-active-bg)}
       </div>
       <div class="inline-err" id="reportError" role="alert"></div>
       <div id="reportBody"><div class="state">No report loaded yet.</div></div>
+      <div class="panel">
+        <h2>Attack map</h2>
+        <p class="small muted">Top countries by blocked and challenged requests in the window, from the JSON log's country field. Shown only when a GeoIP database is configured — without one, no country data exists. The globe is schematic: dot positions are approximate country centroids, not precise locations.</p>
+        <div class="toolbar">
+          <label for="mapWindow" class="muted">Window</label>
+          <select id="mapWindow"><option value="3600">Last hour</option><option value="21600">Last 6 hours</option><option value="86400">Last 24 hours</option></select>
+          <label for="mapTop" class="muted">Show top</label>
+          <input id="mapTop" type="number" min="1" max="50" value="10" style="width:80px">
+          <button id="mapLoadBtn" type="button" class="primary">Load map</button>
+          <span class="small muted" id="mapMeta"></span>
+        </div>
+        <div id="mapBody"><div class="state">No map loaded yet.</div></div>
+      </div>
     </section>
 
     <section id="view-about" class="view">
@@ -1002,6 +1041,114 @@ function loadLogs(){
   });
 }
 
+var logSearchPage = 1;
+var logSearchTotal = 0;
+
+function logSearchParams(){
+  var params = {};
+  var ip = $("lsIp").value.trim();
+  var event = $("lsEvent").value.trim();
+  var action = $("lsAction").value.trim();
+  if(ip) params.ip = ip;
+  if(event) params.event = event;
+  if(action) params.action = action;
+  var from = $("lsFrom").value;
+  var to = $("lsTo").value;
+  if(from) params.from = String(Math.floor(new Date(from).getTime() / 1000));
+  if(to) params.to = String(Math.floor(new Date(to).getTime() / 1000));
+  params.page = String(logSearchPage);
+  params.perPage = $("lsPerPage").value;
+  return params;
+}
+
+function runLogSearch(){
+  var q = buildQuery(logSearchParams());
+  setHTML("logSearchBody", '<div class="state">Searching…</div>');
+  setText("lsMeta", "");
+  return apiV2("/_bProxy/api/v2/" + encodeURIComponent(currentDomain) + "/SEARCH_LOGS?" + q).then(function(r){
+    var entries = r.ENTRIES || [];
+    logSearchTotal = r.TOTAL || 0;
+    var perPage = r.PER_PAGE || 50;
+    var pages = Math.max(1, Math.ceil(logSearchTotal / perPage));
+    $("lsPrev").disabled = logSearchPage <= 1;
+    $("lsNext").disabled = logSearchPage >= pages;
+    setText("lsMeta", num(logSearchTotal) + " matches · page " + logSearchPage + " of " + pages + " · " + num(r.SCANNED || 0) + " lines scanned" + (r.TRUNCATED ? " · scan truncated" : ""));
+    if(!entries.length){
+      setHTML("logSearchBody", '<div class="state">No matching log entries.</div>');
+      return;
+    }
+    var h = '<table><thead><tr><th>Time</th><th>Event</th><th>IP</th><th>Action</th><th>Rule</th><th>Risk</th><th>Path</th></tr></thead><tbody>';
+    entries.forEach(function(e){
+      h += "<tr><td class='mono'>" + esc(e.ts || "") + "</td><td>" + esc(e.event || "") + "</td><td class='mono'>" + esc(e.ip || "") + "</td><td>" + esc(e.action || "") + "</td><td class='mono'>" + esc(e.rule || "") + "</td><td>" + (e.risk_score != null ? num(e.risk_score) : "—") + "</td><td class='mono'>" + esc(e.path || "") + "</td></tr>";
+    });
+    setHTML("logSearchBody", h + "</tbody></table>");
+  }).catch(function(err){
+    $("lsPrev").disabled = true;
+    $("lsNext").disabled = true;
+    if(err.code === "ERR_JSON_LOGS_NOT_CONFIGURED"){
+      setHTML("logSearchBody", '<div class="state">Structured logging is not configured. Set <code>proxy.logFormat</code> to <code>json</code> and <code>proxy.logFile</code> to a writable path in <code>config.json</code>, then reload the config.</div>');
+    } else {
+      setHTML("logSearchBody", '<div class="state state-error"><strong>Search failed.</strong><br>' + esc(err.message) + '</div>');
+    }
+  });
+}
+
+/* Approximate country centroids (latitude, longitude) for the
+   schematic attack-map globe. Positions are indicative only. */
+var countryCentroids = {US:[39.8,-98.5],CN:[35,105],RU:[60,90],IN:[21,78],BR:[-10,-55],DE:[51,10],GB:[54,-2],FR:[46,2],NL:[52,5],JP:[36,138],KR:[36,128],TR:[39,35],IR:[32,53],VN:[16,106],ID:[-2,118],NG:[9,8],PK:[30,70],BD:[24,90],UA:[49,32],PL:[52,19],CA:[60,-106],AU:[-25,134],MX:[23,-102],ES:[40,-4],IT:[42,12],SE:[59,15],CH:[47,8],BE:[50.5,4.5],AT:[47.5,13],CZ:[50,15.5],RO:[46,25],EG:[27,30],ZA:[-29,25],AR:[-34,-64],CL:[-31,-71],CO:[4,-73],PH:[13,122],TH:[15,101],MY:[4,102],SG:[1.35,103.8],HK:[22.3,114.2],TW:[23.7,121],IL:[31,35],SA:[24,45],AE:[24,54],KZ:[48,68],UZ:[41,64]};
+
+function attackMapSVG(countries, max){
+  var cx = 180, cy = 100, r = 88;
+  var s = '<svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Schematic world map of attack sources" style="max-width:640px;display:block;margin:0 auto 12px">';
+  s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#888" stroke-width="1" opacity="0.6"/>';
+  s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r + '" ry="30" fill="none" stroke="#888" stroke-width="0.5" opacity="0.35"/>';
+  s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="30" ry="' + r + '" fill="none" stroke="#888" stroke-width="0.5" opacity="0.35"/>';
+  s += '<line x1="' + (cx - r) + '" y1="' + cy + '" x2="' + (cx + r) + '" y2="' + cy + '" stroke="#888" stroke-width="0.5" opacity="0.35"/>';
+  countries.forEach(function(c){
+    var ll = countryCentroids[c.COUNTRY];
+    if(!ll) return;
+    var x = cx + ll[1] * (r / 180);
+    var y = cy - ll[0] * (r / 90);
+    var dx = x - cx, dy = y - cy;
+    if(Math.sqrt(dx * dx + dy * dy) > r - 4) return;
+    var rad = 3 + 7 * Math.sqrt((c.TOTAL || 0) / max);
+    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + rad.toFixed(1) + '" fill="#f6821f" opacity="0.85"><title>' + esc(c.COUNTRY) + ': ' + num(c.TOTAL) + '</title></circle>';
+  });
+  return s + '</svg>';
+}
+
+function loadAttackMap(){
+  var win = $("mapWindow").value;
+  var top = $("mapTop").value || "10";
+  setHTML("mapBody", '<div class="state">Loading map…</div>');
+  setText("mapMeta", "");
+  return apiV2("/_bProxy/api/v2/GET_ATTACK_MAP?window=" + encodeURIComponent(win) + "&top=" + encodeURIComponent(top)).then(function(r){
+    if(!r.LOGS_CONFIGURED){
+      setHTML("mapBody", '<div class="state">Structured logging is not configured. Set <code>proxy.logFormat</code> to <code>json</code> and <code>proxy.logFile</code> to a writable path in <code>config.json</code>, then reload the config.</div>');
+      return;
+    }
+    if(!r.GEO_CONFIGURED){
+      setHTML("mapBody", '<div class="state">No GeoIP database is configured, so no country data exists. Set <code>proxy.geoipCountryDatabase</code> to a MaxMind database path in <code>config.json</code> to enable the attack map.</div>');
+      return;
+    }
+    var countries = r.COUNTRIES || [];
+    setText("mapMeta", num(r.SCANNED || 0) + " lines scanned" + (r.TRUNCATED ? " · scan truncated" : ""));
+    if(!countries.length){
+      setHTML("mapBody", '<div class="state">No blocked or challenged requests with country data in this window.</div>');
+      return;
+    }
+    var max = countries[0].TOTAL || 1;
+    var h = attackMapSVG(countries, max);
+    countries.forEach(function(c){
+      var pct = Math.round((c.TOTAL / max) * 100);
+      h += '<div class="bar-row"><span class="lbl">' + esc(c.COUNTRY) + '</span><span class="track"><span class="fill" style="display:block;width:' + pct + '%"></span></span><span class="val">' + num(c.TOTAL) + ' · ' + num(c.BLOCKS) + ' blocked · ' + num(c.CHALLENGES) + ' challenged</span></div>';
+    });
+    setHTML("mapBody", h);
+  }).catch(function(err){
+    setHTML("mapBody", '<div class="state state-error"><strong>Could not load the attack map.</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
 function setField(id, value){
   var el = $(id);
   if(el) el.value = (value == null ? "" : String(value));
@@ -1300,7 +1447,7 @@ function showView(name){
   }
   if(!connected) return;
   if(name === "settings"){ loadSettings(); loadProxyFeatures(); loadBackups(); }
-  else if(name === "reports"){ loadReport(); }
+  else if(name === "reports"){ loadReport(); loadAttackMap(); }
   else if(name === "domains"){ loadDomains(); loadDomainPanel(); }
   else if(name === "rules"){ loadRules(true); }
   else if(name === "iplists"){ loadIPLists(); }
@@ -1364,6 +1511,18 @@ $("refreshFeedBtn").addEventListener("click", function(){
   });
 });
 $("reportLoadBtn").addEventListener("click", loadReport);
+$("mapLoadBtn").addEventListener("click", loadAttackMap);
+$("logSearchForm").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  logSearchPage = 1;
+  runLogSearch();
+});
+$("lsPrev").addEventListener("click", function(){
+  if(logSearchPage > 1){ logSearchPage--; runLogSearch(); }
+});
+$("lsNext").addEventListener("click", function(){
+  logSearchPage++; runLogSearch();
+});
 $("reportJsonBtn").addEventListener("click", function(){ downloadReport("json"); });
 $("reportCsvBtn").addEventListener("click", function(){ downloadReport("csv"); });
 

@@ -169,6 +169,17 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 		APIResponse(writer, true, clearAllLogsResponse())
 	case "LIST_CONFIG_BACKUPS":
 		APIResponse(writer, true, listBackupsResponse())
+	case "SEARCH_LOGS":
+		response, errCode := searchLogsResponse("", params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "GET_ATTACK_MAP":
+		APIResponse(writer, true, attackMapResponse(params))
 	case "RESTORE_CONFIG_BACKUP":
 		response, errCode, detail := restoreBackupResponse(params)
 		if errCode != "" {
@@ -324,6 +335,15 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 		APIResponse(writer, true, response)
 	case "GET_IP_LISTS":
 		APIResponse(writer, true, ipListsResponse(domainSettings))
+	case "SEARCH_LOGS":
+		response, errCode := searchLogsResponse(domainSettings.Name, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "ADD_IP_ENTRY", "REMOVE_IP_ENTRY":
 		var response map[string]interface{}
 		var errCode string
