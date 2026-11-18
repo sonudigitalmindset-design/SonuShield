@@ -121,6 +121,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//RUM beacons + snippet (Batch 8). Handled before the
+	//challenge flow: beacons come from ordinary page loads.
+	//Unhandled paths fall through exactly as before.
+	if HandleRUM(writer, request, domainName) {
+		return
+	}
+
 	// Authenticated control-plane requests (Batch 6). API and
 	// dashboard requests carrying a valid secret bypass the
 	// challenge flow entirely: at a locked Stage 2/3 a scripted

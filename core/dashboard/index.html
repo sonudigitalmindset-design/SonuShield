@@ -738,6 +738,12 @@ tr.selected td{background:var(--nav-active-bg)}
         <div class="btnrow"><button type="button" id="shadowReloadBtn" data-i18n="shadowReloadBtn">Reload shadow report</button></div>
       </div>
       <div class="panel">
+        <h2 data-i18n="rumTitle">Real-user timing (RUM)</h2>
+        <p class="small muted" data-i18n="rumNote">Aggregated navigation-timing buckets from browsers that loaded the operator-embedded snippet at /_bProxy/rum.js. No IPs, no user-agents, no query strings; values are 10 ms buckets. The snippet is never injected into origin content.</p>
+        <div id="rumBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="rumReloadBtn" data-i18n="rumReloadBtn">Reload RUM</button></div>
+      </div>
+      <div class="panel">
         <h2 data-i18n="certTitle">Certificates &amp; subdomains</h2>
         <p class="small muted" data-i18n="certNote">Expiry for every configured certificate file, and the last DNS results for operator-listed subdomains. No certificate or subdomain data leaves the proxy.</p>
         <div id="certBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
@@ -1504,7 +1510,20 @@ tailStop: "Stop",
 tailRunning: "Streaming…",
 tailStopped: "Stopped.",
 tailEmpty: "Tail is stopped. Press Start tail to stream new entries.",
-tailError: "Stream ended unexpectedly. Press Start tail to reconnect."
+tailError: "Stream ended unexpectedly. Press Start tail to reconnect.",
+rumTitle: "Real-user timing (RUM)",
+rumNote: "Aggregated navigation-timing buckets from browsers that loaded the operator-embedded snippet at /_bProxy/rum.js. No IPs, no user-agents, no query strings; values are 10 ms buckets. The snippet is never injected into origin content.",
+rumReloadBtn: "Reload RUM",
+rumEmpty: "No beacons received yet. Embed the snippet from /_bProxy/rum.js on origin pages to collect real-user timing.",
+rumMetric: "Metric",
+rumSamples: "Samples",
+rumAvg: "Average",
+rumP50: "p50",
+rumP95: "p95",
+rumBeacons: "{0} beacons received.",
+rumAvgTtfb: "Avg TTFB",
+rumAvgLoad: "Avg load",
+errLoadRum: "Could not load RUM stats."
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2156,7 +2175,20 @@ tailStop: "रोकें",
 tailRunning: "Streaming…",
 tailStopped: "रुक गई।",
 tailEmpty: "टेल रुकी हुई है। नई एंट्री stream करने के लिए Start tail दबाएँ।",
-tailError: "Stream अचानक बंद हो गई। फिर से जोड़ने के लिए Start tail दबाएँ।"
+tailError: "Stream अचानक बंद हो गई। फिर से जोड़ने के लिए Start tail दबाएँ।",
+rumTitle: "वास्तविक उपयोगकर्ता समय (RUM)",
+rumNote: "Operator द्वारा embed किए गए /_bProxy/rum.js snippet वाले ब्राउज़र से एकत्रित navigation-timing buckets। कोई IP, user-agent या query string नहीं; मान 10 ms buckets में हैं। Snippet कभी origin content में inject नहीं होता।",
+rumReloadBtn: "RUM reload करें",
+rumEmpty: "अभी तक कोई beacon प्राप्त नहीं हुआ। वास्तविक उपयोगकर्ता समय इकट्ठा करने के लिए /_bProxy/rum.js वाला snippet origin pages पर embed करें।",
+rumMetric: "Metric",
+rumSamples: "Samples",
+rumAvg: "औसत",
+rumP50: "p50",
+rumP95: "p95",
+rumBeacons: "{0} beacon प्राप्त हुए।",
+rumAvgTtfb: "औसत TTFB",
+rumAvgLoad: "औसत load",
+errLoadRum: "RUM stats load नहीं हो पाए।"
 }
 };
 function t(key){
@@ -2196,7 +2228,7 @@ function applyLang(newLang, skipRefresh){
      discard unsaved form edits. */
   if(currentView === "settings"){ loadProxyFeatures(); loadBackups(); }
   else if(currentView === "reports"){ loadReport(); loadAttackMap(); }
-  else if(currentView === "insights"){ loadLatency(); loadGrade(); loadShadow(); loadCerts(); }
+  else if(currentView === "insights"){ loadLatency(); loadGrade(); loadShadow(); loadCerts(); loadRUM(); }
   else if(currentView === "approvals"){ loadApprovals(); }
 }
 document.querySelectorAll("[data-lang-choice]").forEach(function(btn){
@@ -3245,6 +3277,33 @@ function gradeBadge(status){
   return '<span class="badge">' + t("gradeInfo") + '</span>';
 }
 
+function loadRUM(){
+  return domainAction(currentDomain, "GET_RUM_STATS").then(function(r){
+    if(!r.COUNT){
+      setHTML("rumBody", '<div class="state">' + t("rumEmpty") + '</div>');
+      return;
+    }
+    var order = ["dns", "connect", "tls", "ttfb", "dom", "load"];
+    var h = '<table><thead><tr><th>' + t("rumMetric") + '</th><th>' + t("rumSamples") + '</th><th>' + t("rumAvg") + '</th><th>' + t("rumP50") + '</th><th>' + t("rumP95") + '</th></tr></thead><tbody>';
+    order.forEach(function(name){
+      var m = (r.METRICS && r.METRICS[name]) || {};
+      h += "<tr><td class='mono'>" + esc(name) + "</td><td>" + num(m.SAMPLES || 0) + "</td><td>" + fmtMs(m.AVERAGE || 0) + "</td><td>" + fmtMs(m.P50 || 0) + "</td><td>" + fmtMs(m.P95 || 0) + "</td></tr>";
+    });
+    h += "</tbody></table>";
+    h += "<p class='small muted'>" + t("rumBeacons", num(r.COUNT)) + "</p>";
+    if(r.PATHS && r.PATHS.length){
+      h += '<table><thead><tr><th>' + t("colPath") + '</th><th>' + t("rumSamples") + '</th><th>' + t("rumAvgTtfb") + '</th><th>' + t("rumAvgLoad") + '</th></tr></thead><tbody>';
+      r.PATHS.forEach(function(p){
+        h += "<tr><td class='mono small'>" + esc(p.PATH) + "</td><td>" + num(p.COUNT) + "</td><td>" + fmtMs(p.AVG_TTFB) + "</td><td>" + fmtMs(p.AVG_LOAD) + "</td></tr>";
+      });
+      h += "</tbody></table>";
+    }
+    setHTML("rumBody", h);
+  }).catch(function(err){
+    setHTML("rumBody", '<div class="state state-error"><strong>' + t("errLoadRum") + '</strong><br>' + esc(err.message) + '</div>');
+  });
+}
+
 function loadLatency(){
   return domainAction(currentDomain, "GET_LATENCY").then(function(r){
     var h = '<div class="cards">'
@@ -3687,6 +3746,7 @@ $("pmTextBtn").addEventListener("click", function(){ loadPostmortem("text"); });
 $("gradeReloadBtn").addEventListener("click", function(){ loadGrade(); });
 $("shadowReloadBtn").addEventListener("click", function(){ loadShadow(); });
 $("certReloadBtn").addEventListener("click", function(){ loadCerts(); });
+$("rumReloadBtn").addEventListener("click", function(){ loadRUM(); });
 $("approvalsReloadBtn").addEventListener("click", function(){ loadApprovals(); });
 
 (function initLang(){

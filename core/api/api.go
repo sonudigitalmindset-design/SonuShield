@@ -837,6 +837,15 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "GET_RUM_STATS":
+		response, errCode := rumStatsResponse(domainSettings, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "ADD_IP_ENTRY", "REMOVE_IP_ENTRY":
 		var response map[string]interface{}
 		var errCode string
