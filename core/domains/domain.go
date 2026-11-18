@@ -83,6 +83,8 @@ type Domain struct {
 	OriginLockSecret    string          `json:"originLockSecret"`
 	SecurityHeaders     map[string]string `json:"securityHeaders"`
 	CORS                *CORSConfig     `json:"cors"`
+	IPAllowlist         []IPListEntry   `json:"ipAllowlist"`
+	IPBlocklist         []IPListEntry   `json:"ipBlocklist"`
 	WAFInspectBody      bool             `json:"wafInspectBody"`
 	WAFWpLoginLimit     int              `json:"wafWpLoginLimit"`
 	DisableBypassStage3 int              `json:"disableBypassStage3"`
@@ -156,6 +158,10 @@ type DomainSettings struct {
 	OriginLockSecret      string
 	SecurityHeaders     map[string]string
 	CORS                *CORSConfig
+	IPAllowlist         []IPListEntry
+	IPBlocklist         []IPListEntry
+	IPAllowCompiled     []compiledIPEntry
+	IPBlockCompiled     []compiledIPEntry
 
 	//Runtime state, built by InitRuntime. Nil when the feature is
 	//disabled; every object is safe to use through a nil pointer.

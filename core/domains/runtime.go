@@ -48,4 +48,7 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 			fmt.Println("[ ! ] [ ignoring invalid securityHeaders entry for " + domain.Name + ": " + name + " ]")
 		}
 	}
+	// IP allow/block lists are compiled here (Load and reload
+	// both run InitRuntime); invalid entries warn and are skipped.
+	settings.RebuildIPLists()
 }

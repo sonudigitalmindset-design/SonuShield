@@ -111,7 +111,7 @@ h2{font-size:15px;line-height:1.35;font-weight:600;margin:0 0 8px}
 .panel p:last-child, .panel ul:last-child{margin-bottom:0}
 .panel ul{margin:8px 0;padding-left:20px}
 .panel li{margin:4px 0}
-#topIps,#topFps,#rulesBody,#logsBody,#domBody{overflow-x:auto}
+#topIps,#topFps,#rulesBody,#logsBody,#domBody,#ipListsBody{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:8px}
 td{border-bottom:1px solid var(--border);padding:8px;vertical-align:top;word-break:break-word}
@@ -195,6 +195,7 @@ tr.selected td{background:var(--nav-active-bg)}
     <button class="navbtn active" type="button" data-view="overview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Overview</span></button>
     <button class="navbtn" type="button" data-view="domains"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg><span>Domains</span></button>
     <button class="navbtn" type="button" data-view="rules"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg><span>Firewall rules</span></button>
+    <button class="navbtn" type="button" data-view="iplists"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>IP lists</span></button>
     <button class="navbtn" type="button" data-view="stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Stage</span></button>
     <button class="navbtn" type="button" data-view="logs"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" stroke-width="2.6"/></svg><span>Logs</span></button>
     <h3>Manage</h3>
@@ -345,6 +346,41 @@ tr.selected td{background:var(--nav-active-bg)}
             <tr><td class="mono">+N / -N</td><td>Raise or lower the current suspicion level by N, then keep checking further rules.</td></tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <section id="view-iplists" class="view">
+      <h1>IP lists</h1>
+      <p class="sub">Allow and block lists for <strong id="ipListsDomain">—</strong>. A blocklisted IP is blocked before rate limiting runs; an allowlisted IP starts unchallenged and bypasses the early rate-limit and fingerprint blocks. The block list wins when an IP matches both. Expired entries drop automatically. Changes are saved to <code>config.json</code> on the server immediately and take effect without a reload.</p>
+      <div class="inline-err" id="ipListsError" role="alert"></div>
+      <div class="inline-ok" id="ipListsOk" role="status"></div>
+      <div id="ipListsBody"><div class="state">No data yet. Connect to load live data.</div></div>
+      <div class="panel">
+        <h2>Add an entry</h2>
+        <form id="ipEntryForm">
+          <div class="formgrid">
+            <div class="field">
+              <label for="ipEntryList">List</label>
+              <select id="ipEntryList"><option value="blocklist">Block list</option><option value="allowlist">Allow list</option></select>
+            </div>
+            <div class="field">
+              <label for="ipEntryTarget">IP or CIDR</label>
+              <input id="ipEntryTarget" type="text" spellcheck="false" autocomplete="off" placeholder="203.0.113.5 or 203.0.113.0/24" required>
+            </div>
+            <div class="field">
+              <label for="ipEntryExpires">Expires</label>
+              <select id="ipEntryExpires"><option value="0">Never</option><option value="3600">In 1 hour</option><option value="86400">In 24 hours</option><option value="604800">In 7 days</option><option value="2592000">In 30 days</option></select>
+              <div class="hint">Expired entries are removed automatically.</div>
+            </div>
+            <div class="field">
+              <label for="ipEntryNote">Note (optional)</label>
+              <input id="ipEntryNote" type="text" autocomplete="off" maxlength="200" placeholder="Why this entry exists">
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit">Add entry</button>
+          </div>
+        </form>
       </div>
     </section>
 
@@ -840,6 +876,63 @@ function submitRuleForm(ev){
   });
 }
 
+function ipEntryRows(entries, listName){
+  if(!entries.length) return '<div class="state">No entries.</div>';
+  var h = '<table><thead><tr><th>Target</th><th>Expires</th><th>Note</th><th>Actions</th></tr></thead><tbody>';
+  entries.forEach(function(entry){
+    var expires = entry.EXPIRES ? new Date(entry.EXPIRES * 1000).toLocaleString() : "Never";
+    h += "<tr><td class='mono'>" + esc(entry.TARGET) + "</td><td>" + esc(expires) + "</td><td>" + esc(entry.NOTE || "") + "</td>"
+      + '<td><button type="button" class="small danger" data-ip-del-list="' + listName + '" data-ip-del-target="' + esc(entry.TARGET) + '">Remove</button></td></tr>';
+  });
+  return h + "</tbody></table>";
+}
+
+function loadIPLists(){
+  setText("ipListsDomain", currentDomain);
+  return domainAction(currentDomain, "GET_IP_LISTS").then(function(r){
+    var h = '<div class="panel"><h2>Allow list</h2>' + ipEntryRows(r.ALLOWLIST || [], "allowlist") + "</div>"
+      + '<div class="panel"><h2>Block list</h2>' + ipEntryRows(r.BLOCKLIST || [], "blocklist") + "</div>";
+    setHTML("ipListsBody", h);
+    document.querySelectorAll("[data-ip-del-target]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        removeIPEntry(btn.getAttribute("data-ip-del-list"), btn.getAttribute("data-ip-del-target"));
+      });
+    });
+  }).catch(function(){
+    setHTML("ipListsBody", '<div class="state state-error"><strong>Could not load IP lists.</strong><br>The domain may not exist, or the API secret was rejected.</div>');
+  });
+}
+
+function removeIPEntry(listName, target){
+  if(!window.confirm("Remove " + target + " from the " + listName + "? This is saved to config.json immediately.")) return;
+  showInline("ipListsError", "ipListsOk", "", "");
+  domainWrite(currentDomain, "REMOVE_IP_ENTRY", {list: listName, target: target}).then(function(){
+    showInline("ipListsError", "ipListsOk", "", "Entry removed and saved to config.json.");
+    return loadIPLists();
+  }).catch(function(err){
+    showInline("ipListsError", "ipListsOk", "Could not remove the entry: " + err.message, "");
+  });
+}
+
+function submitIPEntryForm(ev){
+  ev.preventDefault();
+  var target = $("ipEntryTarget").value.trim();
+  if(!target) return;
+  var seconds = parseInt($("ipEntryExpires").value, 10) || 0;
+  var params = {list: $("ipEntryList").value, target: target};
+  if(seconds > 0) params.expires = String(Math.floor(Date.now() / 1000) + seconds);
+  var note = $("ipEntryNote").value.trim();
+  if(note) params.note = note;
+  showInline("ipListsError", "ipListsOk", "", "");
+  domainWrite(currentDomain, "ADD_IP_ENTRY", params).then(function(){
+    $("ipEntryForm").reset();
+    showInline("ipListsError", "ipListsOk", "", "Entry added and saved to config.json.");
+    return loadIPLists();
+  }).catch(function(err){
+    showInline("ipListsError", "ipListsOk", "Could not add the entry: " + err.message, "");
+  });
+}
+
 function simulateRule(){
   var expr = $("simExpr").value.trim();
   if(!expr) return;
@@ -1138,6 +1231,7 @@ function refreshAll(){
   var jobs = [loadOverview(), loadStageState()];
   if(currentView === "domains"){ jobs.push(loadDomains(), loadDomainPanel()); }
   else if(currentView === "rules"){ jobs.push(loadRules(false)); }
+  else if(currentView === "iplists"){ jobs.push(loadIPLists()); }
   else if(currentView === "logs"){ jobs.push(loadLogs()); }
   /* Settings and reports load on demand (view switch / buttons), so
      polling never overwrites a form being edited or a report being read. */
@@ -1209,6 +1303,7 @@ function showView(name){
   else if(name === "reports"){ loadReport(); }
   else if(name === "domains"){ loadDomains(); loadDomainPanel(); }
   else if(name === "rules"){ loadRules(true); }
+  else if(name === "iplists"){ loadIPLists(); }
   else if(name === "stage"){ loadStageState(); }
   else if(name === "logs"){ loadLogs(); }
 }
@@ -1234,6 +1329,7 @@ $("domainInput").addEventListener("keydown", function(ev){
   if(ev.key === "Enter"){ ev.preventDefault(); $("domainBtn").click(); }
 });
 $("ruleForm").addEventListener("submit", submitRuleForm);
+$("ipEntryForm").addEventListener("submit", submitIPEntryForm);
 $("simForm").addEventListener("submit", function(ev){
   ev.preventDefault();
   simulateRule();

@@ -154,11 +154,33 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("SonuShield", "1.5")
 	}
 
+	//SyncMap because semi-readonly. Loaded here (before the
+	//early blocks) so the per-domain IP lists can allow or block
+	//before rate limiting runs.
+	settingsQuery, _ := domains.DomainsMap.Load(domainName)
+	domainSettings := settingsQuery.(domains.DomainSettings)
+
 	//Start the suspicious level where the stage currently is
 	susLv := domainData.Stage
 
+	//IP allow/block lists (Batch 5). A blocklisted IP is blocked
+	//immediately; an allowlisted IP starts at susLv 0 and bypasses
+	//the early rate-limit and fingerprint blocks below. The block
+	//list wins when an IP matches both. Empty lists match nothing.
+	ipAllowlisted, ipBlocklisted := domainSettings.IPListMatch(ip)
+	if ipBlocklisted {
+		writer.Header().Set("Content-Type", "text/plain")
+		metrics.ObserveBlock(domainName, "ip_blocklist")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "ip_blocklist", Rule: "IPBL", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		SendResponse(blockMessage("Forbidden."), buffer, writer)
+		return
+	}
+	if ipAllowlisted {
+		susLv = 0
+	}
+
 	//Ratelimit faster if client repeatedly fails the verification challenge (feel free to play around with the threshhold)
-	if ipCountCookie > proxy.FailChallengeRatelimit {
+	if !ipAllowlisted && ipCountCookie > proxy.FailChallengeRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
 		metrics.ObserveBlock(domainName, "ratelimit")
 		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "ratelimit", Rule: "R1", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
@@ -167,7 +189,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	//Ratelimit spamming Ips (feel free to play around with the threshhold)
-	if ipCount > proxy.IPRatelimit {
+	if !ipAllowlisted && ipCount > proxy.IPRatelimit {
 		writer.Header().Set("Content-Type", "text/plain")
 		metrics.ObserveBlock(domainName, "ratelimit")
 		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "ratelimit", Rule: "R2", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
@@ -177,7 +199,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	//Ratelimit fingerprints that don't belong to major browsers
 	if browser == "" {
-		if fpCount > proxy.FPRatelimit {
+		if !ipAllowlisted && fpCount > proxy.FPRatelimit {
 			writer.Header().Set("Content-Type", "text/plain")
 			metrics.ObserveBlock(domainName, "ratelimit")
 			logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "ratelimit", Rule: "R3", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
@@ -195,7 +217,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if forbiddenFp == "" && ja4Fp != "" {
 		forbiddenFp = firewall.ForbiddenJA4[ja4Fp]
 	}
-	if forbiddenFp != "" {
+	if forbiddenFp != "" && !ipAllowlisted {
 		writer.Header().Set("Content-Type", "text/plain")
 		metrics.ObserveBlock(domainName, "fingerprint")
 		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "fingerprint", Rule: forbiddenFp, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
@@ -212,10 +234,6 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	//Demonstration of how to use "susLv". Essentially allows you to challenge specific requests with a higher challenge
-
-	//SyncMap because semi-readonly
-	settingsQuery, _ := domains.DomainsMap.Load(domainName)
-	domainSettings := settingsQuery.(domains.DomainSettings)
 
 	reqUa := request.UserAgent()
 

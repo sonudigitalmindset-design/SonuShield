@@ -69,6 +69,9 @@ var actionMinRole = map[string]string{
 	"SIMULATE_RULE":                    proxy.RoleViewer,
 	"EXPORT_RULES":                     proxy.RoleViewer,
 	"IMPORT_RULES":                     proxy.RoleOperator,
+	"GET_IP_LISTS":                     proxy.RoleViewer,
+	"ADD_IP_ENTRY":                     proxy.RoleOperator,
+	"REMOVE_IP_ENTRY":                  proxy.RoleOperator,
 }
 
 func roleLevel(role string) int {

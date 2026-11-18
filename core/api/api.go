@@ -322,6 +322,23 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "GET_IP_LISTS":
+		APIResponse(writer, true, ipListsResponse(domainSettings))
+	case "ADD_IP_ENTRY", "REMOVE_IP_ENTRY":
+		var response map[string]interface{}
+		var errCode string
+		if action == "ADD_IP_ENTRY" {
+			response, errCode = applyIPEntry(domainSettings, params)
+		} else {
+			response, errCode = removeIPEntry(domainSettings, params)
+		}
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	default:
 		APIResponse(writer, false, map[string]interface{}{
 			"ERROR": ERR_ACTION_NOT_FOUND,
