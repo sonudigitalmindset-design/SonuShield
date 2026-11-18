@@ -257,6 +257,8 @@ func redactConfigForExport(cfg *domains.Configuration) {
 	for i := range cfg.Proxy.ThreatSharing.Peers {
 		redact(&cfg.Proxy.ThreatSharing.Peers[i].SharedSecret)
 	}
+	// BGP monitor API token (custom sources only).
+	redact(&cfg.Proxy.BGPMonitor.APIToken)
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

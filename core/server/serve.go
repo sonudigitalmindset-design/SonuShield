@@ -44,6 +44,11 @@ func Serve() {
 	//proxy.subdomainMonitor is enabled.
 	StartCertMonitor()
 
+	//BGP announcement monitoring (Batch 8). Started once;
+	//inert unless proxy.bgpMonitor is enabled with prefixes
+	//and expected origins.
+	StartBGPMonitor()
+
 	//Stripe usage reporter (Batch 6). Started once; inert without
 	//a valid key and a report interval in proxy.stripe.
 	billing.StartReporter()

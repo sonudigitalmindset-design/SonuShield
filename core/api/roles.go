@@ -114,6 +114,7 @@ var actionMinRole = map[string]string{
 	"REMOVE_INDICATOR":                 proxy.RoleOperator,
 	"PULL_INDICATORS":                  proxy.RoleOperator,
 	"PUSH_INDICATORS":                  proxy.RoleOperator,
+	"GET_BGP_STATUS":                   proxy.RoleViewer,
 }
 
 func roleLevel(role string) int {

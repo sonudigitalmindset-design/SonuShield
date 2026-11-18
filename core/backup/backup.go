@@ -94,6 +94,7 @@ var secretPaths = [][]segment{
 	{k("proxy"), k("stripe"), k("secretKey")},
 	{k("proxy"), arr("publicApiKeys"), k("key")},
 	{k("proxy"), k("threatSharing"), arr("peers"), k("sharedSecret")},
+	{k("proxy"), k("bgpMonitor"), k("apiToken")},
 	{k("proxy"), arr("eventWebhooks"), k("url")},
 	{k("proxy"), arr("eventWebhooks"), k("secret")},
 	{arr("domains"), k("webhook"), k("url")},

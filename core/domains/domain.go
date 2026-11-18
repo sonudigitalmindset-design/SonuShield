@@ -366,6 +366,7 @@ type Proxy struct {
 	StatusPage      bool             `json:"statusPage"`
 	GitOps          GitOpsConfig     `json:"gitops"`
 	ThreatSharing   ThreatSharingConfig `json:"threatSharing"`
+	BGPMonitor      BGPMonitorConfig  `json:"bgpMonitor"`
 	SSO             *SSOConfig      `json:"sso"`
 	Stripe          StripeConfig    `json:"stripe"`
 	PublicAPIKeys   []PublicAPIKey  `json:"publicApiKeys"`
