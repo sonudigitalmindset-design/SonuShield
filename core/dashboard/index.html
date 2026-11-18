@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>(function(){try{var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="light";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>(function(){try{if(localStorage.getItem("sonushield_theme_v")!=="2"){localStorage.removeItem("sonushield_theme");localStorage.setItem("sonushield_theme_v","2");}var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="light";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
 __CP_BOOTSTRAP__
 <style>
 

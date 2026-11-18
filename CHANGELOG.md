@@ -284,6 +284,10 @@ names, or challenge flow semantics.
   drawn only from the totals the existing 3s poll already fetches
   (no new API calls). Service-worker shell bumped to v4 so browsers
   pick up the new shell.
+- Theme migration: browsers that saved the old dark default now get
+  the new light default once (a one-time versioned reset of the saved
+  theme choice); afterwards the Dark/Light toggle works as before and
+  the explicit choice is respected. Service-worker shell bumped to v5.
 
 ## Known limitations (carried forward)
 
