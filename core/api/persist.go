@@ -231,6 +231,46 @@ func updateConfigDomain(domainName string, mutate func(domain map[string]json.Ra
 	return saveConfigDocument(doc)
 }
 
+// updateConfigProxy loads config.json, lets mutate edit the
+// "proxy" object as raw JSON, and saves the document
+// atomically. It mirrors updateConfigDomain for proxy-level
+// keys (e.g. the rule-pack registry) that have no struct
+// field. Unknown keys elsewhere in the document survive,
+// because the file is edited as generic JSON.
+func updateConfigProxy(mutate func(proxy map[string]json.RawMessage) error) error {
+	persistMutex.Lock()
+	defer persistMutex.Unlock()
+
+	doc, err := loadConfigDocument()
+	if err != nil {
+		return err
+	}
+
+	rawProxy, ok := doc["proxy"]
+	if !ok {
+		return errors.New("config.json has no proxy object")
+	}
+	var proxyObj map[string]json.RawMessage
+	if err := json.Unmarshal(rawProxy, &proxyObj); err != nil {
+		return fmt.Errorf("config.json proxy object is not valid: %w", err)
+	}
+	if proxyObj == nil {
+		proxyObj = map[string]json.RawMessage{}
+	}
+
+	if err := mutate(proxyObj); err != nil {
+		return err
+	}
+
+	updated, err := json.Marshal(proxyObj)
+	if err != nil {
+		return err
+	}
+	doc["proxy"] = updated
+
+	return saveConfigDocument(doc)
+}
+
 // setRawField replaces one key of a raw-message object with the JSON
 // encoding of value.
 func setRawField(obj map[string]json.RawMessage, key string, value interface{}) error {

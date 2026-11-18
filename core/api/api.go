@@ -254,6 +254,15 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			return
 		}
 		APIResponse(writer, true, response)
+	case "LIST_RULE_PACKS":
+		response, errCode := listRulePacksResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "GET_IP_REQUESTS":
 		firewall.Mutex.RLock()
 		ipsAll := firewall.AccessIps
@@ -604,6 +613,19 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 		APIResponse(writer, true, exportRules(domainSettings.Name, domainSettings))
 	case "IMPORT_RULES":
 		response, errCode, detail := importRules(domainSettings.Name, params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
+	case "IMPORT_RULE_PACK":
+		response, errCode, detail := importRulePack(domainSettings.Name, params)
 		if errCode != "" {
 			results := map[string]interface{}{
 				"ERROR": errCode,
