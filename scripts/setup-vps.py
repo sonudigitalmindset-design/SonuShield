@@ -42,7 +42,8 @@ SITE_DIR = "/opt/sonushield/site"
 BINARY = "/opt/sonushield/main"
 CONFIG = "/opt/sonushield/config.json"
 SECRETS_FILE = "/root/sonushield-secrets.txt"
-IP_SERVICES = ["https://ifconfig.me", "https://api.ipify.org"]
+IPV4_SERVICES = ["https://api4.ipify.org", "https://ipv4.icanhazip.com"]
+IP_SERVICES = ["https://ifconfig.me", "https://api.ipify.org"]  # any-version fallback
 
 DRY_RUN = False
 
@@ -72,15 +73,39 @@ def write_file(path, content, mode=None):
 
 
 def detect_ip():
+    """Detect the VPS public IP, preferring IPv4.
+
+    IPv4 is preferred because browsers reach the test site over IPv4 and
+    the config domain must match the Host header exactly. A bare IPv6
+    address also needs brackets in URLs, which is easy to get wrong.
+    Falls back to any-version services (IPv6 accepted) on IPv6-only hosts.
+    """
+    for url in IPV4_SERVICES:
+        try:
+            with urllib.request.urlopen(url, timeout=10) as resp:
+                candidate = resp.read().decode("utf-8").strip()
+            addr = ipaddress.ip_address(candidate)  # raises if not a valid IP
+            if addr.version == 4:
+                return candidate
+            print(f"  {url} returned non-IPv4 address {candidate} - skipping")
+        except Exception as exc:  # noqa: BLE001 - try next service
+            print(f"  IP lookup via {url} failed: {exc}")
     for url in IP_SERVICES:
         try:
             with urllib.request.urlopen(url, timeout=10) as resp:
                 candidate = resp.read().decode("utf-8").strip()
             ipaddress.ip_address(candidate)  # raises if not a valid IP
+            print(f"  WARNING: no IPv4 address detected; using {candidate}. "
+                  "Prefer --ip with the IPv4 address if the server has one.")
             return candidate
         except Exception as exc:  # noqa: BLE001 - try next service
             print(f"  IP lookup via {url} failed: {exc}")
     return None
+
+
+def url_host(ip):
+    """Format an IP for use inside a URL (IPv6 literals need brackets)."""
+    return f"[{ip}]" if ":" in ip else ip
 
 
 def download_binary():
@@ -241,10 +266,11 @@ def main():
         admin, api = secrets.token_hex(16), secrets.token_hex(16)
         s1, s2, s3 = secrets.token_hex(16), secrets.token_hex(16), secrets.token_hex(16)
     write_file(CONFIG, json.dumps(build_config(ip, admin, api, s1, s2, s3), indent=4) + "\n", mode=0o600)
+    host = url_host(ip)
     secrets_text = (
         f"VPS IP: {ip}\n"
-        f"Site: http://{ip}/\n"
-        f"Dashboard: http://{ip}/_bProxy/{admin}/dashboard\n"
+        f"Site: http://{host}/\n"
+        f"Dashboard: http://{host}/_bProxy/{admin}/dashboard\n"
         f"adminsecret: {admin}\n"
         f"apisecret: {api}\n"
     )
@@ -273,8 +299,9 @@ def main():
             print("  WARNING: service is not active - check: journalctl -u sonushield --no-pager | tail -30")
 
     step("DONE - testing setup complete")
-    print(f"  Site:      http://{ip}/")
-    print(f"  Dashboard: http://{ip}/_bProxy/{admin}/dashboard")
+    host = url_host(ip)
+    print(f"  Site:      http://{host}/")
+    print(f"  Dashboard: http://{host}/_bProxy/{admin}/dashboard")
     print(f"  Secrets:   {SECRETS_FILE}  (mode 0600 - never share this file)")
     print("  Status:    systemctl status sonushield --no-pager")
     print("  Logs:      journalctl -u sonushield -f")
