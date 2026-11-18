@@ -10,6 +10,7 @@ import (
 	"sonushield/core/logging"
 	"sonushield/core/privacy"
 	"sonushield/core/proxy"
+	"sonushield/core/sharing"
 	"sonushield/core/server"
 	"sonushield/core/utils"
 	"io/ioutil"
@@ -128,6 +129,7 @@ func Load() {
 	}
 
 	firewall.InitReputation(domains.Config.Proxy.ReputationList, domains.Config.Proxy.ReputationFeed, domains.Config.Proxy.ReputationIntvl, domains.Config.Proxy.ReputationSusLv)
+	sharing.Configure(domains.Config.Proxy.ThreatSharing)
 
 	// Per-IP connection cap (Batch 5, slowloris guard). Disabled
 	// (0) by default; see firewall/conntrack.go.

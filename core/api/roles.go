@@ -109,6 +109,11 @@ var actionMinRole = map[string]string{
 	"GET_OPENAPI_STATUS":               proxy.RoleViewer,
 	"GET_DLP_STATUS":                   proxy.RoleViewer,
 	"GET_CSP_REPORTS":                  proxy.RoleViewer,
+	"GET_SHARING_STATUS":               proxy.RoleViewer,
+	"ADD_INDICATOR":                    proxy.RoleOperator,
+	"REMOVE_INDICATOR":                 proxy.RoleOperator,
+	"PULL_INDICATORS":                  proxy.RoleOperator,
+	"PUSH_INDICATORS":                  proxy.RoleOperator,
 }
 
 func roleLevel(role string) int {

@@ -8,6 +8,7 @@ import (
 	"sonushield/core/firewall"
 	"sonushield/core/logging"
 	"sonushield/core/metrics"
+	"sonushield/core/sharing"
 	"sonushield/core/proxy"
 	"sonushield/core/utils"
 	"net"
@@ -103,6 +104,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//or authentication. Unhandled paths fall through exactly
 	//as before.
 	if HandleCSPReport(writer, request, domainName) {
+		return
+	}
+
+	//Threat-sharing peer endpoint (Batch 8). Handled before
+	//the challenge flow: peers authenticate with HMAC, not
+	//cookies. Falls through when sharing is disabled.
+	if HandleSharing(writer, request) {
 		return
 	}
 
@@ -373,6 +381,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//one result.
 	repListed := firewall.LookupReputation(ip)
 
+	//Threat-sharing lookup (Batch 8): a received peer
+	//indicator raises suspicion by one level after the
+	//firewall rules, like the local reputation list. Inert
+	//while sharing is disabled.
+	sharedInd := sharing.Lookup(ip, tlsFp)
+
 	//Cross-domain reputation (Batch 5). Opted-in domains share
 	//recent blocks: a client blocked on another opted-in domain is
 	//looked up here, feeds the risk score below, and gets its
@@ -546,6 +560,10 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	if canaryMatch, canaryHit := firewall.CheckCanary(request, domainSettings.CanaryPaths, domainSettings.CanaryTokens); canaryHit {
 		if domainSettings.ShareReputation {
 			firewall.RecordSharedReputation(ip, tlsFp, domainName)
+		}
+		if sharing.PushOnCanary() {
+			sharing.AddLocal(sharing.Indicator{Type: "ip", Value: ip, Reason: "canary"}, 3600)
+			go sharing.PushAll()
 		}
 		metrics.ObserveBlock(domainName, "canary")
 		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "canary_" + canaryMatch.Kind, Rule: canaryMatch.Path, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
@@ -737,6 +755,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//unaffected and nothing is configured by default.
 	if repListed {
 		susLv += firewall.ReputationBump()
+	}
+
+	//Threat-sharing bump (Batch 8): one level, never a
+	//block on its own. Logged like a shared-reputation hit.
+	if sharedInd {
+		susLv += 1
+		logging.Log(logging.Entry{Event: "sharing", Domain: domainName, IP: ip, Action: "sharing_indicator", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 
 	//Check if encryption-result is already "cached" to prevent load on reverse proxy

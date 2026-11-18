@@ -253,6 +253,10 @@ func redactConfigForExport(cfg *domains.Configuration) {
 		redact(&cfg.Proxy.EventWebhooks[i].URL)
 		redact(&cfg.Proxy.EventWebhooks[i].Secret)
 	}
+	// Threat-sharing peer secrets: one per peer pairing.
+	for i := range cfg.Proxy.ThreatSharing.Peers {
+		redact(&cfg.Proxy.ThreatSharing.Peers[i].SharedSecret)
+	}
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

@@ -365,6 +365,7 @@ type Proxy struct {
 	MaxRequestBody  int64            `json:"maxRequestBody"`
 	StatusPage      bool             `json:"statusPage"`
 	GitOps          GitOpsConfig     `json:"gitops"`
+	ThreatSharing   ThreatSharingConfig `json:"threatSharing"`
 	SSO             *SSOConfig      `json:"sso"`
 	Stripe          StripeConfig    `json:"stripe"`
 	PublicAPIKeys   []PublicAPIKey  `json:"publicApiKeys"`

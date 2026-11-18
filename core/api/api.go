@@ -343,6 +343,51 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 		})
 	case "GET_PROXY_FEATURES":
 		APIResponse(writer, true, proxyFeaturesResponse())
+	case "GET_SHARING_STATUS":
+		response, errCode := sharingStatusResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "ADD_INDICATOR":
+		response, errCode := addIndicatorResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "REMOVE_INDICATOR":
+		response, errCode := removeIndicatorResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "PULL_INDICATORS":
+		response, errCode := pullIndicatorsResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
+	case "PUSH_INDICATORS":
+		response, errCode := pushIndicatorsResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "REFRESH_REPUTATION_FEED":
 		started := firewall.RefreshReputationFeedAsync()
 		feedConfigured, _, _, _, _, _, _, _, _ := firewall.ReputationStatus()

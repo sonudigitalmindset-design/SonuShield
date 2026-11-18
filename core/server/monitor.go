@@ -26,6 +26,7 @@ import (
 	"sonushield/core/privacy"
 	"sonushield/core/proxy"
 	"sonushield/core/reports"
+	"sonushield/core/sharing"
 	"sonushield/core/timeline"
 	"sonushield/core/utils"
 )
@@ -514,6 +515,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 	}
 
 	firewall.InitReputation(domains.Config.Proxy.ReputationList, domains.Config.Proxy.ReputationFeed, domains.Config.Proxy.ReputationIntvl, domains.Config.Proxy.ReputationSusLv)
+	sharing.Configure(domains.Config.Proxy.ThreatSharing)
 
 	// Per-IP connection cap (Batch 5, slowloris guard). Re-applied
 	// on reload so cap changes take effect without a restart.
