@@ -7,7 +7,7 @@ package controlplane
 // control plane holds one HTTP client per node with the
 // node's TLS settings (SNI override, private CA bundle, or
 // test-only verification skip) and sends the node's API
-// secret only as the Proxy-Secret header to that node. Node
+// secret only as the X-SonuShield-Secret header to that node. Node
 // secrets are never logged, never returned, and never sent
 // anywhere else.
 //
@@ -159,7 +159,7 @@ func (n *nodeClient) call(method, path, rawQuery string, body []byte, username s
 	if n.hostHeader != "" {
 		req.Host = n.hostHeader
 	}
-	req.Header.Set("Proxy-Secret", n.apiSecret)
+	req.Header.Set("X-SonuShield-Secret", n.apiSecret)
 	req.Header.Set("X-SonuShield-CSRF", "1")
 	if n.cpSecret != "" && username != "" {
 		caller := callerIdentity(username)
@@ -269,7 +269,7 @@ func (n *nodeClient) stream(path, rawQuery, username string) (io.ReadCloser, int
 	if n.hostHeader != "" {
 		req.Host = n.hostHeader
 	}
-	req.Header.Set("Proxy-Secret", n.apiSecret)
+	req.Header.Set("X-SonuShield-Secret", n.apiSecret)
 	req.Header.Set("X-SonuShield-CSRF", "1")
 	if n.cpSecret != "" && username != "" {
 		caller := callerIdentity(username)

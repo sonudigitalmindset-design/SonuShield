@@ -72,7 +72,7 @@ func AuthenticatedControlRequest(request *http.Request) bool {
 	path := request.URL.Path
 	if proxy.AdminSecret != "" {
 		if path == "/_bProxy/"+proxy.AdminSecret+"/api/v1" {
-			if _, _, ok := proxy.ScopeForSecret(request.Header.Get("proxy-secret")); ok {
+			if _, _, ok := proxy.ScopeForSecret(SecretFromRequest(request)); ok {
 				return true
 			}
 			_, ok, _ := attemptSSOAuth(request)
@@ -85,7 +85,7 @@ func AuthenticatedControlRequest(request *http.Request) bool {
 		// the dashboard; the handler itself checks the secret
 		// header or SSO cookie.
 		if path == "/_bProxy/"+proxy.AdminSecret+"/log-tail" {
-			if _, _, ok := proxy.ScopeForSecret(request.Header.Get("Proxy-Secret")); ok {
+			if _, _, ok := proxy.ScopeForSecret(SecretFromRequest(request)); ok {
 				return true
 			}
 			_, ok, _ := attemptSSOAuth(request)
@@ -98,7 +98,7 @@ func AuthenticatedControlRequest(request *http.Request) bool {
 		}
 	}
 	if strings.HasPrefix(path, "/_bProxy/api/v2") {
-		if _, _, ok := proxy.ScopeForSecret(request.Header.Get("Proxy-Secret")); ok {
+		if _, _, ok := proxy.ScopeForSecret(SecretFromRequest(request)); ok {
 			return true
 		}
 		_, ok, _ := attemptSSOAuth(request)
@@ -116,7 +116,7 @@ func AuthenticatedControlRequest(request *http.Request) bool {
 
 func Process(writer http.ResponseWriter, request *http.Request, domainData domains.DomainData) bool {
 
-	role, tenant, ok := proxy.ScopeForSecret(request.Header.Get("proxy-secret"))
+	role, tenant, ok := proxy.ScopeForSecret(SecretFromRequest(request))
 	ssoAuthed := false
 
 	// The recorder captures the response so the deferred audit
@@ -154,7 +154,7 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	// caller identity hash, captured before the audit
 	// suffixes below mutate role.
 	rawRole := role
-	hash := callerHash(request, ssoAuthed, request.Header.Get("proxy-secret"))
+	hash := callerHash(request, ssoAuthed, SecretFromRequest(request))
 
 	// Sale-readiness (H-2 fix): bound the v1 body read. API
 	// v1 requests are small JSON; an unbounded read lets any
@@ -953,7 +953,7 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		auditDomain, auditActionName = parts[0], parts[1]
 	}
 
-	role, tenant, ok := proxy.ScopeForSecret(r.Header.Get("Proxy-Secret"))
+	role, tenant, ok := proxy.ScopeForSecret(SecretFromRequest(r))
 	ssoAuthed := false
 
 	// The recorder captures the response so the deferred audit
@@ -987,7 +987,7 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 	// Two-person approval (Batch 7): raw role and caller
 	// identity, captured before the audit suffixes below.
 	rawRole := role
-	hash := callerHash(r, ssoAuthed, r.Header.Get("Proxy-Secret"))
+	hash := callerHash(r, ssoAuthed, SecretFromRequest(r))
 
 	if len(parts) == 1 {
 

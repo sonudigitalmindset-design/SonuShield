@@ -84,7 +84,7 @@ type ControlPlaneNode struct {
 	// the node's /_bProxy/api/v2/ endpoints under it.
 	URL string `json:"url"`
 	// APISecret is the node's apisecret (admin). It is sent
-	// only as the Proxy-Secret header to this node, and is
+	// only as the X-SonuShield-Secret header to this node, and is
 	// never logged or returned.
 	APISecret string `json:"apiSecret"`
 	// AdminSecret is the node's adminsecret, needed only

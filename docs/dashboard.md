@@ -19,7 +19,7 @@ In Cloudflare mode, open the same path through your Cloudflare-fronted domain as
 Two secrets protect the dashboard, reusing the existing API mechanisms — no new authentication scheme is added:
 
 - The page itself is served only on the exact admin-secret path, following the v1 API pattern. A wrong or missing secret never receives the page; the request falls through to normal proxy handling, as with the v1 API. If no admin secret is configured, the dashboard is not served at all.
-- After the page loads, enter your `apisecret`. The dashboard sends it only as the `Proxy-Secret` header to the existing API v2 endpoints on the same host. The secret is kept in the browser tab's session storage and is cleared when you click "Forget secret" or close the tab. It is never placed in a URL or written to a log.
+- After the page loads, enter your `apisecret`. The dashboard sends it only as the `X-SonuShield-Secret` header to the existing API v2 endpoints on the same host. The secret is kept in the browser tab's session storage and is cleared when you click "Forget secret" or close the tab. It is never placed in a URL or written to a log.
 - When SSO is configured, a "Sign in with SSO" button appears instead of (or alongside) the secret form: signing in through your identity provider sets a signed session cookie, and API calls then authenticate with that cookie plus a CSRF header — no API secret is typed or stored. Secret-path auth keeps working alone, and either method grants access when configured. See [SSO for the Dashboard](configuration.md#sso-for-the-dashboard). These on-domain SSO paths are superseded once the dashboard moves to the control host, which has its own SSO login — see [Control Plane](control-plane.md#sso).
 
 ## What It Shows and Does

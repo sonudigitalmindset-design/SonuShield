@@ -65,7 +65,7 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 |-------|------|-------------|
 | `cloudflare` | Bool | Set to `true` to run behind Cloudflare. See [Cloudflare Mode](how-it-works.md#cloudflare-mode). |
 | `adminsecret` | String | Secret used in the v1 API path and in the dashboard URL. Must not contain `CHANGE_ME`. |
-| `apisecret` | String | Secret sent in the `proxy-secret` / `Proxy-Secret` API header. Must not contain `CHANGE_ME`. |
+| `apisecret` | String | Secret sent in the `X-SonuShield-Secret` API header (the legacy `Proxy-Secret` spelling is still accepted for non-browser clients). Must not contain `CHANGE_ME`. |
 | `secrets` | Map[String]String | Challenge secrets with keys `cookie`, `javascript`, and `captcha`. Must not contain `CHANGE_ME`. Generate secure random values, for example with `openssl rand -hex 20` or [random.org](https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new). |
 | `timeout` | Object | Connection timeouts in seconds: `idle` (default 5), `read` (default 5), `write` (default 7), `read_header` (default 5). A value of `0` keeps the default. |
 | `ratelimit_time` | Int | Window in seconds over which the rate limits below are counted. Values below 10 are raised to 10; defaults to 10 when unset. |
@@ -1062,7 +1062,7 @@ Browsers send Content Security Policy violation reports to `POST /_bProxy/csp-re
 
 ## Live Log Tail
 
-The dashboard Logs view streams new log entries live over `GET /_bProxy/<adminsecret>/log-tail` (server-sent events), authenticated like the rest of the control plane (a `Proxy-Secret` header or an SSO session plus the CSRF header). Entries are the same sanitized records the JSON logger writes — no bodies, cookies, query strings, or secrets — and audit entries are never streamed. The tail works even when file logging is disabled. Delivery is best-effort and bounded (16 subscribers, 100-entry buffers; a full buffer drops entries rather than blocking requests). Tenant-scoped callers see only their own tenant's domains.
+The dashboard Logs view streams new log entries live over `GET /_bProxy/<adminsecret>/log-tail` (server-sent events), authenticated like the rest of the control plane (an `X-SonuShield-Secret` header or an SSO session plus the CSRF header). Entries are the same sanitized records the JSON logger writes — no bodies, cookies, query strings, or secrets — and audit entries are never streamed. The tail works even when file logging is disabled. Delivery is best-effort and bounded (16 subscribers, 100-entry buffers; a full buffer drops entries rather than blocking requests). Tenant-scoped callers see only their own tenant's domains.
 
 ## Synthetic Checks
 

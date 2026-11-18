@@ -27,7 +27,7 @@ package server
 // configured cookie secret with domain separation; no new secret
 // to configure), HttpOnly + Secure + SameSite=Lax, scoped to
 // /_bProxy/, valid for 8 hours. The API accepts a valid session
-// cookie as an alternative to the Proxy-Secret header, but only
+// cookie as an alternative to the X-SonuShield-Secret header, but only
 // when the request also carries the CSRF header the dashboard
 // sends (see api.SSOSessionValidator and proxy.SSOCSRFHeader):
 // a bare cookie must never authenticate a cross-site request.

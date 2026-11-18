@@ -12,7 +12,7 @@ Send a `POST` request with a JSON body to:
 
 ```text
 POST /_bProxy/<adminsecret>/api/v1
-Header: proxy-secret: <apisecret>
+Header: X-SonuShield-Secret: <apisecret>
 Body:   {"domain": "<domain name or empty>", "action": "<ACTION>", "params": {"<key>": "<value>"}}
 ```
 
@@ -26,10 +26,14 @@ Send a request to one of these paths (any method with a readable body works; the
 /_bProxy/api/v2/<ACTION>
 /_bProxy/api/v2/<domain>/<ACTION>
 /_bProxy/api/v2/<domain>/SET_DOMAIN_FEATURES?wafMode=block&...
-Header: Proxy-Secret: <apisecret>
+Header: X-SonuShield-Secret: <apisecret>
 ```
 
 Actions that take parameters read them from the URL query string in v2 (first value wins per key). Prefer `POST` for actions that change settings.
+
+### The secret header
+
+Both versions accept the secret in the `X-SonuShield-Secret` header. The historical `Proxy-Secret` spelling is still accepted for scripts and older clients, but browsers can never send it: the Fetch Standard forbids page script from setting any header whose name starts with `proxy-` or `sec-`, so `fetch()` silently drops it. Browser-based clients (including the dashboard) must use `X-SonuShield-Secret`.
 
 ## Response Format
 

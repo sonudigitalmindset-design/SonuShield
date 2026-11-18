@@ -64,7 +64,7 @@ Node fields:
 |-------|-------------|
 | `name` | Unique node name: lowercase letters, digits, hyphens, underscores. Shown in the dashboard node switcher and the audit log. |
 | `url` | The node's base URL. The control plane calls `/_bProxy/api/v2/` under it. |
-| `apiSecret` | The node's admin `apisecret`. Sent only as the `Proxy-Secret` header to this node; never logged or returned. |
+| `apiSecret` | The node's admin `apisecret`. Sent only as the `X-SonuShield-Secret` header to this node; never logged or returned. |
 | `adminSecret` | The node's `adminsecret`, needed only for the live log tail (the tail path carries it). Without it, log tail is unavailable for that node through the control plane. |
 | `controlPlaneSecret` | Shared secret matching the node's `proxy.controlPlaneSecret`. Lets the node tell control-plane operators apart for two-person approval. Without it (on either side), approvals through the control plane fail closed — see [Two-Person Approval](#two-person-approval). |
 | `serverName` | TLS ServerName (SNI) override, for nodes reached by IP. Also the default `Host` header when `host` is unset. |

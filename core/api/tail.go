@@ -4,7 +4,7 @@ package api
 //
 // GET /_bProxy/<adminsecret>/log-tail streams sanitized log
 // entries as server-sent events. Authentication reuses the
-// control-plane rules: a Proxy-Secret header with any known
+// control-plane rules: a X-SonuShield-Secret header with any known
 // role secret (viewer or above), or a valid SSO session
 // cookie plus the CSRF header. Tenant-scoped callers receive
 // only entries for their own tenant's domains. The endpoint
@@ -43,7 +43,7 @@ func ServeLogTail(writer http.ResponseWriter, request *http.Request) bool {
 	if !IsLogTailRequest(request) {
 		return false
 	}
-	_, tenantScope, ok := proxy.ScopeForSecret(request.Header.Get("Proxy-Secret"))
+	_, tenantScope, ok := proxy.ScopeForSecret(SecretFromRequest(request))
 	if !ok {
 		_, ssoOK, csrfMissing := attemptSSOAuth(request)
 		if csrfMissing {

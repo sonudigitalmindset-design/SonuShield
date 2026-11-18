@@ -293,7 +293,7 @@ tr.selected td{background:var(--nav-active-bg)}
     <section id="authPanel" class="auth">
       <div class="panel">
         <h1 data-i18n="authTitle">Connect to SonuShield</h1>
-        <p class="sub" data-i18n="authSub">Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>Proxy-Secret</code> header to this same host, and is never written to a URL or a log.</p>
+        <p class="sub" data-i18n="authSub">Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>X-SonuShield-Secret</code> header to this same host, and is never written to a URL or a log.</p>
         <form id="authForm">
           <label for="secretInput" data-i18n="authLabel">API secret</label>
           <!-- Visible text field, deliberately not password: a masked field hides paste mistakes and invites password-manager autofill, both of which caused real failed connects. The value is cleared after every attempt. -->
@@ -964,7 +964,7 @@ tr.selected td{background:var(--nav-active-bg)}
         <h2 data-i18n="aboutSecTitle">Security notes</h2>
         <ul>
           <li data-i18n="aboutSec1">This page is only served on the admin-secret path. Anyone without the exact path never receives it.</li>
-          <li data-i18n="aboutSec2">All data comes from the existing API v2 endpoints with the <code>Proxy-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.</li>
+          <li data-i18n="aboutSec2">All data comes from the existing API v2 endpoints with the <code>X-SonuShield-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.</li>
           <li data-i18n="aboutSec3">Your theme (Dark/Light) and language (English/Hindi) choices are stored in this browser's local storage and never sent to the server.</li>
           <li data-i18n="aboutSec4">Keep both secrets out of screenshots, chat logs, and shared URLs. Rotate them in <code>config.json</code> if they ever leak.</li>
         </ul>
@@ -1109,7 +1109,7 @@ navReports: "Reports",
 navAboutH: "About",
 navAbout: "About &amp; limits",
 authTitle: "Connect to SonuShield",
-authSub: "Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>Proxy-Secret</code> header to this same host, and is never written to a URL or a log.",
+authSub: "Enter the <code>apisecret</code> from your <code>config.json</code>. It is kept only in this browser tab (session storage), is sent only as the <code>X-SonuShield-Secret</code> header to this same host, and is never written to a URL or a log.",
 authLabel: "API secret",
 authConnect: "Connect",
 ssoSub: "Or continue with your organisation's sign-in.",
@@ -1337,7 +1337,7 @@ aboutNeed2: "<strong>Removing domains, and changing backends, schemes, and certi
 aboutNeed3: "<strong>Proxy-wide settings</strong> (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging) — edit <code>config.json</code>, then use Reload config here.",
 aboutSecTitle: "Security notes",
 aboutSec1: "This page is only served on the admin-secret path. Anyone without the exact path never receives it.",
-aboutSec2: "All data comes from the existing API v2 endpoints with the <code>Proxy-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.",
+aboutSec2: "All data comes from the existing API v2 endpoints with the <code>X-SonuShield-Secret</code> header. Your API secret stays in this tab's session storage and is cleared when you click “Forget secret” or close the tab.",
 aboutSec3: "Your theme (Dark/Light) and language (English/Hindi) choices are stored in this browser's local storage and never sent to the server.",
 aboutSec4: "Keep both secrets out of screenshots, chat logs, and shared URLs. Rotate them in <code>config.json</code> if they ever leak.",
 aboutFooter: "SonuShield — lightweight HTTP anti-DDoS reverse proxy. Originally balooProxy by 41Baloo, forked and rebuilt by Sonu Digital Mindset. Licensed under the GNU General Public License v3.0.",
@@ -1857,7 +1857,7 @@ navReports: "Reports",
 navAboutH: "About",
 navAbout: "About व limits",
 authTitle: "SonuShield से connect करें",
-authSub: "अपने <code>config.json</code> से <code>apisecret</code> डालें। यह सिर्फ इसी browser tab में रहता है (session storage), सिर्फ इसी host को <code>Proxy-Secret</code> header के रूप में भेजा जाता है, और कभी किसी URL या log में नहीं लिखा जाता।",
+authSub: "अपने <code>config.json</code> से <code>apisecret</code> डालें। यह सिर्फ इसी browser tab में रहता है (session storage), सिर्फ इसी host को <code>X-SonuShield-Secret</code> header के रूप में भेजा जाता है, और कभी किसी URL या log में नहीं लिखा जाता।",
 authLabel: "API secret",
 authConnect: "Connect",
 ssoSub: "या अपनी organisation के sign-in से आगे बढ़ें।",
@@ -2085,7 +2085,7 @@ aboutNeed2: "<strong>Domains हटाना, और backends, schemes व certi
 aboutNeed3: "<strong>Proxy-wide settings</strong> (timeouts, rate limits, GeoIP databases, auto SSL, metrics, logging) — <code>config.json</code> edit करें, फिर यहाँ Reload config इस्तेमाल करें।",
 aboutSecTitle: "Security notes",
 aboutSec1: "यह page सिर्फ admin-secret path पर serve होता है। जिसके पास exact path नहीं है, उसे यह page कभी नहीं मिलता।",
-aboutSec2: "सारा data मौजूदा API v2 endpoints से <code>Proxy-Secret</code> header के साथ आता है। आपका API secret इसी tab की session storage में रहता है और “Forget secret” click करने या tab बंद करने पर साफ़ हो जाता है।",
+aboutSec2: "सारा data मौजूदा API v2 endpoints से <code>X-SonuShield-Secret</code> header के साथ आता है। आपका API secret इसी tab की session storage में रहता है और “Forget secret” click करने या tab बंद करने पर साफ़ हो जाता है।",
 aboutSec3: "आपकी theme (Dark/Light) और भाषा (English/Hindi) की पसंद इसी browser की local storage में रहती है और कभी server को नहीं भेजी जाती।",
 aboutSec4: "दोनों secrets को screenshots, chat logs और shared URLs से दूर रखें। अगर कभी leak हो जाएँ तो <code>config.json</code> में बदल दें।",
 aboutFooter: "SonuShield — lightweight HTTP anti-DDoS reverse proxy। मूल रूप से 41Baloo का balooProxy, Sonu Digital Mindset द्वारा fork करके rebuild किया गया। GNU General Public License v3.0 के तहत licensed।",
@@ -2594,7 +2594,7 @@ function apiV2(path, method){
   // when the API secret header is present. The secret header is
   // omitted in SSO mode so no secret is ever sent.
   var headers = {"X-SonuShield-CSRF": "1"};
-  if(apiSecret){ headers["Proxy-Secret"] = apiSecret; }
+  if(apiSecret){ headers["X-SonuShield-Secret"] = apiSecret; }
   return fetch(path, {method: method || "GET", headers: headers, credentials: "same-origin", cache: "no-store"})
     .then(function(res){
       if(CP && res.status === 401){ location.href = "/login"; throw new Error("session expired"); }
@@ -3357,7 +3357,7 @@ function importRules(ev){
 }
 
 // Live log tail (Batch 8). Uses fetch + ReadableStream, not
-// EventSource: EventSource cannot send the Proxy-Secret
+// EventSource: EventSource cannot send the X-SonuShield-Secret
 // header. The tail URL is derived from the dashboard URL,
 // which already contains the admin secret path.
 var tailController = null;
@@ -3400,7 +3400,7 @@ function startTail(){
   $("tailStartBtn").disabled = true;
   $("tailStopBtn").disabled = false;
   var headers = {"X-SonuShield-CSRF": "1"};
-  if(apiSecret){ headers["Proxy-Secret"] = apiSecret; }
+  if(apiSecret){ headers["X-SonuShield-Secret"] = apiSecret; }
   var controller = tailController;
   fetch(tailUrl(), {headers: headers, credentials: "same-origin", cache: "no-store", signal: controller.signal})
     .then(function(res){

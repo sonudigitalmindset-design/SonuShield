@@ -266,6 +266,15 @@ names, or challenge flow semantics.
   whitespace is rejected with a specific hint, and a failed connect
   now reports how many characters were sent. Service-worker shell
   version bumped to v2 so browsers pick up the new shell.
+- API-secret header fix (dashboard Connect never worked in any
+  browser): the secret was sent as a `Proxy-Secret` header, but the
+  Fetch Standard forbids page script from setting any header starting
+  with `proxy-` or `sec-`, so browsers silently dropped it and every
+  dashboard Connect failed while curl worked. The canonical header is
+  now `X-SonuShield-Secret` (dashboard, control-plane node calls,
+  panel plugin); the server still accepts the legacy `Proxy-Secret`
+  spelling for scripts and older clients. See [API
+  Reference](docs/api.md).
 
 ## Known limitations (carried forward)
 

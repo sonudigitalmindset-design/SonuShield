@@ -8,7 +8,7 @@ library only; no third-party packages.
 Authentication: the API secret goes in the SONUSHIELD_API_SECRET
 environment variable, or --secret on the command line (discouraged: it
 shows up in process listings). The secret is sent only as the
-Proxy-Secret header to the --api-url host, and is never printed.
+X-SonuShield-Secret header to the --api-url host, and is never printed.
 
 API v2 shape (see docs/api.md): reads are GET, writes are POST with query
 parameters, and every response is {"success": bool, "results": {...}}.
@@ -55,7 +55,7 @@ class Client:
         request = urllib.request.Request(
             self.api_url + path,
             method=method,
-            headers={"Proxy-Secret": self.secret},
+            headers={"X-SonuShield-Secret": self.secret},
         )
         try:
             with urllib.request.urlopen(
