@@ -357,6 +357,34 @@ tr.selected td{background:var(--nav-active-bg)}
       <div class="inline-ok" id="rulesOk" role="status"></div>
       <div id="rulesBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       <div class="panel">
+        <h2 data-i18n="builderTitle">Visual rule builder</h2>
+        <p class="small muted" data-i18n="builderNote">Build an expression from field, operator, and value pickers. Conditions combine with AND. Boolean fields and ip.quic are not offered: the engine cannot compare booleans, and ip.quic is reserved and inactive (see the firewall-rules docs). The generated expression goes into the form below and is validated server-side on save, exactly like a typed rule.</p>
+        <div id="builderRows"></div>
+        <div class="formgrid" style="margin-top:12px">
+          <div class="field">
+            <label for="builderAction" data-i18n="builderActionLabel">Action for the generated rule</label>
+            <select id="builderAction">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4" selected>4</option>
+              <option value="+1">+1</option>
+              <option value="+2">+2</option>
+              <option value="+3">+3</option>
+              <option value="-1">-1</option>
+            </select>
+            <div class="hint" data-i18n="ruleActionHint"><code>0</code> allow, <code>1</code>–<code>3</code> challenge, <code>4+</code> block, <code>+N</code>/<code>-N</code> adjust and continue.</div>
+          </div>
+        </div>
+        <div class="btnrow">
+          <button type="button" id="builderAddBtn" data-i18n="builderAddCond">Add condition</button>
+          <button class="primary" type="button" id="builderGenBtn" data-i18n="builderGenerate">Generate into form</button>
+          <button type="button" id="builderValidateBtn" data-i18n="builderValidate">Validate</button>
+        </div>
+        <div id="builderResult" style="margin-top:12px"></div>
+      </div>
+      <div class="panel">
         <h2 id="ruleFormTitle" data-i18n="ruleFormAdd">Add a rule</h2>
         <form id="ruleForm">
           <div class="formgrid">
@@ -1523,7 +1551,22 @@ rumP95: "p95",
 rumBeacons: "{0} beacons received.",
 rumAvgTtfb: "Avg TTFB",
 rumAvgLoad: "Avg load",
-errLoadRum: "Could not load RUM stats."
+errLoadRum: "Could not load RUM stats.",
+builderTitle: "Visual rule builder",
+builderNote: "Build an expression from field, operator, and value pickers. Conditions combine with AND. Boolean fields and ip.quic are not offered: the engine cannot compare booleans, and ip.quic is reserved and inactive (see the firewall-rules docs). The generated expression goes into the form below and is validated server-side on save, exactly like a typed rule.",
+builderActionLabel: "Action for the generated rule",
+builderAddCond: "Add condition",
+builderGenerate: "Generate into form",
+builderValidate: "Validate",
+builderFieldLabel: "Field",
+builderOpLabel: "Operator",
+builderValueLabel: "Value",
+builderRemove: "Remove",
+builderNeedRow: "Add at least one condition.",
+builderEmptyValue: "Every condition needs a value.",
+builderInvalidInt: "Integer fields need a whole number value.",
+builderInvalidIp: "IP fields need an IP address value, without quotes.",
+builderGenerated: "Expression generated into the form below:"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2188,7 +2231,22 @@ rumP95: "p95",
 rumBeacons: "{0} beacon प्राप्त हुए।",
 rumAvgTtfb: "औसत TTFB",
 rumAvgLoad: "औसत load",
-errLoadRum: "RUM stats load नहीं हो पाए।"
+errLoadRum: "RUM stats load नहीं हो पाए।",
+builderTitle: "विज़ुअल रूल बिल्डर",
+builderNote: "Field, operator और value picker से expression बनाएँ। Conditions AND से जुड़ती हैं। Boolean field और ip.quic नहीं दिए गए हैं: engine boolean की तुलना नहीं कर सकता, और ip.quic reserved व inactive है (firewall-rules docs देखें)। Generated expression नीचे वाले form में जाता है और save पर server-side validate होता है, बिल्कुल typed rule की तरह।",
+builderActionLabel: "Generated rule के लिए action",
+builderAddCond: "Condition जोड़ें",
+builderGenerate: "Form में generate करें",
+builderValidate: "Validate करें",
+builderFieldLabel: "Field",
+builderOpLabel: "Operator",
+builderValueLabel: "Value",
+builderRemove: "हटाएँ",
+builderNeedRow: "कम से कम एक condition जोड़ें।",
+builderEmptyValue: "हर condition के लिए value चाहिए।",
+builderInvalidInt: "Integer field के लिए पूरा number चाहिए।",
+builderInvalidIp: "IP field के लिए बिना quotes के IP address चाहिए।",
+builderGenerated: "Expression नीचे वाले form में generate हो गया:"
 }
 };
 function t(key){
@@ -2686,6 +2744,176 @@ function submitIPEntryForm(ev){
   });
 }
 
+// Visual rule builder (Batch 8). Generates only expressions
+// the gofilter engine accepts: documented populated fields,
+// type-correct operators, bare IP literals, quoted strings.
+// Boolean fields are excluded (the engine's equality test
+// has no boolean case, so eq/ne never match), as are
+// ip.quic (reserved/inactive) and the never-populated
+// ip.requests, http.headers, and http.body. The generated
+// expression is validated server-side on save, exactly like
+// a typed rule; Validate runs SIMULATE_RULE against zero
+// values without enforcing anything.
+var BUILDER_FIELDS = [
+  {name: "ip.src", type: "ip"},
+  {name: "ip.country", type: "string"},
+  {name: "ip.asn", type: "int"},
+  {name: "ip.engine", type: "string"},
+  {name: "ip.bot", type: "string"},
+  {name: "ip.fingerprint", type: "string"},
+  {name: "ip.ja4", type: "string"},
+  {name: "ip.reputation", type: "string"},
+  {name: "ip.risk", type: "int"},
+  {name: "ip.timing", type: "string"},
+  {name: "ip.searchbot", type: "string"},
+  {name: "ip.os", type: "string"},
+  {name: "ip.tcpinfo", type: "string"},
+  {name: "ip.behavior", type: "string"},
+  {name: "ip.http_requests", type: "int"},
+  {name: "ip.challenge_requests", type: "int"},
+  {name: "http.host", type: "string"},
+  {name: "http.version", type: "string"},
+  {name: "http.method", type: "string"},
+  {name: "http.url", type: "string"},
+  {name: "http.query", type: "string"},
+  {name: "http.path", type: "string"},
+  {name: "http.user_agent", type: "string"},
+  {name: "http.cookie", type: "string"},
+  {name: "http.fingerprint", type: "string"},
+  {name: "http.http2", type: "string"},
+  {name: "proxy.stage", type: "int"},
+  {name: "proxy.rps", type: "int"},
+  {name: "proxy.rps_allowed", type: "int"}
+];
+var BUILDER_OPS = {
+  string: ["eq", "ne", "contains", "matches"],
+  int: ["eq", "ne", "gt", "ge", "lt", "le"],
+  ip: ["eq", "ne"]
+};
+function builderFieldType(name){
+  for(var i = 0; i < BUILDER_FIELDS.length; i++){
+    if(BUILDER_FIELDS[i].name === name) return BUILDER_FIELDS[i].type;
+  }
+  return "string";
+}
+function builderFillOps(opSelect, type){
+  opSelect.textContent = "";
+  BUILDER_OPS[type].forEach(function(op){
+    var opt = document.createElement("option");
+    opt.value = op;
+    opt.textContent = op;
+    opSelect.appendChild(opt);
+  });
+}
+function builderAddRow(){
+  var row = document.createElement("div");
+  row.className = "formgrid builder-row";
+  row.style.marginTop = "8px";
+  var fieldWrap = document.createElement("div");
+  fieldWrap.className = "field";
+  var fieldLabel = document.createElement("label");
+  fieldLabel.textContent = t("builderFieldLabel");
+  var fieldSelect = document.createElement("select");
+  fieldSelect.className = "builder-field";
+  BUILDER_FIELDS.forEach(function(f){
+    var opt = document.createElement("option");
+    opt.value = f.name;
+    opt.textContent = f.name;
+    fieldSelect.appendChild(opt);
+  });
+  fieldWrap.appendChild(fieldLabel);
+  fieldWrap.appendChild(fieldSelect);
+  var opWrap = document.createElement("div");
+  opWrap.className = "field";
+  var opLabel = document.createElement("label");
+  opLabel.textContent = t("builderOpLabel");
+  var opSelect = document.createElement("select");
+  opSelect.className = "builder-op";
+  builderFillOps(opSelect, "ip");
+  opWrap.appendChild(opLabel);
+  opWrap.appendChild(opSelect);
+  var valWrap = document.createElement("div");
+  valWrap.className = "field";
+  var valLabel = document.createElement("label");
+  valLabel.textContent = t("builderValueLabel");
+  var valInput = document.createElement("input");
+  valInput.type = "text";
+  valInput.className = "builder-value";
+  valInput.spellcheck = false;
+  valInput.autocomplete = "off";
+  valInput.placeholder = "203.0.113.5";
+  valWrap.appendChild(valLabel);
+  valWrap.appendChild(valInput);
+  var rmWrap = document.createElement("div");
+  rmWrap.className = "field";
+  var rmBtn = document.createElement("button");
+  rmBtn.type = "button";
+  rmBtn.textContent = t("builderRemove");
+  rmBtn.addEventListener("click", function(){ row.remove(); });
+  rmWrap.appendChild(document.createElement("label"));
+  rmWrap.appendChild(rmBtn);
+  fieldSelect.addEventListener("change", function(){
+    var type = builderFieldType(fieldSelect.value);
+    builderFillOps(opSelect, type);
+    valInput.placeholder = type === "int" ? "100" : type === "ip" ? "203.0.113.5" : "/wp-login.php";
+  });
+  row.appendChild(fieldWrap);
+  row.appendChild(opWrap);
+  row.appendChild(valWrap);
+  row.appendChild(rmWrap);
+  $("builderRows").appendChild(row);
+}
+function builderEscapeString(value){
+  return '"' + value.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+}
+function builderExpression(){
+  var rows = document.querySelectorAll("#builderRows .builder-row");
+  if(!rows.length) return {error: t("builderNeedRow")};
+  var parts = [];
+  for(var i = 0; i < rows.length; i++){
+    var field = rows[i].querySelector(".builder-field").value;
+    var op = rows[i].querySelector(".builder-op").value;
+    var value = rows[i].querySelector(".builder-value").value.trim();
+    if(!value) return {error: t("builderEmptyValue")};
+    var type = builderFieldType(field);
+    if(type === "int"){
+      if(!/^-?\d+$/.test(value)) return {error: t("builderInvalidInt")};
+      parts.push(field + " " + op + " " + value);
+    } else if(type === "ip"){
+      if(!/^[0-9a-fA-F:.]+$/.test(value) || value.indexOf(".") < 0 && value.indexOf(":") < 0) return {error: t("builderInvalidIp")};
+      parts.push(field + " " + op + " " + value);
+    } else {
+      parts.push(field + " " + op + " " + builderEscapeString(value));
+    }
+  }
+  return {expr: "(" + parts.join(" and ") + ")"};
+}
+function builderGenerate(){
+  var built = builderExpression();
+  if(built.error){
+    setHTML("builderResult", '<div class="state state-error">' + esc(built.error) + '</div>');
+    return;
+  }
+  $("ruleExpr").value = built.expr;
+  $("simExpr").value = built.expr;
+  $("ruleAction").value = $("builderAction").value;
+  setHTML("builderResult", '<div class="state">' + t("builderGenerated") + ' <span class="mono">' + esc(built.expr) + '</span></div>');
+}
+function builderValidate(){
+  var built = builderExpression();
+  if(built.error){
+    setHTML("builderResult", '<div class="state state-error">' + esc(built.error) + '</div>');
+    return;
+  }
+  setHTML("builderResult", '<div class="state">' + t("simulating") + '</div>');
+  domainWrite(currentDomain, "SIMULATE_RULE", {expression: built.expr, sample: ""}).then(function(r){
+    var fields = (r.FIELDS_USED || []).map(function(f){ return esc(f); }).join(", ") || t("noneWord");
+    setHTML("builderResult", '<div class="state">' + (r.MATCH ? "<strong>" + t("simMatch") + "</strong> " + t("simMatchDetail") : "<strong>" + t("simNoMatch") + "</strong> " + t("simNoMatchDetail"))
+      + "<br>" + t("simFieldsUsed") + "<span class='mono'>" + fields + "</span></div>");
+  }).catch(function(err){
+    setHTML("builderResult", '<div class="state state-error"><strong>' + t("simFailed") + '</strong> ' + esc(err.message) + "</div>");
+  });
+}
 function simulateRule(){
   var expr = $("simExpr").value.trim();
   if(!expr) return;
@@ -3685,6 +3913,10 @@ $("simForm").addEventListener("submit", function(ev){
   ev.preventDefault();
   simulateRule();
 });
+$("builderAddBtn").addEventListener("click", builderAddRow);
+$("builderGenBtn").addEventListener("click", builderGenerate);
+$("builderValidateBtn").addEventListener("click", builderValidate);
+builderAddRow();
 $("rulesExportBtn").addEventListener("click", exportRules);
 $("importForm").addEventListener("submit", importRules);
 $("tplForm").addEventListener("submit", createFromTemplate);
