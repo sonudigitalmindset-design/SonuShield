@@ -81,6 +81,16 @@ func AuthenticatedControlRequest(request *http.Request) bool {
 		if path == "/_bProxy/"+proxy.AdminSecret+"/dashboard" {
 			return true
 		}
+		// Live log tail (Batch 8): same secret-path shape as
+		// the dashboard; the handler itself checks the secret
+		// header or SSO cookie.
+		if path == "/_bProxy/"+proxy.AdminSecret+"/log-tail" {
+			if _, _, ok := proxy.ScopeForSecret(request.Header.Get("Proxy-Secret")); ok {
+				return true
+			}
+			_, ok, _ := attemptSSOAuth(request)
+			return ok
+		}
 		// PWA shell assets (Batch 6): same secret-path
 		// authentication as the dashboard page itself.
 		if dashboard.IsShellAsset(path, proxy.AdminSecret) {

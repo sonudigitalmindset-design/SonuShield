@@ -141,6 +141,8 @@ tbody tr:hover td{background:var(--panel-2)}
 .note strong{color:var(--text)}
 .note.info{border-left-color:var(--info)}
 .state{border:1px dashed var(--border-strong);border-radius:var(--radius);padding:var(--space-3) var(--space-2);text-align:center;color:var(--muted);margin:8px 0}
+.tailbox{font-family:var(--mono);font-size:12.5px;max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface-muted);white-space:pre-wrap;word-break:break-word}
+.tailbox .tl-warn{color:var(--bad-text)}
 .state strong{color:var(--text)}
 .state-error{border-style:solid;border-color:var(--bad-border);background:var(--bad-bg);color:var(--bad-text)}
 .state-error strong{color:var(--bad-text)}
@@ -602,6 +604,16 @@ tr.selected td{background:var(--nav-active-bg)}
         <h2 data-i18n="cspTitle">CSP violation reports</h2>
         <p class="small muted" data-i18n="cspNote">Reports sent by browsers to /_bProxy/csp-report for this domain, newest first. Query strings are stripped from stored URLs. Reports never affect enforcement.</p>
         <div id="cspBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="tailTitle">Live log tail</h2>
+        <p class="small muted" data-i18n="tailNote">Streams new log entries as they happen, for all domains. Same sanitized fields as the JSON log file — no bodies, cookies, or secrets. The stream stops when you leave this view.</p>
+        <div class="btnrow">
+          <button class="primary" type="button" id="tailStartBtn" data-i18n="tailStart">Start tail</button>
+          <button type="button" id="tailStopBtn" disabled data-i18n="tailStop">Stop</button>
+          <span class="small muted" id="tailStatus"></span>
+        </div>
+        <div class="tailbox" id="tailBody" style="margin-top:12px"><span class="muted" data-i18n="tailEmpty">Tail is stopped. Press Start tail to stream new entries.</span></div>
       </div>
     </section>
 
@@ -1484,7 +1496,15 @@ cspViolated: "Violated directive",
 cspEffective: "Effective directive",
 cspSource: "Source",
 cspStatus: "Status",
-errLoadCsp: "Could not load CSP reports."
+errLoadCsp: "Could not load CSP reports.",
+tailTitle: "Live log tail",
+tailNote: "Streams new log entries as they happen, for all domains. Same sanitized fields as the JSON log file — no bodies, cookies, or secrets. The stream stops when you leave this view.",
+tailStart: "Start tail",
+tailStop: "Stop",
+tailRunning: "Streaming…",
+tailStopped: "Stopped.",
+tailEmpty: "Tail is stopped. Press Start tail to stream new entries.",
+tailError: "Stream ended unexpectedly. Press Start tail to reconnect."
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2128,7 +2148,15 @@ cspViolated: "Violated directive",
 cspEffective: "Effective directive",
 cspSource: "Source",
 cspStatus: "Status",
-errLoadCsp: "CSP रिपोर्ट load नहीं हो पाईं।"
+errLoadCsp: "CSP रिपोर्ट load नहीं हो पाईं।",
+tailTitle: "लाइव लॉग टेल",
+tailNote: "नई लॉग एंट्री आते ही stream करती है, सभी domains के लिए। JSON लॉग फ़ाइल जैसे ही sanitized fields — कोई body, cookie या secret नहीं। इस view से जाते ही stream रुक जाती है।",
+tailStart: "टेल शुरू करें",
+tailStop: "रोकें",
+tailRunning: "Streaming…",
+tailStopped: "रुक गई।",
+tailEmpty: "टेल रुकी हुई है। नई एंट्री stream करने के लिए Start tail दबाएँ।",
+tailError: "Stream अचानक बंद हो गई। फिर से जोड़ने के लिए Start tail दबाएँ।"
 }
 };
 function t(key){
@@ -2674,6 +2702,91 @@ function importRules(ev){
   });
 }
 
+// Live log tail (Batch 8). Uses fetch + ReadableStream, not
+// EventSource: EventSource cannot send the Proxy-Secret
+// header. The tail URL is derived from the dashboard URL,
+// which already contains the admin secret path.
+var tailController = null;
+var tailLines = 0;
+function tailUrl(){
+  return location.pathname.replace(/\/dashboard\/?$/, "/log-tail");
+}
+function tailLine(entry){
+  var parts = [];
+  parts.push(entry.ts || "");
+  parts.push("[" + (entry.level || "info") + "]");
+  parts.push(entry.event || "");
+  parts.push(entry.domain || "");
+  if(entry.ip) parts.push(entry.ip);
+  if(entry.action) parts.push(entry.action);
+  if(entry.method || entry.path) parts.push((entry.method || "") + " " + (entry.path || ""));
+  return parts.join(" ");
+}
+function appendTail(entry){
+  var box = $("tailBody");
+  if(tailLines === 0) box.textContent = "";
+  var div = document.createElement("div");
+  if(entry.level === "warn") div.className = "tl-warn";
+  div.textContent = tailLine(entry);
+  box.appendChild(div);
+  tailLines++;
+  while(tailLines > 100 && box.firstChild){
+    box.removeChild(box.firstChild);
+    tailLines--;
+  }
+  box.scrollTop = box.scrollHeight;
+}
+function startTail(){
+  if(tailController) return;
+  tailController = new AbortController();
+  tailLines = 0;
+  $("tailBody").textContent = "";
+  setText("tailStatus", t("tailRunning"));
+  $("tailStartBtn").disabled = true;
+  $("tailStopBtn").disabled = false;
+  var headers = {"X-SonuShield-CSRF": "1"};
+  if(apiSecret){ headers["Proxy-Secret"] = apiSecret; }
+  var controller = tailController;
+  fetch(tailUrl(), {headers: headers, credentials: "same-origin", cache: "no-store", signal: controller.signal})
+    .then(function(res){
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      var reader = res.body.getReader();
+      var decoder = new TextDecoder();
+      var buf = "";
+      function pump(){
+        return reader.read().then(function(result){
+          if(result.done) throw new Error("closed");
+          buf += decoder.decode(result.value, {stream: true});
+          var idx;
+          while((idx = buf.indexOf("\n\n")) >= 0){
+            var raw = buf.slice(0, idx);
+            buf = buf.slice(idx + 2);
+            raw.split("\n").forEach(function(line){
+              if(line.indexOf("data: ") === 0){
+                try { appendTail(JSON.parse(line.slice(6))); } catch(e){}
+              }
+            });
+          }
+          return pump();
+        });
+      }
+      return pump();
+    })
+    .catch(function(err){
+      if(controller.signal.aborted) return;
+      setText("tailStatus", t("tailError"));
+      stopTail();
+    });
+}
+function stopTail(){
+  if(tailController){
+    tailController.abort();
+    tailController = null;
+  }
+  setText("tailStatus", t("tailStopped"));
+  $("tailStartBtn").disabled = false;
+  $("tailStopBtn").disabled = true;
+}
 function loadCSPReports(){
   return domainAction(currentDomain, "GET_CSP_REPORTS?limit=50").then(function(r){
     var reports = r.REPORTS || [];
@@ -3458,6 +3571,9 @@ function cfApply(){
 var currentView = "overview";
 function showView(name){
   currentView = name;
+  // Live tail (Batch 8): stop the stream when leaving the
+  // logs view so it does not run in the background.
+  if(name !== "logs") stopTail();
   document.querySelectorAll(".navbtn").forEach(function(b){
     b.classList.toggle("active", b.getAttribute("data-view") === name);
   });
@@ -3532,6 +3648,8 @@ document.querySelectorAll("[data-underattack]").forEach(function(btn){
 });
 $("clearLogsBtn").addEventListener("click", function(){ clearLogs(false); });
 $("clearAllLogsBtn").addEventListener("click", function(){ clearLogs(true); });
+$("tailStartBtn").addEventListener("click", startTail);
+$("tailStopBtn").addEventListener("click", stopTail);
 $("settingsForm").addEventListener("submit", submitSettings);
 $("settingsReloadBtn").addEventListener("click", function(){ loadSettings(); });
 $("backupsReloadBtn").addEventListener("click", function(){ loadBackups(); });

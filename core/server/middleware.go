@@ -74,6 +74,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Live log tail (Batch 8). Authenticated streaming
+	//endpoint, handled before any challenge or rate limiting
+	//like metrics. Falls through when the path does not match.
+	if api.ServeLogTail(writer, request) {
+		return
+	}
+
 	//Public status page (Batch 5). Opt-in via proxy.statusPage,
 	//handled before any challenge or rate limiting, like metrics.
 	//When disabled, the request falls through exactly as before.

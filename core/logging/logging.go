@@ -209,11 +209,13 @@ func levelFor(event string) string {
 	}
 }
 
-// Log appends one JSON entry to the log file. It returns immediately
-// when logging is disabled, and never panics: serialization and
-// write problems disable logging instead of affecting the request.
+// Log appends one JSON entry to the log file and broadcasts
+// it to live-tail subscribers (Batch 8). It returns
+// immediately when logging is disabled and nobody is
+// tailing, and never panics: serialization and write
+// problems disable logging instead of affecting the request.
 func Log(entry Entry) {
-	if !Enabled() {
+	if !Enabled() && !hasTailSubscribers() {
 		return
 	}
 	if entry.Timestamp.IsZero() {
@@ -247,6 +249,11 @@ func Log(entry Entry) {
 		return
 	}
 	data = append(data, '\n')
+
+	// Live tail (Batch 8): the sanitized entry goes to
+	// subscribers whether or not a file is configured.
+	// Audit entries never reach this path.
+	broadcastTail(entry)
 
 	writeLine(data)
 }
