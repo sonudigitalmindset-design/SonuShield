@@ -275,6 +275,15 @@ names, or challenge flow semantics.
   panel plugin); the server still accepts the legacy `Proxy-Secret`
   spelling for scripts and older clients. See [API
   Reference](docs/api.md).
+- Dashboard redesign (original enterprise console layout, light theme
+  now the default): slimmer top bar, grouped sidebar navigation,
+  compact stat row, dense tables with shaded headers, 1px-border
+  cards, and system fonts only — no external resources, no copied
+  branding. All views, IDs, and translations are unchanged. The
+  Overview gains one addition: a lightweight SVG traffic sparkline
+  drawn only from the totals the existing 3s poll already fetches
+  (no new API calls). Service-worker shell bumped to v4 so browsers
+  pick up the new shell.
 
 ## Known limitations (carried forward)
 

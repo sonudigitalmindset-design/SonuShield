@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,16 +8,42 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<meta name="theme-color" content="#0b1220">
+<meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>(function(){try{var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="dark";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<script>(function(){try{var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="light";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
 __CP_BOOTSTRAP__
 <style>
-/* SonuShield Dashboard — one layout, two color themes (Premium Dark / Official Classic Light).
-   Only color tokens change between themes; spacing, type, and components are shared. */
-:root, :root[data-theme="dark"]{
+
+/* SonuShield Dashboard — enterprise console layout (original design).
+   Light theme is the default; Dark stays available via the toggle.
+   Only color tokens change between themes; spacing, type, and
+   components are shared. No external resources: system fonts only. */
+:root{
+  color-scheme:light;
+  --bg:#f5f6f8; --surface:#ffffff; --panel:#ffffff; --panel-2:#f0f2f5;
+  --border:#e3e6ea; --border-strong:#cfd5dc;
+  --text:#1b2330; --muted:#5b6675; --faint:#8b95a4;
+  --accent:#f6821f; --accent-hover:#e56f0d; --accent-ink:#1a1206; --accent-text:#b45309;
+  --amber:#b45309; --info:#0369a1;
+  --code-bg:#eef1f4; --input-bg:#ffffff; --nav-active-bg:#eef1f4;
+  --ok-bg:#e8f7ee; --ok-text:#157347; --ok-border:#bfe6cd;
+  --warn-bg:#fef6e0; --warn-text:#8a5a00; --warn-border:#f0dca4;
+  --bad-bg:#fdecea; --bad-text:#b42318; --bad-border:#f3c2bd;
+  --banner-bg:#fdecea; --banner-text:#7a271a; --banner-border:#f3c2bd;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  --shadow-md:0 4px 16px rgba(16,24,40,.10);
+  --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
+  --radius:6px; --radius-lg:8px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  /* Motion language (shared with the docs diagrams): one easing, one duration scale. */
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-in-out:cubic-bezier(.45,0,.55,1);
+  --dur-fast:.15s; --dur-med:.25s; --dur-slow:.4s;
+}
+:root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0b1220; --surface:#0d1729; --panel:#111d33; --panel-2:#0e1829;
   --border:#1e2c47; --border-strong:#2b3d61;
@@ -32,48 +58,22 @@ __CP_BOOTSTRAP__
   --shadow-sm:0 1px 2px rgba(0,0,0,.35);
   --shadow-md:0 8px 24px rgba(0,0,0,.35);
 }
-:root[data-theme="light"]{
-  color-scheme:light;
-  --bg:#f4f6f8; --surface:#ffffff; --panel:#ffffff; --panel-2:#f0f2f5;
-  --border:#e2e6eb; --border-strong:#cdd4db;
-  --text:#1c2733; --muted:#5b6878; --faint:#8a95a5;
-  --accent:#f6821f; --accent-hover:#e56f0d; --accent-ink:#1a1206; --accent-text:#b45309;
-  --amber:#b45309; --info:#0369a1;
-  --code-bg:#eef1f4; --input-bg:#ffffff; --nav-active-bg:#eef1f4;
-  --ok-bg:#e8f7ee; --ok-text:#157347; --ok-border:#bfe6cd;
-  --warn-bg:#fef6e0; --warn-text:#8a5a00; --warn-border:#f0dca4;
-  --bad-bg:#fdecea; --bad-text:#b42318; --bad-border:#f3c2bd;
-  --banner-bg:#fdecea; --banner-text:#7a271a; --banner-border:#f3c2bd;
-  --shadow-sm:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
-  --shadow-md:0 8px 24px rgba(16,24,40,.10);
-}
-:root{
-  --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
-  --radius:8px; --radius-lg:12px;
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-  /* Motion language (shared with the docs diagrams): one easing, one duration scale. */
-  --ease-out:cubic-bezier(.22,1,.36,1);
-  --ease-in-out:cubic-bezier(.45,0,.55,1);
-  --dur-fast:.15s; --dur-med:.25s; --dur-slow:.4s;
-}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:var(--accent-text)}
 code{font-family:var(--mono);font-size:.92em;background:var(--code-bg);padding:1px 6px;border-radius:4px;word-break:break-all}
 button,input{font:inherit}
-button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
 /* Top bar */
-.topbar{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-1) var(--space-3);background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap;min-height:56px}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.topbar{display:flex;align-items:center;gap:12px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap;min-height:52px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
 .brand svg{flex:none}
-.wordmark{font-size:17px;font-weight:700;letter-spacing:.1px;line-height:1.15}
+.wordmark{font-size:16px;font-weight:700;letter-spacing:.1px;line-height:1.15}
 .wordmark small{display:block;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
 .topbar .spacer{flex:1}
-.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted);background:var(--panel);white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:var(--radius);padding:4px 10px;font-size:12.5px;color:var(--muted);background:var(--panel);white-space:nowrap}
 #nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:2px 4px;font-size:12px;max-width:180px}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
 .pill.ok{color:var(--ok-text);border-color:var(--ok-border)}
@@ -137,64 +137,80 @@ td{transition:background-color var(--dur-fast) var(--ease-out)}
   body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot,td{transition:none}
   button:hover:not(:disabled),.btn:hover{transform:none}
 }
-.themeseg{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:2px;background:var(--panel);gap:2px}
-.themeseg button{border:none;background:transparent;color:var(--muted);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
+.themeseg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);padding:2px;background:var(--panel);gap:2px}
+.themeseg button{border:none;background:transparent;color:var(--muted);border-radius:4px;padding:4px 10px;font-size:12.5px;font-weight:600}
 .themeseg button[aria-pressed="true"]{background:var(--nav-active-bg);color:var(--text);box-shadow:var(--shadow-sm)}
-button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:var(--radius);padding:8px 16px;font-weight:500;line-height:1.3}
+button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:var(--radius);padding:7px 14px;font-size:13.5px;font-weight:500;line-height:1.3}
 button:hover,.btn:hover{border-color:var(--faint)}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 button:disabled{opacity:.5;cursor:default}
-input,select,textarea{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px 12px;line-height:1.3}
+input,select,textarea{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:var(--radius);padding:7px 10px;font-size:13.5px;line-height:1.3}
 
 /* Layout */
-.layout{display:flex;min-height:calc(100vh - 57px)}
-.sidebar{width:216px;flex:none;border-right:1px solid var(--border);background:var(--surface);padding:var(--space-2) var(--space-1)}
-.sidebar h3{margin:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--faint)}
-.navbtn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;margin:2px 0;padding:8px 12px;border:1px solid transparent;background:transparent;border-radius:var(--radius);color:var(--muted);font-size:14px}
+.layout{display:flex;min-height:calc(100vh - 53px)}
+.sidebar{width:232px;flex:none;border-right:1px solid var(--border);background:var(--surface);padding:12px 8px}
+.sidebar h3{margin:16px 12px 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)}
+.sidebar h3:first-of-type{margin-top:2px}
+.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:2px 0;padding:7px 12px;border:1px solid transparent;background:transparent;border-radius:var(--radius);color:var(--muted);font-size:13.5px}
 .navbtn svg{flex:none}
 .navbtn:hover{background:var(--panel-2);color:var(--text)}
 .navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
 .navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
-.main{flex:1;padding:var(--space-3) var(--space-4) 40px;min-width:0}
-.main > section, .main > .banner{max-width:1180px}
+.main{flex:1;padding:24px 28px 48px;min-width:0}
+.main > section, .main > .banner{max-width:1280px}
 .view{display:none}
 .view.active{display:block}
-h1{font-size:22px;line-height:1.3;font-weight:650;margin:0 0 8px;letter-spacing:-.01em}
-h2{font-size:15px;line-height:1.35;font-weight:600;margin:0 0 8px}
-.sub{color:var(--muted);margin:0 0 var(--space-2)}
+h1{font-size:20px;line-height:1.3;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 var(--space-2)}
 .sub strong{color:var(--text);font-weight:600}
 
 /* Cards, panels, tables */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-2);margin-bottom:var(--space-2)}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-2);box-shadow:var(--shadow-sm)}
-.card .label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
-.card .value{font-size:28px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow-sm)}
+.card .label{font-size:12.5px;font-weight:500;color:var(--muted)}
+.card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
 .card .foot{font-size:12px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-2);box-shadow:var(--shadow-sm);margin-top:var(--space-2)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;box-shadow:var(--shadow-sm);margin-top:16px}
 .panel > h2:first-child{margin-top:0}
 .panel p:last-child, .panel ul:last-child{margin-bottom:0}
 .panel ul{margin:8px 0;padding-left:20px}
 .panel li{margin:4px 0}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.panel-head h2{margin:0}
 #topIps,#topFps,#rulesBody,#logsBody,#domBody,#ipListsBody{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
-th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:8px}
-td{border-bottom:1px solid var(--border);padding:8px;vertical-align:top;word-break:break-word}
+thead th{background:var(--panel-2)}
+th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:7px 10px;white-space:nowrap}
+td{border-bottom:1px solid var(--border);padding:7px 10px;vertical-align:top;word-break:break-word}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--panel-2)}
 .mono{font-family:var(--mono);font-size:12.5px}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
-.badge{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
+.badge{display:inline-block;border-radius:4px;padding:1px 8px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
 .badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg)}
 .badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg)}
 .badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg)}
 .bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
 .bar-row .lbl{width:44px;flex:none;font-family:var(--mono);font-size:12.5px}
-.bar-row .track{flex:1;height:10px;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.bar-row .track{flex:1;height:8px;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
 .bar-row .fill{height:100%;background:var(--accent)}
 .bar-row .val{width:150px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+
+/* Traffic chart (Overview): SVG sparkline drawn from the 3s poll totals. */
+.chart-legend{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted)}
+.legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex:none}
+.legend-total{background:var(--accent)}
+.legend-bypass{background:var(--info)}
+.chart-wrap{position:relative}
+.chart-svg{width:100%;height:120px;display:block}
+.chart-area{fill:var(--accent);fill-opacity:.08}
+.chart-line-total{stroke:var(--accent)}
+.chart-line-bypass{stroke:var(--info)}
 
 /* Notes, states, banner */
 .note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
@@ -208,7 +224,7 @@ tbody tr:hover td{background:var(--panel-2)}
 .state-error strong{color:var(--bad-text)}
 .banner{display:none;border:1px solid var(--banner-border);background:var(--banner-bg);color:var(--banner-text);border-radius:var(--radius);padding:12px 16px;margin-bottom:var(--space-2)}
 .banner.show{display:block}
-.auth{max-width:460px;margin:40px auto}
+.auth{max-width:440px;margin:48px auto}
 .auth .panel{padding:var(--space-3);box-shadow:var(--shadow-md)}
 .auth label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 8px}
 .auth label:first-of-type{margin-top:0}
@@ -239,8 +255,9 @@ tr.selected td{background:var(--nav-active-bg)}
   .sidebar h3{display:none}
   .navbtn{display:inline-flex;width:auto}
   .navbtn .tag{display:none}
-  .main{padding:var(--space-2) var(--space-2) 32px}
-  .topbar{padding:8px 16px;gap:8px}
+  .main{padding:16px 16px 32px}
+  .topbar{padding:8px 12px;gap:8px}
+  .panel{padding:14px 16px}
 }
 </style>__BRAND_STYLE__
 </head>
@@ -256,8 +273,8 @@ tr.selected td{background:var(--nav-active-bg)}
   <div class="spacer"></div>
   <span class="pill" id="updatingPill" hidden><span class="spinner" aria-hidden="true"></span><span data-i18n="updating">Updating</span></span>
   <span class="themeseg" role="group" data-i18n-aria="themeAria" aria-label="Color theme">
-    <button type="button" data-theme-choice="dark" aria-pressed="true" data-i18n="themeDark">Dark</button>
-    <button type="button" data-theme-choice="light" aria-pressed="false" data-i18n="themeLight">Light</button>
+    <button type="button" data-theme-choice="dark" aria-pressed="false" data-i18n="themeDark">Dark</button>
+    <button type="button" data-theme-choice="light" aria-pressed="true" data-i18n="themeLight">Light</button>
   </span>
   <span class="themeseg" role="group" data-i18n-aria="langAria" aria-label="Language">
     <button type="button" data-lang-choice="en" aria-pressed="true">English</button>
@@ -320,6 +337,19 @@ tr.selected td{background:var(--nav-active-bg)}
         <div class="card"><div class="label" data-i18n="cardRam">RAM usage</div><div class="value" id="cRam">—</div><div class="foot" data-i18n="cardRamFoot">proxy memory, percent</div></div>
         <div class="card"><div class="label" data-i18n="cardStage">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
         <div class="card"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-head">
+          <h2 data-i18n="colRequests">Requests</h2>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot legend-total"></span><span data-i18n="cardTotalRps">Total requests</span></span>
+            <span class="legend-item"><span class="legend-dot legend-bypass"></span><span data-i18n="cardBypassRps">Bypassed requests</span></span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg id="trafficChart" class="chart-svg" viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-hidden="true" hidden></svg>
+          <div class="state" id="trafficEmpty" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+        </div>
       </div>
       <div class="panel">
         <h2 data-i18n="topIpsTitle">Top IPs by requests (current rate-limit window)</h2>
@@ -1016,9 +1046,9 @@ function showBanner(msg){
   b.classList.add("show");
 }
 
-/* Theme: Premium Dark (default) / Official Classic Light. Persisted in localStorage. */
+/* Theme: Official Classic Light (default) / Premium Dark. Persisted in localStorage. */
 function applyTheme(theme){
-  if(theme !== "light" && theme !== "dark"){ theme = "dark"; }
+  if(theme !== "light" && theme !== "dark"){ theme = "light"; }
   document.documentElement.setAttribute("data-theme", theme);
   document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
     btn.setAttribute("aria-pressed", btn.getAttribute("data-theme-choice") === theme ? "true" : "false");
@@ -1033,7 +1063,7 @@ document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
   try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
   if(saved === "light" || saved === "dark"){ applyTheme(saved); return; }
   var current = document.documentElement.getAttribute("data-theme");
-  applyTheme(current === "light" ? "light" : "dark");
+  applyTheme(current === "dark" ? "dark" : "light");
 })();
 
 /* Dashboard language: English / Hindi. Every UI string lives in STR;
@@ -2685,6 +2715,44 @@ function setStat(id, text){
 }
 function setHTML(id, html){ var el = $(id); if(el) el.innerHTML = html; }
 
+/* Traffic sparkline: the last 40 poll samples (2 minutes) of the totals
+   the 3s poll already fetches. No new API calls, no libraries — a plain
+   inline SVG redrawn from the poll data. History resets per domain. */
+var trafficHist = [];
+var trafficDom = null;
+function pushTraffic(dom, total, bypassed){
+  if(dom !== trafficDom){ trafficHist = []; trafficDom = dom; }
+  if(!isFinite(total) || !isFinite(bypassed)) return;
+  trafficHist.push([total, bypassed]);
+  if(trafficHist.length > 40) trafficHist.shift();
+  drawTraffic();
+}
+function drawTraffic(){
+  var svg = $("trafficChart"), empty = $("trafficEmpty");
+  if(!svg || !empty) return;
+  if(trafficHist.length < 2){ svg.hidden = true; empty.hidden = false; return; }
+  svg.hidden = false; empty.hidden = true;
+  var W = 600, H = 120, PAD = 6, max = 1, i;
+  for(i = 0; i < trafficHist.length; i++){
+    if(trafficHist[i][0] > max) max = trafficHist[i][0];
+    if(trafficHist[i][1] > max) max = trafficHist[i][1];
+  }
+  function pts(idx){
+    var n = trafficHist.length, out = [];
+    for(var j = 0; j < n; j++){
+      var x = PAD + (W - 2 * PAD) * (n === 1 ? 0 : j / (n - 1));
+      var y = H - PAD - (H - 2 * PAD) * (trafficHist[j][idx] / max);
+      out.push(x.toFixed(1) + "," + y.toFixed(1));
+    }
+    return out.join(" ");
+  }
+  var totalPts = pts(0), bypPts = pts(1);
+  var area = "M" + PAD + "," + (H - PAD) + " L" + totalPts.split(" ").join(" L") + " L" + (W - PAD) + "," + (H - PAD) + " Z";
+  svg.innerHTML = '<path class="chart-area" d="' + area + '"/>' +
+    '<polyline class="chart-line-total" points="' + totalPts + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
+    '<polyline class="chart-line-bypass" points="' + bypPts + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>';
+}
+
 function loadOverview(){
   var dom = currentDomain;
   var pStats = proxyAction("GET_PROXY_STATS").catch(function(){ return null; });
@@ -2701,6 +2769,7 @@ function loadOverview(){
     if(brps) setStat("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     if(tot) setStat("cTotal", num(tot.TOTAL_REQUESTS));
     if(byp) setStat("cBypassed", num(byp.BYPASSED_REQUESTS));
+    if(rps && brps) pushTraffic(dom, parseFloat(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND), parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     if(ips){
       setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, t("colIp"), t("colRequests")));
     }
