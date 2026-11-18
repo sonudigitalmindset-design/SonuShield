@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"sonushield/core/billing"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/metrics"
@@ -36,6 +37,10 @@ func Serve() {
 	//GitOps sync loop (Batch 5). Started once; inert unless the
 	//operator enables proxy.gitops.
 	StartGitOpsWatcher()
+
+	//Stripe usage reporter (Batch 6). Started once; inert without
+	//a valid key and a report interval in proxy.stripe.
+	billing.StartReporter()
 
 	if domains.Config.Proxy.Cloudflare {
 

@@ -24,26 +24,10 @@ import (
 )
 
 // tenantDomains groups configured domain names by tenant, from
-// the live settings. The "debug" pseudo-domain is never listed
-// (it is not in domains.Domains).
+// the live settings. Delegates to domains.TenantDomains so the
+// usage API and the billing reporter aggregate identically.
 func tenantDomains() map[string][]string {
-	grouped := map[string][]string{}
-	for _, name := range domains.Domains {
-		uncasted, ok := domains.DomainsMap.Load(name)
-		if !ok {
-			continue
-		}
-		settings, _ := uncasted.(domains.DomainSettings)
-		tenant := settings.Tenant
-		if tenant == "" {
-			tenant = domains.DefaultTenant
-		}
-		grouped[tenant] = append(grouped[tenant], name)
-	}
-	for _, names := range grouped {
-		sort.Strings(names)
-	}
-	return grouped
+	return domains.TenantDomains()
 }
 
 func tenantsListResponse() map[string]interface{} {

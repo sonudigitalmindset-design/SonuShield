@@ -14,7 +14,10 @@ package domains
 // (proxy.apiRoles values of the form "tenant:<name>:<role>")
 // match the normalized name.
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // DefaultTenant is the tenant every domain belongs to unless the
 // config assigns another.
@@ -28,4 +31,28 @@ func NormalizeTenant(value string) string {
 		return DefaultTenant
 	}
 	return trimmed
+}
+
+// TenantDomains groups configured domain names by tenant, from
+// the live settings. The "debug" pseudo-domain is never listed
+// (it is not in Domains). Shared by the usage API and the
+// billing reporter so both aggregate identically.
+func TenantDomains() map[string][]string {
+	grouped := map[string][]string{}
+	for _, name := range Domains {
+		uncasted, ok := DomainsMap.Load(name)
+		if !ok {
+			continue
+		}
+		settings, _ := uncasted.(DomainSettings)
+		tenant := settings.Tenant
+		if tenant == "" {
+			tenant = DefaultTenant
+		}
+		grouped[tenant] = append(grouped[tenant], name)
+	}
+	for _, names := range grouped {
+		sort.Strings(names)
+	}
+	return grouped
 }

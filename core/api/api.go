@@ -325,6 +325,17 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			return
 		}
 		APIResponse(writer, true, response)
+	case "GET_STRIPE_STATUS":
+		APIResponse(writer, true, stripeStatusResponse())
+	case "REPORT_STRIPE_USAGE":
+		response, errCode := reportStripeUsageResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "CLEAR_LOGS":
 		APIResponse(writer, true, clearAllLogsResponse())
 	case "LIST_CONFIG_BACKUPS":

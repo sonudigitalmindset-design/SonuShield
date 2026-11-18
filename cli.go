@@ -213,6 +213,8 @@ func redactConfigForExport(cfg *domains.Configuration) {
 	if cfg.Proxy.SSO != nil {
 		redact(&cfg.Proxy.SSO.ClientSecret)
 	}
+	// Stripe secret key: never in an export without --include-secrets.
+	redact(&cfg.Proxy.Stripe.SecretKey)
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

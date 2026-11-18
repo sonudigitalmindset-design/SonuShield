@@ -295,6 +295,7 @@ type Proxy struct {
 	StatusPage      bool             `json:"statusPage"`
 	GitOps          GitOpsConfig     `json:"gitops"`
 	SSO             *SSOConfig      `json:"sso"`
+	Stripe          StripeConfig    `json:"stripe"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }
