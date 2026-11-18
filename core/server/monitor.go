@@ -97,6 +97,11 @@ func Monitor() {
 		}
 		firewall.Mutex.Unlock()
 
+		// Anomaly signal (Batch 3): score windows completed
+		// since the last tick. Outside the firewall mutex;
+		// the detector has its own. No-op when disabled.
+		anomalyTick()
+
 		printStats()
 
 		PrintMutex.Unlock()
@@ -838,6 +843,10 @@ func reloadFromConfig(cfg *domains.Configuration) {
 	// process-wide store from the new config, so enabling,
 	// disabling, or repointing Redis takes effect on reload.
 	applySharedStoreConfig()
+
+	// Anomaly signal (Batch 3): enable or disable the
+	// log-only detector from the new config.
+	applyAnomalyConfig()
 
 	proxy.WatchedDomain = domains.Domains[0]
 }

@@ -110,6 +110,9 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `controlPlaneSecret` | String | Shared secret under which a trusted control plane proves caller identities for two-person approval. Empty (default) disables the mechanism. See [Control Plane](control-plane.md#two-person-approval). |
 | `dashboardMode` | String | On-domain dashboard mode: `"local"` (default, served as before), `"control-plane"` (redirect to `controlPlaneUrl`, else bare 404), or `"off"` (bare 404). Unknown values fail safe to `"off"`. See [Control Plane](control-plane.md#dashboard-modes-and-migration). |
 | `controlPlaneUrl` | String | Control-plane dashboard URL that on-domain dashboard requests redirect to when `dashboardMode` is `"control-plane"`. Must be an absolute `http(s)` URL; anything else falls back to a bare 404. |
+| `redis` | Object | Optional Redis-backed shared rate-limit counts and challenge-result cache for multi-server deployments: `{"enabled", "addr", "password", "db", "tls", "keyPrefix", "sharedCache", "timeoutMs"}`. Disabled by default; single-server behavior is unchanged when off. See [Multi-Server](multi-server.md). |
+| `http3` | Object | Optional HTTP/3 (QUIC) serving: `{"enabled", "addr"}` (empty `addr` means `:443`). Disabled by default; ignored in Cloudflare mode. See [HTTP/3](http3.md). |
+| `anomalyDetection` | Bool | `true` enables the experimental log-only anomaly signal. Default `false`. It never changes suspicion levels, challenges, or blocks. See [ML Evaluation](ml-evaluation.md). |
 
 Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 

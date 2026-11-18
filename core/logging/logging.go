@@ -83,6 +83,12 @@ type Entry struct {
 	// suspicion level the rules would have produced had dry-run
 	// mode been off. SusLevel stays the level actually applied.
 	WouldBeSusLevel int `json:"would_be_sus_level,omitempty"`
+	// AnomalyScore is set only on "anomaly" entries (Batch
+	// 3): the experimental detector's z-score for the
+	// (IP, 10s window) sample. It is a log-only signal and
+	// never affects suspicion, challenges, or blocks. See
+	// core/anomaly and docs/ml-evaluation.md.
+	AnomalyScore float64 `json:"anomaly_score,omitempty"`
 
 	Method    string `json:"method,omitempty"`
 	Path      string `json:"path,omitempty"`

@@ -802,6 +802,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		logging.Log(logging.Entry{Event: "sharing", Domain: domainName, IP: ip, Action: "sharing_indicator", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 	}
 
+	//Anomaly signal (Batch 3): log-only observation of the
+	//evaluated request. Never changes susLv. A request
+	//counts as challenged-path traffic when it arrived
+	//without a challenge cookie.
+	anomalyObserve(domainName, ip, logPath, reqUa, tlsFp, riskScore, !strings.Contains(request.Header.Get("Cookie"), "__bProxy_v="))
+
 	//Check if encryption-result is already "cached" to prevent load on reverse proxy
 	encryptedIP := ""
 	hashedEncryptedIP := ""

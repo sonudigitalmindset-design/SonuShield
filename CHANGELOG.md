@@ -229,6 +229,38 @@ names, or challenge flow semantics.
   vendoring is not permitted — the CDN dependency stands, documented in
   the [Roadmap](docs/roadmap.md).
 
+### Batch 3 — Multi-server, HTTP/3, Cloudflare auto-UAM, ML evaluation (`333e1e3`, `d779c8c`, `1279f90`, `454bdac`, `b5fc9d0`, `2bbacc0`, `c55c31b`)
+
+- Hardening: `applyRuleAction("")` can no longer panic on an empty
+  action (safe no-op, evaluation continues).
+- Optional Redis-backed shared rate-limit counts + challenge-result
+  cache (`proxy.redis`, off by default, fail-open; go-redis v9 pinned
+  to the Go 1.24 ceiling). Verified against miniredis + one live
+  node; real Redis + two live nodes still pending. See
+  [Multi-Server](docs/multi-server.md).
+- HTTP/3 + QUIC fingerprinting (`proxy.http3`, off by default;
+  quic-go v0.59 pinned to the Go 1.24 ceiling). The reserved `ip.quic`
+  rule field carries real observed data only; unobservable signals
+  are documented, not guessed. Verified by an in-process end-to-end
+  test (UDP is blocked on the build VM); socket delivery and browser
+  interop untested. See [HTTP/3](docs/http3.md).
+- Cloudflare auto Under Attack Mode (plumbing only, per-domain,
+  config-file-only token): raises the zone security level while an
+  attack is detected and restores it after. Verified against a mock
+  Cloudflare API; no real API call made. See
+  [Cloudflare Auto-UAM](docs/cloudflare-auto-uam.md).
+- ML anomaly evaluation: offline evaluation of a z-score detector
+  over existing signals (`tools/ml-eval`), beating the
+  count-threshold baseline on synthetic harness traffic under a
+  pre-registered rule (test F1 0.842 vs 0.710, precision 1.000).
+  The evaluated detector shipped as an experimental, log-only,
+  off-by-default signal (`proxy.anomalyDetection`) with the
+  evaluation's constants baked in and the synthetic-data caveats
+  stated. See [ML Evaluation](docs/ml-evaluation.md).
+- Release workflow fix (`5f3a25e`, separate commit): `contents: write`
+  permission + maintained release action; the release job is green
+  again.
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without
@@ -239,7 +271,10 @@ names, or challenge flow semantics.
 - Community rule packs: none bundled; the operator supplies their own.
 - gofilter rejects quoted IP literals in rule expressions (bare literals
   only) — documented in [Firewall Rules](docs/firewall-rules.md).
-- Batch 3 (multi-server state, HTTP/3, Cloudflare API, ML) is not
-  implemented; nodes share no runtime state.
+- Batch 3 residuals: real Redis + two live nodes unverified; HTTP/3
+  UDP delivery and browser interop untested; no live Cloudflare API
+  call made; the anomaly detector's constants come from synthetic
+  harness traffic only and are expected to be miscalibrated on real
+  traffic (log-only, off by default).
 - No server is 100% DDoS-proof; see
   [Architecture](docs/architecture.md#honest-limits).

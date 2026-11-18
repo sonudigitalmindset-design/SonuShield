@@ -96,6 +96,10 @@ func proxyFeaturesResponse() map[string]interface{} {
 		// It does not prove the UDP listener bound; a bind
 		// failure only logs at startup.
 		"HTTP3_ENABLED": domains.Config != nil && domains.Config.Proxy.HTTP3.Enabled,
+		// Anomaly signal (Batch 3): whether the
+		// experimental log-only detector is enabled. It
+		// never affects traffic; see docs/ml-evaluation.md.
+		"ANOMALY_DETECTION": domains.Config != nil && domains.Config.Proxy.AnomalyDetection,
 	}
 }
 

@@ -152,12 +152,12 @@ Quality work needed before the project can be evaluated seriously by a larger or
 - Architecture documentation and a changelog (✅ [Architecture](architecture.md), [Changelog](../CHANGELOG.md)).
 - Clean-history review (✅ including the old public private key that remains in git history and must never be reused; see [History Review](history-review.md)).
 
-## Batch 3 — Heavy Work, Last
+## Batch 3 — Heavy Work, Last ✅ Done (18 November 2026)
 
-- Multi-server rate limiting with Redis.
-- HTTP/3 support.
-- Cloudflare API integration for automatic Under Attack mode.
-- Machine-learning anomaly detection (evaluation first).
+- Multi-server rate limiting with Redis (✅ optional, fail-open; live multi-server verification pending the user's Redis — see [Multi-Server](multi-server.md)).
+- HTTP/3 support (✅ behind a flag; QUIC handshake verified in-process, UDP delivery and browser interop untested on the VM — see [HTTP/3](http3.md)).
+- Cloudflare API integration for automatic Under Attack mode (✅ plumbing verified against a mock API; no real Cloudflare call made — see [Cloudflare Auto-UAM](cloudflare-auto-uam.md)).
+- Machine-learning anomaly detection (✅ evaluated first; log-only detector shipped under a pre-registered rule — see [ML Evaluation](ml-evaluation.md)).
 
 ## Also Noted for Later
 

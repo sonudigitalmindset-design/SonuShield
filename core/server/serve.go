@@ -74,6 +74,12 @@ func Serve() {
 	//reconfigure it via reloadFromConfig.
 	applySharedStoreConfig()
 
+	//Experimental log-only anomaly signal (Batch 3).
+	//Configured once from proxy.anomalyDetection; inert
+	//unless enabled. Reloads reconfigure it via
+	//reloadFromConfig.
+	applyAnomalyConfig()
+
 	if domains.Config.Proxy.Cloudflare {
 
 		service := &http.Server{

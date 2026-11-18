@@ -439,6 +439,11 @@ type Proxy struct {
 	// docs/http3.md. Ignored in Cloudflare mode, where
 	// there is no TLS listener.
 	HTTP3 HTTP3Config `json:"http3"`
+	// AnomalyDetection (Batch 3): experimental log-only
+	// anomaly signal. Off by default; see core/anomaly
+	// and docs/ml-evaluation.md. It never changes
+	// suspicion levels, challenges, or blocks.
+	AnomalyDetection bool `json:"anomalyDetection"`
 }
 
 // RedisConfig (Batch 3) configures the optional
