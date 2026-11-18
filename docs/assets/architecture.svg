@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430" role="img" aria-label="SonuShield request pipeline schematic: visitor to TLS listener, fingerprinting, rules and stage machine, then challenge, edge cache, or backend pool">
+  <rect width="900" height="430" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+  <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+    <text x="450" y="34" text-anchor="middle" font-size="15" font-weight="700" fill="#14263f" opacity="0">SonuShield Request Pipeline<animate attributeName="opacity" values="0;1" dur="0.8s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/></text>
+    <text x="450" y="52" text-anchor="middle" font-size="12" fill="#57606a" opacity="0">Schematic — one process, in-memory state, config.json on disk<animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.12s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/></text>
+
+    <!-- Visitor -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
+      <rect x="30" y="90" width="130" height="96" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <rect x="30" y="90" width="130" height="30" rx="10" fill="#14263f"/>
+      <rect x="30" y="104" width="130" height="16" fill="#14263f"/>
+      <text x="95" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#dbe7f3">Visitor</text>
+      <text x="95" y="144" text-anchor="middle" font-size="12" fill="#14263f">Browser · Bot</text>
+      <text x="95" y="164" text-anchor="middle" font-size="12" fill="#57606a">Untrusted input</text>
+    </g>
+
+    <!-- TLS listener -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
+      <rect x="200" y="90" width="150" height="96" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <rect x="200" y="90" width="150" height="30" rx="10" fill="#14263f"/>
+      <rect x="200" y="104" width="150" height="16" fill="#14263f"/>
+      <text x="275" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#dbe7f3">TLS Listener</text>
+      <text x="275" y="144" text-anchor="middle" font-size="12" fill="#14263f">SNI cert select</text>
+      <text x="275" y="164" text-anchor="middle" font-size="12" fill="#57606a">:443 · :80 redirect</text>
+    </g>
+
+    <!-- Fingerprinting -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
+      <rect x="390" y="90" width="160" height="96" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <rect x="390" y="90" width="160" height="30" rx="10" fill="#14263f"/>
+      <rect x="390" y="104" width="160" height="16" fill="#14263f"/>
+      <text x="470" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#dbe7f3">Fingerprinting</text>
+      <text x="470" y="144" text-anchor="middle" font-size="12" fill="#14263f">TLS · JA4 · sh1 · H2</text>
+      <text x="470" y="164" text-anchor="middle" font-size="12" fill="#57606a">Geo · Reputation · Risk</text>
+    </g>
+
+    <!-- Rules + stage -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.46s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.46s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
+      <rect x="590" y="90" width="150" height="96" rx="10" fill="#ffffff" stroke="#14263f" stroke-width="2"/>
+      <rect x="590" y="90" width="150" height="30" rx="10" fill="#14263f"/>
+      <rect x="590" y="104" width="150" height="16" fill="#14263f"/>
+      <text x="665" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#dbe7f3">Rules + Stage</text>
+      <text x="665" y="144" text-anchor="middle" font-size="12" fill="#14263f">Edge · Firewall · WAF</text>
+      <text x="665" y="164" text-anchor="middle" font-size="12" fill="#57606a">Suspicion 0–4</text>
+    </g>
+
+    <!-- Outcome row -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.58s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.58s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
+      <rect x="200" y="250" width="150" height="72" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="275" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Challenge</text>
+      <text x="275" y="298" text-anchor="middle" font-size="11" fill="#57606a">Cookie · PoW · Captcha</text>
+      <rect x="390" y="250" width="160" height="72" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="470" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Edge Cache</text>
+      <text x="470" y="298" text-anchor="middle" font-size="11" fill="#57606a">GET · explicit freshness</text>
+      <rect x="590" y="250" width="150" height="72" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="665" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Backend Pool</text>
+      <text x="665" y="298" text-anchor="middle" font-size="11" fill="#57606a">Health · Failover · WS</text>
+      <rect x="780" y="250" width="90" height="72" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="825" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Origin</text>
+      <text x="825" y="298" text-anchor="middle" font-size="11" fill="#57606a">Your site</text>
+    </g>
+
+    <!-- Arrows -->
+    <g stroke="#8fa6bd" stroke-width="1.5" fill="none" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.7s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <line x1="160" y1="138" x2="196" y2="138"/><polygon points="196,138 186,133 186,143" fill="#8fa6bd" stroke="none"/>
+      <line x1="350" y1="138" x2="386" y2="138"/><polygon points="386,138 376,133 376,143" fill="#8fa6bd" stroke="none"/>
+      <line x1="550" y1="138" x2="586" y2="138"/><polygon points="586,138 576,133 576,143" fill="#8fa6bd" stroke="none"/>
+      <line x1="665" y1="186" x2="665" y2="246"/><polygon points="665,246 660,236 670,236" fill="#8fa6bd" stroke="none"/>
+      <line x1="550" y1="286" x2="586" y2="286"/><polygon points="586,286 576,281 576,291" fill="#8fa6bd" stroke="none"/>
+      <line x1="740" y1="286" x2="776" y2="286"/><polygon points="776,286 766,281 766,291" fill="#8fa6bd" stroke="none"/>
+    </g>
+
+    <!-- Lower row: management + state -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.82s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.82s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
+      <rect x="30" y="356" width="400" height="52" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="230" y="377" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Control plane (separate host) — dashboard, accounts, audit log</text>
+      <text x="230" y="396" text-anchor="middle" font-size="11" fill="#57606a">Manages nodes over API v2 · never sees visitor traffic</text>
+      <rect x="470" y="356" width="400" height="52" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+      <text x="670" y="377" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">State: memory only · config.json · no database</text>
+      <text x="670" y="396" text-anchor="middle" font-size="11" fill="#57606a">Reload discards caches · nodes share no state</text>
+    </g>
+  </g>
+</svg>
