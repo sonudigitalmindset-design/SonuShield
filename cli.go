@@ -293,6 +293,23 @@ func redactConfigForExport(cfg *domains.Configuration) {
 	}
 	// Origin-signal shared secret.
 	redact(&cfg.Proxy.OriginSignals.Secret)
+	// Control-plane caller-identity secret (two-person
+	// approval through the control plane).
+	redact(&cfg.Proxy.ControlPlaneSecret)
+	// Control-plane section: session secret, SSO client
+	// secret, and per-node secrets.
+	if cfg.ControlPlane != nil {
+		redact(&cfg.ControlPlane.SessionSecret)
+		if cfg.ControlPlane.SSO != nil {
+			redact(&cfg.ControlPlane.SSO.ClientSecret)
+		}
+		for i := range cfg.ControlPlane.Nodes {
+			node := &cfg.ControlPlane.Nodes[i]
+			redact(&node.APISecret)
+			redact(&node.AdminSecret)
+			redact(&node.ControlPlaneSecret)
+		}
+	}
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

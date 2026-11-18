@@ -74,6 +74,9 @@ func Load() {
 	}
 
 	proxy.APISecret = domains.Config.Proxy.APISecret
+	// Shared secret for control-plane caller identities
+	// (two-person approval). Empty disables the mechanism.
+	proxy.ControlPlaneSecret = domains.Config.Proxy.ControlPlaneSecret
 	if strings.Contains(proxy.APISecret, "CHANGE_ME") {
 		panic("[ " + utils.PrimaryColor("!") + " ] [ API Secret Contains 'CHANGE_ME'. Refusing To Load ]")
 	}

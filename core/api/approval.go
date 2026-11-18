@@ -36,6 +36,7 @@ package api
 // handlers directly and therefore never re-enters the gate.
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -47,6 +48,7 @@ import (
 	"sonushield/core/events"
 	"sonushield/core/firewall"
 	"sonushield/core/logging"
+	"sonushield/core/proxy"
 )
 
 const defaultApprovalExpirySeconds = 300
@@ -114,9 +116,57 @@ func approvalExpiryDuration() time.Duration {
 // callerHash identifies the caller for distinctness checks:
 // the SHA-256 of the presented secret, or of the SSO
 // session cookie value. Only the hash is ever stored.
+// Control-plane caller identity (platform model). A control
+// plane fronts many operators behind one node API secret, so
+// without help every control-plane caller would hash to the
+// same identity and two-person approval could never complete
+// through it. When proxy.controlPlaneSecret is configured, the
+// control plane proves each caller's identity with two
+// headers: the caller value (a hash of the control-plane
+// username, never the username itself) and an HMAC-SHA256 of
+// that value under the shared secret. The headers are trusted
+// ONLY when the HMAC verifies under the configured secret, so
+// a holder of the API secret alone cannot forge a second
+// identity and self-approve. With no secret configured the
+// headers are ignored entirely and today's behavior is
+// unchanged.
+const (
+	cpCallerHeader = "X-SonuShield-CP-Caller"
+	cpCallerSig    = "X-SonuShield-CP-Signature"
+)
+
+// cpCallerIdentity verifies the control-plane caller headers
+// and returns the caller value when they prove an identity.
+// It reports false when the mechanism is unconfigured, the
+// headers are absent, or the signature does not verify. The
+// secret itself is never logged.
+func cpCallerIdentity(request *http.Request) (string, bool) {
+	secret := proxy.ControlPlaneSecret
+	if secret == "" {
+		return "", false
+	}
+	caller := request.Header.Get(cpCallerHeader)
+	sig := request.Header.Get(cpCallerSig)
+	if caller == "" || sig == "" {
+		return "", false
+	}
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(caller))
+	expected := hex.EncodeToString(mac.Sum(nil))
+	if !hmac.Equal([]byte(sig), []byte(expected)) {
+		return "", false
+	}
+	return caller, true
+}
+
 func callerHash(request *http.Request, ssoAuthed bool, secret string) string {
 	material := "secret:" + secret
-	if ssoAuthed {
+	if caller, ok := cpCallerIdentity(request); ok {
+		// A verified control-plane identity wins over the
+		// shared node secret: distinct operators behind the
+		// control plane hash distinctly.
+		material = "cp:" + caller
+	} else if ssoAuthed {
 		cookieValue := ""
 		if SSOSessionCookieValue != nil {
 			cookieValue = SSOSessionCookieValue(request)

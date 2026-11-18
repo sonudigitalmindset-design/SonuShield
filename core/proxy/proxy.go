@@ -21,6 +21,11 @@ var (
 	AdminSecret string
 	APISecret   string
 
+	// ControlPlaneSecret is the shared secret under which a
+	// trusted control plane proves caller identities for
+	// two-person approval. Empty disables the mechanism.
+	ControlPlaneSecret string
+
 	CookieSecret string
 	CookieOTP    string
 

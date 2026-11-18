@@ -148,6 +148,23 @@ func authorize(role, action string) (known, allowed bool) {
 	return true, roleLevel(role) >= roleLevel(minRole)
 }
 
+// MinRoleFor reports the minimum role for an action, and whether
+// the action is known. The control plane uses it so its own role
+// policy can never drift from the node's: the node remains the
+// single source of truth for what each role may do. Unknown
+// actions report known=false; callers pass them through so the
+// node answers ERR_ACTION_NOT_FOUND exactly as before.
+func MinRoleFor(action string) (minRole string, known bool) {
+	minRole, known = actionMinRole[action]
+	return minRole, known
+}
+
+// RoleAtLeast reports whether role satisfies the minimum role.
+// Unknown roles satisfy nothing.
+func RoleAtLeast(role, minRole string) bool {
+	return roleLevel(role) >= roleLevel(minRole) && roleLevel(minRole) > 0
+}
+
 // auditRecorder captures the JSON response body written by
 // APIResponse while passing everything through to the real
 // writer, so the audit entry can report the actual outcome.

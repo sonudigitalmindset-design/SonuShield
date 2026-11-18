@@ -63,15 +63,33 @@ func ValidateConfigDetailed(cfg *domains.Configuration, rawJSON []byte, probeBac
 
 	// Unknown top-level keys: almost always a typo for
 	// "proxy" or "domains", which would silently do nothing.
+	// "controlPlane" is the platform-model section, used only
+	// by `sonushield control`.
 	if len(rawJSON) > 0 {
 		var doc map[string]json.RawMessage
 		if err := json.Unmarshal(rawJSON, &doc); err == nil {
 			for key := range doc {
-				if key != "proxy" && key != "domains" {
-					addWarn("unknown top-level key %q (expected only \"proxy\" and \"domains\")", key)
+				if key != "proxy" && key != "domains" && key != "controlPlane" {
+					addWarn("unknown top-level key %q (expected only \"proxy\", \"domains\", and \"controlPlane\")", key)
 				}
 			}
 		}
+	}
+
+	// Control-plane-only files (a controlPlane section with
+	// no proxy secrets and no domains) are validated as
+	// control-plane configs, not proxy configs: requiring
+	// proxy secrets there would make every dedicated control
+	// host fail validation.
+	if cfg.ControlPlane != nil && len(cfg.Domains) == 0 && cfg.Proxy.AdminSecret == "" && cfg.Proxy.APISecret == "" && len(cfg.Proxy.Secrets) == 0 {
+		validateControlPlane(cfg.ControlPlane, addErr, addWarn)
+		return errors, warnings
+	}
+
+	// A controlPlane section alongside a proxy config is
+	// validated too, but proxy checks still run below.
+	if cfg.ControlPlane != nil {
+		validateControlPlane(cfg.ControlPlane, addErr, addWarn)
 	}
 
 	// Challenge secrets, admin secret, API secret: the same
@@ -271,4 +289,52 @@ func ValidateConfigDetailed(cfg *domains.Configuration, rawJSON []byte, probeBac
 		}
 	}
 	return errors, warnings
+}
+
+// validateControlPlane checks a controlPlane section: shape
+// via ControlPlaneConfig.Validate, plus certificate loadability
+// and judgment-call warnings. Secret values are never printed.
+func validateControlPlane(cp *domains.ControlPlaneConfig, addErr, addWarn func(string, ...interface{})) {
+	if reason := cp.Validate(); reason != "" {
+		addErr("controlPlane: %s", reason)
+		return
+	}
+	if cp.SessionSecret == "" {
+		addWarn("controlPlane sessionSecret is empty: sessions will not survive a restart")
+	} else if len(cp.SessionSecret) < minSecretLengthWarn {
+		addWarn("controlPlane sessionSecret is short (%d characters); use a longer random value", len(cp.SessionSecret))
+	}
+	if cp.Certificate == "" {
+		host, _, _ := net.SplitHostPort(cp.ListenAddr())
+		if host != "" && host != "127.0.0.1" && host != "localhost" && host != "::1" {
+			addWarn("controlPlane has no TLS certificate and listens on a non-loopback address; logins would cross the network in cleartext")
+		}
+	} else {
+		pair, err := tls.LoadX509KeyPair(cp.Certificate, cp.Key)
+		if err != nil {
+			addErr("controlPlane certificates cannot be loaded: %s", err.Error())
+		} else if len(pair.Certificate) > 0 {
+			if leaf, err := x509.ParseCertificate(pair.Certificate[0]); err == nil {
+				now := time.Now()
+				if now.After(leaf.NotAfter) {
+					addErr("controlPlane certificate expired on %s", leaf.NotAfter.Format("2006-01-02"))
+				} else if leaf.NotAfter.Sub(now) < certExpiryWarnDays*24*time.Hour {
+					addWarn("controlPlane certificate expires on %s (within %d days)", leaf.NotAfter.Format("2006-01-02"), certExpiryWarnDays)
+				}
+			}
+		}
+	}
+	for _, node := range cp.Nodes {
+		if len(node.APISecret) < minSecretLengthWarn {
+			addWarn("controlPlane node %q apiSecret is short (%d characters)", node.Name, len(node.APISecret))
+		}
+		if node.InsecureSkipVerify {
+			addWarn("controlPlane node %q has insecureSkipVerify set: node certificate verification is disabled", node.Name)
+		}
+		if node.CAFile != "" {
+			if _, err := os.Stat(node.CAFile); err != nil {
+				addErr("controlPlane node %q caFile cannot be read: %s", node.Name, err.Error())
+			}
+		}
+	}
 }

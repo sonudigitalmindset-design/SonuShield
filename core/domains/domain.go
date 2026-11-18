@@ -20,6 +20,10 @@ var (
 type Configuration struct {
 	Proxy   Proxy    `json:"proxy"`
 	Domains []Domain `json:"domains"`
+	// ControlPlane is the optional platform-model control-plane
+	// section, used only by `sonushield control`. The proxy
+	// ignores it entirely.
+	ControlPlane *ControlPlaneConfig `json:"controlPlane,omitempty"`
 }
 
 type Domain struct {
@@ -389,6 +393,23 @@ type Proxy struct {
 	// reports, and API responses, and log retention is
 	// capped at 2 files. Off by default.
 	PrivacyMode bool `json:"privacyMode"`
+	// DashboardMode (platform model) controls the on-domain
+	// dashboard page: "" or "local" serves it as today,
+	// "control-plane" redirects the path to ControlPlaneURL
+	// (or answers a bare 404 when unset), "off" disables
+	// the path. The API itself is unaffected. Unknown
+	// values fail safe to "off". See
+	// NormalizeDashboardMode.
+	DashboardMode   string `json:"dashboardMode"`
+	ControlPlaneURL string `json:"controlPlaneUrl"`
+	// ControlPlaneSecret is the shared secret that lets a
+	// control plane prove caller identities to this node
+	// for two-person approval (HMAC-signed caller header).
+	// Empty disables the mechanism; control-plane callers
+	// then all look identical to the approval gate and
+	// cannot approve each other's requests. Config-only,
+	// never logged or returned.
+	ControlPlaneSecret string `json:"controlPlaneSecret"`
 	// Two-person approval (Batch 7). When true, sensitive
 	// control actions need a second distinct approver
 	// before executing. ApprovalExpirySeconds is the
