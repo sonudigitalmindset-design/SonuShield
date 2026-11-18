@@ -31,14 +31,15 @@ const maxAuditParamLen = 200
 // with the action switches in api.go: an action missing here is
 // treated as unknown and the handler answers ERR_ACTION_NOT_FOUND.
 var actionMinRole = map[string]string{
-	// Proxy actions: reads are viewer, FILL_IP_CACHE and RELOAD
-	// are admin-only, the rest operator.
+	// Proxy actions: reads are viewer, GET_IP_CACHE,
+	// FILL_IP_CACHE and RELOAD are admin-only, the rest
+	// operator.
 	"GET_PROXY_STATS":             proxy.RoleViewer,
 	"GET_PROXY_STATS_CPU_USAGE":   proxy.RoleViewer,
 	"GET_PROXY_STATS_RAM_USAGE":   proxy.RoleViewer,
 	"GET_IP_REQUESTS":             proxy.RoleViewer,
 	"GET_FINGERPRINT_REQUESTS":    proxy.RoleViewer,
-	"GET_IP_CACHE":                proxy.RoleViewer,
+	"GET_IP_CACHE":                proxy.RoleAdmin,
 	"FILL_IP_CACHE":               proxy.RoleAdmin,
 	"RELOAD":                      proxy.RoleAdmin,
 	"GET_PROXY_FEATURES":          proxy.RoleViewer,

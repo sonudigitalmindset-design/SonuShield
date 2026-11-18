@@ -27,6 +27,7 @@ package proxy
 // risking a concurrent map access.
 
 import (
+	"crypto/hmac"
 	"fmt"
 	"strings"
 	"sync/atomic"
@@ -102,15 +103,26 @@ func ScopeForSecret(secret string) (role, tenant string, ok bool) {
 	if secret == "" {
 		return "", "", false
 	}
-	if secret == APISecret {
+	// Sale-readiness (L-1 fix): compare secrets in constant
+	// time. A map lookup and == both leak timing; hmac.Equal
+	// compares the full value. Every role secret is compared
+	// (no early exit on match) so timing does not reveal
+	// which entry matched either.
+	if hmac.Equal([]byte(secret), []byte(APISecret)) {
 		return RoleAdmin, "", true
 	}
 	roles, _ := apiRoles.Load().(map[string]string)
-	raw, ok := roles[secret]
-	if !ok {
+	matched := ""
+	found := false
+	for candidate, raw := range roles {
+		if hmac.Equal([]byte(secret), []byte(candidate)) {
+			matched, found = raw, true
+		}
+	}
+	if !found {
 		return "", "", false
 	}
-	tenant, role, ok = parseRoleValue(raw)
+	tenant, role, ok = parseRoleValue(matched)
 	return role, tenant, ok
 }
 

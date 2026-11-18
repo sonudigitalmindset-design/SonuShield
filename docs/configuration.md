@@ -83,6 +83,7 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `quietMode` | Bool | `true` removes product-identifying strings from visitor-facing output. Default `false`. See [Quiet Mode](#quiet-mode). |
 | `metricsEnabled` | Bool | `true` exposes the Prometheus metrics endpoint on the admin-secret path. Default `false` (disabled). See [Prometheus Metrics](#prometheus-metrics). |
 | `reportDirectory` | String | Directory that receives one JSON + CSV attack report per finished attack. Empty (default) disables directory export. See [Attack Reports](#attack-reports). |
+| `rulePacksDirectory` | String | Directory that `IMPORT_RULE_PACK` may read pack files from. Empty (default) refuses file sources. See [Community Rule Packs](#community-rule-packs). |
 | `logFormat` | String | `"json"` enables structured JSON logging to `logFile`; `"text"` (default) keeps the existing output. See [Structured Logs](#structured-logs). |
 | `logFile` | String | Path of the JSON log file. Required when `logFormat` is `"json"`; without it, JSON logging stays disabled with a startup warning. |
 | `logMaxBytes` | Int | Maximum size of the current log file in bytes before rotation (default `10485760`, 10 MiB; values below 64 KiB use the default). |
@@ -166,6 +167,7 @@ Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 | `healthCheckEnabled` | Bool | `true` probes backends on an interval and excludes failing ones. Default `false`. See [Load Balancing and Failover](#load-balancing-and-failover). |
 | `healthCheckPath` | String | Path probed by health checks (default `/`). |
 | `healthCheckInterval` | Int | Seconds between health-check probes per backend (default `10`, minimum `5`). |
+| `backendVerifyTLS` | Bool | `true` verifies the origin TLS certificate against system roots for `https` backends (requests, health probes, WebSocket dials). Default `false` (historical skip-verify behavior). See [Load Balancing and Failover](#load-balancing-and-failover). |
 | `websocketIdleTimeout` | Int | Idle timeout in seconds for WebSocket connections on the dedicated upgrade path. `0` (default) keeps Go's built-in reverse-proxy upgrade handling. See [WebSocket Support](#websocket-support). |
 | `jwtSecret` | String | Shared secret for HS256 JWT validation on protected routes. Empty (default) disables HS256. See [API Protection](#api-protection). |
 | `jwtJWKSURL` | String | JWKS endpoint URL for RS256/ES256 JWT validation. Empty (default) disables JWKS. |
@@ -320,7 +322,9 @@ With `waitingRoom: true`, when a domain's bypassed requests per second cross `wa
 
 A domain can list several backends in `backends` (same `scheme` for all). Requests are distributed by `lbPolicy`: `round-robin` (default) or `least-connections` (fewest in-flight backend requests). With `backends` empty, the single `backend` is used exactly as before — single-backend configs behave identically, with no extra probing.
 
-Failover works two ways. First, transport failures mark a backend down after 2 consecutive failures for a 30-second cooldown, whether or not health checks are enabled; a request that fails is retried on another backend when its body can be replayed (GET/HEAD, or any request with a replayable body) — requests whose bodies cannot be replayed are never retried, so an operation is never duplicated. Second, with `healthCheckEnabled: true`, each backend is probed with a `GET` to `healthCheckPath` (default `/`) every `healthCheckInterval` seconds (default `10`, minimum `5`); a `2xx`/`3xx` answer marks it up, anything else marks it down until a probe passes. Probes send the domain name as the `Host` header, follow no redirects, and skip TLS verification for `https` backends, like the proxy itself.
+Failover works two ways. First, transport failures mark a backend down after 2 consecutive failures for a 30-second cooldown, whether or not health checks are enabled; a request that fails is retried on another backend when its body can be replayed (GET/HEAD, or any request with a replayable body) — requests whose bodies cannot be replayed are never retried, so an operation is never duplicated. Second, with `healthCheckEnabled: true`, each backend is probed with a `GET` to `healthCheckPath` (default `/`) every `healthCheckInterval` seconds (default `10`, minimum `5`); a `2xx`/`3xx` answer marks it up, anything else marks it down until a probe passes. Probes send the domain name as the `Host` header, follow no redirects, and follow the domain's TLS verification setting (below).
+
+**Backend TLS verification.** By default, proxy-to-origin TLS connections do **not** verify the origin certificate — the historical behavior, kept so private origins with self-signed certificates keep working. Anyone able to intercept proxy→origin traffic could present any certificate for an HTTPS origin, so for origins on untrusted networks, set `backendVerifyTLS: true` on the domain: the origin certificate is then verified against the system roots with the backend hostname as the server name, for proxied requests, health probes, and WebSocket dials alike. Verification failures fail the request (or mark the backend down) rather than falling back to unverified. Only enable it when the origin serves a valid certificate for its hostname; IP-literal backends need a certificate with an IP SAN.
 
 When every backend is down, plain GET requests without `Authorization` are answered from the edge cache's stale copy when one exists (marked with the `Warning: 110` stale header and `Cache-Control: no-store`); otherwise the usual backend error page is shown. Stale fallback needs `edgeCache` enabled and a previously cached response — without it, there is nothing stale to serve. Expired entries are retained for this fallback for up to 1 hour past expiry, then dropped.
 
@@ -536,7 +540,7 @@ The main `apisecret` always authenticates as **admin**. `apiRoles` adds further 
 |------|---------|
 | `viewer` | Read-only actions: all `GET_*`, `GET_DOMAINS`, `GET_PROXY_FEATURES`, `GET_ATTACK_REPORT`, `LIST_CONFIG_BACKUPS`, `SIMULATE_RULE`, `EXPORT_RULES`, `GET_IP_LISTS`, `SEARCH_LOGS`, `GET_ATTACK_MAP`, `GET_TENANTS`, `GET_TENANT_USAGE`. |
 | `operator` | Everything a viewer can, plus `SET_STAGE`, `ADD_RULE` / `UPDATE_RULE` / `DELETE_RULE`, `CLEAR_LOGS`, `REFRESH_REPUTATION_FEED`, `PURGE_CACHE`, `IMPORT_RULES`, `ADD_IP_ENTRY` / `REMOVE_IP_ENTRY`. |
-| `admin` | Everything, including `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, and `FILL_IP_CACHE`. |
+| `admin` | Everything, including `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, `GET_IP_CACHE`, and `FILL_IP_CACHE`. |
 
 Unknown role names are ignored with a startup warning; empty secrets never match. A role calling an action above its level gets `ERR_FORBIDDEN`; unknown actions still get `ERR_ACTION_NOT_FOUND` for every role. Role changes take effect on reload (unlike `apisecret` itself, which needs a restart).
 
@@ -994,7 +998,7 @@ Rule packs are operator-supplied JSON documents with pack metadata plus a rules 
  "description": "…", "rules": [{"expression": "…", "action": "4"}]}
 ```
 
-`IMPORT_RULE_PACK` fetches a pack from a server file path or an http/https URL (1 MB cap, 10-second timeout, at most 3 redirects) and validates every rule exactly like a rule import — all-or-nothing, in `replace` (default) or `append` mode. Pack metadata is recorded in a registry kept in `config.json` under `proxy.rulePacks` (metadata only, no rule contents) and listed by `LIST_RULE_PACKS`. SonuShield ships no bundled packs and claims no community endorsement; packs are operator-chosen. URL fetching is fail-open: a fetch failure aborts the import and changes nothing.
+`IMPORT_RULE_PACK` fetches a pack from a server file path or an http/https URL (1 MB cap, 10-second timeout, at most 3 redirects) and validates every rule exactly like a rule import — all-or-nothing, in `replace` (default) or `append` mode. File paths are restricted to the proxy `rulePacksDirectory` (unset means file sources are refused; absolute paths and directory escapes are rejected), and URL fetches refuse non-public destinations. Pack metadata is recorded in a registry kept in `config.json` under `proxy.rulePacks` (metadata only, no rule contents) and listed by `LIST_RULE_PACKS`. SonuShield ships no bundled packs and claims no community endorsement; packs are operator-chosen. URL fetching is fail-open: a fetch failure aborts the import and changes nothing.
 
 ## Cloudflare Import
 

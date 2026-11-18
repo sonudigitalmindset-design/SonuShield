@@ -25,9 +25,10 @@ package api
 // with nothing changed (all-or-nothing). URL fetches use a
 // 10-second timeout, at most 3 redirects, http/https only,
 // and a 1 MB size cap; a failed fetch fails the import
-// cleanly and never affects traffic. File reads run with
-// the proxy process's filesystem privileges, like every
-// other operator action.
+// cleanly and never affects traffic. File sources are
+// restricted to the operator-configured proxy
+// rulePacksDirectory (unset means file sources are refused);
+// URL fetches refuse non-public destinations.
 //
 // Pack metadata is recorded in a registry kept in
 // config.json under proxy.rulePacks (metadata only — the
@@ -44,11 +45,13 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"sonushield/core/domains"
+	"sonushield/core/fetch"
 )
 
 const (
@@ -197,7 +200,11 @@ func parseRulePack(data []byte) (*rulePack, error) {
 
 // fetchPackSource reads a pack from a URL or a file path.
 // URLs are limited to http/https, 10 seconds, 3 redirects,
-// and 1 MB. Anything else is treated as a local file path.
+// and 1 MB, and may only reach public destinations (SSRF
+// guard, see core/fetch). File paths are restricted to the
+// operator-configured packs directory (M-5 fix): without
+// proxy.rulePacksDirectory, file sources are rejected, and
+// absolute paths and directory escapes are never allowed.
 func fetchPackSource(source string) ([]byte, error) {
 	if strings.HasPrefix(source, "http://") || strings.HasPrefix(source, "https://") {
 		return fetchPackURL(source)
@@ -205,7 +212,41 @@ func fetchPackSource(source string) ([]byte, error) {
 	if strings.Contains(source, "://") {
 		return nil, errors.New("unsupported source scheme: only http://, https://, and file paths are accepted")
 	}
-	data, err := os.ReadFile(source)
+	return readPackFile(source)
+}
+
+// readPackFile reads a pack file from inside the configured
+// packs directory. The directory is operator config only; an
+// unset directory disables file sources entirely.
+func readPackFile(source string) ([]byte, error) {
+	dir := ""
+	if domains.Config != nil {
+		dir = strings.TrimSpace(domains.Config.Proxy.RulePacksDirectory)
+	}
+	if dir == "" {
+		return nil, errors.New("file pack sources are disabled: set proxy.rulePacksDirectory to allow them")
+	}
+	if filepath.IsAbs(source) {
+		return nil, errors.New("absolute pack file paths are not allowed")
+	}
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		return nil, errors.New("could not resolve the packs directory: " + err.Error())
+	}
+	if resolved, err := filepath.EvalSymlinks(absDir); err == nil {
+		absDir = resolved
+	}
+	joined := filepath.Join(absDir, source)
+	if !withinDir(absDir, joined) {
+		return nil, errors.New("pack file path escapes the packs directory")
+	}
+	if resolved, err := filepath.EvalSymlinks(joined); err == nil {
+		if !withinDir(absDir, resolved) {
+			return nil, errors.New("pack file path escapes the packs directory")
+		}
+		joined = resolved
+	}
+	data, err := os.ReadFile(joined)
 	if err != nil {
 		return nil, errors.New("could not read pack file: " + err.Error())
 	}
@@ -215,11 +256,20 @@ func fetchPackSource(source string) ([]byte, error) {
 	return data, nil
 }
 
+func withinDir(dir, path string) bool {
+	return path == dir || strings.HasPrefix(path, dir+string(filepath.Separator))
+}
+
 // fetchPackURL GETs a pack over HTTP with timeout,
-// redirect, and size limits.
+// redirect, and size limits, and an SSRF guard that refuses
+// non-public destinations on every hop (M-5 fix).
 func fetchPackURL(source string) ([]byte, error) {
 	client := &http.Client{
 		Timeout: packFetchTimeout,
+		Transport: &http.Transport{
+			DialContext:         fetch.GuardedDialContext(),
+			TLSHandshakeTimeout: 10 * time.Second,
+		},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= packMaxRedirects {
 				return errors.New("too many redirects (max 3)")

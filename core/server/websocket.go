@@ -59,7 +59,7 @@ func proxyWebSocket(writer http.ResponseWriter, request *http.Request, settings 
 		return true
 	}
 
-	backendConn, err := dialBackend(settings.Pool.Scheme, backend.Addr)
+	backendConn, err := dialBackend(settings.Pool.Scheme, backend.Addr, settings.BackendVerifyTLS)
 	if err != nil {
 		settings.Pool.MarkFailed(backend)
 		writer.Header().Set("Content-Type", "text/plain")
@@ -150,10 +150,21 @@ func proxyWebSocket(writer http.ResponseWriter, request *http.Request, settings 
 	return true
 }
 
-func dialBackend(scheme, addr string) (net.Conn, error) {
+func dialBackend(scheme, addr string, verifyTLS bool) (net.Conn, error) {
 	dialer := &net.Dialer{Timeout: websocketDialTimeout}
 	if scheme == "https" {
-		return tls.DialWithDialer(dialer, "tcp", addr, &tls.Config{InsecureSkipVerify: true})
+		cfg := originTLSConfig(verifyTLS)
+		if verifyTLS {
+			// tls.Dial does not fill ServerName from the
+			// address (unlike http.Transport), so set it
+			// from the backend host for verification.
+			if host, _, err := net.SplitHostPort(addr); err == nil {
+				cfg.ServerName = host
+			} else {
+				cfg.ServerName = addr
+			}
+		}
+		return tls.DialWithDialer(dialer, "tcp", addr, cfg)
 	}
 	return dialer.Dial("tcp", addr)
 }

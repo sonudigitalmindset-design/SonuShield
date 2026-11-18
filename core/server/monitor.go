@@ -843,11 +843,12 @@ func clearProxyCache() {
 
 		// Only clear if proxy isnt under attack / memory is running out
 		if (proxyCpuUsage < 15 && proxyMemUsage > 25) || proxyMemUsage > 95 {
-			firewall.CacheIps.Range(func(key, value any) bool {
-				firewall.CacheIps.Delete(key)
-				return true
-			})
+			firewall.ClearCacheIps()
 		}
+		// TTL sweep (sale-readiness, L-4 fix): drop stale
+		// cache entries every tick, independent of memory
+		// pressure, so the map cannot grow unboundedly.
+		firewall.SweepCacheIps(firewall.CacheIpsTTL)
 		// Same for here
 		imgCachelen := 0
 		firewall.CacheImgs.Range(func(key, value any) bool {

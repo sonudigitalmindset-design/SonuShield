@@ -169,7 +169,7 @@ func verifyProviderToken(provider, secret, token, remoteIP string) (bool, error)
 func ServeProviderChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainName, encryptedIP, ip, tlsFp, userAgent string) bool {
 	nonce := storePendingChallenge(pendingChallenge{
 		encryptedIP: encryptedIP,
-		redirectURL: request.URL.RequestURI(),
+		redirectURL: safeRedirectTarget(request.URL.RequestURI()),
 		provider:    settings.ChallengeProvider,
 		secretKey:   settings.ChallengeSecretKey,
 		ip:          ip,
@@ -257,6 +257,12 @@ func HandleChallengeVerify(writer http.ResponseWriter, request *http.Request, do
 	}
 
 	// Same cookie the proof-of-work flow sets, then back to the original URL.
+	// Deliberately NOT HttpOnly: the proof-of-work page sets this
+	// same cookie from JavaScript, and a script cannot overwrite
+	// an HttpOnly cookie — flagging it here would trap visitors
+	// who later face a different challenge type. See
+	// docs/security-audit.md (M-4). The Stage-1 cookie, which no
+	// script ever touches, does carry HttpOnly.
 	writer.Header().Set("Set-Cookie", "__bProxy_v="+entry.encryptedIP+"; SameSite=Lax; path=/; Secure")
 	http.Redirect(writer, request, entry.redirectURL, http.StatusFound)
 	return true

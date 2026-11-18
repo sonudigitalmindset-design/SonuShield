@@ -118,7 +118,7 @@ func takePendingPasskey(nonce, ip, tlsFp, userAgent string) (pendingPasskey, boo
 func ServePasskeyChallenge(writer http.ResponseWriter, request *http.Request, settings domains.DomainSettings, domainName, encryptedIP, ip, tlsFp string) bool {
 	nonce, challenge, ok := storePendingPasskey(pendingPasskey{
 		encryptedIP: encryptedIP,
-		redirectURL: request.URL.RequestURI(),
+		redirectURL: safeRedirectTarget(request.URL.RequestURI()),
 		ip:          ip,
 		tlsFp:       tlsFp,
 		userAgent:   request.UserAgent(),
@@ -229,6 +229,10 @@ func HandlePasskeyVerify(writer http.ResponseWriter, request *http.Request, doma
 	}
 	// Same cookie the other challenge flows set, then back to
 	// the original URL (the page navigates there).
+	// Deliberately NOT HttpOnly: the proof-of-work page sets
+	// this same cookie from JavaScript, and a script cannot
+	// overwrite an HttpOnly cookie. See challenge.go and
+	// docs/security-audit.md (M-4).
 	writer.Header().Set("Set-Cookie", "__bProxy_v="+entry.encryptedIP+"; SameSite=Lax; path=/; Secure")
 	writer.Header().Set("Content-Type", "application/json")
 	resp, _ := json.Marshal(map[string]string{"redirect": entry.redirectURL})

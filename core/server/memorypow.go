@@ -235,7 +235,7 @@ func ServeMemoryPowChallenge(writer http.ResponseWriter, request *http.Request, 
 	bits, memoryKB, timeCost := memoryPowParams(settings)
 	nonce := storePendingMemoryPow(pendingMemoryPow{
 		encryptedIP: encryptedIP,
-		redirectURL: request.URL.RequestURI(),
+		redirectURL: safeRedirectTarget(request.URL.RequestURI()),
 		salt:        salt,
 		bits:        bits,
 		memoryKB:    memoryKB,
@@ -317,6 +317,10 @@ func HandleMemoryPowVerify(writer http.ResponseWriter, request *http.Request, do
 	}
 
 	// Same cookie the proof-of-work flow sets, then back to the original URL.
+	// Deliberately NOT HttpOnly: the proof-of-work page sets
+	// this same cookie from JavaScript, and a script cannot
+	// overwrite an HttpOnly cookie. See challenge.go and
+	// docs/security-audit.md (M-4).
 	writer.Header().Set("Set-Cookie", "__bProxy_v="+entry.encryptedIP+"; SameSite=Lax; path=/; Secure")
 	http.Redirect(writer, request, entry.redirectURL, http.StatusFound)
 	return true

@@ -100,6 +100,7 @@ type Domain struct {
 	PoolMaxIdleConnsPerHost int           `json:"poolMaxIdleConnsPerHost"`
 	PoolMaxConnsPerHost int              `json:"poolMaxConnsPerHost"`
 	PoolIdleConnTimeout int              `json:"poolIdleConnTimeout"`
+	BackendVerifyTLS   bool             `json:"backendVerifyTLS"`
 	WebsocketIdleTimeout int             `json:"websocketIdleTimeout"`
 	JWTSecret           string           `json:"jwtSecret"`
 	JWTJWKSURL          string           `json:"jwtJWKSURL"`
@@ -240,6 +241,7 @@ type DomainSettings struct {
 	PoolMaxIdleConnsPerHost int
 	PoolMaxConnsPerHost int
 	PoolIdleConnTimeout int
+	BackendVerifyTLS         bool
 	WebsocketIdleTimeout int
 	JWTProtectedPaths   []string
 	APIKeyHeader        string
@@ -360,6 +362,7 @@ type Proxy struct {
 	OSSignatures          []OSSignature `json:"osSignatures,omitempty"`
 	MetricsEnabled  bool              `json:"metricsEnabled"`
 	ReportDirectory string            `json:"reportDirectory"`
+	RulePacksDirectory string         `json:"rulePacksDirectory"`
 	LogFormat       string            `json:"logFormat"`
 	LogFile         string            `json:"logFile"`
 	LogMaxBytes     int64             `json:"logMaxBytes"`

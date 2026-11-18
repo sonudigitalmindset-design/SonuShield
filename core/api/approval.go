@@ -331,6 +331,17 @@ func approveAction(writer http.ResponseWriter, request *http.Request, rawRole, t
 			return
 		}
 	}
+	// Sale-readiness (M-6 fix): a proxy-wide approval has no
+	// domain, so the check above is skipped — and without this
+	// check a tenant-scoped approver could approve a global
+	// action (config restore, proxy-wide log wipe) requested
+	// by the global admin. Tenant approvers may only approve
+	// actions on their own tenant's domains.
+	if tenant != "" && pending.Domain == "" {
+		restoreApproval(pending)
+		fail(ERR_FORBIDDEN, "tenant-scoped approvers may only approve actions on their own tenant's domains")
+		return
+	}
 
 	auditApprovalEvent(rawRole, "APPROVAL_APPROVED", pending.Domain, auditPeerIP(request), pending.ID, pending.Action, true, "")
 	// Re-dispatch with the stored parameters. The handlers

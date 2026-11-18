@@ -35,6 +35,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"sonushield/core/fetch"
 )
 
 // PrefixState is the monitored state of one prefix.
@@ -58,6 +60,20 @@ var (
 	states = map[string]*PrefixState{}
 
 	httpClient = &http.Client{Timeout: 15 * time.Second}
+
+	// httpClientGuarded serves the RIPEstat fetcher only:
+	// RIPEstat is a public service, so non-public
+	// destinations are refused (SSRF guard, L-3). The
+	// "custom" source keeps the unguarded client because the
+	// operator's own API may legitimately live on a private
+	// network; see docs/security-audit.md.
+	httpClientGuarded = &http.Client{
+		Timeout: 15 * time.Second,
+		Transport: &http.Transport{
+			DialContext:         fetch.GuardedDialContext(),
+			TLSHandshakeTimeout: 10 * time.Second,
+		},
+	}
 )
 
 // Check runs one monitoring pass over the configured
@@ -186,7 +202,7 @@ func fetchRIPEstat(apiBase, prefix string) ([]int, bool, error) {
 	if err != nil {
 		return nil, false, err
 	}
-	response, err := httpClient.Do(request)
+	response, err := httpClientGuarded.Do(request)
 	if err != nil {
 		return nil, false, err
 	}

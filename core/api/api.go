@@ -156,11 +156,23 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	rawRole := role
 	hash := callerHash(request, ssoAuthed, request.Header.Get("proxy-secret"))
 
-	reqBody, err := io.ReadAll(request.Body)
+	// Sale-readiness (H-2 fix): bound the v1 body read. API
+	// v1 requests are small JSON; an unbounded read lets any
+	// authenticated caller OOM the proxy with one huge POST.
+	// The read-error branch must return: falling through
+	// wrote a second response on the same request.
+	reqBody, err := io.ReadAll(io.LimitReader(request.Body, maxAPIv1BodyBytes+1))
 	if err != nil {
 		APIResponse(recorder, false, map[string]interface{}{
 			"ERROR": ERR_BODY_READ_FAILED,
 		})
+		return true
+	}
+	if len(reqBody) > maxAPIv1BodyBytes {
+		APIResponse(recorder, false, map[string]interface{}{
+			"ERROR": ERR_BODY_READ_FAILED,
+		})
+		return true
 	}
 
 	defer request.Body.Close()
@@ -316,20 +328,24 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 			"TOTAL_FINGERPRINT_REQUESTS": ipsFps,
 		})
 	case "GET_IP_CACHE":
-		cacheIps := make(map[string]interface{})
+		// Sale-readiness (H-1 fix): the cache holds live
+		// challenge cookies keyed by visitor IP + fingerprint
+		// + user-agent. Never return keys or values — counts
+		// only — and only to admin callers (see roles.go).
+		count := 0
 		firewall.CacheIps.Range(func(key, value any) bool {
-			cacheIps[fmt.Sprint(key)] = value
+			count++
 			return true
 		})
 
 		APIResponse(writer, true, map[string]interface{}{
-			"IP_CACHE": cacheIps,
+			"IP_CACHE_COUNT": count,
 		})
 	// Useful to fill up your ipCache and see how your proxy performs with high memory usage
 	case "FILL_IP_CACHE":
 		firewall.Mutex.Lock()
 		for i := 0; i < 19980; i++ {
-			firewall.CacheIps.Store(utils.RandomString(24), utils.RandomString(64))
+			firewall.CacheStore(utils.RandomString(24), utils.RandomString(64))
 		}
 		firewall.Mutex.Unlock()
 

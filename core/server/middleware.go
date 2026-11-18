@@ -800,7 +800,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		case 2:
 			encryptedIP = utils.Encrypt(accessKey, proxy.JSOTP)
 			hashedEncryptedIP = utils.EncryptSha(encryptedIP, "")
-			firewall.CacheIps.Store(encryptedIP, hashedEncryptedIP)
+			firewall.CacheStore(encryptedIP, hashedEncryptedIP)
 		case 3:
 			encryptedIP = utils.Encrypt(accessKey, proxy.CaptchaOTP)
 		default:
@@ -814,7 +814,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			SendResponse(blockMessage("Suspicious request of level "+susLvStr+" (base "+strconv.Itoa(domainData.Stage)+")"), buffer, writer)
 			return
 		}
-		firewall.CacheIps.Store(accessKey+susLvStr, encryptedIP)
+		firewall.CacheStore(accessKey+susLvStr, encryptedIP)
 	} else {
 		encryptedIP = encryptedCache.(string)
 		cachedHIP, foundCachedHIP := firewall.CacheIps.Load(encryptedIP)
@@ -842,8 +842,8 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		case 1:
 			metrics.ObserveChallenge(domainName, 1)
 			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
-			writer.Header().Set("Set-Cookie", "_1__bProxy_v="+encryptedIP+"; SameSite=Lax; path=/; Secure")
-			http.Redirect(writer, request, request.URL.RequestURI(), http.StatusFound)
+			writer.Header().Set("Set-Cookie", "_1__bProxy_v="+encryptedIP+"; SameSite=Lax; path=/; Secure; HttpOnly")
+			http.Redirect(writer, request, safeRedirectTarget(request.URL.RequestURI()), http.StatusFound)
 			return
 		case 2:
 			metrics.ObserveChallenge(domainName, 2)

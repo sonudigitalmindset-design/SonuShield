@@ -59,7 +59,7 @@ Requests with a missing or wrong API secret are passed through to the normal req
 
 ## Roles and Audit Log
 
-The `apisecret` authenticates as **admin**. Additional secrets mapped to roles via the proxy `apiRoles` config key authenticate as **viewer** (read-only) or **operator** (stage, rules, cache, log clearing, feed refresh, rule import, IP-list entries). Admin-only actions are `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, `FILL_IP_CACHE`, `CREATE_DOMAIN_FROM_TEMPLATE`, `IMPORT_DOMAINS`, `REPORT_STRIPE_USAGE`, `TEST_WEBHOOKS`, `EXPORT_BACKUP`, `RESTORE_BACKUP`, and `CF_APPLY_IMPORT`; a lower role calling one gets `ERR_FORBIDDEN`. Unknown actions return `ERR_ACTION_NOT_FOUND` for every role. Tenant-scoped secrets (`"tenant:<name>:<role>"`) keep their role but only for that tenant's domains; see [Multi-Tenancy and Metering](configuration.md#multi-tenancy-and-metering). See [API Roles and Audit Log](configuration.md#api-roles-and-audit-log) for the full permission table.
+The `apisecret` authenticates as **admin**. Additional secrets mapped to roles via the proxy `apiRoles` config key authenticate as **viewer** (read-only) or **operator** (stage, rules, cache, log clearing, feed refresh, rule import, IP-list entries). Admin-only actions are `SET_DOMAIN_CONFIG`, `SET_DOMAIN_FEATURES`, `RELOAD`, `RESTORE_CONFIG_BACKUP`, `GET_IP_CACHE`, `FILL_IP_CACHE`, `CREATE_DOMAIN_FROM_TEMPLATE`, `IMPORT_DOMAINS`, `REPORT_STRIPE_USAGE`, `TEST_WEBHOOKS`, `EXPORT_BACKUP`, `RESTORE_BACKUP`, and `CF_APPLY_IMPORT`; a lower role calling one gets `ERR_FORBIDDEN`. Unknown actions return `ERR_ACTION_NOT_FOUND` for every role. Tenant-scoped secrets (`"tenant:<name>:<role>"`) keep their role but only for that tenant's domains; see [Multi-Tenancy and Metering](configuration.md#multi-tenancy-and-metering). See [API Roles and Audit Log](configuration.md#api-roles-and-audit-log) for the full permission table.
 
 When SSO is configured, a valid SSO session cookie also authenticates API calls — but only when the request also carries the `X-SonuShield-CSRF: 1` header the dashboard sends. A valid cookie without that header is answered `ERR_FORBIDDEN` and never falls through to the backend. SSO sessions carry a role only and are never tenant-scoped; audit entries for them report the role with an `(sso)` suffix.
 
@@ -74,7 +74,7 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `GET_PROXY_STATS_RAM_USAGE` | `RAM_USAGE` |
 | `GET_IP_REQUESTS` | `TOTAL_IP_REQUESTS`, `CHALLENGE_IP_REQUESTS` |
 | `GET_FINGERPRINT_REQUESTS` | `TOTAL_FINGERPRINT_REQUESTS` (unknown fingerprints only) |
-| `GET_IP_CACHE` | `IP_CACHE` |
+| `GET_IP_CACHE` | `IP_CACHE_COUNT` only (admin-only: the cache holds live challenge cookies, so keys and values are never returned). |
 | `FILL_IP_CACHE` | Diagnostic action: fills the IP cache with test entries. |
 | `RELOAD` | Validates `config.json` and, only if it is valid, reloads it into the running proxy. Returns `RELOADED`. On an invalid file returns `ERR_RELOAD_FAILED` and the running config is untouched. A successful reload resets request counters and stage locks, like the terminal `reload` command; admin/API secret changes still need a restart. |
 | `GET_DOMAINS` | `DOMAINS`: one summary per configured domain (`NAME`, `BACKEND`, `SCHEME`, `STAGE`, `STAGE_LOCKED`, `UNDER_ATTACK`, `TOTAL_RPS`, `BYPASSED_RPS`, `TOTAL_REQUESTS`, `BYPASSED_REQUESTS`, `RULE_COUNT`, `TENANT`). Tenant-scoped callers see only their own tenant's domains. |

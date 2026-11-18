@@ -16,6 +16,11 @@ const (
 	ERR_JSON_LOGS_NOT_CONFIGURED = "ERR_JSON_LOGS_NOT_CONFIGURED"
 )
 
+// maxAPIv1BodyBytes caps API v1 request bodies (H-2 fix).
+// v1 actions carry small JSON; 1 MiB is far above any
+// legitimate call and bounds proxy memory per request.
+const maxAPIv1BodyBytes = 1024 * 1024
+
 type API_REQUEST struct {
 	Domain string            `json:"domain"`
 	Action string            `json:"action"`

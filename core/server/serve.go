@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"html"
 	"sonushield/core/billing"
 	"sonushield/core/domains"
 	"sonushield/core/events"
@@ -280,29 +281,35 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		// Close the original body
 		resp.Body.Close()
 
+		// Sale-readiness (M-3 fix): the backend error body is
+		// embedded in the error page, so it must be escaped:
+		// raw output could break out of the srcdoc attribute
+		// and run script in the protected domain's origin.
+		// The truncation note is plain text, appended after
+		// escaping so it can never carry markup either.
 		errMsg := ""
 		if errErr == nil && len(errBody) > 0 {
-			errMsg = string(errBody)
+			errMsg = html.EscapeString(string(errBody))
 			if int64(len(errBody)) == 1024*1024 {
-				errMsg += `<p>( Error message truncated. )</p>`
+				errMsg += " (Error message truncated.)"
 			}
 		}
 
 		if errErr == nil && len(errBody) != 0 {
 
 			buffer.WriteString(`<!DOCTYPE html><html><head><title>Error: `)
-			buffer.WriteString(resp.Status)
+			buffer.WriteString(html.EscapeString(resp.Status))
 			buffer.WriteString(`</title><style>body{font-family:'Helvetica Neue',sans-serif;color:#333;margin:0;padding:0}.container{display:flex;align-items:center;justify-content:center;height:100vh;background:#fafafa}.error-box{width:600px;padding:20px;background:#fff;border-radius:5px;box-shadow:0 2px 4px rgba(0,0,0,.1)}.error-box h1{font-size:36px;margin-bottom:20px}.error-box p{font-size:16px;line-height:1.5;margin-bottom:20px}.error-box p.description{font-style:italic;color:#666}.error-box a{display:inline-block;padding:10px 20px;background:#00b8d4;color:#fff;border-radius:5px;text-decoration:none;font-size:16px}</style><div class=container><div class=error-box><h1>Error:`)
-			buffer.WriteString(`</h1><p>Sorry, the backend returned this error.</p><iframe width="100%" height="25%" style="border:1px ridge lightgrey; border-radius: 5px;"srcdoc="`)
+			buffer.WriteString(`</h1><p>Sorry, the backend returned this error.</p><iframe sandbox="" width="100%" height="25%" style="border:1px ridge lightgrey; border-radius: 5px;"srcdoc="`)
 			buffer.WriteString(errMsg)
 			buffer.WriteString(`"></iframe><a onclick="location.reload()">Reload page</a></div></div></body></html>`)
 
 		} else {
 
 			buffer.WriteString(`<!DOCTYPE html><html><head><title>Error: `)
-			buffer.WriteString(resp.Status)
+			buffer.WriteString(html.EscapeString(resp.Status))
 			buffer.WriteString(`</title><style>body{font-family:'Helvetica Neue',sans-serif;color:#333;margin:0;padding:0}.container{display:flex;align-items:center;justify-content:center;height:100vh;background:#fafafa}.error-box{width:600px;padding:20px;background:#fff;border-radius:5px;box-shadow:0 2px 4px rgba(0,0,0,.1)}.error-box h1{font-size:36px;margin-bottom:20px}.error-box p{font-size:16px;line-height:1.5;margin-bottom:20px}.error-box p.description{font-style:italic;color:#666}.error-box a{display:inline-block;padding:10px 20px;background:#00b8d4;color:#fff;border-radius:5px;text-decoration:none;font-size:16px}</style><div class=container><div class=error-box><h1>`)
-			buffer.WriteString(resp.Status)
+			buffer.WriteString(html.EscapeString(resp.Status))
 			buffer.WriteString(`</h1><p>Sorry, the backend returned an error. That's all we know.</p><a onclick="location.reload()">Reload page</a></div></div></body></html>`)
 		}
 
@@ -325,6 +332,22 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+// originTLSConfig returns the TLS config for proxy-to-origin
+// connections. Verification is opt-in per domain
+// (backendVerifyTLS): when enabled, the origin certificate
+// is verified against the system roots with the backend
+// hostname as the server name (Go's Transport fills
+// ServerName from the request URL when it is empty).
+// The default keeps the historical skip-verify behavior
+// for private origins with self-signed certificates;
+// see docs/configuration.md for the honest trade-off.
+func originTLSConfig(verify bool) *tls.Config {
+	if verify {
+		return &tls.Config{}
+	}
+	return &tls.Config{InsecureSkipVerify: true}
+}
+
 var defaultTransport = &http.Transport{
 	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 		return (&net.Dialer{
@@ -333,7 +356,7 @@ var defaultTransport = &http.Transport{
 		}).DialContext(ctx, network, addr)
 	},
 	TLSHandshakeTimeout: 10 * time.Second,
-	TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+	TLSClientConfig:     originTLSConfig(false),
 	IdleConnTimeout:     90 * time.Second,
 	MaxIdleConns:        10,
 	MaxConnsPerHost:     10,
@@ -352,13 +375,16 @@ const (
 
 // poolTransportFor builds a dedicated origin Transport for a
 // domain from its pool settings, or returns nil when the domain
-// configures no pool key (the shared defaultTransport is used).
+// configures no pool key and no TLS verification (the shared
+// defaultTransport is used). A domain with backendVerifyTLS
+// always gets a dedicated transport so verification applies
+// even with default pool limits.
 // A non-positive value selects the default for that limit; the
 // idle timeout is clamped to 1..3600 seconds. The dialer, TLS
 // handshake timeout, and TLS config match defaultTransport.
 func poolTransportFor(settings domains.DomainSettings) *http.Transport {
 	if settings.PoolMaxIdleConns == 0 && settings.PoolMaxIdleConnsPerHost == 0 &&
-		settings.PoolMaxConnsPerHost == 0 && settings.PoolIdleConnTimeout == 0 {
+		settings.PoolMaxConnsPerHost == 0 && settings.PoolIdleConnTimeout == 0 && !settings.BackendVerifyTLS {
 		return nil
 	}
 	maxIdle := poolDefaultMaxIdleConns
@@ -388,7 +414,7 @@ func poolTransportFor(settings domains.DomainSettings) *http.Transport {
 			}).DialContext(ctx, network, addr)
 		},
 		TLSHandshakeTimeout: 10 * time.Second,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:     originTLSConfig(settings.BackendVerifyTLS),
 		IdleConnTimeout:     time.Duration(idleTimeout) * time.Second,
 		MaxIdleConns:        maxIdle,
 		MaxIdleConnsPerHost: maxIdlePerHost,

@@ -66,6 +66,7 @@ type BackendPool struct {
 	Scheme      string
 	Policy      string
 	HostHeader  string
+	VerifyTLS   bool
 	backends    []*Backend
 	rr          atomic.Uint64
 	healthOn    bool
@@ -81,7 +82,7 @@ type BackendPool struct {
 // the only entry. Empty or whitespace-only entries are dropped;
 // when nothing remains, the pool is still built with the fallback
 // address so the proxy fails exactly as the old code would.
-func NewBackendPool(domainName, scheme string, backends []string, fallback, policy string, healthEnabled bool, healthPath string, healthIntervalSec int) *BackendPool {
+func NewBackendPool(domainName, scheme string, backends []string, fallback, policy string, healthEnabled bool, healthPath string, healthIntervalSec int, verifyTLS bool) *BackendPool {
 	addrs := []string{}
 	for _, addr := range backends {
 		if trimmed := strings.TrimSpace(addr); trimmed != "" {
@@ -95,6 +96,7 @@ func NewBackendPool(domainName, scheme string, backends []string, fallback, poli
 		Scheme:     scheme,
 		Policy:     strings.ToLower(strings.TrimSpace(policy)),
 		HostHeader: domainName,
+		VerifyTLS:  verifyTLS,
 		healthOn:   healthEnabled,
 		healthPath: healthPath,
 	}
@@ -254,6 +256,22 @@ var healthClient = &http.Client{
 	},
 }
 
+// healthClientVerified is the health-probe client for domains
+// with backendVerifyTLS enabled: system roots, hostname
+// verification against the backend address. The default
+// healthClient keeps the historical skip-verify behavior for
+// domains that did not opt in; see docs/configuration.md.
+var healthClientVerified = &http.Client{
+	Timeout: healthProbeTimeout,
+	Transport: &http.Transport{
+		TLSClientConfig:   &tls.Config{},
+		DisableKeepAlives: true,
+	},
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
+
 // Probe checks every backend once and updates health state. A
 // 2xx/3xx response marks the backend up; anything else (error,
 // timeout, 4xx/5xx) marks it down until the next successful probe.
@@ -268,7 +286,11 @@ func (p *BackendPool) Probe() {
 			continue
 		}
 		req.Host = p.HostHeader
-		resp, err := healthClient.Do(req)
+		client := healthClient
+		if p.VerifyTLS {
+			client = healthClientVerified
+		}
+		resp, err := client.Do(req)
 		up := err == nil && resp.StatusCode >= 200 && resp.StatusCode < 400
 		if resp != nil {
 			resp.Body.Close()

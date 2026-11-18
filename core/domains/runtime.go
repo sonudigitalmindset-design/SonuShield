@@ -22,7 +22,7 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	settings.Waiting = NewWaitingRoom(domain.WaitingRoom, domain.WaitingRoomThreshold, domain.WaitingRoomAdmit)
 	settings.FairQueue = NewFairQueue(domain.FairQueue, domain.FairQueueMaxInflight, domain.FairQueueWaitMs)
 	WarnUnknownLBPolicy(domain.Name, domain.LBPolicy)
-	settings.Pool = NewBackendPool(domain.Name, domain.Scheme, domain.Backends, domain.Backend, domain.LBPolicy, domain.HealthCheckEnabled, domain.HealthCheckPath, domain.HealthCheckInterval)
+	settings.Pool = NewBackendPool(domain.Name, domain.Scheme, domain.Backends, domain.Backend, domain.LBPolicy, domain.HealthCheckEnabled, domain.HealthCheckPath, domain.HealthCheckInterval, domain.BackendVerifyTLS)
 	settings.JWT = NewJWTVerifier(domain.Name, domain.JWTSecret, domain.JWTJWKSURL)
 	if len(domain.JWTProtectedPaths) > 0 && settings.JWT == nil {
 		fmt.Println("[ ! ] [ jwtProtectedPaths set for " + domain.Name + " but no jwtSecret/jwtJWKSURL configured; protected routes will reject all requests ]")

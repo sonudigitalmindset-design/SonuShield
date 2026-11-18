@@ -370,6 +370,7 @@ func Load() {
 			PoolMaxIdleConnsPerHost: domain.PoolMaxIdleConnsPerHost,
 			PoolMaxConnsPerHost: domain.PoolMaxConnsPerHost,
 			PoolIdleConnTimeout: domain.PoolIdleConnTimeout,
+			BackendVerifyTLS:    domain.BackendVerifyTLS,
 			WebsocketIdleTimeout: domain.WebsocketIdleTimeout,
 			JWTProtectedPaths:   domain.JWTProtectedPaths,
 			APIKeyHeader:        domain.APIKeyHeader,
