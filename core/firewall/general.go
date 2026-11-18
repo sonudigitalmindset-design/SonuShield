@@ -52,8 +52,15 @@ func OnStateChange(conn net.Conn, state http.ConnState) {
 		if !ConnOpened(remoteAddr, conn) {
 			conn.Close()
 		}
+		//Passive OS fingerprinting (Batch 7): read the
+		//kernel TCP_INFO once, at accept time. Silent
+		//failure leaves the client "unknown".
+		if signals, ok := CollectTCPInfo(conn); ok {
+			StoreTCPInfo(remoteAddr, signals)
+		}
 	case http.StateHijacked, http.StateClosed:
 		ConnClosed(remoteAddr)
+		ForgetTCPInfo(remoteAddr)
 		//Remove connection from list of fingerprints as it's no longer needed
 		Mutex.Lock()
 		delete(Connections, remoteAddr)

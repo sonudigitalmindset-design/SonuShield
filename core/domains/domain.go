@@ -283,6 +283,7 @@ type Proxy struct {
 	QuietMode       bool              `json:"quietMode"`
 	Branding        Branding          `json:"branding"`
 	TLSDisablePostQuantum bool      `json:"tlsDisablePostQuantum"`
+	OSSignatures          []OSSignature `json:"osSignatures,omitempty"`
 	MetricsEnabled  bool              `json:"metricsEnabled"`
 	ReportDirectory string            `json:"reportDirectory"`
 	LogFormat       string            `json:"logFormat"`
@@ -365,6 +366,21 @@ type TwilioSettings struct {
 type JsonRule struct {
 	Expression string `json:"expression"`
 	Action     string `json:"action"`
+}
+
+// OSSignature is one operator-supplied passive OS signature
+// (Batch 7, proxy.osSignatures). A client matches when every
+// specified field matches the observed TCP_INFO signals:
+// a zero MSS means "any", a nil option pointer means "any".
+// The label is operator-chosen free text; SonuShield ships no
+// signature table of its own.
+type OSSignature struct {
+	Label      string `json:"label"`
+	SndMSS     int    `json:"sndMss,omitempty"`
+	RcvMSS     int    `json:"rcvMss,omitempty"`
+	WScale     *bool  `json:"wscale,omitempty"`
+	Timestamps *bool  `json:"timestamps,omitempty"`
+	SACK       *bool  `json:"sack,omitempty"`
 }
 
 type Rule struct {

@@ -466,6 +466,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	httpFp := firewall.ComputeHTTPFingerprint(request)
 	h2Fp := firewall.ComputeHTTP2Fingerprint(request)
+	//Passive OS fingerprinting (Batch 7): signals observed at
+	//accept time, classified only against operator signatures.
+	osSignals := firewall.SignalsFor(request.RemoteAddr)
+	osLabel := firewall.ClassifyOS(osSignals)
+	tcpInfoStr := osSignals.String()
 	//QUIC fingerprint: always empty until Batch 3 adds a QUIC
 	//listener; the field is reserved, not populated. See
 	//firewall/quic.go.
@@ -494,6 +499,8 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"ip.fingerprint":        tlsFp,
 			"ip.ja4":                ja4Fp,
 			"ip.quic":               quicFp,
+			"ip.os":                 osLabel,
+			"ip.tcpinfo":            tcpInfoStr,
 			"ip.reputation":         repValue,
 			"ip.searchbot":          searchBot,
 			"ip.risk":               riskScore,
@@ -730,7 +737,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	case "/_bProxy/fingerprint":
 		writer.Header().Set("Content-Type", "text/plain")
-		SendResponse("IP: "+ip+"\nIP Requests: "+strconv.Itoa(ipCount)+"\nIP Challenge Requests: "+strconv.Itoa(ipCountCookie)+"\nSusLV: "+strconv.Itoa(susLv)+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp+"\nJA4: "+ja4Fp+"\nHTTP Fingerprint: "+httpFp+"\nHTTP/2: "+h2Fp, buffer, writer)
+		SendResponse("IP: "+ip+"\nIP Requests: "+strconv.Itoa(ipCount)+"\nIP Challenge Requests: "+strconv.Itoa(ipCountCookie)+"\nSusLV: "+strconv.Itoa(susLv)+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp+"\nJA4: "+ja4Fp+"\nHTTP Fingerprint: "+httpFp+"\nHTTP/2: "+h2Fp+"\nOS: "+osLabel+"\nTCP Info: "+tcpInfoStr, buffer, writer)
 		return
 	case "/_bProxy/verified":
 		writer.Header().Set("Content-Type", "text/plain")

@@ -500,6 +500,9 @@ func reloadFromConfig(cfg *domains.Configuration) {
 	// on reload so cap changes take effect without a restart.
 	firewall.SetMaxConnsPerIP(domains.Config.Proxy.MaxConnsPerIP)
 
+	// Passive OS signatures (Batch 7). Re-applied on reload.
+	firewall.SetOSSignatures(domains.Config.Proxy.OSSignatures)
+
 	// Structured JSON logging (Batch 2). Re-applied on reload so new
 	// log settings take effect without a restart.
 	logging.Configure(domains.Config.Proxy.LogFormat, domains.Config.Proxy.LogFile, domains.Config.Proxy.LogMaxBytes, domains.Config.Proxy.LogMaxFiles)

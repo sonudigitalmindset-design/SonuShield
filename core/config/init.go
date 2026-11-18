@@ -127,6 +127,10 @@ func Load() {
 	// (0) by default; see firewall/conntrack.go.
 	firewall.SetMaxConnsPerIP(domains.Config.Proxy.MaxConnsPerIP)
 
+	// Passive OS signatures (Batch 7). Empty by default; with
+	// none configured every client classifies as "unknown".
+	firewall.SetOSSignatures(domains.Config.Proxy.OSSignatures)
+
 	// Structured JSON logging (Batch 2). Disabled unless logFormat
 	// is "json" and logFile is set; Configure warns and disables
 	// itself on any problem, so a bad log config never stops the proxy.
