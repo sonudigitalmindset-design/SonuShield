@@ -113,11 +113,24 @@ def download_binary():
         print(f"  [dry-run] download {RELEASE_URL} -> {BINARY}")
         return
     print(f"  downloading {RELEASE_URL}", flush=True)
-    with urllib.request.urlopen(RELEASE_URL, timeout=120) as resp, open(BINARY, "wb") as fh:
-        shutil.copyfileobj(resp, fh, length=1024 * 1024)
-    size = os.path.getsize(BINARY)
-    if size < 1_000_000:
-        raise SystemExit(f"ERROR: downloaded binary is only {size} bytes - refusing to use it.")
+    # Download to a temp file and rename over the old binary: Linux refuses
+    # to open a running executable for writing ("Text file busy"), but an
+    # atomic rename over it is allowed - the running process keeps the old
+    # file, and the next (re)start picks up the new one.
+    tmp = BINARY + ".tmp"
+    try:
+        with urllib.request.urlopen(RELEASE_URL, timeout=120) as resp, open(tmp, "wb") as fh:
+            shutil.copyfileobj(resp, fh, length=1024 * 1024)
+        size = os.path.getsize(tmp)
+        if size < 1_000_000:
+            raise SystemExit(f"ERROR: downloaded binary is only {size} bytes - refusing to use it.")
+        os.replace(tmp, BINARY)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
     os.chmod(BINARY, 0o755)
     print(f"  downloaded {size} bytes")
 
@@ -289,14 +302,20 @@ def main():
     write_file("/etc/systemd/system/sonushield.service", SONUSHIELD_UNIT)
     write_file("/etc/systemd/system/testsite.service", TESTSITE_UNIT)
     run(["systemctl", "daemon-reload"])
-    run(["systemctl", "enable", "--now", "testsite", "sonushield"])
+    run(["systemctl", "enable", "testsite", "sonushield"])
+    # restart (not just start): guarantees the new binary + new config load
+    # even when the service was already running with the old ones.
+    run(["systemctl", "restart", "testsite", "sonushield"], check=False)
     if not DRY_RUN:
-        result = subprocess.run(["systemctl", "is-active", "sonushield"],
-                                capture_output=True, text=True)
-        state = result.stdout.strip()
-        print(f"  sonushield service state: {state}")
-        if state != "active":
-            print("  WARNING: service is not active - check: journalctl -u sonushield --no-pager | tail -30")
+        for unit in ("sonushield", "testsite"):
+            result = subprocess.run(["systemctl", "is-active", unit],
+                                    capture_output=True, text=True)
+            state = result.stdout.strip()
+            print(f"  {unit} service state: {state}")
+            if state != "active" and unit == "sonushield":
+                raise SystemExit("ERROR: sonushield is not active after restart - check: journalctl -u sonushield --no-pager | tail -30")
+            if state != "active":
+                print(f"  WARNING: {unit} is not active - the test page may not load")
 
     step("DONE - testing setup complete")
     host = url_host(ip)
