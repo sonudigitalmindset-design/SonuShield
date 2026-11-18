@@ -1,0 +1,99 @@
+{{- $source := include "sonushield.configSource" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sonushield.fullname" . }}
+  labels:
+    {{- include "sonushield.labels" . | nindent 4 }}
+spec:
+  # Recreate: a single stateful replica must not briefly run
+  # twice during a rollout (split counters and challenge state).
+  strategy:
+    type: Recreate
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sonushield.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sonushield.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: sonushield
+          image: {{ include "sonushield.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            # First-run setup wizard (only when no config is
+            # provided). Reach it with kubectl port-forward.
+            - name: wizard
+              containerPort: 8080
+              protocol: TCP
+          {{- if and .Values.probes.enabled (ne $source "") }}
+          livenessProbe:
+            tcpSocket:
+              port: https
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.periodSeconds }}
+          readinessProbe:
+            tcpSocket:
+              port: https
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.periodSeconds }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if ne $source "" }}
+            # subPath keeps /app writable (crash.log, config
+            # backups) and avoids shadowing the binary: only
+            # config.json is mounted, not the whole directory.
+            - name: config
+              mountPath: /app/config.json
+              subPath: config.json
+              readOnly: true
+            {{- end }}
+            {{- if .Values.tls.existingSecret }}
+            - name: certs
+              mountPath: {{ .Values.tls.mountPath }}
+              readOnly: true
+            {{- end }}
+      volumes:
+        {{- if eq $source "inline" }}
+        - name: config
+          configMap:
+            name: {{ include "sonushield.fullname" . }}
+        {{- else if eq $source "configmap" }}
+        - name: config
+          configMap:
+            name: {{ .Values.existingConfigMap }}
+        {{- else if eq $source "secret" }}
+        - name: config
+          secret:
+            secretName: {{ .Values.existingSecret }}
+        {{- end }}
+        {{- if .Values.tls.existingSecret }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.tls.existingSecret }}
+        {{- end }}

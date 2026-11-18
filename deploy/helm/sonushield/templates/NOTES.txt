@@ -1,0 +1,29 @@
+SonuShield is deployed as {{ include "sonushield.fullname" . }}.
+
+{{- if eq (include "sonushield.configSource" .) "" }}
+No config source was provided, so the pod starts the first-run
+setup wizard on port 8080 instead of the proxy. Complete setup:
+
+  kubectl port-forward deploy/{{ include "sonushield.fullname" . }} 8080:8080
+  # Open http://127.0.0.1:8080 in a browser and save the config.
+  # The pod then restarts into the proxy using that config, but
+  # the file lives only in the pod's ephemeral filesystem. Copy
+  # it out, store it as a Secret, and redeploy with
+  # existingSecret set so it survives pod recreation:
+  POD=$(kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }} -o jsonpath='{.items[0].metadata.name}')
+  kubectl cp "$POD":/app/config.json ./config.json
+  kubectl create secret generic sonushield-config --from-file=config.json
+  helm upgrade {{ .Release.Name }} . --set existingSecret=sonushield-config
+{{- else }}
+The proxy serves on ports 80/443 through the
+{{ include "sonushield.fullname" . }} Service. Find its address with:
+
+  kubectl get svc {{ include "sonushield.fullname" . }}
+
+The dashboard lives at https://<your-domain>/_bProxy/<adminsecret>/dashboard
+using the adminsecret from your config.
+{{- end }}
+
+Changing the config: edit the config source (values, ConfigMap,
+or Secret), then helm upgrade. A config change restarts the pod,
+which resets counters and stage state like any reload.

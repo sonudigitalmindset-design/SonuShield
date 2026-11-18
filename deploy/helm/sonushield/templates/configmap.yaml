@@ -1,0 +1,10 @@
+{{- if eq (include "sonushield.configSource" .) "inline" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sonushield.fullname" . }}
+  labels:
+    {{- include "sonushield.labels" . | nindent 4 }}
+data:
+  config.json: {{ .Values.config | toJson | quote }}
+{{- end }}

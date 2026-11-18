@@ -18,6 +18,12 @@ var Fingerprint string = "S3LF_BU1LD_0R_M0D1F13D" // 455b9300-0a6f-48f1-82ee-bb1
 
 func main() {
 
+	//CLI subcommands (Batch 6): validate/export/version/help
+	//are handled here and exit; anything else runs the proxy.
+	if handled, code := cliDispatch(); handled {
+		os.Exit(code)
+	}
+
 	proxy.Fingerprint = Fingerprint
 
 	logFile, err := os.OpenFile("crash.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)

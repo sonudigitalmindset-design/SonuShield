@@ -1,0 +1,16 @@
+apiVersion: v2
+name: sonushield
+description: SonuShield anti-DDoS reverse proxy (GPL-3.0; fork of 41Baloo/balooProxy)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - ddos
+  - waf
+  - reverse-proxy
+  - security
+home: https://github.com/sonudigitalmindset-design/SonuShield
+sources:
+  - https://github.com/sonudigitalmindset-design/SonuShield
+maintainers:
+  - name: Sonu Digital Mindset

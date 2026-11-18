@@ -1,0 +1,93 @@
+# SonuShield Helm values.
+#
+# Image: no image is published by this repository yet. Build and
+# push one first (the Dockerfile is at the repo root):
+#   docker build -t ghcr.io/sonudigitalmindset-design/sonushield:v0.1.0 .
+#   docker push ghcr.io/sonudigitalmindset-design/sonushield:v0.1.0
+# Then set image.tag to that exact tag. The tag is REQUIRED: the
+# chart refuses to render with an empty tag, so a deployment can
+# never silently float to an unpinned image.
+image:
+  repository: ghcr.io/sonudigitalmindset-design/sonushield
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Single replica only. The proxy keeps request counters, the IP
+# cache, and challenge state in memory, so replicas do not share
+# state; running more than one splits protection and challenges
+# across pods. Multi-server state sharing is planned (Batch 3).
+# Do not raise this until then.
+replicaCount: 1
+
+# Configuration source for config.json. Exactly one of these
+# three may be set; when none is set, the pod starts the
+# first-run setup wizard on port 8080 instead (see NOTES.txt).
+#
+# 1. Inline config (simplest; secrets land in Helm release
+#    state — fine for a homelab, not for shared clusters).
+#    config:
+#      proxy:
+#        adminsecret: "..."
+#        ...
+#      domains: [...]
+config: {}
+# 2. An existing ConfigMap with a "config.json" key.
+existingConfigMap: ""
+# 3. An existing Secret with a "config.json" key (recommended
+#    for production: secrets stay out of Helm state).
+#    kubectl create secret generic sonushield-config \
+#      --from-file=config.json=/path/to/config.json
+existingSecret: ""
+
+# TLS certificates, when the config references certificate/key
+# file paths. Mount an existing Secret holding the files and
+# point the config at the mount path, e.g. certificate:
+# "/certs/fullchain.pem". Leave empty when using Cloudflare
+# mode or autoSSL, or when certificates are baked into a custom
+# image (not recommended: keys do not belong in images).
+tls:
+  existingSecret: ""
+  mountPath: /certs
+
+service:
+  type: LoadBalancer
+  # Optional static load-balancer IP / annotations for your cloud.
+  loadBalancerIP: ""
+  annotations: {}
+
+# Probes are TCP checks on 443: they need no HTTP endpoint and
+# no feature flags. They are disabled automatically when no
+# config is provided (wizard bootstrap mode listens on 8080,
+# not 443); set probes.enabled=false to disable them outright.
+probes:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Starting-point resources. Raise limits before a real attack:
+# the proxy is CPU-bound while serving challenges.
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+# The image runs as a non-root user with the cap_net_bind_service
+# file capability, so it can bind 80/443 unprivileged. The
+# NET_BIND_SERVICE capability below keeps that file capability
+# effective inside the container's bounding set; without it, a
+# drop-ALL policy would silently break the :80/:443 bind.
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+    add: ["NET_BIND_SERVICE"]
+  seccompProfile:
+    type: RuntimeDefault
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
