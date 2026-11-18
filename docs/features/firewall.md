@@ -121,6 +121,7 @@ See also: [API v2](../api.md)
 
 ## Cloudflare Settings Import
 
+![Cloudflare Settings Import schematic](../assets/features/cloudflare-import.svg)
 
 ### How it works
 

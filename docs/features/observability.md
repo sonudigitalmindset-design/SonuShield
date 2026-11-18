@@ -216,6 +216,7 @@ See also: [Configuration](../configuration.md#latency-and-sla)
 
 ## Attack Timeline & Postmortem
 
+![Attack Timeline & Postmortem schematic](../assets/features/attack-timeline.svg)
 
 ### How it works
 
@@ -238,6 +239,7 @@ See also: [API v2](../api.md)
 
 ## Security Grade Scan
 
+![Security Grade Scan schematic](../assets/features/security-grade.svg)
 
 ### How it works
 
@@ -260,6 +262,7 @@ See also: [API v2](../api.md)
 
 ## Certificate & Subdomain Alerts
 
+![Certificate & Subdomain Alerts schematic](../assets/features/cert-alerts.svg)
 
 ### How it works
 
@@ -282,6 +285,7 @@ See also: [Configuration](../configuration.md#certificate-and-subdomain-alerts)
 
 ## BGP Alerts
 
+![BGP Alerts schematic](../assets/features/bgp-alerts.svg)
 
 ### How it works
 
@@ -304,6 +308,7 @@ See also: [Configuration](../configuration.md#bgp-alerts)
 
 ## Live Log Tail (SSE)
 
+![Live Log Tail (SSE) schematic](../assets/features/live-log-tail.svg)
 
 ### How it works
 
@@ -326,6 +331,7 @@ See also: [Dashboard](../dashboard.md)
 
 ## Real-User Monitoring (RUM)
 
+![Real-User Monitoring (RUM) schematic](../assets/features/rum-beacon.svg)
 
 ### How it works
 
@@ -348,6 +354,7 @@ See also: [Configuration](../configuration.md#rum-beacon)
 
 ## Synthetic Checks
 
+![Synthetic Checks schematic](../assets/features/synthetic-checks.svg)
 
 ### How it works
 

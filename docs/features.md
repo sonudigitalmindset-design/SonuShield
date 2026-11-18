@@ -2,7 +2,7 @@
 
 Every SonuShield feature, with an animated diagram and an advanced explanation: how it works, its exact configuration, and its honest limits. Diagrams are animated schematics (SMIL only, so they animate on GitHub) — each one shows its feature's mechanism in motion.
 
-**114 features** across 9 groups. 94 animated diagrams are live; the remaining 20 diagrams are being render-verified and land in a follow-up commit — their explanations are already here. No feature here is aspirational: every claim traces to code or existing documentation, and limits state plainly what is disabled by default, mock-verified, or untested.
+**114 features** across 9 groups. No feature here is aspirational: every claim traces to code or existing documentation, and limits state plainly what is disabled by default, mock-verified, or untested.
 
 ## Detection & Fingerprinting
 

@@ -193,6 +193,7 @@ See also: [Configuration](../configuration.md#quiet-mode)
 
 ## Challenge-Flow Exemption
 
+![Challenge-Flow Exemption schematic](../assets/features/challenge-exemption.svg)
 
 ### How it works
 

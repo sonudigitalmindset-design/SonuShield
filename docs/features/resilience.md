@@ -100,6 +100,7 @@ See also: [Configuration](../configuration.md#automatic-ssl)
 
 ## Post-Quantum TLS (X25519MLKEM768)
 
+![Post-Quantum TLS (X25519MLKEM768) schematic](../assets/features/pq-tls.svg)
 
 ### How it works
 
@@ -122,6 +123,7 @@ See also: [Configuration](../configuration.md#post-quantum-tls)
 
 ## Scrubbing-Center Hooks
 
+![Scrubbing-Center Hooks schematic](../assets/features/scrubbing-hooks.svg)
 
 ### How it works
 
@@ -144,6 +146,7 @@ See also: [Scrubbing Integration](../scrubbing-integration.md)
 
 ## Terminal HUD
 
+![Terminal HUD schematic](../assets/features/terminal-hud.svg)
 
 ### How it works
 
@@ -166,6 +169,7 @@ See also: [Dashboard](../dashboard.md)
 
 ## Cloudflare Mode
 
+![Cloudflare Mode schematic](../assets/features/cloudflare-mode.svg)
 
 ### How it works
 

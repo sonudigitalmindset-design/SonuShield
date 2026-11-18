@@ -284,6 +284,7 @@ See also: [API v2](../api.md)
 
 ## Webhooks & SIEM Export
 
+![Webhooks & SIEM Export schematic](../assets/features/webhooks-siem.svg)
 
 ### How it works
 

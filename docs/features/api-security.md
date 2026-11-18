@@ -77,6 +77,7 @@ See also: [Configuration](../configuration.md#openapi-validation)
 
 ## DLP Scanning
 
+![DLP Scanning schematic](../assets/features/dlp-scanning.svg)
 
 ### How it works
 
@@ -99,6 +100,7 @@ See also: [Configuration](../configuration.md#dlp-scanning)
 
 ## CSP Report Collector
 
+![CSP Report Collector schematic](../assets/features/csp-reports.svg)
 
 ### How it works
 
@@ -121,6 +123,7 @@ See also: [Configuration](../configuration.md#csp-report-collector)
 
 ## Origin Lock
 
+![Origin Lock schematic](../assets/features/origin-lock.svg)
 
 ### How it works
 
@@ -143,6 +146,7 @@ See also: [Configuration](../configuration.md#origin-lock)
 
 ## Security Headers & CORS
 
+![Security Headers & CORS schematic](../assets/features/security-headers.svg)
 
 ### How it works
 
@@ -165,6 +169,7 @@ See also: [Configuration](../configuration.md#security-headers-and-cors)
 
 ## Form Spam Guard
 
+![Form Spam Guard schematic](../assets/features/form-spam-guard.svg)
 
 ### How it works
 
@@ -187,6 +192,7 @@ See also: [Configuration](../configuration.md#form-spam-guard)
 
 ## Threat Sharing Network
 
+![Threat Sharing Network schematic](../assets/features/threat-sharing.svg)
 
 ### How it works
 
