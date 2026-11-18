@@ -227,6 +227,15 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 		APIResponse(writer, true, map[string]interface{}{
 			"RAM_USAGE": proxy.RamUsage,
 		})
+	case "GET_SECURITY_GRADE":
+		response, errCode := securityGradeResponse(params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "GET_IP_REQUESTS":
 		firewall.Mutex.RLock()
 		ipsAll := firewall.AccessIps
