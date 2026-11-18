@@ -6,25 +6,35 @@
   </defs>
   <rect width="900" height="240" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
   <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
-    <g>
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.1s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
       <rect x="30" y="75" width="130" height="80" rx="10" fill="#ffffff" stroke="#d0d7de"/>
       <circle cx="95" cy="102" r="12" fill="#dbe7f3"/>
       <path d="M77 132 Q95 114 113 132" fill="#dbe7f3"/>
       <text x="95" y="172" text-anchor="middle" font-size="13" font-weight="600" fill="#57606a">Visitor</text>
     </g>
-    <line x1="162" y1="115" x2="222" y2="115" stroke="#57606a" stroke-width="2" marker-end="url(#arrow6)"/>
-    <g>
+    <line x1="162" y1="115" x2="222" y2="115" stroke="#57606a" stroke-width="2" marker-end="url(#arrow6)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.3s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+    </line>
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.22s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
       <rect x="230" y="75" width="180" height="80" rx="10" fill="#ffffff" stroke="#f6821f"/>
       <ellipse cx="320" cy="108" rx="42" ry="20" fill="#f6821f" opacity="0.9">
-        <animate attributeName="rx" values="42;46;42" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="rx" values="42;45;42" keyTimes="0;0.5;1" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" dur="4s" repeatCount="indefinite"/>
       </ellipse>
       <ellipse cx="320" cy="102" rx="26" ry="14" fill="#f6821f"/>
       <text x="320" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#14263f">Cloudflare</text>
       <text x="320" y="172" text-anchor="middle" font-size="12" fill="#57606a">SSL/TLS: Flexible</text>
     </g>
-    <line x1="412" y1="115" x2="472" y2="115" stroke="#57606a" stroke-width="2" marker-end="url(#arrow6)"/>
-    <text x="442" y="102" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="#57606a">Cf-Connecting-Ip</text>
-    <g>
+    <line x1="412" y1="115" x2="472" y2="115" stroke="#57606a" stroke-width="2" marker-end="url(#arrow6)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.42s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+    </line>
+    <text x="442" y="102" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="#57606a" opacity="0">Cf-Connecting-Ip<animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.5s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/></text>
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.34s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
       <rect x="480" y="55" width="200" height="120" rx="10" fill="#14263f"/>
       <text x="580" y="86" text-anchor="middle" font-size="15" font-weight="700" fill="#ffffff">SonuShield</text>
       <text x="580" y="108" text-anchor="middle" font-size="12" fill="#dbe7f3">port 80 only · no certs loaded</text>
@@ -32,14 +42,21 @@
       <text x="580" y="140" text-anchor="middle" font-size="12" fill="#f59e0b">TLS fingerprinting: off</text>
       <text x="580" y="168" text-anchor="middle" font-size="11" fill="#8fa6bd">fingerprint reported as “Cloudflare”</text>
     </g>
-    <line x1="682" y1="115" x2="742" y2="115" stroke="#57606a" stroke-width="2" marker-end="url(#arrow6)"/>
-    <g>
+    <line x1="682" y1="115" x2="742" y2="115" stroke="#57606a" stroke-width="2" marker-end="url(#arrow6)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.54s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+    </line>
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.46s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate" values="0 10;0 0" dur="0.8s" begin="0.46s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" additive="sum" fill="freeze"/>
       <rect x="750" y="75" width="120" height="80" rx="10" fill="#ffffff" stroke="#d0d7de"/>
       <rect x="772" y="88" width="76" height="14" rx="4" fill="#dcfce7"/>
       <rect x="772" y="108" width="76" height="14" rx="4" fill="#dcfce7"/>
       <text x="810" y="172" text-anchor="middle" font-size="13" font-weight="600" fill="#57606a">Backend</text>
     </g>
-    <circle r="5" fill="#f6821f"><animateMotion dur="3.2s" repeatCount="indefinite" path="M162 115 H 472 M 682 115 H 742"/></circle>
-    <text x="450" y="212" text-anchor="middle" font-size="12" fill="#57606a">Set <tspan font-family="ui-monospace,monospace">cloudflare: true</tspan> only when actually running behind Cloudflare — enabling it otherwise will not work.</text>
+    <circle r="5" fill="#f6821f" opacity="0">
+      <animateMotion dur="4s" repeatCount="indefinite" path="M162 115 H 472 M 682 115 H 742"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.06;0.94;1" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <text x="450" y="212" text-anchor="middle" font-size="12" fill="#57606a" opacity="0">Set <tspan font-family="ui-monospace,monospace">cloudflare: true</tspan> only when actually running behind Cloudflare — enabling it otherwise will not work.<animate attributeName="opacity" values="0;1" dur="0.8s" begin="0.65s" calcMode="spline" keyTimes="0;1" keySplines="0.22 1 0.36 1" fill="freeze"/></text>
   </g>
 </svg>
