@@ -59,6 +59,15 @@ assets/server/
 *.crt
 *.key
 
+# Operator configuration and control-plane state. config.json holds
+# secrets; control-accounts.json holds password hashes. Neither must
+# ever be committed (see docs/history-review.md). Anchored to the repo
+# root so examples/config.json stays tracked.
+# Never commit live configuration or password hashes.
+/config.json
+/control-accounts.json
+/control-audit.log
+
 # Local GeoIP databases (MaxMind DB files supplied by the operator).
 # Never commit downloaded databases.
 *.mmdb
