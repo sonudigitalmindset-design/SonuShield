@@ -8,7 +8,9 @@ on:
 jobs:
   pre-release:
     name: "Auto Release"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-24.04"
+    permissions:
+      contents: write
 
     steps:
       - name: "Checkout code"
@@ -30,14 +32,14 @@ jobs:
         run: go build -ldflags "-X 'main.Fingerprint=${{ env.uuid }}'" -o dist/main
 
       - name: "Release"
-        uses: marvinpinto/action-automatic-releases@latest
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          tag_name: "latest"
           prerelease: true
-          title: "Prerelease ${{ env.uuid }}"
+          name: "Prerelease ${{ env.uuid }}"
           files: |
             dist/main
           body: |
             This is an automatic build that might have bugs.
             Release Tag: ${{ env.uuid }}
+          generate_release_notes: true
