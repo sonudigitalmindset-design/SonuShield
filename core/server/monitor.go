@@ -527,6 +527,14 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			})
 		}
 
+		//Edge rules (Batch 6): precompiled fast-path chain.
+		//Rules that do not fit the fast grammar are skipped
+		//with a warning; they must stay general firewall rules.
+		edgeRules, edgeWarnings := firewall.CompileEdgeRules(domain.EdgeRules)
+		for _, warning := range edgeWarnings {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Edge Rules For " + domain.Name + " : " + warning + " ]")
+		}
+
 		dProxy := httputil.NewSingleHostReverseProxy(&url.URL{
 			Scheme: domain.Scheme,
 			Host:   domain.Backend,
@@ -553,6 +561,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 
 			CustomRules:    firewallRules,
 			RawCustomRules: rawFirewallRules,
+			EdgeRules:       edgeRules,
 
 			DomainProxy:        dProxy,
 			DomainCertificates: cert,

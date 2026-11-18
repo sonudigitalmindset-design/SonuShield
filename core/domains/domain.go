@@ -32,6 +32,7 @@ type Domain struct {
 	Telegram            TelegramSettings `json:"telegram"`
 	Email               EmailSettings    `json:"email"`
 	FirewallRules       []JsonRule       `json:"firewallRules"`
+	EdgeRules           []JsonRule       `json:"edgeRules"`
 	BypassStage1        int              `json:"bypassStage1"`
 	BypassStage2        int              `json:"bypassStage2"`
 	Stage2Difficulty    int              `json:"stage2Difficulty"`
@@ -115,6 +116,7 @@ type DomainSettings struct {
 
 	CustomRules    []Rule
 	RawCustomRules []JsonRule
+	EdgeRules      []EdgeRule
 
 	DomainProxy        *httputil.ReverseProxy
 	DomainCertificates tls.Certificate

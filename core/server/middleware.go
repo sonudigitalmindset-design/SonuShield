@@ -469,7 +469,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	// below when logging is enabled; empty otherwise.
 	matchedRules := []string{}
 
-	if len(domainSettings.CustomRules) != 0 {
+	//Edge rules (Batch 6) run before the general firewall rules,
+	//as if prepended to the list: a set action in the edge chain
+	//stops general evaluation. The message is built when either
+	//list is non-empty.
+	if len(domainSettings.CustomRules) != 0 || len(domainSettings.EdgeRules) != 0 {
 		requestVariables := gofilter.Message{
 			"ip.src":                net.ParseIP(ip),
 			"ip.country":            geoCountry,
@@ -510,16 +514,23 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			//Dry-run mode (Batch 4): rules are evaluated and
 			//matches logged, but susLv is left unchanged, so
 			//no request is challenged or blocked by rules.
-			wouldBe := firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
-			dryMatched := firewall.MatchedRules(domainSettings, requestVariables)
+			wouldBe, edgeStopped := firewall.EvalEdgeRules(domainSettings, requestVariables, susLv)
+			if !edgeStopped {
+				wouldBe = firewall.EvalFirewallRule(domainSettings, requestVariables, wouldBe)
+			}
+			dryMatched := append(firewall.MatchedEdgeRules(domainSettings, requestVariables), firewall.MatchedRules(domainSettings, requestVariables)...)
 			if len(dryMatched) > 0 {
 				logging.Log(logging.Entry{Event: "dryrun", Domain: domainName, IP: ip, Action: "dryrun", Rules: dryMatched, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, WouldBeSusLevel: wouldBe, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			}
 			matchedRules = dryMatched
 		} else {
-			susLv = firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
+			var edgeStopped bool
+			susLv, edgeStopped = firewall.EvalEdgeRules(domainSettings, requestVariables, susLv)
+			if !edgeStopped {
+				susLv = firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
+			}
 			if logging.Enabled() {
-				matchedRules = firewall.MatchedRules(domainSettings, requestVariables)
+				matchedRules = append(firewall.MatchedEdgeRules(domainSettings, requestVariables), firewall.MatchedRules(domainSettings, requestVariables)...)
 			}
 		}
 	}
