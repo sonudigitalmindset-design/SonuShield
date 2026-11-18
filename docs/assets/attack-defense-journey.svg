@@ -229,12 +229,12 @@
    <rect x="880" y="700" width="150" height="120" rx="10" fill="#ffffff" stroke="#d0d7de"/>
    <text x="955" y="722" text-anchor="middle" font-size="13" font-weight="700" fill="#14263f">Tarpit</text>
    <rect x="938" y="730" width="34" height="8" rx="2" fill="#57606a"/>
-   <circle cx="955" cy="742" r="5" fill="#f59e0b" opacity="0">
-    <animate attributeName="cy" values="742;742;798;798" keyTimes="0;0.25;0.85;1" dur="5s" begin="1.4s" repeatCount="indefinite"/>
+   <circle cx="955" cy="738" r="5" fill="#f59e0b" opacity="0">
+    <animate attributeName="cy" values="738;738;792;792" keyTimes="0;0.25;0.85;1" dur="5s" begin="1.4s" repeatCount="indefinite"/>
     <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.25;0.85;1" dur="5s" begin="1.4s" repeatCount="indefinite"/>
    </circle>
-   <ellipse cx="955" cy="804" rx="13" ry="3" fill="#fde68a"/>
-   <text x="955" y="816" text-anchor="middle" font-size="10" fill="#57606a">slow drip · max 30s</text>
+   <ellipse cx="955" cy="798" rx="13" ry="3" fill="#fde68a"/>
+   <text x="955" y="810" text-anchor="middle" font-size="10" fill="#57606a">slow drip · max 30s</text>
    <rect x="1060" y="700" width="292" height="120" rx="10" fill="#ffffff" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="824" stroke-dashoffset="824">
     <animate attributeName="stroke-dashoffset" values="824;0" dur="0.8s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
    </rect>
