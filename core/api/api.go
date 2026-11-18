@@ -280,6 +280,34 @@ func handleProxyActions(action string, writer http.ResponseWriter, params map[st
 		})
 	case "GET_DOMAINS":
 		APIResponse(writer, true, domainsListResponse(tenantScope))
+	case "GET_DOMAIN_TEMPLATES":
+		APIResponse(writer, true, domainTemplatesResponse())
+	case "CREATE_DOMAIN_FROM_TEMPLATE":
+		response, errCode, detail := createDomainFromTemplate(params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
+	case "IMPORT_DOMAINS":
+		response, errCode, detail := importDomains(params)
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	case "GET_TENANTS":
 		APIResponse(writer, true, tenantsListResponse())
 	case "GET_TENANT_USAGE":

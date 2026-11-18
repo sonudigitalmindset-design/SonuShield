@@ -32,19 +32,22 @@ const maxAuditParamLen = 200
 var actionMinRole = map[string]string{
 	// Proxy actions: reads are viewer, FILL_IP_CACHE and RELOAD
 	// are admin-only, the rest operator.
-	"GET_PROXY_STATS":           proxy.RoleViewer,
-	"GET_PROXY_STATS_CPU_USAGE": proxy.RoleViewer,
-	"GET_PROXY_STATS_RAM_USAGE": proxy.RoleViewer,
-	"GET_IP_REQUESTS":           proxy.RoleViewer,
-	"GET_FINGERPRINT_REQUESTS":  proxy.RoleViewer,
-	"GET_IP_CACHE":              proxy.RoleViewer,
-	"FILL_IP_CACHE":             proxy.RoleAdmin,
-	"RELOAD":                    proxy.RoleAdmin,
-	"GET_PROXY_FEATURES":        proxy.RoleViewer,
-	"REFRESH_REPUTATION_FEED":   proxy.RoleOperator,
-	"GET_DOMAINS":               proxy.RoleViewer,
-	"LIST_CONFIG_BACKUPS":       proxy.RoleViewer,
-	"RESTORE_CONFIG_BACKUP":     proxy.RoleAdmin,
+	"GET_PROXY_STATS":             proxy.RoleViewer,
+	"GET_PROXY_STATS_CPU_USAGE":   proxy.RoleViewer,
+	"GET_PROXY_STATS_RAM_USAGE":   proxy.RoleViewer,
+	"GET_IP_REQUESTS":             proxy.RoleViewer,
+	"GET_FINGERPRINT_REQUESTS":    proxy.RoleViewer,
+	"GET_IP_CACHE":                proxy.RoleViewer,
+	"FILL_IP_CACHE":               proxy.RoleAdmin,
+	"RELOAD":                      proxy.RoleAdmin,
+	"GET_PROXY_FEATURES":          proxy.RoleViewer,
+	"REFRESH_REPUTATION_FEED":     proxy.RoleOperator,
+	"GET_DOMAINS":                 proxy.RoleViewer,
+	"GET_DOMAIN_TEMPLATES":        proxy.RoleViewer,
+	"CREATE_DOMAIN_FROM_TEMPLATE": proxy.RoleAdmin,
+	"IMPORT_DOMAINS":              proxy.RoleAdmin,
+	"LIST_CONFIG_BACKUPS":         proxy.RoleViewer,
+	"RESTORE_CONFIG_BACKUP":       proxy.RoleAdmin,
 
 	// Domain actions: reads are viewer, stage/rules/cache are
 	// operator, config writes are admin-only.

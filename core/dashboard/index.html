@@ -275,6 +275,65 @@ tr.selected td{background:var(--nav-active-bg)}
         <p class="small muted">Usage per tenant, from live counters. “Blocked” is approximated as total requests minus requests that passed a challenge. Bandwidth is an estimate: proxied and cache-served traffic only (challenge pages, block pages, and WebSocket traffic are not counted). Tenant assignment is config-file-only.</p>
         <div id="tenantBody"><div class="state">No data yet. Connect to load live data.</div></div>
       </div>
+      <div class="inline-err" id="tplError" role="alert"></div>
+      <div class="inline-ok" id="tplOk" role="status"></div>
+      <div class="panel">
+        <h2>New domain from template</h2>
+        <p class="small muted">Templates are starting points with sane presets — WAF log-only, and caching or compression where it fits the site kind. Adjust settings afterwards; no template ships firewall rules. Creating a domain reloads the configuration, which resets per-domain counters and stage state, exactly as a manual reload does.</p>
+        <form id="tplForm">
+          <div class="formgrid">
+            <div class="field">
+              <label for="tplName">Domain name</label>
+              <input id="tplName" type="text" spellcheck="false" autocomplete="off" placeholder="example.com" required>
+            </div>
+            <div class="field">
+              <label for="tplBackend">Backend (host:port)</label>
+              <input id="tplBackend" type="text" spellcheck="false" autocomplete="off" placeholder="127.0.0.1:8080" required>
+            </div>
+            <div class="field">
+              <label for="tplScheme">Backend scheme</label>
+              <select id="tplScheme"><option value="http">http</option><option value="https">https</option></select>
+            </div>
+            <div class="field">
+              <label for="tplTemplate">Template</label>
+              <select id="tplTemplate"></select>
+              <div class="hint" id="tplDesc"></div>
+            </div>
+            <div class="field">
+              <label for="tplCert">TLS certificate path (optional)</label>
+              <input id="tplCert" type="text" spellcheck="false" autocomplete="off" placeholder="/etc/sonushield/fullchain.pem">
+            </div>
+            <div class="field">
+              <label for="tplKey">TLS key path (optional)</label>
+              <input id="tplKey" type="text" spellcheck="false" autocomplete="off" placeholder="/etc/sonushield/privkey.pem">
+              <div class="hint">Certificate and key must both be set, or both be empty. Leave both empty when using Cloudflare or autoSSL.</div>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit">Create domain</button>
+          </div>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Import domains</h2>
+        <p class="small muted">Bulk-create domains from JSON or CSV. Every entry is validated first — an invalid import is rejected and nothing changes. Importing reloads the configuration, as creating a single domain does.</p>
+        <form id="domImportForm">
+          <div class="formgrid">
+            <div class="field">
+              <label for="domImportFormat">Format</label>
+              <select id="domImportFormat"><option value="json">JSON</option><option value="csv">CSV</option></select>
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label for="domImportData">Domains</label>
+              <textarea id="domImportData" rows="5" spellcheck="false" autocomplete="off" placeholder='[{"name": "example.com", "backend": "127.0.0.1:8080", "scheme": "http", "template": "wordpress"}]'></textarea>
+              <div class="hint">JSON: an array of objects with <code>name</code>, <code>backend</code>, and optional <code>scheme</code>, <code>template</code>, <code>certificate</code>, <code>key</code>. CSV: a header row (<code>name,backend,scheme,template,certificate,key</code>) followed by one domain per row.</div>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit">Import domains</button>
+          </div>
+        </form>
+      </div>
     </section>
 
     <section id="view-rules" class="view">
@@ -807,6 +866,73 @@ function loadTenants(){
     setHTML("tenantBody", h + "</tbody></table>");
   }).catch(function(){
     setHTML("tenantBody", '<div class="state state-error"><strong>Could not load tenant usage.</strong><br>The API secret may have been rejected.</div>');
+  });
+}
+
+var domainTemplates = [];
+function loadTemplates(){
+  return proxyAction("GET_DOMAIN_TEMPLATES").then(function(r){
+    domainTemplates = r.TEMPLATES || [];
+    var sel = $("tplTemplate");
+    sel.innerHTML = "";
+    domainTemplates.forEach(function(t){
+      var opt = document.createElement("option");
+      opt.value = t.NAME;
+      opt.textContent = t.TITLE;
+      sel.appendChild(opt);
+    });
+    updateTplDesc();
+  }).catch(function(err){
+    showInline("tplError", "tplOk", "Could not load domain templates: " + err.message, "");
+  });
+}
+function updateTplDesc(){
+  var sel = $("tplTemplate");
+  var found = null;
+  domainTemplates.forEach(function(t){ if(t.NAME === sel.value) found = t; });
+  if(!found){ setText("tplDesc", ""); return; }
+  var p = found.PRESET || {};
+  var bits = [];
+  if(p.wafMode) bits.push("WAF " + p.wafMode);
+  if(p.wafInspectBody) bits.push("body inspection");
+  if(p.edgeCache) bits.push("edge cache " + (p.edgeCacheTTL || 0) + "s");
+  if(p.brotli) bits.push("Brotli");
+  if(p.imageOptimize) bits.push("image optimization");
+  if(p.honeypotPaths && p.honeypotPaths.length) bits.push("honeypots: " + p.honeypotPaths.join(", "));
+  setText("tplDesc", found.DESCRIPTION + (bits.length ? " Presets: " + bits.join(" · ") + "." : ""));
+}
+function createFromTemplate(ev){
+  ev.preventDefault();
+  showInline("tplError", "tplOk", "", "");
+  proxyWrite("CREATE_DOMAIN_FROM_TEMPLATE", {
+    name: $("tplName").value.trim(),
+    backend: $("tplBackend").value.trim(),
+    scheme: $("tplScheme").value,
+    template: $("tplTemplate").value,
+    certificate: $("tplCert").value.trim(),
+    key: $("tplKey").value.trim()
+  }).then(function(r){
+    showInline("tplError", "tplOk", "", "Created " + (r.CREATED || []).join(", ") + " from the " + (r.TEMPLATE || "") + " template and reloaded the configuration.");
+    $("tplName").value = "";
+    $("tplBackend").value = "";
+    $("tplCert").value = "";
+    $("tplKey").value = "";
+    loadDomains(); loadDomainPanel(); loadTenants();
+  }).catch(function(err){
+    showInline("tplError", "tplOk", "Could not create domain: " + err.message, "");
+  });
+}
+function importDomainsForm(ev){
+  ev.preventDefault();
+  var payload = $("domImportData").value.trim();
+  if(!payload) return;
+  showInline("tplError", "tplOk", "", "");
+  proxyWrite("IMPORT_DOMAINS", {format: $("domImportFormat").value, data: payload}).then(function(r){
+    showInline("tplError", "tplOk", "", "Imported " + (r.COUNT || 0) + " domain(s) and reloaded the configuration: " + (r.CREATED || []).join(", ") + ".");
+    $("domImportData").value = "";
+    loadDomains(); loadDomainPanel(); loadTenants();
+  }).catch(function(err){
+    showInline("tplError", "tplOk", "Could not import domains: " + err.message, "");
   });
 }
 
@@ -1507,7 +1633,7 @@ function showView(name){
   if(!connected) return;
   if(name === "settings"){ loadSettings(); loadProxyFeatures(); loadBackups(); }
   else if(name === "reports"){ loadReport(); loadAttackMap(); }
-  else if(name === "domains"){ loadDomains(); loadDomainPanel(); loadTenants(); }
+  else if(name === "domains"){ loadDomains(); loadDomainPanel(); loadTenants(); loadTemplates(); }
   else if(name === "rules"){ loadRules(true); }
   else if(name === "iplists"){ loadIPLists(); }
   else if(name === "stage"){ loadStageState(); }
@@ -1545,6 +1671,9 @@ $("simForm").addEventListener("submit", function(ev){
 });
 $("rulesExportBtn").addEventListener("click", exportRules);
 $("importForm").addEventListener("submit", importRules);
+$("tplForm").addEventListener("submit", createFromTemplate);
+$("domImportForm").addEventListener("submit", importDomainsForm);
+$("tplTemplate").addEventListener("change", updateTplDesc);
 $("ruleCancel").addEventListener("click", function(){
   resetRuleForm();
   showInline("rulesError", "rulesOk", "", "");
