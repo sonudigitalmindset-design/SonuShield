@@ -288,6 +288,26 @@ names, or challenge flow semantics.
   the new light default once (a one-time versioned reset of the saved
   theme choice); afterwards the Dark/Light toggle works as before and
   the explicit choice is respected. Service-worker shell bumped to v5.
+- Dashboard fixes + skill-guided redesign (UI/UX Pro Max,
+  "Accessible & Ethical" system): (1) a `[hidden]{display:none!important}`
+  rule so the `hidden` attribute is no longer defeated by flex display
+  rules — the control-plane-only Accounts nav item and Node dropdown
+  no longer leak into the local dashboard; (2) the Accounts view is
+  guarded in local mode — instead of fetching the control-plane-only
+  endpoint and showing an empty error, it explains that accounts are
+  managed on the control-plane host; (3) the four `errApiPrefix`
+  call sites now concatenate the message instead of passing it as an
+  unused `t()` argument, so API errors show their real detail (a full
+  audit found this was the only placeholder mismatch). Visuals follow
+  the persisted design-system tokens exactly in light mode (navy
+  #0F172A, blue CTA #0369A1, #F8FAFC background) with a same-family
+  dark adaptation; 4px radii, dense spacing, crisp 1px borders, and
+  error boxes restyled as card-background with a red left bar. The
+  top bar no longer wraps at desktop widths. Motion follows the
+  skill's "Stagger List" preset translated to CSS (250-300ms
+  entrances, 30ms stagger) plus a one-time sparkline draw-in; all
+  motion respects prefers-reduced-motion. Service-worker shell
+  bumped to v6.
 
 ## Known limitations (carried forward)
 

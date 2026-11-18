@@ -17,64 +17,80 @@ __CP_BOOTSTRAP__
 <style>
 
 /* SonuShield Dashboard — enterprise console layout (original design).
-   Light theme is the default; Dark stays available via the toggle.
-   Only color tokens change between themes; spacing, type, and
-   components are shared. No external resources: system fonts only. */
+   Tokens follow the UI/UX Pro Max skill ("Accessible & Ethical"):
+   navy primary, blue CTA, slate neutrals; dark is the same family
+   in lighter tonal variants. Light theme is the default; Dark stays
+   available via the toggle. Only color tokens change between themes;
+   spacing, type, and components are shared. No external resources:
+   system fonts only. */
 :root{
   color-scheme:light;
-  --bg:#f5f6f8; --surface:#ffffff; --panel:#ffffff; --panel-2:#f0f2f5;
-  --border:#e3e6ea; --border-strong:#cfd5dc;
-  --text:#1b2330; --muted:#5b6675; --faint:#8b95a4;
-  --accent:#f6821f; --accent-hover:#e56f0d; --accent-ink:#1a1206; --accent-text:#b45309;
-  --amber:#b45309; --info:#0369a1;
-  --code-bg:#eef1f4; --input-bg:#ffffff; --nav-active-bg:#eef1f4;
-  --ok-bg:#e8f7ee; --ok-text:#157347; --ok-border:#bfe6cd;
-  --warn-bg:#fef6e0; --warn-text:#8a5a00; --warn-border:#f0dca4;
-  --bad-bg:#fdecea; --bad-text:#b42318; --bad-border:#f3c2bd;
-  --banner-bg:#fdecea; --banner-text:#7a271a; --banner-border:#f3c2bd;
-  --shadow-sm:0 1px 2px rgba(16,24,40,.05);
-  --shadow-md:0 4px 16px rgba(16,24,40,.10);
+  --bg:#f8fafc; --surface:#ffffff; --panel:#ffffff; --panel-2:#f1f5f9;
+  --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#020617; --muted:#475569; --faint:#64748b;
+  --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#0369a1;
+  --amber:#b45309; --info:#0284c7; --bypass:#64748b;
+  --ring:rgba(3,105,161,.18);
+  --code-bg:#f1f5f9; --input-bg:#ffffff; --nav-active-bg:#e8ecf1;
+  --ok-bg:#ecfdf5; --ok-text:#047857; --ok-border:#a7f3d0;
+  --warn-bg:#fffbeb; --warn-text:#92400e; --warn-border:#fde68a;
+  --bad-bg:#fef2f2; --bad-text:#b91c1c; --bad-border:#fecaca;
+  --banner-bg:#ffffff; --banner-text:#991b1b; --banner-border:#fecaca;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px rgba(0,0,0,.1);
   --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
-  --radius:6px; --radius-lg:8px;
+  --radius:4px; --radius-lg:4px;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-  /* Motion language (shared with the docs diagrams): one easing, one duration scale. */
+  /* Motion language (skill "Stagger List" preset, Subtle tier, translated
+     from GSAP to CSS): 250-300ms entrances, ease-out, 30ms stagger. */
   --ease-out:cubic-bezier(.22,1,.36,1);
   --ease-in-out:cubic-bezier(.45,0,.55,1);
-  --dur-fast:.15s; --dur-med:.25s; --dur-slow:.4s;
+  --dur-fast:.15s; --dur-med:.25s; --dur-slow:.3s;
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#0b1220; --surface:#0d1729; --panel:#111d33; --panel-2:#0e1829;
-  --border:#1e2c47; --border-strong:#2b3d61;
-  --text:#e6ebf2; --muted:#9aa7bc; --faint:#6b7a93;
-  --accent:#f6821f; --accent-hover:#ff9436; --accent-ink:#1a1206; --accent-text:#f9a55c;
-  --amber:#f59e0b; --info:#38bdf8;
-  --code-bg:#1a2742; --input-bg:#0d1729; --nav-active-bg:#1a2742;
-  --ok-bg:rgba(34,197,94,.12); --ok-text:#86efac; --ok-border:#14532d;
-  --warn-bg:rgba(245,158,11,.12); --warn-text:#fcd34d; --warn-border:#78350f;
-  --bad-bg:rgba(239,68,68,.12); --bad-text:#fca5a5; --bad-border:#7f1d1d;
-  --banner-bg:#2a1215; --banner-text:#fecaca; --banner-border:#7f1d1d;
+  /* Dark adaptation of the same navy/blue family: lighter tonal variants
+     (never inverted colors). Every text pair clears 4.5:1 on its surface. */
+  --bg:#0f172a; --surface:#1e293b; --panel:#1e293b; --panel-2:#273449;
+  --border:#334155; --border-strong:#475569;
+  --text:#f1f5f9; --muted:#cbd5e1; --faint:#94a3b8;
+  --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#7dd3fc;
+  --amber:#fbbf24; --info:#38bdf8; --bypass:#94a3b8;
+  --ring:rgba(125,211,252,.25);
+  --code-bg:#0f172a; --input-bg:#0f172a; --nav-active-bg:#334155;
+  --ok-bg:rgba(16,185,129,.14); --ok-text:#6ee7b7; --ok-border:#065f46;
+  --warn-bg:rgba(245,158,11,.14); --warn-text:#fcd34d; --warn-border:#92400e;
+  --bad-bg:rgba(239,68,68,.14); --bad-text:#fca5a5; --bad-border:#991b1b;
+  --banner-bg:#1e293b; --banner-text:#fecaca; --banner-border:#991b1b;
   --shadow-sm:0 1px 2px rgba(0,0,0,.35);
   --shadow-md:0 8px 24px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
+/* The hidden attribute must win over author display rules (flex pills,
+   nav buttons): without this, CP-only controls leak into the local
+   dashboard. JS unhides by clearing the property, which this respects. */
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:var(--accent-text)}
-code{font-family:var(--mono);font-size:.92em;background:var(--code-bg);padding:1px 6px;border-radius:4px;word-break:break-all}
+code{font-family:var(--mono);font-size:.92em;background:var(--code-bg);padding:1px 6px;border-radius:3px;word-break:break-all}
 button,input{font:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px;border-radius:4px}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--ring)}
 
-/* Top bar */
-.topbar{display:flex;align-items:center;gap:12px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap;min-height:52px}
+/* Top bar: single row at desktop widths. The host pill shrinks with an
+   ellipsis so the bar never wraps or overflows at >=1280px; below the
+   880px breakpoint the bar wraps again (see the media query). */
+.topbar{display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:nowrap;min-height:52px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
 .brand svg{flex:none}
 .wordmark{font-size:16px;font-weight:700;letter-spacing:.1px;line-height:1.15}
 .wordmark small{display:block;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
 .topbar .spacer{flex:1}
-.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:var(--radius);padding:4px 10px;font-size:12.5px;color:var(--muted);background:var(--panel);white-space:nowrap}
-#nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:2px 4px;font-size:12px;max-width:180px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:12.5px;color:var(--muted);background:var(--panel);white-space:nowrap}
+#hostPill{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:12px;max-width:140px}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
 .pill.ok{color:var(--ok-text);border-color:var(--ok-border)}
 .pill.ok .dot{background:var(--ok-text)}
@@ -88,38 +104,41 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 /* Connected-status dot breathes with a soft ring pulse. */
 .pill.ok .dot{animation:dotGlow 2.4s var(--ease-in-out) infinite}
 @keyframes dotGlow{50%{box-shadow:0 0 0 5px rgba(34,197,94,.14)}}
-/* View entrances are choreographed: the view fades, the heading drops in,
-   stat cards cascade, then panels rise. Transform/opacity only — no layout shift. */
-.view.active{animation:viewIn var(--dur-slow) var(--ease-out)}
+/* View entrances are choreographed: the view fades, the heading rises,
+   stat cards stagger in, then panels rise. Transform/opacity only —
+   no layout shift. Timings follow the skill's "Stagger List" preset
+   (Subtle tier): 250-300ms, ease-out, 30ms stagger, 8px rise. */
+.view.active{animation:viewIn var(--dur-med) var(--ease-out)}
 @keyframes viewIn{from{opacity:0}to{opacity:1}}
-.view.active h1{animation:headIn .5s var(--ease-out) both}
-@keyframes headIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.view.active .cards .card{animation:cardIn .55s var(--ease-out) both}
-.view.active .cards .card:nth-child(1){animation-delay:.05s}
-.view.active .cards .card:nth-child(2){animation-delay:.1s}
-.view.active .cards .card:nth-child(3){animation-delay:.15s}
-.view.active .cards .card:nth-child(4){animation-delay:.2s}
-.view.active .cards .card:nth-child(5){animation-delay:.25s}
-.view.active .cards .card:nth-child(6){animation-delay:.3s}
-.view.active .cards .card:nth-child(7){animation-delay:.35s}
-.view.active .cards .card:nth-child(8){animation-delay:.4s}
-@keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.view.active .panel{animation:panelIn .55s var(--ease-out) .2s both}
-@keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-/* Stat values pop briefly when a poll updates them (JS adds .tick on change). */
-.card .value.tick{animation:valueTick .5s var(--ease-out)}
-@keyframes valueTick{0%{transform:scale(1)}30%{transform:scale(1.07);color:var(--accent-text)}100%{transform:scale(1)}}
+.view.active h1{animation:headIn .3s var(--ease-out) both}
+@keyframes headIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.view.active .cards .card{animation:cardIn .3s var(--ease-out) both}
+.view.active .cards .card:nth-child(1){animation-delay:.03s}
+.view.active .cards .card:nth-child(2){animation-delay:.06s}
+.view.active .cards .card:nth-child(3){animation-delay:.09s}
+.view.active .cards .card:nth-child(4){animation-delay:.12s}
+.view.active .cards .card:nth-child(5){animation-delay:.15s}
+.view.active .cards .card:nth-child(6){animation-delay:.18s}
+.view.active .cards .card:nth-child(7){animation-delay:.21s}
+.view.active .cards .card:nth-child(8){animation-delay:.24s}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.view.active .panel{animation:panelIn .3s var(--ease-out) .1s both}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* Stat values pop subtly when a poll updates them (JS adds .tick on change). */
+.card .value.tick{animation:valueTick .3s var(--ease-out)}
+@keyframes valueTick{0%{transform:scale(1)}30%{transform:scale(1.05)}100%{transform:scale(1)}}
 .banner.show,.inline-err.show,.inline-ok.show{animation:bannerIn var(--dur-med) var(--ease-out)}
-@keyframes bannerIn{from{opacity:0;transform:translateY(-6px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes bannerIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 /* Async loading states: a spinner + a breathing border + the highlight sweep. */
 .state.loading{position:relative;overflow:hidden;animation:statePulse 1.6s var(--ease-in-out) infinite}
 .state.loading::before{content:"";display:inline-block;width:12px;height:12px;margin-right:8px;vertical-align:-1px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);animation:spin .7s linear infinite}
 @keyframes statePulse{50%{border-color:var(--accent)}}
 .state.loading::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 20%,rgba(128,140,160,.14) 50%,transparent 80%);transform:translateX(-100%);animation:shimmer 1.6s var(--ease-in-out) infinite}
 @keyframes shimmer{to{transform:translateX(100%)}}
-/* Bars grow from zero when a panel renders, then glide to new widths on polls. */
-.bar-row .fill{animation:barIn .6s var(--ease-out);transition:width .5s var(--ease-out)}
-@keyframes barIn{from{width:0}}
+/* Bars grow from zero when a panel renders (transform only, so the
+   entrance never triggers layout), then glide to new widths on polls. */
+.bar-row .fill{animation:barIn .45s var(--ease-out);transform-origin:left center;transition:width .5s var(--ease-out)}
+@keyframes barIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 /* Nav active indicator: an accent bar that grows vertically into place. */
 .navbtn{position:relative}
 .navbtn::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--accent);transform:scaleY(0);transform-origin:center;transition:transform var(--dur-med) var(--ease-out)}
@@ -138,9 +157,9 @@ td{transition:background-color var(--dur-fast) var(--ease-out)}
   button:hover:not(:disabled),.btn:hover{transform:none}
 }
 .themeseg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);padding:2px;background:var(--panel);gap:2px}
-.themeseg button{border:none;background:transparent;color:var(--muted);border-radius:4px;padding:4px 10px;font-size:12.5px;font-weight:600}
+.themeseg button{border:none;background:transparent;color:var(--muted);border-radius:4px;padding:3px 8px;font-size:12.5px;font-weight:600;cursor:pointer}
 .themeseg button[aria-pressed="true"]{background:var(--nav-active-bg);color:var(--text);box-shadow:var(--shadow-sm)}
-button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:var(--radius);padding:7px 14px;font-size:13.5px;font-weight:500;line-height:1.3}
+button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:var(--radius);padding:6px 12px;font-size:13.5px;font-weight:500;line-height:1.3;cursor:pointer}
 button:hover,.btn:hover{border-color:var(--faint)}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
@@ -152,12 +171,12 @@ input,select,textarea{color:var(--text);background:var(--input-bg);border:1px so
 .sidebar{width:232px;flex:none;border-right:1px solid var(--border);background:var(--surface);padding:12px 8px}
 .sidebar h3{margin:16px 12px 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)}
 .sidebar h3:first-of-type{margin-top:2px}
-.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:2px 0;padding:7px 12px;border:1px solid transparent;background:transparent;border-radius:var(--radius);color:var(--muted);font-size:13.5px}
+.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:2px 0;padding:6px 12px;border:1px solid transparent;background:transparent;border-radius:var(--radius);color:var(--muted);font-size:13.5px;cursor:pointer}
 .navbtn svg{flex:none}
 .navbtn:hover{background:var(--panel-2);color:var(--text)}
 .navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
 .navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
-.main{flex:1;padding:24px 28px 48px;min-width:0}
+.main{flex:1;padding:20px 24px 48px;min-width:0}
 .main > section, .main > .banner{max-width:1280px}
 .view{display:none}
 .view.active{display:block}
@@ -167,13 +186,13 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 .sub strong{color:var(--text);font-weight:600}
 
 /* Cards, panels, tables */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow-sm)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
 .card .label{font-size:12.5px;font-weight:500;color:var(--muted)}
 .card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
 .card .foot{font-size:12px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;box-shadow:var(--shadow-sm);margin-top:16px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
 .panel > h2:first-child{margin-top:0}
 .panel p:last-child, .panel ul:last-child{margin-bottom:0}
 .panel ul{margin:8px 0;padding-left:20px}
@@ -183,14 +202,14 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 #topIps,#topFps,#rulesBody,#logsBody,#domBody,#ipListsBody{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 thead th{background:var(--panel-2)}
-th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:7px 10px;white-space:nowrap}
-td{border-bottom:1px solid var(--border);padding:7px 10px;vertical-align:top;word-break:break-word}
+th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:6px 10px;white-space:nowrap}
+td{border-bottom:1px solid var(--border);padding:6px 10px;vertical-align:top;word-break:break-word}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--panel-2)}
 .mono{font-family:var(--mono);font-size:12.5px}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
-.badge{display:inline-block;border-radius:4px;padding:1px 8px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
+.badge{display:inline-block;border-radius:3px;padding:1px 8px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
 .badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg)}
 .badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg)}
 .badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg)}
@@ -205,12 +224,15 @@ tbody tr:hover td{background:var(--panel-2)}
 .legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .legend-dot{width:10px;height:10px;border-radius:2px;flex:none}
 .legend-total{background:var(--accent)}
-.legend-bypass{background:var(--info)}
+.legend-bypass{background:var(--bypass)}
 .chart-wrap{position:relative}
 .chart-svg{width:100%;height:120px;display:block}
 .chart-area{fill:var(--accent);fill-opacity:.08}
+:root[data-theme="dark"] .chart-area{fill-opacity:.18}
 .chart-line-total{stroke:var(--accent)}
-.chart-line-bypass{stroke:var(--info)}
+/* The bypassed series is dashed as well as grey, so the two series stay
+   distinguishable without relying on color alone. */
+.chart-line-bypass{stroke:var(--bypass);stroke-dasharray:5 3}
 
 /* Notes, states, banner */
 .note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
@@ -220,9 +242,9 @@ tbody tr:hover td{background:var(--panel-2)}
 .tailbox{font-family:var(--mono);font-size:12.5px;max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface-muted);white-space:pre-wrap;word-break:break-word}
 .tailbox .tl-warn{color:var(--bad-text)}
 .state strong{color:var(--text)}
-.state-error{border-style:solid;border-color:var(--bad-border);background:var(--bad-bg);color:var(--bad-text)}
+.state-error{border-style:solid;border-color:var(--bad-border);border-left:3px solid var(--bad-text);background:var(--panel);color:var(--bad-text)}
 .state-error strong{color:var(--bad-text)}
-.banner{display:none;border:1px solid var(--banner-border);background:var(--banner-bg);color:var(--banner-text);border-radius:var(--radius);padding:12px 16px;margin-bottom:var(--space-2)}
+.banner{display:none;border:1px solid var(--banner-border);border-left:3px solid var(--bad-text);background:var(--banner-bg);color:var(--banner-text);border-radius:var(--radius);padding:12px 16px;margin-bottom:var(--space-2)}
 .banner.show{display:block}
 .auth{max-width:440px;margin:48px auto}
 .auth .panel{padding:var(--space-3);box-shadow:var(--shadow-md)}
@@ -233,7 +255,7 @@ tbody tr:hover td{background:var(--panel-2)}
 .row .grow{flex:1;min-width:180px}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 16px}
 .footer{margin-top:var(--space-4);color:var(--faint);font-size:12px}
-.kbd{font-family:var(--mono);background:var(--code-bg);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:4px;padding:1px 6px;font-size:12px;white-space:nowrap}
+.kbd{font-family:var(--mono);background:var(--code-bg);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:1px 6px;font-size:12px;white-space:nowrap}
 /* Forms and controls */
 .formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px;margin:8px 0}
 .field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 6px}
@@ -243,9 +265,9 @@ button.danger{border-color:var(--bad-border);color:var(--bad-text)}
 button.danger:hover{border-color:var(--bad-text)}
 button.small{padding:4px 10px;font-size:12.5px}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.inline-err{display:none;border:1px solid var(--bad-border);background:var(--bad-bg);color:var(--bad-text);border-radius:var(--radius);padding:10px 14px;margin:12px 0}
+.inline-err{display:none;border:1px solid var(--bad-border);border-left:3px solid var(--bad-text);background:var(--panel);color:var(--bad-text);border-radius:var(--radius);padding:10px 14px;margin:12px 0}
 .inline-err.show{display:block}
-.inline-ok{display:none;border:1px solid var(--ok-border);background:var(--ok-bg);color:var(--ok-text);border-radius:var(--radius);padding:10px 14px;margin:12px 0}
+.inline-ok{display:none;border:1px solid var(--ok-border);border-left:3px solid var(--ok-text);background:var(--panel);color:var(--ok-text);border-radius:var(--radius);padding:10px 14px;margin:12px 0}
 .inline-ok.show{display:block}
 tr.clickable{cursor:pointer}
 tr.selected td{background:var(--nav-active-bg)}
@@ -256,7 +278,7 @@ tr.selected td{background:var(--nav-active-bg)}
   .navbtn{display:inline-flex;width:auto}
   .navbtn .tag{display:none}
   .main{padding:16px 16px 32px}
-  .topbar{padding:8px 12px;gap:8px}
+  .topbar{padding:8px 12px;gap:8px;flex-wrap:wrap}
   .panel{padding:14px 16px}
 }
 </style>__BRAND_STYLE__
@@ -1112,6 +1134,7 @@ accountsPwNew: "New password (at least 12 characters)",
 accountsPwBtn: "Change password",
 accountsPwChanged: "Password changed for {0}.",
 accountsLoadFail: "Accounts could not be loaded.",
+accountsLocalNotice: "Accounts are managed on the control-plane host. This dashboard is connected directly to a proxy node, so there are no accounts to manage here.",
 roleTenant: "Tenant",
 roleReseller: "Reseller",
 roleOwner: "Owner",
@@ -1860,6 +1883,7 @@ accountsPwNew: "Naya password (kam se kam 12 characters)",
 accountsPwBtn: "Password badlein",
 accountsPwChanged: "{0} ka password badal gaya.",
 accountsLoadFail: "Accounts load nahi ho paye.",
+accountsLocalNotice: "Accounts control-plane host par manage hote hain. Ye dashboard seedha ek proxy node se connected hai, isliye yahan manage karne ke liye koi account nahi hai.",
 roleTenant: "Tenant",
 roleReseller: "Reseller",
 roleOwner: "Owner",
@@ -2720,8 +2744,10 @@ function setHTML(id, html){ var el = $(id); if(el) el.innerHTML = html; }
    inline SVG redrawn from the poll data. History resets per domain. */
 var trafficHist = [];
 var trafficDom = null;
+var trafficDrawn = false;
+var reducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 function pushTraffic(dom, total, bypassed){
-  if(dom !== trafficDom){ trafficHist = []; trafficDom = dom; }
+  if(dom !== trafficDom){ trafficHist = []; trafficDom = dom; trafficDrawn = false; }
   if(!isFinite(total) || !isFinite(bypassed)) return;
   trafficHist.push([total, bypassed]);
   if(trafficHist.length > 40) trafficHist.shift();
@@ -2751,6 +2777,27 @@ function drawTraffic(){
   svg.innerHTML = '<path class="chart-area" d="' + area + '"/>' +
     '<polyline class="chart-line-total" points="' + totalPts + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>' +
     '<polyline class="chart-line-bypass" points="' + bypPts + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>';
+  // First render per domain: draw the lines in once via a
+  // stroke-dashoffset transition. Later polls rebuild the polylines
+  // without the inline dash styles, so the draw-in never replays.
+  // Skipped entirely under prefers-reduced-motion: the lines render
+  // immediately and any failure here leaves them fully visible.
+  if(!trafficDrawn && !reducedMotion){
+    trafficDrawn = true;
+    try{
+      var lines = svg.querySelectorAll("polyline"), k;
+      for(k = 0; k < lines.length; k++){
+        var len = lines[k].getTotalLength();
+        lines[k].style.strokeDasharray = String(len);
+        lines[k].style.strokeDashoffset = String(len);
+      }
+      void svg.getBoundingClientRect();
+      for(k = 0; k < lines.length; k++){
+        lines[k].style.transition = "stroke-dashoffset .45s cubic-bezier(.22,1,.36,1)";
+        lines[k].style.strokeDashoffset = "0";
+      }
+    }catch(e){}
+  }
 }
 
 function loadOverview(){
@@ -3621,7 +3668,7 @@ function attackMapSVG(countries, max){
     var dx = x - cx, dy = y - cy;
     if(Math.sqrt(dx * dx + dy * dy) > r - 4) return;
     var rad = 3 + 7 * Math.sqrt((c.TOTAL || 0) / max);
-    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + rad.toFixed(1) + '" fill="#f6821f" opacity="0.85"><title>' + esc(c.COUNTRY) + ': ' + num(c.TOTAL) + '</title></circle>';
+    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + rad.toFixed(1) + '" fill="#dc2626" opacity="0.85"><title>' + esc(c.COUNTRY) + ': ' + num(c.TOTAL) + '</title></circle>';
   });
   return s + '</svg>';
 }
@@ -4546,6 +4593,14 @@ function connectCP(){
 }
 
 function loadAccounts(){
+  // Accounts live on the control-plane host only. On a dashboard
+  // connected directly to a proxy node, /cp/accounts does not exist,
+  // so explain instead of fetching a 404 and showing an empty error.
+  if(!CP){
+    setHTML("accountsBody", '<div class="state">' + t("accountsLocalNotice") + '</div>');
+    showInline("accountsError", "accountsOk", "", "");
+    return Promise.resolve();
+  }
   return cpFetch("/cp/accounts").then(function(r){
     var list = r.ACCOUNTS || [];
     if(!list.length){
@@ -4570,13 +4625,13 @@ function loadAccounts(){
           showInline("accountsError", "accountsOk", "", t("accountsDeleted", name));
           loadAccounts();
         }).catch(function(err){
-          showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+          showInline("accountsError", "accountsOk", t("errApiPrefix") + err.message, "");
         });
       });
     });
   }).catch(function(err){
     setHTML("accountsBody", '<div class="state state-error">' + t("accountsLoadFail") + '</div>');
-    showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+    showInline("accountsError", "accountsOk", t("errApiPrefix") + err.message, "");
   });
 }
 
@@ -4588,6 +4643,10 @@ $("nodeSelect").addEventListener("change", function(){
 });
 $("accountCreateForm").addEventListener("submit", function(ev){
   ev.preventDefault();
+  if(!CP){
+    showInline("accountsError", "accountsOk", t("accountsLocalNotice"), "");
+    return;
+  }
   showInline("accountsError", "accountsOk", "", "");
   var tenants = $("acctTenants").value.split(",").map(function(x){ return x.trim(); }).filter(function(x){ return x; });
   cpFetch("/cp/accounts", "POST", {
@@ -4603,11 +4662,15 @@ $("accountCreateForm").addEventListener("submit", function(ev){
     $("acctTenant").value = ""; $("acctTenants").value = "";
     loadAccounts();
   }).catch(function(err){
-    showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+    showInline("accountsError", "accountsOk", t("errApiPrefix") + err.message, "");
   });
 });
 $("accountPasswordForm").addEventListener("submit", function(ev){
   ev.preventDefault();
+  if(!CP){
+    showInline("accountsError", "accountsOk", t("accountsLocalNotice"), "");
+    return;
+  }
   showInline("accountsError", "accountsOk", "", "");
   cpFetch("/cp/accounts/password", "POST", {
     username: $("acctPwUsername").value.trim(),
@@ -4617,7 +4680,7 @@ $("accountPasswordForm").addEventListener("submit", function(ev){
     showInline("accountsError", "accountsOk", "", t("accountsPwChanged", r.CHANGED || ""));
     $("acctPwUsername").value = ""; $("acctPwCurrent").value = ""; $("acctPwNew").value = "";
   }).catch(function(err){
-    showInline("accountsError", "accountsOk", t("errApiPrefix", err.message), "");
+    showInline("accountsError", "accountsOk", t("errApiPrefix") + err.message, "");
   });
 });
 
