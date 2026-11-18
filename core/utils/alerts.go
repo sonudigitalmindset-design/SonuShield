@@ -4,11 +4,11 @@ package utils
 //
 // SendAlerts is the single trigger point for attack notifications.
 // It fans out to every configured channel: the existing Discord
-// webhook, Telegram, and email. Each sender is independent: one
-// channel failing (or being unconfigured) never blocks the others,
-// and every sender fails silently when its own settings are absent,
-// so operators who configure nothing new see exactly the previous
-// behavior.
+// webhook, Telegram, email, and Twilio-compatible WhatsApp/SMS.
+// Each sender is independent: one channel failing (or being
+// unconfigured) never blocks the others, and every sender fails
+// silently when its own settings are absent, so operators who
+// configure nothing new see exactly the previous behavior.
 //
 // Notification types match SendWebhook: 0 is attack start, 1 is
 // attack end. Callers run this in a goroutine, as they did with
@@ -24,6 +24,7 @@ func SendAlerts(domainData domains.DomainData, domainSettings domains.DomainSett
 	SendWebhook(domainData, domainSettings, notificationType)
 	SendTelegram(domainData, domainSettings, notificationType)
 	SendEmail(domainData, domainSettings, notificationType)
+	SendTwilio(domainData, domainSettings, notificationType)
 }
 
 // alertText builds the message body for Telegram and email. A custom

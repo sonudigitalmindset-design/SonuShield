@@ -248,6 +248,9 @@ func domainConfigResponse(domainSettings *domains.DomainSettings) map[string]int
 		"EMAIL_USERNAME":      domainSettings.DomainEmail.Username,
 		"EMAIL_FROM":          domainSettings.DomainEmail.From,
 		"EMAIL_TO":            domainSettings.DomainEmail.To,
+		"TWILIO_CONFIGURED":   domainSettings.DomainTwilio.AccountSID != "" && domainSettings.DomainTwilio.AuthToken != "" && domainSettings.DomainTwilio.From != "" && domainSettings.DomainTwilio.To != "",
+		"TWILIO_FROM":         domainSettings.DomainTwilio.From,
+		"TWILIO_TO":           domainSettings.DomainTwilio.To,
 		"EMAIL_USE_TLS":       domainSettings.DomainEmail.UseTLS,
 
 		"RULE_COUNT": len(domainSettings.RawCustomRules),

@@ -31,6 +31,7 @@ type Domain struct {
 	Webhook             WebhookSettings  `json:"webhook"`
 	Telegram            TelegramSettings `json:"telegram"`
 	Email               EmailSettings    `json:"email"`
+	Twilio              TwilioSettings   `json:"twilio"`
 	FirewallRules       []JsonRule       `json:"firewallRules"`
 	EdgeRules           []JsonRule       `json:"edgeRules"`
 	BypassStage1        int              `json:"bypassStage1"`
@@ -123,6 +124,7 @@ type DomainSettings struct {
 	DomainWebhooks     WebhookSettings
 	DomainTelegram     TelegramSettings
 	DomainEmail        EmailSettings
+	DomainTwilio       TwilioSettings
 
 	BypassStage1        int
 	BypassStage2        int
@@ -324,6 +326,23 @@ type EmailSettings struct {
 	From           string `json:"from"`
 	To             string `json:"to"`
 	UseTLS         bool   `json:"useTLS"`
+	AttackStartMsg string `json:"attack_start_msg"`
+	AttackStopMsg  string `json:"attack_stop_msg"`
+}
+
+// TwilioSettings holds the operator's own Twilio (or
+// Twilio-compatible) account for WhatsApp/SMS alerts. From/To
+// values prefixed with "whatsapp:" go via WhatsApp, plain E.164
+// numbers via SMS. APIBase overrides the default
+// https://api.twilio.com for compatible providers; empty means
+// the default. All of AccountSID, AuthToken, From, and To are
+// required; the channel is inert when any is missing.
+type TwilioSettings struct {
+	AccountSID     string `json:"accountSID"`
+	AuthToken      string `json:"authToken"`
+	From           string `json:"from"`
+	To             string `json:"to"`
+	APIBase        string `json:"apiBase"`
 	AttackStartMsg string `json:"attack_start_msg"`
 	AttackStopMsg  string `json:"attack_stop_msg"`
 }

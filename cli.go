@@ -218,6 +218,7 @@ func redactConfigForExport(cfg *domains.Configuration) {
 		redact(&d.Webhook.URL)
 		redact(&d.Telegram.BotToken)
 		redact(&d.Email.Password)
+		redact(&d.Twilio.AuthToken)
 		redact(&d.ChallengeSecretKey)
 		redact(&d.JWTSecret)
 		redact(&d.OriginLockSecret)

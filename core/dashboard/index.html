@@ -1959,7 +1959,7 @@ function loadDomainPanel(){
         + "<tr><td>" + t("navRules") + "</td><td>" + num(cfg.RULE_COUNT) + "</td></tr>"
         + "<tr><td>" + t("domRowProvider") + "</td><td>" + esc(cfg.CHALLENGE_PROVIDER || t("providerNone")) + "</td></tr>"
         + "<tr><td>" + t("setWafModeLabel") + "</td><td>" + esc(cfg.WAF_MODE_EFFECTIVE || cfg.WAF_MODE || "—") + "</td></tr>"
-        + "<tr><td>" + t("domRowAlerts") + "</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? t("yes") : t("no")) + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? t("yes") : t("no")) + " · Email: " + (cfg.EMAIL_CONFIGURED ? t("yes") : t("no")) + "</td></tr>";
+        + "<tr><td>" + t("domRowAlerts") + "</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? t("yes") : t("no")) + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? t("yes") : t("no")) + " · Email: " + (cfg.EMAIL_CONFIGURED ? t("yes") : t("no")) + " · Twilio: " + (cfg.TWILIO_CONFIGURED ? t("yes") : t("no")) + "</td></tr>";
     }
     setHTML("domBody", h + "</tbody></table>"
       + '<div class="btnrow" style="margin-top:12px"><button type="button" id="purgeCacheBtn">' + t("purgeCacheBtn") + '</button><span class="small muted" id="purgeCacheNote"></span></div>');
