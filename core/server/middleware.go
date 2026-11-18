@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kor44/gofilter"
 )
@@ -30,6 +31,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	buffer := bufferPool.Get().(*bytes.Buffer)
 	defer bufferPool.Put(buffer)
 	buffer.Reset()
+
+	//Latency tracking (Batch 7): the middleware-entry
+	//timestamp, stamped onto the request before proxying so
+	//the RoundTripper can measure proxy-side processing time.
+	middlewareStart := time.Now()
 
 	domainName := request.Host
 
@@ -1021,6 +1027,11 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	defer fairRelease()
+
+	//Stamp the middleware-entry time for latency tracking
+	//(Batch 7); the RoundTripper reads it back from the
+	//request context.
+	request = withLatencyStart(request, middlewareStart)
 
 	domainSettings.DomainProxy.ServeHTTP(writer, request)
 }

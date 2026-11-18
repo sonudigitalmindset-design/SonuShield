@@ -454,6 +454,15 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "GET_LATENCY":
+		response, errCode := latencyResponse(domainSettings, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "PURGE_CACHE":
 		response, errCode := purgeCacheResponse(domainSettings, params)
 		if errCode != "" {

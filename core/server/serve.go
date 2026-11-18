@@ -199,12 +199,26 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 			}
 		}
 	}
-	metrics.ObserveBackend(req.Host, time.Since(backendStart), err == nil)
+	headersAt := time.Now()
+	backendElapsed := headersAt.Sub(backendStart)
+	metrics.ObserveBackend(req.Host, backendElapsed, err == nil)
+
+	//Latency tracking (Batch 7): proxy time is middleware
+	//entry to backend start; zero when the request was not
+	//stamped (direct RoundTripper use).
+	middlewareStart := latencyStartFrom(req)
+	proxyLatency := time.Duration(0)
+	if !middlewareStart.IsZero() {
+		proxyLatency = backendStart.Sub(middlewareStart)
+	}
 
 	//Connection to backend failed. When every backend is down and
 	//the edge cache holds a stale copy, serve it clearly marked
 	//instead of the error page.
 	if err != nil {
+		//Latency (Batch 7): the origin failed, whether or
+		//not a stale cached copy is served below.
+		RecordLatency(req.Host, backendElapsed, backendElapsed, proxyLatency, 0, true)
 		if stale := staleFallbackResponse(req, pool); stale != nil {
 			return stale, nil
 		}
@@ -237,6 +251,10 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		//Metering (Batch 5): the backend error body is read and
 		//discarded here, so count what arrived.
 		addDomainBytes(req.Host, 0, int64(len(errBody)))
+
+		//Latency (Batch 7): the 5xx body was just read, so
+		//the total time is known here.
+		RecordLatency(req.Host, backendElapsed, time.Since(backendStart), proxyLatency, resp.StatusCode, false)
 
 		// Close the original body
 		resp.Body.Close()
@@ -278,7 +296,10 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	//Metering (Batch 5): count response bytes per domain. The
 	//wrapper flushes its total when the body is closed, after
 	//the cache hook and the client copy have read through it.
-	resp.Body = &meteringReader{ReadCloser: resp.Body, domain: req.Host}
+	//Latency (Batch 7): the wrapper records one sample when
+	//the body is closed, outside the metering reader so byte
+	//counting is unaffected.
+	resp.Body = &latencyReader{ReadCloser: &meteringReader{ReadCloser: resp.Body, domain: req.Host}, domain: req.Host, status: resp.StatusCode, backendStart: backendStart, headersAt: headersAt, middlewareStart: middlewareStart}
 
 	return resp, nil
 }
