@@ -102,13 +102,13 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `LIST_RULE_PACKS` | `PACKS` (imported-pack registry records: name, version, source, description, domain, rule count, mode, import time), `COUNT`. Viewer role may run it. |
 | `APPROVE_ACTION` / `REJECT_ACTION` | Approve (and execute) or reject a pending two-person approval (parameter `APPROVAL_ID`). Operator role may run them. See below. |
 | `LIST_APPROVALS` | `ENABLED`, `APPROVALS` (pending requests: id, action, domain, requester role, tenant, created/expiry times — stored parameters are never returned), `COUNT`. Viewer role may run it. |
-| `GET_SHARING_STATUS` | `ENABLED`, `PEERS` (names and URLs only — secrets are never returned), `PULL_INTERVAL_SECONDS`, `PUSH_ON_CANARY`, `INDICATORS` (per peer: indicator count, last pull time), `LOCAL_INDICATORS`. Viewer role may run it. |
-| `ADD_INDICATOR` / `REMOVE_INDICATOR` | Add or remove one local threat indicator (`type` `ip`/`fingerprint`, `value`, `reason`, `expires_seconds`). Operator role may run them. |
-| `PULL_INDICATORS` / `PUSH_INDICATORS` | Pull indicators from all peers now, or push local indicators to all peers now. Returns per-peer `RESULTS`. Operator role may run them. |
-| `GET_BGP_STATUS` | `ENABLED`, `SOURCE`, `CHECK_INTERVAL_SECONDS`, `PREFIXES` (per prefix: `PREFIX`, `ANNOUNCED`, `ORIGINS`, `UNEXPECTED`, `LAST_CHECKED`). Viewer role may run it. |
-| `GET_SYNTHETIC_STATUS` | `ENABLED`, `INTERVAL_SECONDS`, `CHECKS` (per check: `NAME`, `URL`, `STATUS`, `LAST_CHECKED`, `LAST_LATENCY_MS`, `CONSECUTIVE_FAILURES`, `LAST_ERROR`). Viewer role may run it. |
-| `GET_ONCALL_STATUS` | `ENABLED`, `RESPONDERS` (names only — channel settings are never returned), `CURRENT` (the responder on call now, or `\"\"`), `OPEN_ALERTS` (id, title, started, acknowledged). Viewer role may run it. |
-| `ACK_ALERT` | Acknowledges one tracked alert (parameter `id`), silencing its escalation. Returns `ACKED`. Operator role may run it. |
+| `GET_SHARING_STATUS` | `ENABLED`, `PEERS` (per peer: `NAME`, `URL`, `LAST_SUCCESS`, `LAST_ERROR` — secrets are never returned), `LOCAL` and `RECEIVED` indicator counts. Viewer role may run it. |
+| `ADD_INDICATOR` / `REMOVE_INDICATOR` | Add or remove one local threat indicator (`type` `ip`/`fingerprint`, `value`, optional `reason`, optional `ttl` in seconds, default 3600; remove takes `type` + `value`). Returns `ADDED` / `REMOVED`. Operator role may run them. |
+| `PULL_INDICATORS` / `PUSH_INDICATORS` | Trigger an immediate pull from / push to all peers in the background. Returns `PULL_STARTED` / `PUSH_STARTED`. Operator role may run them. |
+| `GET_BGP_STATUS` | `ENABLED`, `PREFIXES` (per prefix: `PREFIX`, `EXPECTED`, `LAST_ORIGINS`, `ANNOUNCED`, `ALERTING`, `LAST_CHECK`, `LAST_ERROR`). Viewer role may run it. |
+| `GET_SYNTHETIC_STATUS` | `ENABLED`, `CHECKS` (per check: `NAME`, `URL`, `LAST_RUN`, `OK`, `LATENCY_MS`, `LAST_ERROR`, `CONSECUTIVE_FAILURES`, `LATENCY_BREACHING`). Viewer role may run it. |
+| `GET_ONCALL_STATUS` | `ENABLED`, `CURRENT` (the responder on call now, or `\"\"`), `ESCALATION_MINUTES`, `RESPONDERS` (names only — channel settings are never returned), `OPEN_ALERTS` (`ID`, `TITLE`, `DOMAIN`, `CREATED_AT`, `AGE_SECONDS`, `ESCALATED`). Viewer role may run it. |
+| `ACK_ALERT` | Acknowledges one tracked alert (parameter `id`), silencing its escalation. Returns `ACKNOWLEDGED`. Operator role may run it. |
 | `PREVIEW_SERVER_IMPORT` | Dry-run conversion of nginx/Apache config text (`format` `nginx`/`apache`, `data`) into domain entries. Read-only; returns `DOMAINS`, `SKIPPED`, `WARNINGS`, `NOT_IMPORTED`. Operator role may run it. See below. |
 | `APPLY_SERVER_IMPORT` | Creates the converted domains (same parameters as the preview, plus optional `template`). All-or-nothing, validated, persisted, reloaded. Admin role only. See below. |
 
@@ -145,15 +145,15 @@ Every API call is audit-logged (role, action, domain, scrubbed parameters, peer 
 | `IMPORT_RULE_PACK` | Imports a rule pack from a file path or URL (see below). Returns `PACK_NAME`, `PACK_VERSION`, `IMPORTED`, and possibly `REGISTRY_WARNING`. Operator role may run it. |
 | `CF_PREVIEW_IMPORT` | Read-only Cloudflare import preview (see below). Operator role may run it. |
 | `CF_APPLY_IMPORT` | Applies a Cloudflare import (see below). Returns `APPLIED`, `SKIPPED_COUNT`, `SKIPPED`, `MODE`, and the updated `FIREWALL_RULES`. Admin role only. |
-| `ENROLL_PASSKEY` | Enrolls one passkey credential (parameters `credential_id`, `public_key_jwk`, `user_handle`, `label`). Public-key material only; never a secret. Admin role only. |
-| `LIST_PASSKEYS` | `PASSKEYS`: enrolled credential metadata (`CREDENTIAL_ID`, `LABEL`, `USER_HANDLE`, `SIGN_COUNT`, `ENROLLED_AT`). Viewer role may run it. |
-| `REMOVE_PASSKEY` | Removes one enrolled credential (parameter `credential_id`). Operator role may run it. |
-| `GET_STUFFING_STATUS` | `ENABLED`, `PATHS`, `MODE`, `PER_IP_THRESHOLD`, `DISTRIBUTED_THRESHOLD`, `WINDOW_SECONDS`, `RECENT_FAILURES`, `PER_IP_TRIPS`, `DISTRIBUTED_TRIPS`. Counts only. Viewer role may run it. |
-| `GET_HIJACK_STATUS` | `ENABLED`, `COOKIE`, `MODE`, `BINDINGS`, `FLAGGED`. Counts only — no cookie values or fingerprints. Viewer role may run it. |
-| `GET_OPENAPI_STATUS` | `ENABLED`, `SPEC_FILE`, `PREFIXES`, `MODE`, `ROUTES`, `SPEC_VALID`, `SPEC_ERROR`. Viewer role may run it. |
-| `GET_DLP_STATUS` | `ENABLED`, `PATTERNS` (names only), `ACTION`, `MAX_SCAN_BYTES`, `SCANNED`, `REDACTED`, `BLOCKED`. Pattern names and counts only — never matched content. Viewer role may run it. |
-| `GET_CSP_REPORTS` | Stored CSP violation reports, newest first (`limit` parameter, 1–200, default 50). Viewer role may run it. |
-| `GET_RUM_STATS` | Aggregated navigation-timing percentiles and bucket histograms (overall and per path), plus `SAMPLES` and `PATHS`. Viewer role may run it. |
+| `ENROLL_PASSKEY` | Enrolls one passkey credential (parameters `credentialId`, `kty`, `crv`/`x`/`y` for EC or `n`/`e` for RSA, `userHandle`, `label`). Public-key material only; never a secret. Returns `ENROLLED` and `CREDENTIALS`. Admin role only. |
+| `LIST_PASSKEYS` | `CREDENTIALS`: enrolled credential metadata (`CREDENTIAL_ID`, `LABEL`, `USER_HANDLE`, `SIGN_COUNT`, `KEY_TYPE`, `CURVE`), plus `CONFIGURED`. No key material is returned. Viewer role may run it. |
+| `REMOVE_PASSKEY` | Removes one enrolled credential (parameter `credentialId`). Returns `REMOVED` and `CREDENTIALS`. Operator role may run it. |
+| `GET_STUFFING_STATUS` | `ENABLED`, `MODE`, `PER_IP_THRESHOLD`, `DISTRIBUTED_THRESHOLD`, `WINDOW_SECONDS`, `PATHS` (per watched path: `PATH`, `FAILURES`, `DISTINCT_IP`, `FLAGGED`, `KIND`). Counts only. Viewer role may run it. |
+| `GET_HIJACK_STATUS` | `ENABLED`, `MODE`, `BINDINGS`, `FLAGGED_RECENT`. Counts only — no cookie values or fingerprints. Viewer role may run it. |
+| `GET_OPENAPI_STATUS` | `LOADED` (whether a valid spec is in force), `PATHS` (validated prefixes), `CHECKED`, `VIOLATIONS`. Viewer role may run it. |
+| `GET_DLP_STATUS` | `ENABLED`, `MODE` (`redact`/`block`), `SCANNED`, `REDACTED`, `BLOCKED`, `PATTERNS` (names and `MATCHES` only). Pattern names and counts only — never matched content. Viewer role may run it. |
+| `GET_CSP_REPORTS` | Stored CSP violation reports, newest first (`limit` parameter, 1–200, default 50), plus `TOTAL`. Viewer role may run it. |
+| `GET_RUM_STATS` | `COUNT` (beacons), `METRICS` (per metric: `SAMPLES`, `AVERAGE`, `P50`, `P95`), `PATHS` (top paths: `PATH`, `COUNT`, `AVG_TTFB`, `AVG_LOAD`). Viewer role may run it. |
 | `GET_CACHE_STATS` | Edge-cache counters: `HITS`, `MISSES`, `BYTES_SERVED`, `STORES`, `EVICTIONS`, `PURGES`, `STALE_SERVES`, `ENTRIES`, `BYTES`. Viewer role may run it. |
 
 `SET_DOMAIN_FEATURES` accepts these parameters (v1 `params` object or v2 query string). Only supplied parameters change; unknown parameters are rejected, and validation is all-or-nothing — on any error, nothing changes:
@@ -259,13 +259,13 @@ Domain templates are starting points, documented as such:
 
 When two-person approval is enabled (`proxy.twoPersonApproval`), a gated action's first call does not execute: it returns `success: false` with `ERR_APPROVAL_REQUIRED`, an `APPROVAL_ID`, and `EXPIRES_AT`. `APPROVE_ACTION` (parameter `APPROVAL_ID`) executes the stored action only when called by a different caller who also satisfies the action's role and tenant scoping; `REJECT_ACTION` rejects it (the requester may cancel their own request). Failed approval/rejection checks leave the request pending. Gated actions: `RESTORE_CONFIG_BACKUP`, `RESTORE_BACKUP`, `IMPORT_RULES`, `IMPORT_DOMAINS`, `IMPORT_RULE_PACK`, `CF_APPLY_IMPORT`, and `CREATE_DOMAIN_FROM_TEMPLATE`. When the feature is off, all of these execute immediately. Pending state is in-memory with lazy expiry; every approval event is audit-logged.
 
-`PREVIEW_SERVER_IMPORT` takes `format` (`nginx` or `apache`, required) and `data` (the config text, required, 1 MB cap). It returns `DOMAINS` (the converted domain entries, in the same shape as `IMPORT_DOMAINS` accepts), `SKIPPED` (blocks with reasons), `WARNINGS` (certificate/key pairing drops, wildcard names, malformed backends), and `NOT_IMPORTED` (directives outside the documented subset). `APPLY_SERVER_IMPORT` takes the same parameters plus an optional `template` name applied to every created domain, and creates the domains through the bulk-import machinery: all-or-nothing, validated against the existing domain rules, persisted to `config.json`, and reloaded. On reload failure the file is rolled back.
+`PREVIEW_SERVER_IMPORT` takes `format` (`nginx` or `apache`, required) and `data` (the config text, required, 1 MB cap). It returns `DOMAINS` (the converted domain entries, in the same shape as `IMPORT_DOMAINS` accepts), `COUNT`, `SKIPPED` (blocks with reasons), `WARNINGS` (certificate/key pairing drops, wildcard names, malformed backends), and `NOT_IMPORTED` (directives outside the documented subset). `APPLY_SERVER_IMPORT` takes the same parameters plus an optional `template` name (default `standard`) applied to every created domain, and creates the domains through the bulk-import machinery: all-or-nothing, validated against the existing domain rules, persisted to `config.json`, and reloaded. On reload failure the file is rolled back.
 
-`ENROLL_PASSKEY` takes `credential_id` (base64url, required), `public_key_jwk` (a JSON JWK object as a string, required), `user_handle` (base64url, required), and `label` (optional). The credential is appended to the domain's `credentialsFile` atomically. `LIST_PASSKEYS` returns metadata only — no public key material. `REMOVE_PASSKEY` takes `credential_id`.
+`ENROLL_PASSKEY` takes `credentialId` (base64url, required), the public key as flat JWK fields (`kty`, plus `crv`/`x`/`y` for EC P-256 or `n`/`e` for RSA — all base64url, required), `userHandle` (base64url, required), and `label` (optional). The credential is appended to the domain's `credentialsFile` atomically. `LIST_PASSKEYS` returns metadata only — no public key material. `REMOVE_PASSKEY` takes `credentialId`.
 
 `GET_CSP_REPORTS` takes `limit` (`1`–`200`, default `50`) and returns the stored reports newest first, each with the retained fields only (document/blocked URIs query-stripped, directives, source file/position, status, disposition, received time).
 
-`GET_RUM_STATS` returns `SAMPLES` (total beacons), `PATHS` (per-path aggregates, top 10), and percentile figures (`P50`/`P75`/`P95`) for DNS, connect, TLS, TTFB, DOM, and load, plus the bucket histograms they were computed from. With no samples it returns zeroed figures. In privacy mode the per-path breakdown is empty.
+`GET_RUM_STATS` returns `COUNT` (total beacons), `METRICS` keyed by timing name (`dns`, `connect`, `tls`, `ttfb`, `dom`, `load`) with `SAMPLES`, `AVERAGE`, `P50`, and `P95` (10 ms buckets), and `PATHS` (top 10 paths with `COUNT`, `AVG_TTFB`, `AVG_LOAD`). With no samples it returns zeroed figures. In privacy mode the per-path breakdown is empty.
 
 ## Public API
 
