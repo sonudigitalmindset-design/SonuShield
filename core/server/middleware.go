@@ -926,5 +926,21 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		defer release()
 	}
 
+	//Fair queuing (Batch 7). Admits origin-bound requests
+	//round-robin across client IPs when all slots are busy;
+	//inert at normal load (immediate admission) and a no-op
+	//when disabled. Rejected requests get 503 + Retry-After.
+	fairRelease, fairAdmitted := domainSettings.FairQueue.Acquire(ip)
+	if !fairAdmitted {
+		metrics.ObserveBlock(domainName, "fairqueue")
+		logging.Log(logging.Entry{Event: "block", Domain: domainName, IP: ip, Action: "fairqueue", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+		writer.Header().Set("Content-Type", "text/plain")
+		writer.Header().Set("Retry-After", "5")
+		writer.WriteHeader(http.StatusServiceUnavailable)
+		SendResponse("Service temporarily unavailable. Please try again shortly.", buffer, writer)
+		return
+	}
+	defer fairRelease()
+
 	domainSettings.DomainProxy.ServeHTTP(writer, request)
 }

@@ -60,6 +60,9 @@ type Domain struct {
 	TarpitDelayMs       int              `json:"tarpitDelayMs"`
 	TarpitSusLv         int              `json:"tarpitSusLv"`
 	TarpitMaxConns      int              `json:"tarpitMaxConns"`
+	FairQueue           bool             `json:"fairQueue"`
+	FairQueueMaxInflight int             `json:"fairQueueMaxInflight"`
+	FairQueueWaitMs     int              `json:"fairQueueWaitMs"`
 	EdgeCache           bool             `json:"edgeCache"`
 	EdgeCacheTTL        int              `json:"edgeCacheTTL"`
 	EdgeCacheMaxMB      int              `json:"edgeCacheMaxMB"`
@@ -220,6 +223,7 @@ type DomainSettings struct {
 	Tarpit  *TarpitLimiter
 	Cache   *EdgeCache
 	Waiting *WaitingRoom
+	FairQueue *FairQueue
 	Pool    *BackendPool
 	JWT     *JWTVerifier
 	APIKeys *APIKeyState

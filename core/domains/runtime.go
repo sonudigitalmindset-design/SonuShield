@@ -20,6 +20,7 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	settings.Tarpit = NewTarpitLimiter(domain.TarpitDelayMs, domain.TarpitSusLv, domain.TarpitMaxConns)
 	settings.Cache = NewEdgeCache(domain.EdgeCache, domain.EdgeCacheTTL, domain.EdgeCacheMaxMB)
 	settings.Waiting = NewWaitingRoom(domain.WaitingRoom, domain.WaitingRoomThreshold, domain.WaitingRoomAdmit)
+	settings.FairQueue = NewFairQueue(domain.FairQueue, domain.FairQueueMaxInflight, domain.FairQueueWaitMs)
 	WarnUnknownLBPolicy(domain.Name, domain.LBPolicy)
 	settings.Pool = NewBackendPool(domain.Name, domain.Scheme, domain.Backends, domain.Backend, domain.LBPolicy, domain.HealthCheckEnabled, domain.HealthCheckPath, domain.HealthCheckInterval)
 	settings.JWT = NewJWTVerifier(domain.Name, domain.JWTSecret, domain.JWTJWKSURL)
