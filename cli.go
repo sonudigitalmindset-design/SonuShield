@@ -262,6 +262,8 @@ func redactConfigForExport(cfg *domains.Configuration) {
 		redact(&d.ChallengeSecretKey)
 		redact(&d.JWTSecret)
 		redact(&d.OriginLockSecret)
+		redact(&d.SignedURLSecret)
+		redact(&d.CloudflareAPIToken)
 		for j := range d.APIKeys {
 			redact(&d.APIKeys[j].Key)
 		}

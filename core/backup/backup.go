@@ -102,6 +102,8 @@ var secretPaths = [][]segment{
 	{arr("domains"), k("challengeSecretKey")},
 	{arr("domains"), k("jwtSecret")},
 	{arr("domains"), k("originLockSecret")},
+	{arr("domains"), k("signedURLSecret")},
+	{arr("domains"), k("cloudflareApiToken")},
 	{arr("domains"), arr("apiKeys"), k("key")},
 }
 

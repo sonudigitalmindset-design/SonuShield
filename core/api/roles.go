@@ -70,6 +70,8 @@ var actionMinRole = map[string]string{
 	"GET_SUBDOMAIN_STATUS":             proxy.RoleViewer,
 	"LIST_RULE_PACKS":                  proxy.RoleViewer,
 	"IMPORT_RULE_PACK":                 proxy.RoleOperator,
+	"CF_PREVIEW_IMPORT":                proxy.RoleOperator,
+	"CF_APPLY_IMPORT":                  proxy.RoleAdmin,
 	"PURGE_CACHE":                      proxy.RoleOperator,
 	"SET_DOMAIN_FEATURES":              proxy.RoleAdmin,
 	"GET_STAGE":                        proxy.RoleViewer,

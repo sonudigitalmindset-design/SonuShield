@@ -637,6 +637,26 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "CF_PREVIEW_IMPORT", "CF_APPLY_IMPORT":
+		var response map[string]interface{}
+		var errCode, detail string
+		switch action {
+		case "CF_PREVIEW_IMPORT":
+			response, errCode, detail = cfPreviewImport(domainSettings.Name, params)
+		case "CF_APPLY_IMPORT":
+			response, errCode, detail = cfApplyImport(domainSettings.Name, params)
+		}
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
 	case "GET_IP_LISTS":
 		APIResponse(writer, true, ipListsResponse(domainSettings))
 	case "SEARCH_LOGS":

@@ -136,6 +136,15 @@ type Domain struct {
 	// MaintenanceWindow.
 	ScheduleTimezone  string              `json:"scheduleTimezone"`
 	MaintenanceWindows []MaintenanceWindow `json:"maintenanceWindows"`
+	// Cloudflare import (Batch 7). Config-only credentials:
+	// the token is never accepted via the API, never logged,
+	// and never returned by any API action; both config
+	// redactors cover it. APIBase defaults to the public
+	// Cloudflare API and exists so the import can be tested
+	// against a mock server.
+	CloudflareAPIToken string `json:"cloudflareApiToken"`
+	CloudflareZoneID   string `json:"cloudflareZoneId"`
+	CloudflareAPIBase  string `json:"cloudflareApiBase"`
 }
 
 type DomainSettings struct {
