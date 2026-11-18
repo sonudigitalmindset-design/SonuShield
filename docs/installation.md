@@ -11,6 +11,18 @@ How to get SonuShield running: requirements, building, certificates, running it,
 - Outbound HTTPS access to `raw.githubusercontent.com` at startup, for the fingerprint lists and the version check (see [Startup Checks](how-it-works.md#startup-checks)).
 - One TLS certificate and private key per domain, unless you run in Cloudflare mode (see [Certificates](#certificates)).
 
+## Quick Setup Script (testing VPS)
+
+`scripts/setup-vps.py` automates the whole testing install on an Ubuntu VPS: it detects the server's public IP, installs dependencies, downloads the `latest` prerelease binary, writes a `config.json` (Cloudflare mode, plain HTTP, the VPS IP as the domain) with fresh random secrets, validates it, and installs systemd services for the proxy and a test backend page. Review it before running — it prints every step, and `--dry-run` previews without changing anything:
+
+```sh
+curl -L -o setup-vps.py https://raw.githubusercontent.com/sonudigitalmindset-design/SonuShield/main/scripts/setup-vps.py
+sudo python3 setup-vps.py            # real run, needs root
+python3 setup-vps.py --dry-run       # preview only
+```
+
+Testing only: plain HTTP with no TLS fingerprinting. See the script's header comment for details.
+
 ## Build from Source
 
 ```sh
