@@ -66,6 +66,7 @@ type Domain struct {
 	CredentialStuffing  StuffingConfig   `json:"credentialStuffing"`
 	SessionHijack       SessionHijackConfig `json:"sessionHijack"`
 	OpenAPI             OpenAPIConfig     `json:"openApi"`
+	DLP                 DLPConfig       `json:"dlp"`
 	SLATarget           float64          `json:"slaTarget"`
 	FakeBotCheck        bool             `json:"fakeBotCheck"`
 	FakeBotSusLv        int              `json:"fakeBotSusLv"`
@@ -279,6 +280,7 @@ type DomainSettings struct {
 	Passkey  PasskeyConfig
 	Passkeys *PasskeyStore
 	OpenAPI  *OpenAPISpec
+	DLP      *DLPScanner
 }
 
 type DomainLog struct {

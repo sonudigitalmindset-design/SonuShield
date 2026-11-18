@@ -133,6 +133,9 @@ func ModifyResponseHook(resp *http.Response) error {
 	// are counted before the cache store, so the detector sees
 	// every origin failure exactly once.
 	observeStuffingResponse(resp, settings)
+	// DLP scanning (Batch 8): runs before the cache store so
+	// cached copies carry redacted bytes.
+	applyDLP(resp, settings)
 	CacheModifyResponse(resp)
 	applyBrotli(resp, settings)
 	ApplyCORSHeaders(resp.Header, settings.CORS, resp.Request)

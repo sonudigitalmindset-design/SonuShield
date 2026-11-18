@@ -39,6 +39,9 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	// prefixes are configured. An invalid spec logs a warning
 	// and disables validation; see NewOpenAPISpec.
 	settings.OpenAPI = NewOpenAPISpec(domain.Name, domain.OpenAPI)
+	// DLP scanning (Batch 8): nil unless patterns are
+	// configured. Invalid patterns are skipped with a warning.
+	settings.DLP = NewDLPScanner(domain.Name, domain.DLP)
 	if settings.APIKeyHeader == "" {
 		settings.APIKeyHeader = "X-API-Key"
 	}
