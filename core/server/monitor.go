@@ -694,6 +694,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			HotlinkAllowlist:     domain.HotlinkAllowlist,
 			FormGuard:           domain.FormGuard,
 			CredentialStuffing:  domain.CredentialStuffing,
+			SessionHijack:       domain.SessionHijack,
 			SLATarget:           domain.SLATarget,
 			FakeBotCheck:         domain.FakeBotCheck,
 			FakeBotSusLv:         domain.FakeBotSusLv,

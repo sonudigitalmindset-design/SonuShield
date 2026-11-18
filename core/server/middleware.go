@@ -594,6 +594,24 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		repValue = "listed"
 	}
 
+	//Session hijack detection (Batch 8). Log-only by
+	//default; block mode bumps suspicion toward the captcha.
+	//A session is flagged only when two or more bound signals
+	//differ; a single change is never acted on.
+	if domainSettings.SessionHijack.Cookie != "" {
+		if sessionCookie, cookieErr := request.Cookie(domainSettings.SessionHijack.Cookie); cookieErr == nil {
+			hijackVerdict := firewall.CheckSessionHijack(domainName, domainSettings.SessionHijack.Cookie, sessionCookie.Value, ip, tlsFp, httpFp, geoCountry)
+			if hijackVerdict.Flagged {
+				if hijackVerdict.LogThis {
+					logging.Log(logging.Entry{Event: "hijack", Domain: domainName, IP: ip, Action: "session_hijack", Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+				}
+				if domainSettings.SessionHijack.HijackBlock() {
+					susLv += 2
+				}
+			}
+		}
+	}
+
 	// Matched firewall rules, for structured logging only. Computed
 	// below when logging is enabled; empty otherwise.
 	matchedRules := []string{}
