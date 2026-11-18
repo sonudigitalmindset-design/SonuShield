@@ -63,6 +63,12 @@ type pageStrings struct {
 	waitBody1 string
 	waitPos   string
 	waitBody2 string
+
+	passkeyTitle   string
+	passkeyMessage string
+	passkeyButton  string
+	passkeyFailed  string
+	passkeyNoJS    string
 }
 
 var pageStringsEn = pageStrings{
@@ -90,6 +96,12 @@ var pageStringsEn = pageStrings{
 	waitBody1: "This site is busy right now. You are in line and this page will refresh automatically.",
 	waitPos:   "Position ",
 	waitBody2: "Please do not refresh manually — your place in line is kept automatically.",
+
+	passkeyTitle:   "Verify with your passkey",
+	passkeyMessage: "Use your passkey to continue to the site.",
+	passkeyButton:  "Use passkey",
+	passkeyFailed:  "Verification failed. Please try again.",
+	passkeyNoJS:    "JavaScript is required to verify with a passkey.",
 }
 
 var pageStringsHi = pageStrings{
@@ -117,6 +129,12 @@ var pageStringsHi = pageStrings{
 	waitBody1: "यह साइट अभी व्यस्त है। आप कतार में हैं और यह पृष्ठ स्वचालित रूप से रीफ्रेश होगा।",
 	waitPos:   "स्थान ",
 	waitBody2: "कृपया मैन्युअल रूप से रीफ्रेश न करें — कतार में आपका स्थान स्वचालित रूप से सुरक्षित है।",
+
+	passkeyTitle:   "अपनी पासकी से सत्यापित करें",
+	passkeyMessage: "साइट पर आगे बढ़ने के लिए अपनी पासकी का उपयोग करें।",
+	passkeyButton:  "पासकी का उपयोग करें",
+	passkeyFailed:  "सत्यापन विफल रहा। कृपया पुनः प्रयास करें।",
+	passkeyNoJS:    "पासकी से सत्यापित करने के लिए JavaScript आवश्यक है।",
 }
 
 // pageLang picks the page language from Accept-Language: the

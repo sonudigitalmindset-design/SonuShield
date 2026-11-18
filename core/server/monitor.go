@@ -726,6 +726,7 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			GraphQLPath:          domain.GraphQLPath,
 			GraphQLMaxDepth:      domain.GraphQLMaxDepth,
 			GraphQLMaxFields:     domain.GraphQLMaxFields,
+			Passkey:              domain.Passkey,
 			RulesDryRun:          domain.RulesDryRun,
 			RiskHighRiskCountries: domain.RiskHighRiskCountries,
 			RiskHighRiskASNs:    domain.RiskHighRiskASNs,

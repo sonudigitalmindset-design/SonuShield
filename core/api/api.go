@@ -691,6 +691,34 @@ func handleDomainActions(action string, writer http.ResponseWriter, domainData *
 			return
 		}
 		APIResponse(writer, true, response)
+	case "ENROLL_PASSKEY", "REMOVE_PASSKEY":
+		var response map[string]interface{}
+		var errCode, detail string
+		if action == "ENROLL_PASSKEY" {
+			response, errCode, detail = enrollPasskeyResponse(domainSettings, params)
+		} else {
+			response, errCode, detail = removePasskeyResponse(domainSettings, params)
+		}
+		if errCode != "" {
+			results := map[string]interface{}{
+				"ERROR": errCode,
+			}
+			if detail != "" {
+				results["ERROR_DETAIL"] = detail
+			}
+			APIResponse(writer, false, results)
+			return
+		}
+		APIResponse(writer, true, response)
+	case "LIST_PASSKEYS":
+		response, errCode := listPasskeysResponse(domainSettings, params)
+		if errCode != "" {
+			APIResponse(writer, false, map[string]interface{}{
+				"ERROR": errCode,
+			})
+			return
+		}
+		APIResponse(writer, true, response)
 	case "ADD_IP_ENTRY", "REMOVE_IP_ENTRY":
 		var response map[string]interface{}
 		var errCode string

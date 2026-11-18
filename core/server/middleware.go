@@ -336,6 +336,13 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Passkey assertion verification (Batch 8). Same early
+	//placement: the client has no verification cookie yet.
+	//Answers 404 unless the path matches.
+	if HandlePasskeyVerify(writer, request, domainName, ip, tlsFp) {
+		return
+	}
+
 	//Demonstration of how to use "susLv". Essentially allows you to challenge specific requests with a higher challenge
 
 	reqUa := request.UserAgent()
@@ -786,6 +793,15 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		case 3:
 			metrics.ObserveChallenge(domainName, 3)
 			logging.Log(logging.Entry{Event: "challenge", Domain: domainName, IP: ip, Action: "challenge", Rules: matchedRules, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			//Passkey challenge (Batch 8). Served instead of the
+			//captcha when the domain has passkeys enabled and at
+			//least one credential enrolled; otherwise the captcha
+			//below applies, so passkeys never strand a visitor.
+			if PasskeyConfigured(domainSettings) {
+				if ServePasskeyChallenge(writer, request, domainSettings, domainName, encryptedIP, ip, tlsFp) {
+					return
+				}
+			}
 			serveCaptchaChallenge(writer, request, domainSettings, domainName, encryptedIP, ip, buffer)
 			return
 		default:

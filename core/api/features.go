@@ -125,6 +125,10 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		// secret and JWKS URL are never returned: only whether
 		// attestation is active.
 		"ATTESTATION_CONFIGURED": domainSettings.Attest != nil,
+		// Passkey challenge (Batch 8), read-only here. Only
+		// whether the challenge can be served (enabled, RP ID,
+		// credentials enrolled); no key material is returned.
+		"PASSKEY_CONFIGURED": domainSettings.Passkey.Enabled && domainSettings.Passkey.RPID != "" && domainSettings.Passkeys != nil && domainSettings.Passkeys.Count() > 0,
 	}
 }
 

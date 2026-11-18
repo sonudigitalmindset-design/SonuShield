@@ -362,6 +362,7 @@ func Load() {
 			APIKeyHeader:        domain.APIKeyHeader,
 			APIKeyPaths:         domain.APIKeyPaths,
 			GraphQLPath:         domain.GraphQLPath,
+			Passkey:             domain.Passkey,
 			GraphQLMaxDepth:     domain.GraphQLMaxDepth,
 			GraphQLMaxFields:    domain.GraphQLMaxFields,
 			RulesDryRun:         domain.RulesDryRun,

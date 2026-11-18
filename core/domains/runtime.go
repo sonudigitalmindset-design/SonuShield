@@ -31,6 +31,10 @@ func InitRuntime(settings *DomainSettings, domain Domain) {
 	// paths. A verifier without verification material fails
 	// closed on its paths; see NewAttestationVerifier.
 	settings.Attest = NewAttestationVerifier(domain.Name, domain.Attestation)
+	// Passkey challenge (Batch 8): nil unless enabled with an RP
+	// ID and a credentials file. Zero enrolled credentials means
+	// the captcha fallback applies.
+	settings.Passkeys = NewPasskeyStore(domain.Name, domain.Passkey)
 	if settings.APIKeyHeader == "" {
 		settings.APIKeyHeader = "X-API-Key"
 	}

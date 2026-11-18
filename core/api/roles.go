@@ -101,6 +101,9 @@ var actionMinRole = map[string]string{
 	"TEST_WEBHOOKS":                    proxy.RoleAdmin,
 	"EXPORT_BACKUP":                    proxy.RoleAdmin,
 	"RESTORE_BACKUP":                   proxy.RoleAdmin,
+	"ENROLL_PASSKEY":                   proxy.RoleAdmin,
+	"LIST_PASSKEYS":                    proxy.RoleViewer,
+	"REMOVE_PASSKEY":                   proxy.RoleOperator,
 }
 
 func roleLevel(role string) int {
