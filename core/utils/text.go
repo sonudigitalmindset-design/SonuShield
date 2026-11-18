@@ -46,8 +46,16 @@ func ReadLogs(domainName string) {
 	domainData := domains.DomainsData[domainName]
 	firewall.Mutex.RUnlock()
 
+	//The in-memory ring backs GET_LOGS and the dashboard, so its cap must
+	//never depend on terminal height: without a TTY MaxLogLength is 0 and
+	//every monitor tick would wipe the ring. Floor the cap at 200 entries;
+	//the terminal display still limits itself with MaxLogLength.
+	ringCap := proxy.MaxLogLength
+	if ringCap < 200 {
+		ringCap = 200
+	}
 	//Calculate how close we are to overflowing
-	logOverflow := len(domainData.LastLogs) - proxy.MaxLogLength
+	logOverflow := len(domainData.LastLogs) - ringCap
 
 	if logOverflow > 0 {
 
