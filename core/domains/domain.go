@@ -425,6 +425,11 @@ type Proxy struct {
 	// docs/multi-server.md. The password is config-only,
 	// never logged or returned by any API action.
 	Redis RedisConfig `json:"redis"`
+	// HTTP3 (Batch 3): optional HTTP/3 (QUIC) serving on
+	// UDP. Disabled by default; see HTTP3Config and
+	// docs/http3.md. Ignored in Cloudflare mode, where
+	// there is no TLS listener.
+	HTTP3 HTTP3Config `json:"http3"`
 }
 
 // RedisConfig (Batch 3) configures the optional
@@ -441,6 +446,15 @@ type Proxy struct {
 // bounds every Redis command (default 100, clamped
 // 10..5000); every Redis failure fails open to local
 // state. See core/shared and docs/multi-server.md.
+// HTTP3Config (Batch 3) enables HTTP/3 serving via
+// QUIC. Addr overrides the UDP listen address (empty
+// means :443, the same port number as the TCP TLS
+// listener). 0-RTT early data is never accepted.
+type HTTP3Config struct {
+	Enabled bool   `json:"enabled"`
+	Addr    string `json:"addr"`
+}
+
 type RedisConfig struct {
 	Enabled     bool   `json:"enabled"`
 	Addr        string `json:"addr"`

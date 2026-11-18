@@ -54,7 +54,7 @@ var ruleMutex sync.Mutex
 var ruleFields = map[string]bool{
 	"ip.src": true, "ip.country": true, "ip.asn": true,
 	"ip.engine": true, "ip.bot": true, "ip.fingerprint": true,
-	"ip.ja4": true, "ip.reputation": true, "ip.searchbot": true,
+	"ip.ja4": true, "ip.quic": true, "ip.reputation": true, "ip.searchbot": true,
 	"ip.os": true, "ip.tcpinfo": true, "ip.behavior": true,
 	"ip.risk": true, "ip.timing": true, "ip.http_requests": true, "ip.challenge_requests": true,
 	"http.host": true, "http.version": true, "http.method": true,

@@ -160,6 +160,11 @@ func Serve() {
 			}
 		}()
 
+		//HTTP/3 (Batch 3): UDP listener on the same port
+		//number, inert unless proxy.http3 is enabled. A
+		//bind failure only logs; TCP serving continues.
+		startHTTP3Server()
+
 		if err := service.ListenAndServe(); err != nil {
 			panic(err)
 		}

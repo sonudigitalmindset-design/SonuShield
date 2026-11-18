@@ -10,6 +10,7 @@ func init() {
 	gofilter.RegisterField("ip.bot", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.fingerprint", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.ja4", gofilter.FT_STRING)
+	gofilter.RegisterField("ip.quic", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.reputation", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.searchbot", gofilter.FT_STRING)
 	gofilter.RegisterField("ip.risk", gofilter.FT_INT)

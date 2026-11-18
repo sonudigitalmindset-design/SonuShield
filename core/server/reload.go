@@ -38,6 +38,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"sonushield/core/api"
 	"sonushield/core/domains"
@@ -91,6 +92,14 @@ func ValidateConfig(cfg *domains.Configuration) error {
 		}
 		if cfg.Proxy.Redis.DB < 0 {
 			return errors.New("proxy.redis db must be >= 0")
+		}
+	}
+
+	// HTTP/3 (Batch 3): a configured listen address must be
+	// a valid host:port. Empty means :443.
+	if cfg.Proxy.HTTP3.Enabled && strings.TrimSpace(cfg.Proxy.HTTP3.Addr) != "" {
+		if _, _, err := net.SplitHostPort(cfg.Proxy.HTTP3.Addr); err != nil {
+			return fmt.Errorf("proxy.http3 addr is not a valid host:port: %s", err.Error())
 		}
 	}
 

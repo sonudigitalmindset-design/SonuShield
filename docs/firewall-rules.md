@@ -17,6 +17,7 @@ These fields can be used in rule expressions. Values reflect the current request
 | `ip.bot` | String | The bot's name (`""` if not applicable). |
 | `ip.fingerprint` | String | The client's raw TLS fingerprint (`Cloudflare` in Cloudflare mode). |
 | `ip.ja4` | String | The client's JA4 fingerprint, computed by SonuShield (`""` in Cloudflare mode). Only comparable with other SonuShield-computed JA4 values. |
+| `ip.quic` | String | The client's QUIC fingerprint for HTTP/3 requests (`""` for TCP traffic). Format `q1:<quic-version>:<tls-version>-<cipher>:<alpn>:<flags>`; see [HTTP/3](http3.md). Empty unless `proxy.http3` is enabled and the request arrived over QUIC. |
 | `ip.reputation` | String | `"listed"` if the client IP is on the local blocklist or the fetched reputation feed, `""` otherwise. |
 | `ip.risk` | Int | The composite risk score for the request, `0`–`100` (see [Risk Score](configuration.md#risk-score)). A heuristic for ranking, never a verdict — do not block on it alone without understanding the weights. |
 | `ip.timing` | String | Timing/behavior verdict for the client IP: `"regular"` (inhumanly regular intervals), `"burst"` (50+ requests in a 1-second window), or `""` (no anomaly). See [Timing and Behavior Detection](configuration.md#timing-and-behavior-detection). |

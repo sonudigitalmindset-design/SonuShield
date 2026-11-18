@@ -24,8 +24,7 @@ package firewall
 //     are not accepted.
 //   - Fields: every gofilter-registered field except the boolean
 //     proxy.* fields (gofilter boolean comparisons never match;
-//     rejecting them loudly beats compiling a dead rule) and
-//     except ip.quic (unregistered, reserved for Batch 3).
+//     rejecting them loudly beats compiling a dead rule).
 //   - `contains` only on string fields: on integer/IP fields it
 //     can never match in gofilter either.
 //   - Literals parse exactly as gofilter parses them for the
@@ -58,7 +57,7 @@ import (
 )
 
 // edgeFieldTypes mirrors the gofilter field registrations in
-// filter.go, minus the boolean fields and ip.quic (see above).
+// filter.go, minus the boolean fields (see above).
 var edgeFieldTypes = map[string]domains.EdgeFieldKind{
 	"ip.src":                domains.EdgeFieldIP,
 	"ip.country":            domains.EdgeFieldString,
@@ -67,6 +66,7 @@ var edgeFieldTypes = map[string]domains.EdgeFieldKind{
 	"ip.bot":                domains.EdgeFieldString,
 	"ip.fingerprint":        domains.EdgeFieldString,
 	"ip.ja4":                domains.EdgeFieldString,
+	"ip.quic":               domains.EdgeFieldString,
 	"ip.reputation":         domains.EdgeFieldString,
 	"ip.searchbot":          domains.EdgeFieldString,
 	"ip.risk":               domains.EdgeFieldInt,

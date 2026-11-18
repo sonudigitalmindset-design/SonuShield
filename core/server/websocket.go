@@ -12,10 +12,11 @@ package server
 // in both directions until either side closes or the connection
 // is idle for the configured time.
 //
-// Hijacking is unavailable on HTTP/2 connections, where this
+// Hijacking is unavailable on HTTP/2 and HTTP/3 connections, where this
 // path declines and the normal reverse-proxy path is used
-// instead. WebSocket over HTTP/2 (RFC 8441 extended CONNECT) is
-// not supported, matching the previous behavior.
+// instead. WebSocket over HTTP/2 (RFC 8441) and HTTP/3
+// (RFC 9220 extended CONNECT) is not supported, matching
+// the previous behavior.
 
 import (
 	"bufio"

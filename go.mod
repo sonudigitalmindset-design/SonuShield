@@ -7,7 +7,8 @@ require (
 	github.com/andybalholm/brotli v1.2.0
 	github.com/kor44/gofilter v0.0.0-20171111115139-75787865c72c
 	github.com/oschwald/geoip2-golang v1.13.0
-	github.com/redis/go-redis/v9 v9.22.0
+	github.com/quic-go/quic-go v0.59.0 // Go 1.24 ceiling: v0.60+ requires Go >= 1.26
+	github.com/redis/go-redis/v9 v9.22.0 // Go 1.24 ceiling: v9.23+ requires Go >= 1.26
 	github.com/shirou/gopsutil/v4 v4.25.12
 	github.com/zeebo/blake3 v0.2.4
 	golang.org/x/image v0.36.0
@@ -21,6 +22,7 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/oschwald/maxminddb-golang v1.13.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
+	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/text v0.34.0 // indirect

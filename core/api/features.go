@@ -88,6 +88,10 @@ func proxyFeaturesResponse() map[string]interface{} {
 		// address or password is ever reported.
 		"REDIS_CONFIGURED": redisConfigured,
 		"REDIS_ACTIVE":     shared.Enabled(),
+		// HTTP/3 (Batch 3): whether proxy.http3 is enabled.
+		// It does not prove the UDP listener bound; a bind
+		// failure only logs at startup.
+		"HTTP3_ENABLED": domains.Config != nil && domains.Config.Proxy.HTTP3.Enabled,
 	}
 }
 

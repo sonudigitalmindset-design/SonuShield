@@ -269,6 +269,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("SonuShield", "1.5")
 	}
 
+	//HTTP/3 discovery (Batch 3): advertise the h3
+	//endpoint on HTTPS responses so browsers learn it
+	//without configuration. Never on HTTP/3 responses
+	//themselves, and never in Cloudflare mode.
+	if !domains.Config.Proxy.Cloudflare && request.ProtoMajor < 3 && http3Enabled() {
+		writer.Header().Set("Alt-Svc", altSvcValue())
+	}
+
 	//SyncMap because semi-readonly. Loaded here (before the
 	//early blocks) so the per-domain IP lists can allow or block
 	//before rate limiting runs.
@@ -641,9 +649,8 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	osSignals := firewall.SignalsFor(request.RemoteAddr)
 	osLabel := firewall.ClassifyOS(osSignals)
 	tcpInfoStr := osSignals.String()
-	//QUIC fingerprint: always empty until Batch 3 adds a QUIC
-	//listener; the field is reserved, not populated. See
-	//firewall/quic.go.
+	//QUIC fingerprint (Batch 3): populated for HTTP/3
+	//requests, empty for TCP traffic. See firewall/quic.go.
 	quicFp := firewall.ComputeQUICFingerprint(request)
 	//repListed was computed above, next to the risk score.
 	repValue := ""
