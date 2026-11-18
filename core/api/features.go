@@ -87,6 +87,13 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		"ADAPTIVE_POW":       domainSettings.AdaptivePow,
 		"POW_DIFFICULTY_MIN": domainSettings.PoWDifficultyMin,
 		"POW_DIFFICULTY_MAX": domainSettings.PoWDifficultyMax,
+		// Memory-hard PoW parameters are config-file-only; the API
+		// reports them read-only (SET_DOMAIN_FEATURES cannot change
+		// them).
+		"MEMORY_HARD_POW":           domainSettings.MemoryHardPow,
+		"MEMORY_HARD_POW_BITS":      domainSettings.MemoryHardPowBits,
+		"MEMORY_HARD_POW_MEMORY_KB": domainSettings.MemoryHardPowMemory,
+		"MEMORY_HARD_POW_TIME":      domainSettings.MemoryHardPowTime,
 		"CHALLENGE_PROVIDER": domainSettings.ChallengeProvider,
 		"CHALLENGE_KEYS_CONFIGURED": domainSettings.ChallengeProvider != "" &&
 			domainSettings.ChallengeSiteKey != "" &&

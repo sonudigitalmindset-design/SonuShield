@@ -291,6 +291,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Memory-hard proof-of-work verification. Same placement and
+	//reasoning as the provider verification above: the client has
+	//no verification cookie yet, so this runs before the cookie
+	//check below.
+	if HandleMemoryPowVerify(writer, request, ip, tlsFp) {
+		return
+	}
+
 	//Demonstration of how to use "susLv". Essentially allows you to challenge specific requests with a higher challenge
 
 	reqUa := request.UserAgent()
@@ -595,6 +603,16 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			//provider is not configured or nonce generation fails.
 			if ChallengeProviderConfigured(domainSettings) {
 				if ServeProviderChallenge(writer, request, domainSettings, encryptedIP, ip, tlsFp, reqUa) {
+					return
+				}
+			}
+
+			//Memory-hard proof-of-work (Batch 6). Replaces the
+			//classic hash puzzle when the operator enables it; the
+			//provider challenge above takes precedence. Falls back
+			//to the classic puzzle when nonce generation fails.
+			if domainSettings.MemoryHardPow {
+				if ServeMemoryPowChallenge(writer, request, domainSettings, encryptedIP, ip, tlsFp, reqUa) {
 					return
 				}
 			}

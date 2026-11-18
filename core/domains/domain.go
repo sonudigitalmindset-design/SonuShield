@@ -38,6 +38,10 @@ type Domain struct {
 	AdaptivePow         bool             `json:"adaptivePow"`
 	PoWDifficultyMin    int              `json:"powDifficultyMin"`
 	PoWDifficultyMax    int              `json:"powDifficultyMax"`
+	MemoryHardPow       bool             `json:"memoryHardPow"`
+	MemoryHardPowBits   int              `json:"memoryHardPowBits"`
+	MemoryHardPowMemory int              `json:"memoryHardPowMemoryKB"`
+	MemoryHardPowTime   int              `json:"memoryHardPowTime"`
 	ChallengeProvider   string           `json:"challengeProvider"`
 	ChallengeSiteKey    string           `json:"challengeSiteKey"`
 	ChallengeSecretKey  string           `json:"challengeSecretKey"`
@@ -116,6 +120,10 @@ type DomainSettings struct {
 	AdaptivePow         bool
 	PoWDifficultyMin    int
 	PoWDifficultyMax    int
+	MemoryHardPow       bool
+	MemoryHardPowBits   int
+	MemoryHardPowMemory int
+	MemoryHardPowTime   int
 	ChallengeProvider   string
 	ChallengeSiteKey    string
 	ChallengeSecretKey  string
