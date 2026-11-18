@@ -560,7 +560,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	//as if prepended to the list: a set action in the edge chain
 	//stops general evaluation. The message is built when either
 	//list is non-empty.
-	if len(domainSettings.CustomRules) != 0 || len(domainSettings.EdgeRules) != 0 {
+	if len(domainSettings.CustomRules) != 0 || len(domainSettings.EdgeRules) != 0 || len(domainSettings.ShadowRules) != 0 || domainSettings.ShadowWaf {
 		requestVariables := gofilter.Message{
 			"ip.src":                net.ParseIP(ip),
 			"ip.country":            geoCountry,
@@ -600,6 +600,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			"proxy.rps_allowed":   domainData.RequestsBypassedPerSecond,
 		}
 
+		//Baselines for the shadow comparison (Batch 7):
+		//the level live rules started from, and the level
+		//they produced (the dry-run branch fills the latter
+		//from wouldBe, since susLv is untouched there).
+		preRuleSusLv := susLv
+		liveSusLv := susLv
 		if domainSettings.RulesDryRun {
 			//Dry-run mode (Batch 4): rules are evaluated and
 			//matches logged, but susLv is left unchanged, so
@@ -608,6 +614,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			if !edgeStopped {
 				wouldBe = firewall.EvalFirewallRule(domainSettings, requestVariables, wouldBe)
 			}
+			liveSusLv = wouldBe
 			dryMatched := append(firewall.MatchedEdgeRules(domainSettings, requestVariables), firewall.MatchedRules(domainSettings, requestVariables)...)
 			if len(dryMatched) > 0 {
 				logging.Log(logging.Entry{Event: "dryrun", Domain: domainName, IP: ip, Action: "dryrun", Rules: dryMatched, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, WouldBeSusLevel: wouldBe, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
@@ -619,8 +626,36 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			if !edgeStopped {
 				susLv = firewall.EvalFirewallRule(domainSettings, requestVariables, susLv)
 			}
+			liveSusLv = susLv
 			if logging.Enabled() {
 				matchedRules = append(firewall.MatchedEdgeRules(domainSettings, requestVariables), firewall.MatchedRules(domainSettings, requestVariables)...)
+			}
+		}
+
+		//Shadow evaluation (Batch 7): the shadow rule set
+		//(and optionally the WAF patterns) evaluated against
+		//the same request, purely for comparison. Shadow
+		//decisions never affect traffic: susLv is untouched,
+		//and the WAF pattern check has no side effects.
+		if len(domainSettings.ShadowRules) != 0 || domainSettings.ShadowWaf {
+			shadowSusLv, shadowMatched := firewall.EvalShadowRules(domainSettings.ShadowRules, domainSettings.RawShadowRules, requestVariables, preRuleSusLv)
+			shadowWAF := ""
+			if domainSettings.ShadowWaf {
+				shadowWAF = firewall.MatchWAFPatterns(request, domainSettings.WAFInspectBody)
+			}
+			firewall.RecordShadowDecision(domainName, firewall.ShadowDecision{
+				IP:            ip,
+				Method:        request.Method,
+				Path:          logPath,
+				LiveOutcome:   firewall.ShadowOutcome(liveSusLv),
+				ShadowOutcome: firewall.ShadowOutcome(shadowSusLv),
+				LiveSusLv:     liveSusLv,
+				ShadowSusLv:   shadowSusLv,
+				Matched:       shadowMatched,
+				WAFRule:       shadowWAF,
+			})
+			if len(shadowMatched) > 0 || shadowWAF != "" {
+				logging.Log(logging.Entry{Event: "shadow", Domain: domainName, IP: ip, Action: "shadow", Rules: shadowMatched, Rule: shadowWAF, Fingerprint: tlsFp, JA4: ja4Fp, HTTPFingerprint: httpFp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: liveSusLv, RiskScore: riskScore, WouldBeSusLevel: shadowSusLv, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
 			}
 		}
 	}

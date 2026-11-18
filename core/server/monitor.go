@@ -538,6 +538,14 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Edge Rules For " + domain.Name + " : " + warning + " ]")
 		}
 
+		//Shadow rules (Batch 7): evaluated alongside live
+		//enforcement for comparison only. Bad rules are
+		//skipped with a warning, never fatal.
+		shadowRules, rawShadowRules, shadowWarnings := firewall.CompileShadowRules(domain.ShadowRules)
+		for _, warning := range shadowWarnings {
+			fmt.Println("[ " + utils.PrimaryColor("!") + " ] [ Shadow Rules For " + domain.Name + " : " + warning + " ]")
+		}
+
 		dProxy := httputil.NewSingleHostReverseProxy(&url.URL{
 			Scheme: domain.Scheme,
 			Host:   domain.Backend,
@@ -565,6 +573,9 @@ func reloadFromConfig(cfg *domains.Configuration) {
 			CustomRules:    firewallRules,
 			RawCustomRules: rawFirewallRules,
 			EdgeRules:       edgeRules,
+			ShadowRules:     shadowRules,
+			RawShadowRules:  rawShadowRules,
+			ShadowWaf:       domain.ShadowWaf,
 
 			DomainProxy:        dProxy,
 			DomainCertificates: cert,

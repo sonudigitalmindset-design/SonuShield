@@ -35,6 +35,8 @@ type Domain struct {
 	Branding            Branding         `json:"branding"`
 	FirewallRules       []JsonRule       `json:"firewallRules"`
 	EdgeRules           []JsonRule       `json:"edgeRules"`
+	ShadowRules         []JsonRule       `json:"shadowRules"`
+	ShadowWaf           bool             `json:"shadowWaf"`
 	BypassStage1        int              `json:"bypassStage1"`
 	BypassStage2        int              `json:"bypassStage2"`
 	Stage2Difficulty    int              `json:"stage2Difficulty"`
@@ -128,6 +130,9 @@ type DomainSettings struct {
 	CustomRules    []Rule
 	RawCustomRules []JsonRule
 	EdgeRules      []EdgeRule
+	ShadowRules    []Rule
+	RawShadowRules []JsonRule
+	ShadowWaf      bool
 
 	DomainProxy        *httputil.ReverseProxy
 	DomainCertificates tls.Certificate

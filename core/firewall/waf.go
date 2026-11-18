@@ -91,6 +91,26 @@ func CheckRequest(request *http.Request, mode string, inspectBody bool, wpLoginL
 		return false, ""
 	}
 
+	if name := MatchWAFPatterns(request, inspectBody); name != "" {
+		logWAFMatch(name, request, ip)
+		return resolved == "block", name
+	}
+
+	if wpLoginFlood(request, wpLoginLimit, ip) {
+		logWAFMatch("wp-login-flood", request, ip)
+		return resolved == "block", "wp-login-flood"
+	}
+
+	return false, ""
+}
+
+// MatchWAFPatterns reports the first WAF-lite pattern that matches
+// the request, or "". It is side-effect-free: nothing is logged,
+// the WordPress login flood counter is not consulted (counting a
+// request twice would corrupt the live counter), and the request
+// body, when read, is restored. Shadow mode (Batch 7) uses it to
+// evaluate the WAF patterns without affecting live state.
+func MatchWAFPatterns(request *http.Request, inspectBody bool) string {
 	rawTarget := request.URL.EscapedPath()
 	if request.URL.RawQuery != "" {
 		rawTarget += "?" + request.URL.RawQuery
@@ -109,17 +129,10 @@ func CheckRequest(request *http.Request, mode string, inspectBody bool, wpLoginL
 
 	for _, rule := range wafRules {
 		if rule.pattern.MatchString(rawTarget) || rule.pattern.MatchString(decodedTarget) {
-			logWAFMatch(rule.name, request, ip)
-			return resolved == "block", rule.name
+			return rule.name
 		}
 	}
-
-	if wpLoginFlood(request, wpLoginLimit, ip) {
-		logWAFMatch("wp-login-flood", request, ip)
-		return resolved == "block", "wp-login-flood"
-	}
-
-	return false, ""
+	return ""
 }
 
 func readAndRestoreBody(request *http.Request) string {
