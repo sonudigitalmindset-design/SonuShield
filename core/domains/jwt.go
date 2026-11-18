@@ -227,6 +227,31 @@ func (v *JWTVerifier) Verify(token string) bool {
 	}
 }
 
+// VerifyClaims verifies a token like Verify and, on success,
+// returns the decoded payload claims. Claims are only returned
+// for a verified token, so callers (OIDC) can trust iss, aud,
+// and nonce checks run against them.
+func (v *JWTVerifier) VerifyClaims(token string) (map[string]interface{}, bool) {
+	if !v.Verify(token) {
+		return nil, false
+	}
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return nil, false
+	}
+	payloadJSON, err := b64decode(parts[1])
+	if err != nil {
+		return nil, false
+	}
+	decoder := json.NewDecoder(strings.NewReader(string(payloadJSON)))
+	decoder.UseNumber()
+	var claims map[string]interface{}
+	if err := decoder.Decode(&claims); err != nil {
+		return nil, false
+	}
+	return claims, true
+}
+
 func selectJWK(keys []jwk, kid string) *jwk {
 	if kid != "" {
 		for i := range keys {

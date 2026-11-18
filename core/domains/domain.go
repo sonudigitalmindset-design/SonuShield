@@ -256,6 +256,7 @@ type Proxy struct {
 	MaxRequestBody  int64            `json:"maxRequestBody"`
 	StatusPage      bool             `json:"statusPage"`
 	GitOps          GitOpsConfig     `json:"gitops"`
+	SSO             *SSOConfig      `json:"sso"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

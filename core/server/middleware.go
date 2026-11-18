@@ -82,6 +82,15 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// SSO/OIDC login (Batch 5). Handled before challenge and
+	// rate limiting like metrics and the status page, so an
+	// unauthenticated visitor can sign in. Unhandled requests
+	// (SSO disabled, or any other path) fall through exactly
+	// as before.
+	if HandleSSO(writer, request) {
+		return
+	}
+
 	// Log paths must never carry the admin secret, which is a path
 	// segment of the API, dashboard, and metrics routes. Redact it
 	// once here; every structured-log entry below uses logPath.

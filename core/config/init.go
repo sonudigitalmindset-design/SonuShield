@@ -75,6 +75,14 @@ func Load() {
 	// are ignored with a warning inside SetAPIRoles.
 	proxy.SetAPIRoles(domains.Config.Proxy.APIRoles)
 
+	// SSO/OIDC (Batch 5): an enabled-but-invalid SSO config
+	// disables SSO with a warning; it never stops the proxy.
+	if domains.Config.Proxy.SSO != nil && domains.Config.Proxy.SSO.Enabled {
+		if reason := domains.Config.Proxy.SSO.Validate(); reason != "" {
+			fmt.Println("[ ! ] [ SSO disabled: " + reason + " ]")
+		}
+	}
+
 	// Check if the Proxy Timeout Config has been set otherwise use default values
 
 	if domains.Config.Proxy.Timeout.Idle != 0 {

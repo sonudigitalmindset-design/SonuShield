@@ -222,6 +222,10 @@ tr.selected td{background:var(--nav-active-bg)}
           <input id="secretInput" type="password" autocomplete="off" spellcheck="false" placeholder="apisecret value" required>
           <div style="margin-top:16px"><button class="primary" type="submit" style="width:100%">Connect</button></div>
         </form>
+        <div id="ssoBox" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+          <p class="sub" style="margin-top:0">Or continue with your organisation's sign-in.</p>
+          <button class="primary" type="button" id="ssoBtn" style="width:100%">Sign in with SSO</button>
+        </div>
         <p class="small muted">Wrong secret? The API will not answer and this page will stay disconnected. The page itself is gated by the admin-secret path you used to open it.</p>
       </div>
     </section>
@@ -589,6 +593,7 @@ var THEME_KEY = "sonushield_theme";
 var hostDomain = window.location.hostname || "";
 var currentDomain = hostDomain;
 var apiSecret = null;
+var ssoMode = false;
 var pollTimer = null;
 var connected = false;
 
@@ -630,7 +635,13 @@ document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
 })();
 
 function apiV2(path, method){
-  return fetch(path, {method: method || "GET", headers: {"Proxy-Secret": apiSecret}, credentials: "same-origin", cache: "no-store"})
+  // The CSRF header is always sent: it is required when the
+  // call authenticates via the SSO session cookie, and ignored
+  // when the API secret header is present. The secret header is
+  // omitted in SSO mode so no secret is ever sent.
+  var headers = {"X-SonuShield-CSRF": "1"};
+  if(apiSecret){ headers["Proxy-Secret"] = apiSecret; }
+  return fetch(path, {method: method || "GET", headers: headers, credentials: "same-origin", cache: "no-store"})
     .then(function(res){ return res.text().then(function(text){
       var data;
       try { data = JSON.parse(text); }
@@ -1439,11 +1450,12 @@ function setConnected(on){
   var pill = $("connPill");
   pill.classList.toggle("ok", on);
   pill.classList.toggle("bad", false);
-  setText("connText", on ? "Connected" : "Not connected");
+  setText("connText", on ? (ssoMode ? "Connected via SSO" : "Connected") : "Not connected");
   if(on){ startPolling(); } else { stopPolling(); }
 }
 function connect(secret){
   apiSecret = secret;
+  ssoMode = false;
   return proxyAction("GET_PROXY_STATS").then(function(){
     try { sessionStorage.setItem(SECRET_KEY, secret); } catch(e){}
     setConnected(true);
@@ -1455,11 +1467,27 @@ function connect(secret){
     showBanner("Connection failed: " + (err && err.message ? err.message : err) + " Check the API secret and try again.");
   });
 }
+function connectSSO(){
+  // Silent probe: succeeds only when a valid SSO session cookie
+  // is already present. A failure simply leaves the auth panel
+  // (with its SSO button) on screen.
+  apiSecret = null;
+  return proxyAction("GET_PROXY_STATS").then(function(){
+    ssoMode = true;
+    setConnected(true);
+    showBanner("");
+    return refreshAll();
+  }).catch(function(){});
+}
 function disconnect(){
   apiSecret = null;
   try { sessionStorage.removeItem(SECRET_KEY); } catch(e){}
   setConnected(false);
   showBanner("");
+  if(ssoMode){
+    ssoMode = false;
+    location.href = "/_bProxy/sso/logout";
+  }
 }
 
 var currentView = "overview";
@@ -1494,6 +1522,9 @@ $("authForm").addEventListener("submit", function(ev){
   var v = $("secretInput").value;
   if(!v){ return; }
   connect(v).then(function(){ $("secretInput").value = ""; });
+});
+$("ssoBtn").addEventListener("click", function(){
+  location.href = "/_bProxy/sso/login";
 });
 $("disconnectBtn").addEventListener("click", disconnect);
 $("refreshBtn").addEventListener("click", refreshAll);
@@ -1566,6 +1597,16 @@ showView("overview");
 var saved = null;
 try { saved = sessionStorage.getItem(SECRET_KEY); } catch(e){}
 if(saved){ connect(saved); }
+else {
+  // No saved secret: offer SSO when the proxy has it enabled,
+  // and auto-connect when a session cookie is already present.
+  fetch("/_bProxy/sso/status", {credentials: "same-origin", cache: "no-store"}).then(function(res){ return res.json(); }).then(function(data){
+    if(data && data.enabled === true){
+      $("ssoBox").style.display = "";
+      connectSSO();
+    }
+  }).catch(function(){});
+}
 })();
 </script>
 </body>

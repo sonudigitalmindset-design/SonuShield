@@ -20,13 +20,38 @@ import (
 // unavailable instead of touching anything.
 var ConfigReloader func() error
 
+// SSOSessionValidator, when set by the server package, checks a
+// request's SSO session cookie and reports the session's role.
+// It mirrors the ConfigReloader hook pattern: the api package
+// cannot import the server package, so the server registers the
+// validator at startup. Nil means SSO cookie auth is
+// unavailable (the server package always sets it, so nil only
+// in tests that do not import the server).
+var SSOSessionValidator func(r *http.Request) (role string, ok bool)
+
+// attemptSSOAuth validates an SSO session cookie for an API
+// call. It reports (role, true, false) only when the cookie is
+// valid AND the CSRF header is present; a valid cookie without
+// the header reports csrfMissing so the caller can answer 403
+// rather than falling through to the backend.
+func attemptSSOAuth(request *http.Request) (role string, ok bool, csrfMissing bool) {
+	if SSOSessionValidator == nil {
+		return "", false, false
+	}
+	role, ok = SSOSessionValidator(request)
+	if !ok {
+		return "", false, false
+	}
+	if request.Header.Get(proxy.SSOCSRFHeader) != "1" {
+		return "", false, true
+	}
+	return role, true, false
+}
+
 func Process(writer http.ResponseWriter, request *http.Request, domainData domains.DomainData) bool {
 
 	role, tenant, ok := proxy.ScopeForSecret(request.Header.Get("proxy-secret"))
-	if !ok {
-		auditUnauthenticated(request, "", "")
-		return false
-	}
+	ssoAuthed := false
 
 	// The recorder captures the response so the deferred audit
 	// entry can report the real outcome on every return path.
@@ -36,6 +61,28 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	defer func() {
 		auditAction(request, role, action, domain, params, recorder.captured)
 	}()
+
+	// SSO session fallback (Batch 5): a valid session cookie
+	// authenticates dashboard API calls without the API secret.
+	// The check runs after the recorder is set up so a CSRF
+	// rejection is audited like any other outcome. A valid
+	// cookie without the CSRF header is answered 403, never
+	// fallen through to the backend.
+	if !ok {
+		ssoRole, ssoOK, csrfMissing := attemptSSOAuth(request)
+		if csrfMissing {
+			role = "unauthenticated"
+			APIResponse(recorder, false, map[string]interface{}{
+				"ERROR": ERR_FORBIDDEN,
+			})
+			return true
+		}
+		if !ssoOK {
+			auditUnauthenticated(request, "", "")
+			return false
+		}
+		role, tenant, ssoAuthed = ssoRole, "", true
+	}
 
 	reqBody, err := io.ReadAll(request.Body)
 	if err != nil {
@@ -79,6 +126,10 @@ func Process(writer http.ResponseWriter, request *http.Request, domainData domai
 	if tenant != "" {
 		// The deferred audit entry reports the scope.
 		role = role + " (tenant " + tenant + ")"
+	}
+	if ssoAuthed {
+		// The deferred audit entry reports the auth method.
+		role = role + " (sso)"
 	}
 
 	if apiRequest.Domain == "" {
@@ -416,10 +467,7 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	role, tenant, ok := proxy.ScopeForSecret(r.Header.Get("Proxy-Secret"))
-	if !ok {
-		auditUnauthenticated(r, auditActionName, auditDomain)
-		return false
-	}
+	ssoAuthed := false
 
 	// The recorder captures the response so the deferred audit
 	// entry can report the real outcome on every return path.
@@ -429,6 +477,25 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 	defer func() {
 		auditAction(r, role, action, domain, params, recorder.captured)
 	}()
+
+	// SSO session fallback (Batch 5): see Process. A valid
+	// cookie without the CSRF header is answered 403, never
+	// fallen through to the backend.
+	if !ok {
+		ssoRole, ssoOK, csrfMissing := attemptSSOAuth(r)
+		if csrfMissing {
+			role = "unauthenticated"
+			APIResponse(recorder, false, map[string]interface{}{
+				"ERROR": ERR_FORBIDDEN,
+			})
+			return true
+		}
+		if !ssoOK {
+			auditUnauthenticated(r, auditActionName, auditDomain)
+			return false
+		}
+		role, tenant, ssoAuthed = ssoRole, "", true
+	}
 
 	if len(parts) == 1 {
 
@@ -452,6 +519,9 @@ func ProcessV2(w http.ResponseWriter, r *http.Request) bool {
 		}
 		if tenant != "" {
 			role = role + " (tenant " + tenant + ")"
+		}
+		if ssoAuthed {
+			role = role + " (sso)"
 		}
 		handleProxyActions(parts[0], recorder, queryParams(r), tenant)
 		return true

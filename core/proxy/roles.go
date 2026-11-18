@@ -38,6 +38,12 @@ const (
 	RoleAdmin    = "admin"
 )
 
+// SSOCSRFHeader is the header cookie-authenticated API calls
+// must carry (Batch 5). The dashboard sends it on every API
+// request; a session cookie alone never authenticates an API
+// call, so a cross-site request cannot ride the cookie.
+const SSOCSRFHeader = "X-SonuShield-CSRF"
+
 var apiRoles atomic.Value // map[string]string, immutable snapshot
 
 // parseRoleValue parses one apiRoles value into its tenant scope
