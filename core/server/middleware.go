@@ -982,6 +982,30 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//Form spam guard (Batch 7). Opt-in per path: GETs to
+	//guarded paths receive a signed timestamp cookie, and
+	//POSTs are checked for a filled honeypot field,
+	//impossibly fast submission, and per-form rate limits.
+	//Log-only by default; block mode answers with a generic
+	//403. A missing or invalid cookie never condemns a
+	//request on its own.
+	if len(domainSettings.FormGuard.Paths) > 0 {
+		if request.Method == http.MethodGet {
+			firewall.MaybeSetFormGuardCookie(writer, domainSettings.FormGuard.Paths, request.URL.Path)
+		} else if request.Method == http.MethodPost {
+			if spam, spamReason := firewall.CheckFormGuard(request, domainSettings.FormGuard, ip); spam {
+				logging.Log(logging.Entry{Event: "formguard", Domain: domainName, IP: ip, Action: "formguard_" + spamReason, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+				if domainSettings.FormGuard.Mode == "block" {
+					metrics.ObserveBlock(domainName, "formguard")
+					writer.Header().Set("Content-Type", "text/plain")
+					writer.WriteHeader(http.StatusForbidden)
+					SendResponse("Forbidden.", buffer, writer)
+					return
+				}
+			}
+		}
+	}
+
 	//Fair queuing (Batch 7). Admits origin-bound requests
 	//round-robin across client IPs when all slots are busy;
 	//inert at normal load (immediate admission) and a no-op

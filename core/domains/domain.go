@@ -62,6 +62,7 @@ type Domain struct {
 	HotlinkProtect      bool             `json:"hotlinkProtect"`
 	HotlinkPaths        []string         `json:"hotlinkPaths"`
 	HotlinkAllowlist    []string         `json:"hotlinkAllowlist"`
+	FormGuard           FormGuardConfig  `json:"formGuard"`
 	FakeBotCheck        bool             `json:"fakeBotCheck"`
 	FakeBotSusLv        int              `json:"fakeBotSusLv"`
 	TarpitDelayMs       int              `json:"tarpitDelayMs"`
@@ -177,6 +178,7 @@ type DomainSettings struct {
 	HotlinkProtect      bool
 	HotlinkPaths        []string
 	HotlinkAllowlist    []string
+	FormGuard           FormGuardConfig
 	FakeBotCheck        bool
 	FakeBotSusLv        int
 	TarpitDelayMs       int
@@ -397,6 +399,21 @@ type TwilioSettings struct {
 type JsonRule struct {
 	Expression string `json:"expression"`
 	Action     string `json:"action"`
+}
+
+// FormGuardConfig is the per-domain form spam guard
+// configuration (Batch 7, domain.formGuard). Paths lists the
+// guarded path prefixes; HoneypotField names the hidden field
+// the operator added to their forms (default "website");
+// MinSeconds is the minimum sane form-fill time (default 3);
+// MaxPerMinute is the per-IP per-path POST limit (default
+// 30); Mode is "log" (default, log only) or "block".
+type FormGuardConfig struct {
+	Paths        []string `json:"paths"`
+	HoneypotField string  `json:"honeypotField"`
+	MinSeconds   int     `json:"minSeconds"`
+	MaxPerMinute int     `json:"maxPerMinute"`
+	Mode         string  `json:"mode"`
 }
 
 // OSSignature is one operator-supplied passive OS signature
