@@ -4,6 +4,8 @@ Every SonuShield feature, with an animated diagram and an advanced explanation: 
 
 **114 features** across 9 groups. No feature here is aspirational: every claim traces to code or existing documentation, and limits state plainly what is disabled by default, mock-verified, or untested.
 
+For the whole story in one picture, see [How an Attack Is Stopped](how-an-attack-is-stopped.md) — a plain-English walkthrough with a two-lane animated diagram of the visitor's journey and the attacker's journey through all 16 defense layers.
+
 ## Detection & Fingerprinting
 
 How SonuShield identifies clients and scores requests before deciding anything.

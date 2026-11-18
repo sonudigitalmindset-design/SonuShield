@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="920" viewBox="0 0 1400 920" role="img" aria-label="Attack versus defense journey: a real visitor passes silently while a botnet flood is fingerprinted, scored, challenged, tarpitted and blocked before reaching the backend">
+ <defs>
+  <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+   <path d="M0 0 L10 5 L0 10 z" fill="#22c55e"/>
+  </marker>
+  <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+   <path d="M0 0 L10 5 L0 10 z" fill="#ef4444"/>
+  </marker>
+ </defs>
+ <rect width="1400" height="920" rx="14" fill="#f6f8fa" stroke="#d0d7de"/>
+ <g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+  <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.05s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   <text x="40" y="44" font-size="22" font-weight="700" fill="#14263f">How SonuShield stops an attack — without bothering real visitors</text>
+   <text x="40" y="68" font-size="13" fill="#57606a">Two journeys through the same defenses · every layer below is a real, configurable feature · schematic, not to scale</text>
+  </g>
+
+  <!-- ============ VISITOR LANE ============ -->
+  <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.15s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   <animateTransform attributeName="transform" type="translate" values="0 12;0 0" dur="0.7s" begin="0.15s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
+   <rect x="24" y="84" width="1352" height="204" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="40" y="108" font-size="12" font-weight="700" fill="#15803d">LEGITIMATE VISITOR</text>
+   <rect x="1190" y="96" width="162" height="30" rx="15" fill="#dcfce7"/>
+   <text x="1271" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d">✓ notices nothing</text>
+   <circle cx="100" cy="158" r="16" fill="#dbe7f3"/>
+   <path d="M72 208 Q100 176 128 208" fill="#dbe7f3"/>
+   <text x="100" y="240" text-anchor="middle" font-size="13" font-weight="600" fill="#14263f">Real visitor</text>
+   <text x="100" y="258" text-anchor="middle" font-size="11" fill="#57606a">real browser</text>
+   <line x1="160" y1="196" x2="200" y2="196" stroke="#22c55e" stroke-width="2"/>
+   <line x1="370" y1="196" x2="395" y2="196" stroke="#22c55e" stroke-width="2"/>
+   <line x1="565" y1="196" x2="590" y2="196" stroke="#22c55e" stroke-width="2"/>
+   <line x1="760" y1="196" x2="785" y2="196" stroke="#22c55e" stroke-width="2"/>
+   <line x1="955" y1="196" x2="1002" y2="196" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen)"/>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.2s" fill="freeze"/>
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#22c55e"><animateMotion dur="3.6s" begin="1.2s" repeatCount="indefinite" path="M160 196 H200 M370 196 H395 M565 196 H590 M760 196 H785 M955 196 H1002"/></rect>
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#22c55e" opacity="0.75"><animateMotion dur="3.6s" begin="1.75s" repeatCount="indefinite" path="M160 196 H200 M370 196 H395 M565 196 H590 M760 196 H785 M955 196 H1002"/></rect>
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#22c55e" opacity="0.5"><animateMotion dur="3.6s" begin="2.3s" repeatCount="indefinite" path="M160 196 H200 M370 196 H395 M565 196 H590 M760 196 H785 M955 196 H1002"/></rect>
+   </g>
+   <rect x="200" y="150" width="170" height="92" rx="10" fill="#ffffff" stroke="#22c55e"/>
+   <text x="285" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="#14263f">Fingerprint</text>
+   <text x="285" y="198" text-anchor="middle" font-size="11" fill="#15803d">known browser ✓</text>
+   <text x="285" y="216" text-anchor="middle" font-size="10" fill="#57606a">TLS · JA4 · sh1</text>
+   <rect x="395" y="150" width="170" height="92" rx="10" fill="#ffffff" stroke="#22c55e"/>
+   <text x="480" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="#14263f">Risk score</text>
+   <text x="480" y="198" text-anchor="middle" font-size="11" fill="#15803d">low ✓</text>
+   <text x="480" y="216" text-anchor="middle" font-size="10" fill="#57606a">0–100 scale</text>
+   <rect x="590" y="150" width="170" height="92" rx="10" fill="#ffffff" stroke="#22c55e"/>
+   <text x="675" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="#14263f">Firewall rules</text>
+   <text x="675" y="198" text-anchor="middle" font-size="11" fill="#15803d">allow ✓</text>
+   <text x="675" y="216" text-anchor="middle" font-size="10" fill="#57606a">no rule matches</text>
+   <rect x="785" y="150" width="170" height="92" rx="10" fill="#ffffff" stroke="#22c55e"/>
+   <text x="870" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="#14263f">Edge cache</text>
+   <text x="870" y="198" text-anchor="middle" font-size="11" fill="#15803d">fast answer</text>
+   <text x="870" y="216" text-anchor="middle" font-size="10" fill="#57606a">or straight to origin</text>
+   <rect x="1010" y="140" width="180" height="112" rx="10" fill="#14263f"/>
+   <text x="1100" y="168" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">Your backend</text>
+   <text x="1100" y="188" text-anchor="middle" font-size="11" fill="#dbe7f3">answers normally</text>
+   <rect x="1030" y="204" width="140" height="9" rx="3" fill="#1e3a5c"/>
+   <rect x="1030" y="219" width="140" height="9" rx="3" fill="#1e3a5c"/>
+   <rect x="1210" y="150" width="142" height="92" rx="10" fill="#dcfce7" stroke="#22c55e"/>
+   <text x="1281" y="186" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d">0 challenges</text>
+   <text x="1281" y="206" text-anchor="middle" font-size="11" fill="#15803d">nothing to notice</text>
+   <text x="40" y="278" font-size="12" fill="#57606a">The visitor notices nothing: the invisible cookie check passes silently, and the page simply loads.</text>
+  </g>
+
+  <!-- ============ DEFENSE LAYERS BAND ============ -->
+  <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.35s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   <animateTransform attributeName="transform" type="translate" values="0 12;0 0" dur="0.7s" begin="0.35s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
+   <rect x="24" y="304" width="1352" height="168" rx="12" fill="#14263f"/>
+   <text x="40" y="332" font-size="14" font-weight="700" fill="#ffffff">The defense layers, in the order every request meets them</text>
+   <g>
+    <rect x="40" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="118" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">1 · Fingerprints</text>
+    <text x="118" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">TLS · JA4 · sh1 · H2 · QUIC</text>
+    <rect x="208" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="286" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">2 · Rate limits</text>
+    <text x="286" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">per IP + fingerprint</text>
+    <rect x="376" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="454" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">3 · WAF-lite</text>
+    <text x="454" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">15 patterns · log-only</text>
+    <rect x="544" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="622" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">4 · Honeypot · canary</text>
+    <text x="622" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">traps for scanners</text>
+    <rect x="712" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="790" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">5 · Geo / ASN</text>
+    <text x="790" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">country + network</text>
+    <rect x="880" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="958" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">6 · Reputation</text>
+    <text x="958" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">blocklist + feed</text>
+    <rect x="1048" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="1126" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">7 · Risk score</text>
+    <text x="1126" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">0–100 · fixed weights</text>
+    <rect x="1216" y="346" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="1294" y="365" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">8 · Timing</text>
+    <text x="1294" y="382" text-anchor="middle" font-size="10" fill="#8fa3b8">regular + burst</text>
+    <rect x="40" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="118" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">9 · Firewall rules</text>
+    <text x="118" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">edge, then general</text>
+    <rect x="208" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="286" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">10 · Challenges 1–3</text>
+    <text x="286" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">cookie · PoW · captcha</text>
+    <rect x="376" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="454" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">11 · Tarpit</text>
+    <text x="454" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">slow drip · max 30s</text>
+    <rect x="544" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="622" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">12 · Edge cache</text>
+    <text x="622" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">GET · 60s default</text>
+    <rect x="712" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="790" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">13 · Waiting room</text>
+    <text x="790" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">fair queue · 5,000 cap</text>
+    <rect x="880" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="958" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">14 · API protection</text>
+    <text x="958" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">JWT · keys · GraphQL</text>
+    <rect x="1048" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="1126" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">15 · Load balancing</text>
+    <text x="1126" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">failover · health checks</text>
+    <rect x="1216" y="402" width="156" height="44" rx="8" fill="#1e3a5c"/>
+    <text x="1294" y="421" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">16 · Origin lock</text>
+    <text x="1294" y="438" text-anchor="middle" font-size="10" fill="#8fa3b8">secret header</text>
+   </g>
+   <g font-size="16" fill="#8fa3b8" text-anchor="middle">
+    <text x="202" y="374">›</text><text x="370" y="374">›</text><text x="538" y="374">›</text><text x="706" y="374">›</text><text x="874" y="374">›</text><text x="1042" y="374">›</text><text x="1210" y="374">›</text>
+    <text x="202" y="430">›</text><text x="370" y="430">›</text><text x="538" y="430">›</text><text x="706" y="430">›</text><text x="874" y="430">›</text><text x="1042" y="430">›</text><text x="1210" y="430">›</text>
+   </g>
+   <rect x="40" y="346" width="70" height="44" fill="#ffffff" opacity="0">
+    <animate attributeName="x" values="40;1300;1300" keyTimes="0;0.45;1" dur="12s" begin="1.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0.14;0.14;0" keyTimes="0;0.04;0.42;0.48" dur="12s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <rect x="40" y="402" width="70" height="44" fill="#ffffff" opacity="0">
+    <animate attributeName="x" values="40;40;1300" keyTimes="0;0.5;0.95" dur="12s" begin="1.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;0.14;0" keyTimes="0;0.5;0.54;0.96" dur="12s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <text x="40" y="464" font-size="11" fill="#8fa3b8">Read left to right, top row first · Layers 1–9 build suspicion · 10–11 enforce · 12–16 serve what passed</text>
+  </g>
+
+  <!-- ============ ATTACKER LANE ============ -->
+  <g opacity="0">
+   <animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.55s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   <animateTransform attributeName="transform" type="translate" values="0 12;0 0" dur="0.7s" begin="0.55s" calcMode="spline" keySplines=".22 1 .36 1" additive="sum" fill="freeze"/>
+   <rect x="24" y="488" width="1352" height="408" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="40" y="512" font-size="12" font-weight="700" fill="#dc2626">ATTACKER / BOTNET</text>
+   <rect x="40" y="560" width="125" height="104" rx="10" fill="#fde8e8" stroke="#ef4444"/>
+   <rect x="50" y="576" width="30" height="24" rx="6" fill="#ffffff" stroke="#ef4444"/>
+   <circle cx="59" cy="586" r="2.5" fill="#ef4444"/><circle cx="71" cy="586" r="2.5" fill="#ef4444"/>
+   <rect x="85" y="576" width="30" height="24" rx="6" fill="#ffffff" stroke="#ef4444"/>
+   <circle cx="94" cy="586" r="2.5" fill="#ef4444"/><circle cx="106" cy="586" r="2.5" fill="#ef4444"/>
+   <rect x="120" y="576" width="30" height="24" rx="6" fill="#ffffff" stroke="#ef4444"/>
+   <circle cx="129" cy="586" r="2.5" fill="#ef4444"/><circle cx="141" cy="586" r="2.5" fill="#ef4444"/>
+   <text x="102" y="632" text-anchor="middle" font-size="13" font-weight="700" fill="#991b1b">Botnet</text>
+   <text x="102" y="650" text-anchor="middle" font-size="10" fill="#57606a">flood of requests</text>
+   <line x1="168" y1="612" x2="194" y2="612" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowRed)"/>
+   <text x="215" y="548" text-anchor="middle" font-size="12" font-weight="700" fill="#57606a">Suspicion</text>
+   <rect x="200" y="560" width="30" height="210" rx="6" fill="#f6f8fa" stroke="#d0d7de"/>
+   <rect x="200" y="770" width="30" height="0" fill="#ef4444" opacity="0.85">
+    <animate attributeName="y" values="770;720;670;620;570;570" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="9.6s" begin="1.4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="height" values="0;50;100;150;200;200" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="9.6s" begin="1.4s" calcMode="discrete" repeatCount="indefinite"/>
+   </rect>
+   <g stroke="#d0d7de" stroke-width="1">
+    <line x1="232" y1="570" x2="238" y2="570"/><line x1="232" y1="620" x2="238" y2="620"/><line x1="232" y1="670" x2="238" y2="670"/><line x1="232" y1="720" x2="238" y2="720"/><line x1="232" y1="770" x2="238" y2="770"/>
+   </g>
+   <text x="242" y="574" font-size="11" font-weight="700" fill="#dc2626">4+</text>
+   <text x="242" y="624" font-size="10" fill="#57606a">3</text>
+   <text x="242" y="674" font-size="10" fill="#57606a">2</text>
+   <text x="242" y="724" font-size="10" fill="#57606a">1</text>
+   <text x="242" y="774" font-size="10" fill="#57606a">0</text>
+   <text x="215" y="792" text-anchor="middle" font-size="10" font-weight="700" fill="#dc2626">blocks at 4+</text>
+   <line x1="270" y1="612" x2="310" y2="612" stroke="#ef4444" stroke-width="2"/>
+   <line x1="460" y1="612" x2="480" y2="612" stroke="#ef4444" stroke-width="2"/>
+   <line x1="630" y1="612" x2="650" y2="612" stroke="#ef4444" stroke-width="2"/>
+   <path d="M800 612 V750 H880" fill="none" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowRed)"/>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.4s" fill="freeze"/>
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#ef4444"><animateMotion dur="4.8s" begin="1.6s" repeatCount="indefinite" path="M270 612 H310 M460 612 H480 M630 612 H650 M800 612 V750 H880"/></rect>
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#ef4444" opacity="0.8"><animateMotion dur="4.8s" begin="3.0s" repeatCount="indefinite" path="M270 612 H310 M460 612 H480 M630 612 H650 M800 612 V750 H880"/></rect>
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#ef4444" opacity="0.7"><animateMotion dur="2.6s" begin="1.4s" repeatCount="indefinite" path="M270 612 H310 M460 612 H480"/><animate attributeName="opacity" values="1;1;0" keyTimes="0;0.8;1" dur="2.6s" begin="1.4s" repeatCount="indefinite"/></rect>
+    <rect x="-7" y="-4" width="14" height="8" rx="2" fill="#ef4444" opacity="0.7"><animateMotion dur="2.6s" begin="2.2s" repeatCount="indefinite" path="M270 612 H310 M460 612 H480"/><animate attributeName="opacity" values="1;1;0" keyTimes="0;0.8;1" dur="2.6s" begin="2.2s" repeatCount="indefinite"/></rect>
+   </g>
+   <rect x="310" y="560" width="150" height="104" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="385" y="586" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Stage 1 · cookie</text>
+   <text x="385" y="604" text-anchor="middle" font-size="11" fill="#57606a">invisible</text>
+   <rect x="322" y="614" width="126" height="8" rx="4" fill="#f59e0b" opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.18;0.26;0.88;1" dur="9.6s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <text x="385" y="650" text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626" opacity="0">✕ failed<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.18;0.26;0.88;1" dur="9.6s" begin="1.4s" repeatCount="indefinite"/></text>
+   <rect x="480" y="560" width="150" height="104" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="555" y="586" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Stage 2 · PoW</text>
+   <text x="555" y="604" text-anchor="middle" font-size="11" fill="#57606a">browser puzzle</text>
+   <rect x="492" y="614" width="126" height="8" rx="4" fill="#f59e0b" opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.36;0.44;0.88;1" dur="9.6s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <text x="555" y="650" text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626" opacity="0">✕ failed<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.36;0.44;0.88;1" dur="9.6s" begin="1.4s" repeatCount="indefinite"/></text>
+   <rect x="650" y="560" width="150" height="104" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="725" y="586" text-anchor="middle" font-size="12" font-weight="700" fill="#14263f">Stage 3 · captcha</text>
+   <text x="725" y="604" text-anchor="middle" font-size="11" fill="#57606a">last resort</text>
+   <rect x="662" y="614" width="126" height="8" rx="4" fill="#f59e0b" opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.54;0.62;0.88;1" dur="9.6s" begin="1.4s" repeatCount="indefinite"/>
+   </rect>
+   <text x="725" y="650" text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626" opacity="0">✕ failed<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.54;0.62;0.88;1" dur="9.6s" begin="1.4s" repeatCount="indefinite"/></text>
+   <text x="555" y="692" text-anchor="middle" font-size="11" fill="#57606a">Stages escalate automatically when bypassed</text>
+   <path d="M805 580 C 900 575, 950 595, 1054 598" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 5">
+    <animate attributeName="stroke-dashoffset" values="0;-44" dur="1.6s" begin="1.6s" repeatCount="indefinite"/>
+   </path>
+   <circle r="4" fill="#f59e0b"><animateMotion dur="2.8s" begin="1.6s" repeatCount="indefinite" path="M805 580 C 900 575, 950 595, 1054 598"/></circle>
+   <rect x="1060" y="530" width="292" height="150" rx="10" fill="#14263f"/>
+   <text x="1080" y="556" font-size="13" font-weight="700" fill="#ffffff">Owner's dashboard</text>
+   <rect x="1082" y="626" width="16" height="10" fill="#4ade80">
+    <animate attributeName="height" values="10;22;34" dur="6s" begin="1.4s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>
+    <animate attributeName="y" values="626;614;602" dur="6s" begin="1.4s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>
+   </rect>
+   <rect x="1104" y="620" width="16" height="16" fill="#4ade80">
+    <animate attributeName="height" values="16;30;46" dur="6s" begin="1.4s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>
+    <animate attributeName="y" values="620;606;590" dur="6s" begin="1.4s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>
+   </rect>
+   <rect x="1126" y="614" width="16" height="22" fill="#4ade80">
+    <animate attributeName="height" values="22;38;56" dur="6s" begin="1.4s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>
+    <animate attributeName="y" values="614;598;580" dur="6s" begin="1.4s" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>
+   </rect>
+   <text x="1080" y="656" font-size="10" fill="#8fa3b8">requests/s · rising</text>
+   <circle cx="1296" cy="560" r="9" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.7">
+    <animate attributeName="r" values="9;22" dur="2s" begin="1.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7;0" dur="2s" begin="1.6s" repeatCount="indefinite"/>
+   </circle>
+   <circle cx="1296" cy="560" r="9" fill="#f59e0b"/>
+   <text x="1296" y="592" text-anchor="middle" font-size="11" font-weight="700" fill="#fcd34d">Alert sent</text>
+   <text x="1336" y="670" text-anchor="end" font-size="10" fill="#8fa3b8">Discord · Telegram · email · SMS</text>
+   <rect x="880" y="700" width="150" height="120" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+   <text x="955" y="722" text-anchor="middle" font-size="13" font-weight="700" fill="#14263f">Tarpit</text>
+   <rect x="938" y="730" width="34" height="8" rx="2" fill="#57606a"/>
+   <circle cx="955" cy="742" r="5" fill="#f59e0b" opacity="0">
+    <animate attributeName="cy" values="742;742;798;798" keyTimes="0;0.25;0.85;1" dur="5s" begin="1.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.25;0.85;1" dur="5s" begin="1.4s" repeatCount="indefinite"/>
+   </circle>
+   <ellipse cx="955" cy="804" rx="13" ry="3" fill="#fde68a"/>
+   <text x="955" y="816" text-anchor="middle" font-size="10" fill="#57606a">slow drip · max 30s</text>
+   <rect x="1060" y="700" width="292" height="120" rx="10" fill="#ffffff" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="824" stroke-dashoffset="824">
+    <animate attributeName="stroke-dashoffset" values="824;0" dur="0.8s" begin="0.9s" calcMode="spline" keySplines=".22 1 .36 1" fill="freeze"/>
+   </rect>
+   <rect x="1060" y="700" width="292" height="120" rx="10" fill="none" stroke="#ef4444" stroke-dasharray="5 4" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.7s" fill="freeze"/>
+    <animate attributeName="opacity" values="1;1;0.35;1;1" keyTimes="0;0.55;0.62;0.75;1" dur="4.8s" begin="2.4s" repeatCount="indefinite"/>
+   </rect>
+   <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="1.7s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 4;0 0;0 0" keyTimes="0;0.55;0.6;0.68;1" dur="4.8s" begin="2.4s" additive="sum" repeatCount="indefinite"/>
+    <text x="1206" y="752" text-anchor="middle" font-size="20" font-weight="700" fill="#ef4444">✕ BLOCKED</text>
+   </g>
+   <text x="1206" y="776" text-anchor="middle" font-size="12" fill="#57606a">suspicion 4+ · blocked</text>
+   <text x="1206" y="796" text-anchor="middle" font-size="11" fill="#57606a">never reaches the backend</text>
+   <text x="700" y="872" text-anchor="middle" font-size="12" fill="#57606a">Blocked requests never reach the backend — and the owner watches it all live on the dashboard.</text>
+  </g>
+  <text x="700" y="910" text-anchor="middle" font-size="11" fill="#8b949e" opacity="0">Schematic animation — packet speeds and timings are illustrative; layer order and thresholds match the real pipeline.<animate attributeName="opacity" values="0;1" dur="0.7s" begin="0.8s" fill="freeze"/></text>
+ </g>
+</svg>
