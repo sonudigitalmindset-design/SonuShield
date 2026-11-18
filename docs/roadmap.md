@@ -132,6 +132,16 @@ Still planned from this batch's original scope: nothing — every item above is 
 - Cache analytics with purge by path, prefix, or `Cache-Tag`, via API + dashboard; counters only.
 - Config validator (`sonushield validate`, with optional `--probe-backends`) plus a GitHub Actions CI workflow running build, vet, and the validator on pushes/PRs — no secrets needed.
 
+## Platform Model — Control Plane ✅ Implemented
+
+- Separate server mode (`sonushield control`, config `controlPlane` section) serving the management UI and API from its own listener/host, with TLS from operator certificates. It manages proxy nodes through their existing authenticated control API v2 (per-node secrets, config-file-only, never logged or returned) and never proxies visitor traffic. No automatic certificate issuance for the control listener.
+- Owner, reseller, and tenant accounts in a config-managed account file: bcrypt-hashed passwords only, no default credentials, first-owner bootstrap via a one-time CLI-generated setup token. Resellers manage only their own tenants' domains; tenants see only their own domains; the owner sees all. The Batch 5 tenant model is reused — no second tenancy system.
+- Login on the control host only: HMAC-signed session cookies, CSRF protection, rate-limited login attempts (5 failures in 5 minutes → 429), and optional OIDC SSO reusing the proxy SSO code paths and the shared JWT verifier — where the identity provider only authenticates and the account file decides the role. No login path exists on any protected domain.
+- The existing dashboard UI served by the control plane (one UI codebase, two serving modes), extended with a node switcher, reseller/tenant scoping, and account management. Same design standard, zero external assets.
+- `proxy.dashboardMode`: `"local"` (default, unchanged), `"control-plane"` (302 redirect to the control host, bare 404 without a usable URL), or `"off"` (bare generic 404); unknown values fail safe to `"off"`. Mode changes apply on reload.
+- Every control-plane action audit-logged (who, what, which node, result; secrets never logged); every dashboard action works end to end against a real node through API v2 (stage, rules, domain config, logs, reports, reload, approvals). No shadow state — the proxy remains the source of truth. Two-person approval through the control plane needs the shared `controlPlaneSecret` on node and control plane, or approvals fail closed.
+- Live-verified by a dedicated smoke harness (143 checks: setup, login, rate limiting, CSRF, scoping, accounts, approvals with and without the shared secret, log tail, audit, dashboard-mode variants, TLS + SSO against a mock IdP). Real-IdP SSO is unverified.
+
 ## Sale-Readiness
 
 Quality work needed before the project can be evaluated seriously by a larger organization:

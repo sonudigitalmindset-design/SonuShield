@@ -54,6 +54,18 @@ Common problems and how to fix them. If your issue is not listed here, check the
 
 **Log search fails with `ERR_JSON_LOGS_NOT_CONFIGURED`.** `SEARCH_LOGS` and the dashboard's log search need structured JSON logging: set `logFormat: "json"` and `logFile` in the proxy config, then reload. The attack map likewise needs JSON logs, plus a GeoIP database for country data — without either it returns an empty list rather than an error.
 
+**Control plane: `control-setup` refuses to print a token.** A setup token is refused once an owner account exists in the account file — that is by design. If the owner password is lost, there is no recovery path in the product: restore the account file from backup, or delete it and bootstrap again (which removes all accounts).
+
+**Control plane: login always fails / 429.** Logins are rate-limited per client IP: 5 failures in 5 minutes → `429` with `Retry-After`, and a successful login resets the counter. Behind a reverse proxy, the control plane sees the proxy's address (it does not trust `X-Forwarded-For`), so all operators share one limit — put the control plane on loopback or its own listener where possible. Failure messages are deliberately generic; the audit log records the attempt.
+
+**Control plane: node calls fail or return the node's 404 page.** A node routes by HTTP `Host`, so the control plane must send a domain the node serves: set the node's `host` (or `serverName`, which doubles as the default) in the `controlPlane.nodes` entry. `sonushield validate` warns when a node reached by IP has neither set. Also check the node's `apiSecret` and that the node URL is reachable from the control host.
+
+**Control plane: approvals cannot be completed.** Two-person approval through the control plane needs the same `controlPlaneSecret` on the node (`proxy.controlPlaneSecret`, restart to apply — secrets are load-only) and in the node's control-plane entry. Without it on either side, every control-plane caller looks identical to the node and a different operator's approval is rejected as a self-approval. This fails closed by design; direct API approvals with distinct secrets are unaffected.
+
+**Control plane: SSO sign-in fails.** The identity provider only authenticates: the account must already exist in the control-plane account file (username from the `email`, `preferred_username`, or `sub` claim), or sign-in is denied with the generic failure page. Role and tenant scope come from the account, never from claims. Check the startup log for an SSO discovery/validation failure, and that `redirectUrl` points at the control host's `/sso/callback`. See [Control Plane](control-plane.md#sso).
+
+**On-domain dashboard redirects or 404s after setting `dashboardMode`.** `"control-plane"` without a usable absolute `http(s)` `controlPlaneUrl` answers a bare 404 by design; an unknown mode value fails safe to `"off"` with a warning in the proxy log. Set the mode back to `"local"` and reload to restore the on-domain dashboard immediately. See [Control Plane](control-plane.md#dashboard-modes-and-migration).
+
 ## Rules behave unexpectedly
 
 **Unsupported field names.** Do not use `ip.requests`, `http.headers`, or `http.body` in rules — these names are registered but never given values, so rules using them will not behave as expected. (`ip.country`, `ip.asn`, `ip.ja4`, `ip.reputation`, and `http.fingerprint` are populated — see below.) See the [field list](firewall-rules.md#fields).

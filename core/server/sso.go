@@ -18,9 +18,10 @@ package server
 //   - GET /_bProxy/sso/status — {"enabled": bool}, so the
 //     dashboard can offer SSO only when it is configured.
 //
-// These paths are temporary: the platform-host work will move
-// the dashboard off protected domains, and SSO will move with
-// it.
+// These paths serve the on-domain dashboard. They are
+// superseded by the control plane's own SSO endpoints once the
+// dashboard moves to the control host; see
+// docs/control-plane.md.
 //
 // Sessions are HMAC-signed cookies (key derived from the
 // configured cookie secret with domain separation; no new secret
@@ -361,9 +362,9 @@ func ssoRoleForClaims(cfg *domains.SSOConfig, claims map[string]interface{}) str
 
 // ssoDashboardURL is where a successful login lands: the
 // existing secret-path dashboard. The path secret is inherent to
-// the current dashboard design and stays until the platform-host
-// work moves the dashboard; SSO only removes the need to present
-// the API secret for API calls.
+// the on-domain dashboard design; SSO only removes the need to
+// present the API secret for API calls. The control plane has
+// its own login and dashboard URL.
 func ssoDashboardURL() string {
 	return "/_bProxy/" + proxy.AdminSecret + "/dashboard"
 }

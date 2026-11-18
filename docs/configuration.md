@@ -106,6 +106,9 @@ A fuller multi-domain example is available in [`examples/config.json`](../exampl
 | `privacyMode` | Bool | `true` minimizes stored PII: masked IPs and no user-agents in logs and reports, shortened log retention. Default `false`. See [Privacy Mode](#privacy-mode). |
 | `twoPersonApproval` | Bool | `true` requires a second distinct approver for sensitive control actions. Default `false`. See [Two-Person Approval](#two-person-approval). |
 | `approvalExpirySeconds` | Int | Seconds a pending approval waits before expiring (default `300` when `0` or negative). |
+| `controlPlaneSecret` | String | Shared secret under which a trusted control plane proves caller identities for two-person approval. Empty (default) disables the mechanism. See [Control Plane](control-plane.md#two-person-approval). |
+| `dashboardMode` | String | On-domain dashboard mode: `"local"` (default, served as before), `"control-plane"` (redirect to `controlPlaneUrl`, else bare 404), or `"off"` (bare 404). Unknown values fail safe to `"off"`. See [Control Plane](control-plane.md#dashboard-modes-and-migration). |
+| `controlPlaneUrl` | String | Control-plane dashboard URL that on-domain dashboard requests redirect to when `dashboardMode` is `"control-plane"`. Must be an absolute `http(s)` URL; anything else falls back to a bare 404. |
 
 Rate limits (`ratelimits`), counted within the `ratelimit_time` window:
 
@@ -726,7 +729,13 @@ The watcher checks the file at most every `intervalSeconds` (default `60`, minim
 
 The flow is the standard authorization-code flow with PKCE (S256), state, and nonce. Discovery is fetched without following redirects, the document's issuer must exactly equal the configured issuer, and ID tokens must be RS256/ES256 signed by a provider JWKS key (HS256 and `alg: none` are rejected); issuer, audience, expiry, and nonce are all checked. Sessions are HMAC-signed cookies (`HttpOnly`, `Secure`, `SameSite=Lax`, scoped to `/_bProxy/`, 8-hour lifetime); API calls accept the session cookie only with the `X-SonuShield-CSRF: 1` header the dashboard sends. Roles come from `defaultRole` (default `viewer`) or from the `roleClaim` mapping (a string claim, or the first matching array value; unknown values fall back to the default). Sessions are never tenant-scoped. Tokens, codes, and secrets are never logged; failures log only a failure class.
 
-The client secret is config-file-only. HTTPS is required for the issuer and redirect URL, except `http` on loopback hosts (for local testing against a mock provider). An enabled-but-invalid config warns at startup and disables SSO; it never stops the proxy. The SSO paths (`/_bProxy/sso/login`, `/_bProxy/sso/callback`, `/_bProxy/sso/logout`, `/_bProxy/sso/status`) are temporary: the platform-host work will move the dashboard off protected domains, and SSO will move with it. `/_bProxy/sso/status` always answers `{"enabled": bool}` so the dashboard can offer SSO only when configured.
+The client secret is config-file-only. HTTPS is required for the issuer and redirect URL, except `http` on loopback hosts (for local testing against a mock provider). An enabled-but-invalid config warns at startup and disables SSO; it never stops the proxy. These on-domain SSO paths are superseded once the dashboard moves to the control host: the control plane has its own SSO endpoints (`/sso/*`) on its own listener, where the identity provider only authenticates and the account file decides the role — see [Control Plane](control-plane.md#sso). `/_bProxy/sso/status` always answers `{"enabled": bool}` so the dashboard can offer SSO only when configured.
+
+## Control Plane
+
+The `controlPlane` top-level section configures the separate management host (`sonushield control`): the dashboard served from its own official-style host, owner/reseller/tenant accounts, server-side scoping, audit logging, and node management over API v2. It is inert unless the binary is run in `control` mode, and a config file holding only this section (no proxy secrets, no domains) validates as a control-plane config. Full setup, account bootstrap, the reseller/tenant model, migration from the on-domain dashboard, and security notes: [Control Plane](control-plane.md).
+
+The proxy-side settings for the platform model live in the proxy table above: `controlPlaneSecret` (shared caller-identity secret for two-person approval through the control plane), `dashboardMode` (`"local"` / `"control-plane"` / `"off"`), and `controlPlaneUrl` (redirect target for `"control-plane"` mode). Mode changes apply on reload, without a restart.
 
 ## Post-Quantum TLS
 

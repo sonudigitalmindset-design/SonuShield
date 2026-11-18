@@ -44,6 +44,10 @@ SonuShield can run behind Cloudflare: set `cloudflare` to `true` in your configu
 
 A web dashboard and control panel served by the proxy itself: live request rates, totals, CPU/RAM, stage, top IPs, firewall rules, and recent logs — plus stage control, rule editing, domain settings, log clearing, attack reports, and validated config reload, with no terminal interaction needed. Two themes (Premium Dark and Official Classic Light), no external resources. Details: [Dashboard](dashboard.md).
 
+## Control Plane
+
+A Cloudflare-style management host on a separate domain: owner, reseller, and tenant accounts sign in once and manage one or more proxy nodes from the same dashboard UI, with server-side tenant scoping, a node switcher, account management, and an audit log of every action. Login exists only on the control host — protected domains carry no login page or management path. The on-domain dashboard stays as the fallback and can be redirected or disabled per node with `proxy.dashboardMode`. Details: [Control Plane](control-plane.md).
+
 ## Terminal HUD and Commands
 
 ![Terminal HUD schematic](assets/terminal-hud.svg)

@@ -1,6 +1,6 @@
 # Dashboard
 
-SonuShield includes a web dashboard and control panel, served by the proxy itself — no build step, no extra files, no external resources. It monitors the proxy and manages it: no terminal interaction is needed for day-to-day operation.
+SonuShield includes a web dashboard and control panel — no build step, no extra files, no external resources. It monitors the proxy and manages it: no terminal interaction is needed for day-to-day operation. It is served two ways from one UI codebase: by the proxy itself on each protected domain (the original mode, still the fallback), and by the [control plane](control-plane.md) from a separate management host (the Cloudflare-style platform model, where operators sign in once and manage every node). This page describes the on-domain mode; the control-plane mode adds a node switcher, reseller/tenant scoping, and account management, and is documented in [Control Plane](control-plane.md).
 
 ![Dashboard schematic](assets/dashboard.svg)
 
@@ -20,7 +20,7 @@ Two secrets protect the dashboard, reusing the existing API mechanisms — no ne
 
 - The page itself is served only on the exact admin-secret path, following the v1 API pattern. A wrong or missing secret never receives the page; the request falls through to normal proxy handling, as with the v1 API. If no admin secret is configured, the dashboard is not served at all.
 - After the page loads, enter your `apisecret`. The dashboard sends it only as the `Proxy-Secret` header to the existing API v2 endpoints on the same host. The secret is kept in the browser tab's session storage and is cleared when you click "Forget secret" or close the tab. It is never placed in a URL or written to a log.
-- When SSO is configured, a "Sign in with SSO" button appears instead of (or alongside) the secret form: signing in through your identity provider sets a signed session cookie, and API calls then authenticate with that cookie plus a CSRF header — no API secret is typed or stored. Secret-path auth keeps working alone, and either method grants access when configured. See [SSO for the Dashboard](configuration.md#sso-for-the-dashboard). The SSO paths are temporary until the platform-host work moves the dashboard off protected domains.
+- When SSO is configured, a "Sign in with SSO" button appears instead of (or alongside) the secret form: signing in through your identity provider sets a signed session cookie, and API calls then authenticate with that cookie plus a CSRF header — no API secret is typed or stored. Secret-path auth keeps working alone, and either method grants access when configured. See [SSO for the Dashboard](configuration.md#sso-for-the-dashboard). These on-domain SSO paths are superseded once the dashboard moves to the control host, which has its own SSO login — see [Control Plane](control-plane.md#sso).
 
 ## What It Shows and Does
 
@@ -52,6 +52,7 @@ The dashboard is installable as a PWA: a manifest and service worker cache the a
 
 ## Next Steps
 
+- [Control Plane](control-plane.md) — the dashboard on a separate management host: owner/reseller/tenant accounts, node switcher, and migration from the on-domain dashboard (`proxy.dashboardMode`).
 - [API](api.md) — the endpoints the dashboard uses.
 - [How It Works](how-it-works.md) — the terminal HUD and commands.
 - [Troubleshooting](troubleshooting.md) — if the dashboard won't load.

@@ -7,9 +7,10 @@ package domains
 // the client secret is never logged or returned by the API.
 //
 // The SSO paths (/_bProxy/sso/login, /_bProxy/sso/callback,
-// /_bProxy/sso/logout, /_bProxy/sso/status) are temporary: the
-// platform-host work will move the dashboard off protected
-// domains, and SSO will move with it. See docs/dashboard.md.
+// /_bProxy/sso/logout, /_bProxy/sso/status) serve the on-domain
+// dashboard. They are superseded by the control plane's own SSO
+// endpoints once the dashboard moves to the control host; see
+// docs/control-plane.md. See docs/dashboard.md.
 
 import (
 	"net/url"
