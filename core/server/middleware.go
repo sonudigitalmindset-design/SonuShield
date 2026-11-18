@@ -212,7 +212,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		ipCountCookie = firewall.AccessIpsCookie[ip]
 		firewall.Mutex.RUnlock()
 	} else {
-		ip = strings.Split(request.RemoteAddr, ":")[0]
+		ip = clientIPFromRemoteAddr(request.RemoteAddr)
 
 		//Retrieve information about the client
 		firewall.Mutex.RLock()

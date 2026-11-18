@@ -424,6 +424,15 @@ func commands() {
 				fmt.Print("[ " + utils.PrimaryColor("Command") + " ]: \033[s")
 			}
 			PrintMutex.Unlock()
+		} else {
+			// Sale-readiness fix: stdin closed (EOF). Stop
+			// polling instead of spinning at 100% CPU — the
+			// old loop re-ran Scan() forever on EOF, burning
+			// a core under systemd with closed stdin. The
+			// monitor display loop is a separate goroutine
+			// and keeps running; only the command reader
+			// exits.
+			return
 		}
 	}
 }

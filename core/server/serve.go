@@ -142,7 +142,7 @@ func Serve() {
 			domains.DomainsData[r.Host] = domainData
 			firewall.Mutex.Unlock()
 
-			http.Redirect(w, r, "https://"+r.Host+r.URL.Path+r.URL.RawQuery, http.StatusMovedPermanently)
+			http.Redirect(w, r, "https://"+r.Host+r.URL.RequestURI(), http.StatusMovedPermanently)
 		})
 
 		service.SetKeepAlivesEnabled(true)
