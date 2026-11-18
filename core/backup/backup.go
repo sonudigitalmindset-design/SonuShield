@@ -101,6 +101,7 @@ var secretPaths = [][]segment{
 	{k("proxy"), k("oncall"), arr("responders"), k("webhook"), k("url")},
 	{k("proxy"), k("originSignals"), k("secret")},
 	{k("proxy"), k("controlPlaneSecret")},
+	{k("proxy"), k("redis"), k("password")},
 	{k("proxy"), arr("eventWebhooks"), k("url")},
 	{k("proxy"), arr("eventWebhooks"), k("secret")},
 	{k("controlPlane"), k("sessionSecret")},

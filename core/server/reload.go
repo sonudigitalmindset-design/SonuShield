@@ -82,6 +82,18 @@ func ValidateConfig(cfg *domains.Configuration) error {
 		return errors.New("apisecret contains 'CHANGE_ME'")
 	}
 
+	// Redis shared state (Batch 3): enabled requires an
+	// address; the database index must be valid. The
+	// password is never echoed in an error.
+	if cfg.Proxy.Redis.Enabled {
+		if strings.TrimSpace(cfg.Proxy.Redis.Addr) == "" {
+			return errors.New("proxy.redis is enabled but redis.addr is empty")
+		}
+		if cfg.Proxy.Redis.DB < 0 {
+			return errors.New("proxy.redis db must be >= 0")
+		}
+	}
+
 	if len(cfg.Domains) == 0 {
 		return errors.New("no domains configured")
 	}

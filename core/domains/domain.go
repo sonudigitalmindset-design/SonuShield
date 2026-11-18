@@ -420,6 +420,36 @@ type Proxy struct {
 	// default; single-operator setups are unaffected.
 	TwoPersonApproval   bool `json:"twoPersonApproval"`
 	ApprovalExpirySeconds int `json:"approvalExpirySeconds"`
+	// Redis (Batch 3): optional multi-server shared state.
+	// Disabled unless Enabled is true; see RedisConfig and
+	// docs/multi-server.md. The password is config-only,
+	// never logged or returned by any API action.
+	Redis RedisConfig `json:"redis"`
+}
+
+// RedisConfig (Batch 3) configures the optional
+// Redis-backed shared state backend: per-IP rate-limit
+// counts shared across nodes, plus the shared
+// challenge-result cache when SharedCache is true.
+// Enabled=false (the default) leaves the proxy on local
+// in-memory state with byte-identical behavior. Addr is
+// host:port. Password may be empty. DB selects the Redis
+// database. TLS enables TLS with full verification
+// (for managed Redis). KeyPrefix namespaces every key (default
+// "sonushield"); nodes that should share state must use
+// the same prefix and the same proxy.secrets. TimeoutMs
+// bounds every Redis command (default 100, clamped
+// 10..5000); every Redis failure fails open to local
+// state. See core/shared and docs/multi-server.md.
+type RedisConfig struct {
+	Enabled     bool   `json:"enabled"`
+	Addr        string `json:"addr"`
+	Password    string `json:"password"`
+	DB          int    `json:"db"`
+	TLS         bool   `json:"tls"`
+	KeyPrefix   string `json:"keyPrefix"`
+	SharedCache bool   `json:"sharedCache"`
+	TimeoutMs   int    `json:"timeoutMs"`
 }
 
 // SubdomainMonitorConfig watches operator-supplied domain

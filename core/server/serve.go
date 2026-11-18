@@ -69,6 +69,11 @@ func Serve() {
 	//once; inert without configured endpoints.
 	events.Start()
 
+	//Redis-backed shared state (Batch 3). Configured once
+	//from proxy.redis; inert unless enabled. Reloads
+	//reconfigure it via reloadFromConfig.
+	applySharedStoreConfig()
+
 	if domains.Config.Proxy.Cloudflare {
 
 		service := &http.Server{

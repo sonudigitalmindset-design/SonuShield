@@ -3,6 +3,8 @@ package firewall
 import (
 	"sync"
 	"time"
+
+	"sonushield/core/shared"
 )
 
 // CacheIps TTL sweep (sale-readiness, L-4 fix).
@@ -26,10 +28,32 @@ var cacheIpsStoredAt sync.Map // map[string]time.Time
 const CacheIpsTTL = time.Hour
 
 // CacheStore stores a CacheIps entry and records its store
-// time for TTL sweeping.
+// time for TTL sweeping. When the Redis shared cache is
+// enabled the entry is also written to Redis (hashed key,
+// same TTL) so other nodes can reuse it; Redis failures are
+// swallowed inside the shared store.
 func CacheStore(key, value string) {
 	CacheIps.Store(key, value)
 	cacheIpsStoredAt.Store(key, time.Now())
+	shared.CacheSet(key, value, CacheIpsTTL)
+}
+
+// CacheLoad reads a CacheIps entry: the local map first,
+// then the Redis shared cache on a local miss (populating
+// the local map on a shared hit, so the next lookup is
+// local). The return shape matches sync.Map.Load so call
+// sites are unchanged. With no shared cache configured this
+// is exactly CacheIps.Load.
+func CacheLoad(key string) (any, bool) {
+	if value, ok := CacheIps.Load(key); ok {
+		return value, true
+	}
+	if value, ok := shared.CacheGet(key); ok {
+		CacheIps.Store(key, value)
+		cacheIpsStoredAt.Store(key, time.Now())
+		return value, true
+	}
+	return nil, false
 }
 
 // SweepCacheIps deletes CacheIps entries older than maxAge

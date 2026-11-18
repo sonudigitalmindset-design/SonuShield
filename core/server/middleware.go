@@ -8,6 +8,7 @@ import (
 	"sonushield/core/logging"
 	"sonushield/core/metrics"
 	"sonushield/core/sharing"
+	"sonushield/core/shared"
 	"sonushield/core/proxy"
 	"sonushield/core/utils"
 	"net"
@@ -240,6 +241,15 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	//Shared rate limiting (Batch 3): when a Redis backend
+	//is configured, the per-IP counts come from the shared
+	//store so every node enforces the same totals. On any
+	//Redis error the local counts above stand (fail-open).
+	if sharedReq, sharedCk, sharedOK := shared.Counts(ip, proxy.LastSecondTimestamp, proxy.RatelimitWindow); sharedOK {
+		ipCount = sharedReq
+		ipCountCookie = sharedCk
+	}
+
 	firewall.Mutex.Lock()
 	// Leaving this here for future reference. When the monitor thread that's supposed to prefill these maps lags
 	//behind for some reason, this will be come really messy. The mutex will be locked and never unlocked again,
@@ -253,6 +263,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	domainData.TotalRequests++
 	domains.DomainsData[domainName] = domainData
 	firewall.Mutex.Unlock()
+	shared.RecordRequest(ip)
 
 	if !quietMode() {
 		writer.Header().Set("SonuShield", "1.5")
@@ -789,7 +800,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	hashedEncryptedIP := ""
 	susLvStr := utils.StageToString(susLv)
 	accessKey := ip + tlsFp + reqUa + proxy.CurrHourStr
-	encryptedCache, encryptedExists := firewall.CacheIps.Load(accessKey + susLvStr)
+	encryptedCache, encryptedExists := firewall.CacheLoad(accessKey + susLvStr)
 
 	if !encryptedExists {
 		switch susLv {
@@ -817,7 +828,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		firewall.CacheStore(accessKey+susLvStr, encryptedIP)
 	} else {
 		encryptedIP = encryptedCache.(string)
-		cachedHIP, foundCachedHIP := firewall.CacheIps.Load(encryptedIP)
+		cachedHIP, foundCachedHIP := firewall.CacheLoad(encryptedIP)
 		if foundCachedHIP {
 			hashedEncryptedIP = cachedHIP.(string)
 		}
@@ -834,6 +845,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		firewall.Mutex.Lock()
 		firewall.WindowAccessIpsCookie[proxy.Last10SecondTimestamp][ip]++
 		firewall.Mutex.Unlock()
+		shared.RecordChallenge(ip)
 
 		//Respond with verification challenge if client didnt provide correct result/none
 		switch susLv {

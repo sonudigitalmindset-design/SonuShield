@@ -829,6 +829,11 @@ func reloadFromConfig(cfg *domains.Configuration) {
 	// next request. In-flight requests keep their Transport.
 	resetOriginTransports()
 
+	// Redis shared state (Batch 3): reconfigure the
+	// process-wide store from the new config, so enabling,
+	// disabling, or repointing Redis takes effect on reload.
+	applySharedStoreConfig()
+
 	proxy.WatchedDomain = domains.Domains[0]
 }
 

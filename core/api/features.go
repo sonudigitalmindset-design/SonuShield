@@ -35,6 +35,7 @@ import (
 	"net/http"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
+	"sonushield/core/shared"
 	"strconv"
 	"strings"
 )
@@ -58,9 +59,11 @@ func queryParams(request *http.Request) map[string]string {
 func proxyFeaturesResponse() map[string]interface{} {
 	quietMode := false
 	autoSSL := false
+	redisConfigured := false
 	if domains.Config != nil {
 		quietMode = domains.Config.Proxy.QuietMode
 		autoSSL = domains.Config.Proxy.AutoSSL
+		redisConfigured = domains.Config.Proxy.Redis.Enabled
 	}
 	countryLoaded, asnLoaded := firewall.GeoStatus()
 	feedConfigured, feedInterval, localIPs, localNets, feedIPs, feedNets, bump, lastSuccess, lastError := firewall.ReputationStatus()
@@ -79,6 +82,12 @@ func proxyFeaturesResponse() map[string]interface{} {
 		"REPUTATION_BUMP":                  bump,
 		"REPUTATION_FEED_LAST_SUCCESS":     lastSuccess,
 		"REPUTATION_FEED_LAST_ERROR":       lastError,
+		// Redis shared state (Batch 3): configured means
+		// proxy.redis.enabled in config.json; active means a
+		// live Redis connection is in use right now. No
+		// address or password is ever reported.
+		"REDIS_CONFIGURED": redisConfigured,
+		"REDIS_ACTIVE":     shared.Enabled(),
 	}
 }
 
