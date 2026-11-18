@@ -104,6 +104,7 @@ var actionMinRole = map[string]string{
 	"ENROLL_PASSKEY":                   proxy.RoleAdmin,
 	"LIST_PASSKEYS":                    proxy.RoleViewer,
 	"REMOVE_PASSKEY":                   proxy.RoleOperator,
+	"GET_STUFFING_STATUS":              proxy.RoleViewer,
 }
 
 func roleLevel(role string) int {

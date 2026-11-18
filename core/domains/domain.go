@@ -63,6 +63,7 @@ type Domain struct {
 	HotlinkPaths        []string         `json:"hotlinkPaths"`
 	HotlinkAllowlist    []string         `json:"hotlinkAllowlist"`
 	FormGuard           FormGuardConfig  `json:"formGuard"`
+	CredentialStuffing  StuffingConfig   `json:"credentialStuffing"`
 	SLATarget           float64          `json:"slaTarget"`
 	FakeBotCheck        bool             `json:"fakeBotCheck"`
 	FakeBotSusLv        int              `json:"fakeBotSusLv"`
@@ -204,6 +205,7 @@ type DomainSettings struct {
 	HotlinkPaths        []string
 	HotlinkAllowlist    []string
 	FormGuard           FormGuardConfig
+	CredentialStuffing  StuffingConfig
 	SLATarget           float64
 	FakeBotCheck        bool
 	FakeBotSusLv        int

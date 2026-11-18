@@ -476,6 +476,23 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	//Credential stuffing detection (Batch 8). Log-only by
+	//default; block mode bumps suspicion toward the captcha
+	//challenge. Only POSTs to watched paths are checked; the
+	//detector counts failed responses, never bodies or
+	//usernames.
+	if request.Method == http.MethodPost && domainSettings.CredentialStuffing.StuffingPath(request.URL.Path) {
+		stuffingVerdict := firewall.CheckStuffing(domainName, request.URL.Path, ip, domainSettings.CredentialStuffing)
+		if stuffingVerdict.Flagged {
+			if stuffingVerdict.LogThis {
+				logging.Log(logging.Entry{Event: "stuffing", Domain: domainName, IP: ip, Action: "stuffing_" + stuffingVerdict.Kind, Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})
+			}
+			if _, _, _, _, _, stuffingBlock := domainSettings.CredentialStuffing.StuffingEffective(); stuffingBlock {
+				susLv += 2
+			}
+		}
+	}
+
 	if sharedRep {
 		susLv += firewall.SharedReputationBump(domainSettings.SharedReputationSusLv)
 		logging.Log(logging.Entry{Event: "sharedrep", Domain: domainName, IP: ip, Action: "shared_reputation", Fingerprint: tlsFp, JA4: ja4Fp, Engine: browser, Bot: botFp, Stage: domainData.Stage, SusLevel: susLv, RiskScore: riskScore, Method: request.Method, Path: logPath, UserAgent: request.UserAgent()})

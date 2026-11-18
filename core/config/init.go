@@ -331,6 +331,7 @@ func Load() {
 			HotlinkPaths:        domain.HotlinkPaths,
 			HotlinkAllowlist:    domain.HotlinkAllowlist,
 			FormGuard:           domain.FormGuard,
+			CredentialStuffing:  domain.CredentialStuffing,
 			SLATarget:           domain.SLATarget,
 			FakeBotCheck:        domain.FakeBotCheck,
 			FakeBotSusLv:        domain.FakeBotSusLv,

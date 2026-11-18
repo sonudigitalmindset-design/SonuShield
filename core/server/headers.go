@@ -129,6 +129,10 @@ func ModifyResponseHook(resp *http.Response) error {
 	settings, _ := uncasted.(domains.DomainSettings)
 	ApplySecurityHeaders(resp.Header, settings.SecurityHeaders)
 	applyImageOptimization(resp, settings)
+	// Credential-stuffing observation (Batch 8): failed logins
+	// are counted before the cache store, so the detector sees
+	// every origin failure exactly once.
+	observeStuffingResponse(resp, settings)
 	CacheModifyResponse(resp)
 	applyBrotli(resp, settings)
 	ApplyCORSHeaders(resp.Header, settings.CORS, resp.Request)
