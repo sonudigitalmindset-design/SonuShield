@@ -82,6 +82,14 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Bare liveness check for scrubbing providers and load
+	// balancers (Batch 5). Same opt-in flag as the status
+	// page, same early handling, no data beyond ok.
+	if IsHealthRequest(request) {
+		ServeHealth(writer)
+		return
+	}
+
 	// SSO/OIDC login (Batch 5). Handled before challenge and
 	// rate limiting like metrics and the status page, so an
 	// unauthenticated visitor can sign in. Unhandled requests

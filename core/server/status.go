@@ -18,6 +18,14 @@ package server
 // passing probes; with them off, a backend not in failure
 // cooldown). A domain with no eligible backend reports
 // healthy=false; the proxy itself still answers.
+//
+// The companion health endpoint, GET /_bProxy/health (same
+// opt-in flag), answers {"status":"ok"} with no other data. It
+// exists for scrubbing providers and load balancers that poll a
+// bare liveness check; it deliberately says nothing about
+// domains, backends, or traffic. See docs/scrubbing-integration.md
+// for the architecture this supports — and for what SonuShield
+// does NOT do (no kernel XDP/eBPF filtering, no Anycast).
 
 import (
 	"encoding/json"
@@ -49,6 +57,25 @@ func IsStatusRequest(r *http.Request) bool {
 		return false
 	}
 	return domains.Config != nil && domains.Config.Proxy.StatusPage
+}
+
+// IsHealthRequest reports whether r is a health-check request
+// that must be answered here: the exact path, and only when the
+// operator enabled the status page (the health endpoint shares
+// that opt-in flag).
+func IsHealthRequest(r *http.Request) bool {
+	if r == nil || r.URL == nil || r.URL.Path != "/_bProxy/health" {
+		return false
+	}
+	return domains.Config != nil && domains.Config.Proxy.StatusPage
+}
+
+// ServeHealth writes the bare liveness response: {"status":"ok"}
+// and nothing else.
+func ServeHealth(writer http.ResponseWriter) {
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Header().Set("Cache-Control", "no-store")
+	writer.Write([]byte(`{"status":"ok"}`))
 }
 
 // ServeStatus writes the status-page JSON response.
