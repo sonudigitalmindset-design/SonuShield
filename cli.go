@@ -219,6 +219,13 @@ func redactConfigForExport(cfg *domains.Configuration) {
 	for i := range cfg.Proxy.PublicAPIKeys {
 		redact(&cfg.Proxy.PublicAPIKeys[i].Key)
 	}
+	// Event webhook endpoints: URLs often contain tokens and
+	// the secret signs deliveries — redact both, like the
+	// Discord webhook URL.
+	for i := range cfg.Proxy.EventWebhooks {
+		redact(&cfg.Proxy.EventWebhooks[i].URL)
+		redact(&cfg.Proxy.EventWebhooks[i].Secret)
+	}
 	for i := range cfg.Domains {
 		d := &cfg.Domains[i]
 		redact(&d.Webhook.URL)

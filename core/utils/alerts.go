@@ -16,6 +16,7 @@ package utils
 
 import (
 	"sonushield/core/domains"
+	"sonushield/core/events"
 	"strconv"
 	"strings"
 )
@@ -25,6 +26,20 @@ func SendAlerts(domainData domains.DomainData, domainSettings domains.DomainSett
 	SendTelegram(domainData, domainSettings, notificationType)
 	SendEmail(domainData, domainSettings, notificationType)
 	SendTwilio(domainData, domainSettings, notificationType)
+	// Signed event webhooks / SIEM export (Batch 6). Non-blocking;
+	// inert without configured endpoints.
+	kind := "attack"
+	if domainData.BypassAttack {
+		kind = "bypass"
+	} else if domainData.RawAttack {
+		kind = "raw"
+	}
+	tenant := domains.NormalizeTenant(domainSettings.Tenant)
+	if notificationType == 0 {
+		events.PublishAttackStart(domainSettings.Name, tenant, kind, domainData.Stage)
+	} else {
+		events.PublishAttackStop(domainSettings.Name, tenant, kind, domainData.Stage)
+	}
 }
 
 // alertText builds the message body for Telegram and email. A custom

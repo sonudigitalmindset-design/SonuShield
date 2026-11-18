@@ -297,6 +297,7 @@ type Proxy struct {
 	SSO             *SSOConfig      `json:"sso"`
 	Stripe          StripeConfig    `json:"stripe"`
 	PublicAPIKeys   []PublicAPIKey  `json:"publicApiKeys"`
+	EventWebhooks   []EventWebhookConfig `json:"eventWebhooks"`
 	Ratelimits      map[string]int    `json:"ratelimits"`
 	Colors          []string          `json:"colors"`
 }

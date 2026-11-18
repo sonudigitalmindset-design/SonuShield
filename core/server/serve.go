@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sonushield/core/billing"
 	"sonushield/core/domains"
+	"sonushield/core/events"
 	"sonushield/core/firewall"
 	"sonushield/core/metrics"
 	"sonushield/core/pnc"
@@ -41,6 +42,10 @@ func Serve() {
 	//Stripe usage reporter (Batch 6). Started once; inert without
 	//a valid key and a report interval in proxy.stripe.
 	billing.StartReporter()
+
+	//Signed event webhooks / SIEM export (Batch 6). Started
+	//once; inert without configured endpoints.
+	events.Start()
 
 	if domains.Config.Proxy.Cloudflare {
 

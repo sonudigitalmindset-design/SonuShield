@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"sonushield/core/events"
 	"sonushield/core/logging"
 	"sonushield/core/proxy"
 	"strings"
@@ -81,6 +82,8 @@ var actionMinRole = map[string]string{
 	"GET_TENANT_USAGE":                 proxy.RoleViewer,
 	"GET_STRIPE_STATUS":                proxy.RoleViewer,
 	"REPORT_STRIPE_USAGE":              proxy.RoleAdmin,
+	"GET_WEBHOOK_STATUS":               proxy.RoleViewer,
+	"TEST_WEBHOOKS":                    proxy.RoleAdmin,
 }
 
 func roleLevel(role string) int {
@@ -145,15 +148,19 @@ func auditAction(request *http.Request, role, action, domain string, params map[
 		return
 	}
 	success, errCode := auditOutcome(captured)
+	scrubbed := scrubParams(params)
 	logging.Audit(logging.AuditEntry{
 		Role:    role,
 		Action:  action,
 		Domain:  domain,
 		IP:      auditPeerIP(request),
-		Params:  scrubParams(params),
+		Params:  scrubbed,
 		Success: success,
 		Error:   errCode,
 	})
+	// Signed event webhooks / SIEM export (Batch 6). The event
+	// carries the same scrubbed parameters as the audit log.
+	events.PublishAudit(role, action, domain, auditPeerIP(request), scrubbed, success, errCode)
 }
 
 // auditUnauthenticated writes one audit entry for a rejected API
@@ -167,6 +174,7 @@ func auditUnauthenticated(request *http.Request, action, domain string) {
 		Success: false,
 		Error:   "unauthorized",
 	})
+	events.PublishAudit("unauthenticated", action, domain, auditPeerIP(request), nil, false, "unauthorized")
 }
 
 // auditPeerIP returns the direct peer address of the API caller,
