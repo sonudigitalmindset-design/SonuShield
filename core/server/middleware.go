@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"sonushield/core/api"
-	"sonushield/core/dashboard"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/logging"
@@ -155,7 +154,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		//PWA shell assets (Batch 6): same exemption as the
 		//dashboard page, so the installed app shell loads even
 		//at a locked stage.
-		if dashboard.ServeAsset(writer, request.URL.Path, proxy.AdminSecret) {
+		if serveDashboardAsset(writer, request) {
 			return
 		}
 		switch request.URL.Path {
@@ -164,7 +163,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 		case "/_bProxy/" + proxy.AdminSecret + "/dashboard":
-			dashboard.Serve(writer, proxyBranding())
+			serveDashboardPage(writer, request)
 			return
 		}
 		if strings.HasPrefix(request.URL.Path, "/_bProxy/api/v2") {
@@ -960,7 +959,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 	//PWA shell assets (Batch 6): served under the same
 	//admin-secret path as the dashboard page itself.
-	if dashboard.ServeAsset(writer, request.URL.Path, proxy.AdminSecret) {
+	if serveDashboardAsset(writer, request) {
 		return
 	}
 
@@ -992,7 +991,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			SendResponse("404 Not Found", buffer, writer)
 			return
 		}
-		dashboard.Serve(writer, proxyBranding())
+		serveDashboardPage(writer, request)
 		return
 
 	//Do not remove or modify this. It is required by the license

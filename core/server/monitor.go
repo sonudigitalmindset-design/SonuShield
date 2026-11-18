@@ -471,6 +471,14 @@ func reloadFromConfig(cfg *domains.Configuration) {
 	proxy.JSSecret = domains.Config.Proxy.Secrets["javascript"]
 	proxy.CaptchaSecret = domains.Config.Proxy.Secrets["captcha"]
 
+	// Dashboard mode (platform model): re-applied on reload
+	// so a migration (local -> control-plane -> off) takes
+	// effect through the control panel without a restart.
+	// These are not secrets, unlike the API/admin secrets
+	// above, which stay load-only by design.
+	proxy.DashboardMode = domains.Config.Proxy.DashboardMode
+	proxy.ControlPlaneURL = domains.Config.Proxy.ControlPlaneURL
+
 	// Role-mapped API secrets (Batch 4): a reload picks up role
 	// changes, like the other secrets above.
 	proxy.SetAPIRoles(domains.Config.Proxy.APIRoles)

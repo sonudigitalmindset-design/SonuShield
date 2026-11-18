@@ -26,6 +26,20 @@ var (
 	// two-person approval. Empty disables the mechanism.
 	ControlPlaneSecret string
 
+	// DashboardMode controls the on-domain dashboard:
+	// "local" (default) serves it as before, "control-plane"
+	// redirects dashboard requests to ControlPlaneURL (or
+	// answers a bare 404 without one), and "off" disables
+	// the path entirely. Unknown values fail safe to "off".
+	DashboardMode string
+
+	// ControlPlaneURL is the control-plane dashboard URL
+	// that on-domain dashboard requests redirect to when
+	// DashboardMode is "control-plane". It must be an
+	// absolute http(s) URL; anything else falls back to a
+	// bare 404 at request time.
+	ControlPlaneURL string
+
 	CookieSecret string
 	CookieOTP    string
 

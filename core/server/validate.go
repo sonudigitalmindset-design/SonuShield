@@ -122,6 +122,24 @@ func ValidateConfigDetailed(cfg *domains.Configuration, rawJSON []byte, probeBac
 		addWarn("apisecret is short (%d characters); use a longer random value", len(cfg.Proxy.APISecret))
 	}
 
+	// Dashboard mode (platform model): an unknown value
+	// fails safe to "off" at runtime, so this is a warning,
+	// not an error — but a typo should be visible. A
+	// control-plane redirect URL must be an absolute
+	// http(s) URL, or dashboard requests fall back to a
+	// bare 404 at runtime.
+	if _, ok := domains.NormalizeDashboardMode(cfg.Proxy.DashboardMode); !ok {
+		addWarn("proxy.dashboardMode %q is not \"local\", \"control-plane\", or \"off\"; the on-domain dashboard will be disabled", cfg.Proxy.DashboardMode)
+	}
+	if cfg.Proxy.ControlPlaneURL != "" {
+		parsed, err := url.Parse(strings.TrimSpace(cfg.Proxy.ControlPlaneURL))
+		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			addWarn("proxy.controlPlaneUrl is not an absolute http(s) URL; dashboard redirects will fall back to a bare 404")
+		}
+	} else if cfg.Proxy.DashboardMode == domains.DashboardModeControlPlane {
+		addWarn("proxy.dashboardMode is \"control-plane\" but proxy.controlPlaneUrl is empty; dashboard requests will answer a bare 404 instead of redirecting")
+	}
+
 	// Proxy-level file/URL references that fail open at
 	// runtime are warnings here: the operator should know
 	// the feature will be inert.
