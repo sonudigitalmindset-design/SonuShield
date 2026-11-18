@@ -1,12 +1,13 @@
 name: "CI"
 
-# Build, vet, and config validation on every push and pull
+# Build, vet, test, and config validation on every push and pull
 # request to main. No secrets are needed: the workflow
 # generates its own throwaway config and self-signed
 # certificate, and the validator's backend probe runs against
 # a local dummy listener. The checked-in examples/config.json
 # is NOT used here: it carries placeholder secrets that the
-# validator correctly rejects.
+# validator correctly rejects. The test suite needs no
+# network, no secrets, and no Docker.
 
 on:
   push:
@@ -16,7 +17,7 @@ on:
 
 jobs:
   build:
-    name: "Build, vet, validate"
+    name: "Build, vet, test, validate"
     runs-on: "ubuntu-latest"
 
     steps:
@@ -36,6 +37,9 @@ jobs:
 
       - name: "Vet"
         run: go vet ./...
+
+      - name: "Test"
+        run: go test ./...
 
       - name: "Build validator binary"
         run: go build -o /tmp/sonushield .
