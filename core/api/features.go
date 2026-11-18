@@ -33,6 +33,7 @@ package api
 
 import (
 	"net/http"
+	"sonushield/core/cfguard"
 	"sonushield/core/domains"
 	"sonushield/core/firewall"
 	"sonushield/core/shared"
@@ -142,7 +143,28 @@ func domainFeaturesResponse(domainSettings *domains.DomainSettings) map[string]i
 		// whether the challenge can be served (enabled, RP ID,
 		// credentials enrolled); no key material is returned.
 		"PASSKEY_CONFIGURED": domainSettings.Passkey.Enabled && domainSettings.Passkey.RPID != "" && domainSettings.Passkeys != nil && domainSettings.Passkeys.Count() > 0,
+		// Cloudflare auto Under Attack Mode (Batch 3),
+		// read-only here: enabling it is config-file-only
+		// (it needs the API token). The state is the last
+		// level this process applied, "" when none.
+		"CLOUDFLARE_AUTO_UAM": cfAutoUAMEnabled(domainSettings.Name),
+		"CLOUDFLARE_UAM_STATE": cfguard.AppliedLevel(domainSettings.Name),
 	}
+}
+
+// cfAutoUAMEnabled reports whether cloudflareAutoUAM is
+// configured for a domain, scanning the live config. The
+// token and zone ID are never exposed.
+func cfAutoUAMEnabled(domainName string) bool {
+	if domains.Config == nil {
+		return false
+	}
+	for _, domain := range domains.Config.Domains {
+		if domain.Name == domainName {
+			return domain.CloudflareAutoUAM
+		}
+	}
+	return false
 }
 
 // applyDomainFeatures validates params against a copy of the domain

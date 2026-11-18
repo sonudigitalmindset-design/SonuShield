@@ -236,6 +236,11 @@ func checkAttack(domainName string, domainData domains.DomainData) {
 
 	}
 
+	// Cloudflare auto Under Attack Mode (Batch 3): feed the
+	// final attack state of this tick to the state machine.
+	// Never blocks; see cfguardReport.
+	cfguardReport(domainName, domainData)
+
 	domains.DomainsData[domainName] = domainData
 }
 

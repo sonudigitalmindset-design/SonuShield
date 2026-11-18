@@ -156,6 +156,15 @@ type Domain struct {
 	CloudflareAPIToken string `json:"cloudflareApiToken"`
 	CloudflareZoneID   string `json:"cloudflareZoneId"`
 	CloudflareAPIBase  string `json:"cloudflareApiBase"`
+	// Cloudflare auto Under Attack Mode (Batch 3).
+	// When true, an attack raises this zone's
+	// Cloudflare security level to "under_attack" via
+	// the API above, restored to RestoreLevel (default
+	// "medium") when the attack ends. Off by default;
+	// requires the token and zone ID above. Only
+	// meaningful for zones proxied through Cloudflare.
+	CloudflareAutoUAM      bool   `json:"cloudflareAutoUAM"`
+	CloudflareRestoreLevel string `json:"cloudflareRestoreLevel"`
 }
 
 type DomainSettings struct {

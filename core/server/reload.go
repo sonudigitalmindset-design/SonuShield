@@ -41,6 +41,7 @@ import (
 	"net"
 	"os"
 	"sonushield/core/api"
+	"sonushield/core/cfguard"
 	"sonushield/core/domains"
 	"strings"
 
@@ -110,6 +111,19 @@ func ValidateConfig(cfg *domains.Configuration) error {
 		domain := &cfg.Domains[i]
 		if domain.Name == "" {
 			return fmt.Errorf("domain %d has no name", i)
+		}
+		// Cloudflare auto-UAM (Batch 3): enabling it
+		// requires the API token and zone ID, and a valid
+		// restore level when one is configured. Fail loud
+		// at config time rather than silently never
+		// raising the level during an attack.
+		if domain.CloudflareAutoUAM {
+			if domain.CloudflareAPIToken == "" || domain.CloudflareZoneID == "" {
+				return fmt.Errorf("domain %s has cloudflareAutoUAM enabled but cloudflareApiToken/cloudflareZoneId is missing", domain.Name)
+			}
+			if domain.CloudflareRestoreLevel != "" && !cfguard.ValidLevel(domain.CloudflareRestoreLevel) {
+				return fmt.Errorf("domain %s has invalid cloudflareRestoreLevel %q", domain.Name, domain.CloudflareRestoreLevel)
+			}
 		}
 		for j := range domain.FirewallRules {
 			rule := &domain.FirewallRules[j]
