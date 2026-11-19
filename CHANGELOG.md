@@ -6,6 +6,45 @@ see [LICENSE](LICENSE) and the credits endpoint. This changelog covers the
 SonuShield work only; upstream history before the fork point is in the git
 log.
 
+## Unreleased — Overview 3D Defense Theater (SW v15)
+
+- The Overview hero is now a full-width (320px) 3D Cyber-Defense &
+  Traffic Flow Visualizer (vendored Three.js r128, no CDN): a
+  rotating holographic Earth (wireframe + stylised dotted landmass
+  clusters + pulsing beacons + glowing arcs) on the left, a glowing
+  translucent hexagonal energy shield in the center, and a levitating
+  origin server core with pulsing rings and heartbeat glow on the
+  right. Mouse drag rotates the Earth; hover tilts the scene.
+- Packets are driven ONLY by the 3s poll the dashboard already
+  fetches: emerald packets proportional to bypassed rps, crimson
+  packets proportional to (total − bypassed) rps (capped at 60 live
+  packets). Crimson packets burst into sparks + an impact ripple at
+  the shield and disintegrate; emerald packets pass through with a
+  green ripple into the server. At 0 rps the scene idles honestly
+  ("Awaiting live traffic") — no fake packets are ever shown.
+- Stage >= 2 or Under Attack shifts the shield aura to amber/crimson,
+  speeds the shield rotation, and shows the floating HUD badge
+  "SHIELD ENGAGED: BLOCKING THREATS".
+- New "Test Attack Simulation" switch (top-right of the visualizer):
+  dashboard-local visual only — no backend calls, no real traffic,
+  no config changes. When ON it launches 40+ crimson DDoS beams at
+  the shield (with sparks/ripples) while a small emerald trickle
+  passes through; OFF returns to live-driven emission.
+- Micro-animations: KPI counters already tweened via setStat (380ms,
+  exact landing); CPU/RAM now always render to 2 decimals. The
+  Requests chart has a glowing neon stroke (emerald total, blue
+  #3b82f6 bypassed) and an animated vertical scanline sweeping the
+  chart every 3s poll. Cards get a neon border shimmer on hover;
+  drawers slide in with translateX(0) + backdrop blur.
+- The old small corner globe (`heroGlobe`) is retired; the new scene
+  keeps the same renderer reporting (`console.info("[SonuShield]
+  globe renderer: three-webgl | canvas-2d-fallback (reason)")` +
+  `data-globe-renderer` on `#heroShield`). If WebGL/THREE fails, an
+  animated 2D canvas version of the same three-part scene runs —
+  never a blank box.
+- All motion is transform/opacity only and pauses when the tab is
+  hidden or under prefers-reduced-motion.
+
 ## Baseline — balooProxy v1.5 (upstream)
 
 The fork point: a Go reverse proxy with staged bot mitigation (cookie

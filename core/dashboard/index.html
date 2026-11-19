@@ -160,6 +160,8 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 .view.active .panel{animation:fadeSlideUp .4s cubic-bezier(.16,1,.3,1) .1s backwards}
 /* Metric cards lift on hover (transform only, no layout shift). */
 .cards .card:hover,.ov-grid .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md),0 0 26px -4px var(--acc,#38bdf8)}
+.card:hover::after,.panel:hover::after{background-size:200% 100%;animation:edgeShimmer 1.4s linear infinite}
+@keyframes edgeShimmer{from{background-position:0 0}to{background-position:-200% 0}}
 /* Stat values pop subtly when a poll updates them (JS adds .tick on change). */
 .card .value.tick{animation:valueTick .3s var(--ease-out)}
 @keyframes valueTick{0%{transform:scale(1)}30%{transform:scale(1.05)}100%{transform:scale(1)}}
@@ -322,6 +324,10 @@ tbody tr:hover td{background:var(--panel-2)}
 /* The bypassed series is dashed as well as grey, so the two series stay
    distinguishable without relying on color alone. */
 .chart-line-bypass{stroke:#94a3b8;stroke-dasharray:5 3;stroke-width:2;filter:drop-shadow(0 0 4px rgba(148,163,184,.4))}
+.chart-line-bypass-blue{stroke:#3b82f6;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(59,130,246,.6))}
+.chart-scanline{stroke:#10b981;stroke-width:1.5;opacity:.75;filter:drop-shadow(0 0 6px rgba(16,185,129,.8));animation:scanSweep 3s linear infinite}
+@keyframes scanSweep{from{transform:translateX(0)}to{transform:translateX(1120px)}}
+.legend-bypass-blue{background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.7)}
 .chart-line-cpu{stroke:#06b6d4;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(6,182,212,.55))}
 .chart-line-ram{stroke:#38bdf8;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(56,189,248,.55))}
 /* Chart furniture: axis + gridlines always render, so a zero-traffic
@@ -425,7 +431,10 @@ tr.selected td{background:var(--nav-active-bg)}
    isometric shield/node graphic on the right. The graphic glows
    emerald while connected and calm, amber while under attack or at
    Stage 2, red at Stage 3+; grey while disconnected. */
-.hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:linear-gradient(135deg,var(--hero-1),var(--hero-2));margin-top:0}
+.hero{display:block;background:linear-gradient(135deg,var(--hero-1),var(--hero-2));margin-top:0}
+.hero-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.hero-sim{display:flex;align-items:center;gap:10px;flex:none;padding-top:6px}
+.hero-sim-label{font-size:13px;color:var(--muted);font-weight:600}
 .hero h1{margin:0 0 4px}
 .hero .sub{margin:0}
 .hero-status{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
@@ -434,7 +443,18 @@ tr.selected td{background:var(--nav-active-bg)}
 @keyframes heroGlowBreathe{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
 .hero-shield.ok::before{background:radial-gradient(closest-side,rgba(16,185,129,.34),rgba(6,182,212,.15) 55%,transparent 75%)}
 .hero-shield.warn::before,.hero-shield.bad::before{background:radial-gradient(closest-side,rgba(239,68,68,.34),rgba(245,158,11,.15) 55%,transparent 75%)}
-.hero-shield canvas{display:block;width:320px;height:220px;animation:heroFloat 5s var(--ease-in-out) infinite}
+.hero-shield{margin-top:14px;height:320px;overflow:hidden}
+#heroStage3d{display:block;width:100%;height:100%;cursor:grab}
+#heroStage3d:active{cursor:grabbing}
+.stage-hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;pointer-events:none;z-index:2}
+.stage-hud-top{display:flex;gap:8px;flex-wrap:wrap}
+.stage-hud-bottom{display:flex;justify-content:center}
+.stage-badge-alert{background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.6);color:#fca5a5;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;animation:alertPulse 1.6s var(--ease-in-out) infinite}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}50%{box-shadow:0 0 18px 2px rgba(239,68,68,.5)}}
+.stage-badge-sim{background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.6);color:#fcd34d;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em}
+.stage-idle{color:var(--muted);font-size:12px;background:rgba(2,6,23,.45);border:1px solid var(--border);padding:4px 10px;border-radius:999px}
+.sim-switch[aria-checked="true"]{background:#dc2626;border-color:#ef4444;box-shadow:0 0 0 1px var(--ring),0 0 18px rgba(239,68,68,.65)}
+@media (max-width:640px){.hero-shield{height:260px}}
 .hero-shield svg{width:0;height:0}
 .hero-shield.ok{--hero-glow:rgba(16,185,129,.45)}
 .hero-shield.warn{--hero-glow:rgba(245,158,11,.5)}
@@ -497,8 +517,10 @@ tr.selected td{background:var(--nav-active-bg)}
    Backdrop click and Escape close it; focus moves to the first
    field on open and returns to the opener on close. */
 .drawer-overlay{position:fixed;inset:0;background:rgba(2,6,23,.62);backdrop-filter:blur(4px);z-index:60;display:flex;justify-content:flex-end}
-.drawer{background:var(--panel);width:min(600px,100%);height:100%;overflow-y:auto;padding:20px 24px 32px;box-shadow:var(--shadow-lg);border-left:1px solid var(--border);animation:drawerIn .25s var(--ease-out)}
-@keyframes drawerIn{from{transform:translateX(32px);opacity:0}to{transform:none;opacity:1}}
+.drawer{background:var(--panel);width:min(600px,100%);height:100%;overflow-y:auto;padding:20px 24px 32px;box-shadow:var(--shadow-lg);border-left:1px solid var(--border);animation:drawerIn .3s var(--ease-out)}
+@keyframes drawerIn{from{transform:translateX(48px);opacity:0}to{transform:translateX(0);opacity:1}}
+.drawer-overlay{animation:overlayIn .25s var(--ease-out)}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
 .drawer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
 .drawer-head .iconbtn{flex:none}
 .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:4px}
@@ -641,7 +663,7 @@ html{background:var(--bg)}
 .terminal-head-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 /* Reduced motion: everything new goes still too. */
 @media (prefers-reduced-motion:reduce){
-  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.hero-shield canvas,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"]{animation:none}
+  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.hero-shield canvas,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"],.stage-badge-alert,.chart-scanline,.card:hover::after,.panel:hover::after,.drawer,.drawer-overlay{animation:none}
   .switch,.switch .switch-thumb,.seg-indicator,.stage-matrix,.ls-collapsible,#maintForm .maint-extra{transition:none}
   .tilt{transform:none}
 }
@@ -715,14 +737,26 @@ html{background:var(--bg)}
 
     <section id="view-overview" class="view">
       <div class="panel hero">
-        <div class="hero-text">
-          <h1 data-i18n="ovTitle">Overview</h1>
-          <p class="sub"><span data-i18n="ovSubPre">Live traffic for </span><strong id="ovDomain">—</strong><span data-i18n="ovSubPost">. Updates every 3 seconds while connected.</span></p>
-          <div class="hero-status"><span id="heroStage">—</span><span class="muted small" data-i18n="fromStageApiShort">from the stage API</span></div>
+        <div class="hero-head">
+          <div class="hero-text">
+            <h1 data-i18n="ovTitle">Overview</h1>
+            <p class="sub"><span data-i18n="ovSubPre">Live traffic for </span><strong id="ovDomain">—</strong><span data-i18n="ovSubPost">. Updates every 3 seconds while connected.</span></p>
+            <div class="hero-status"><span id="heroStage">—</span><span class="muted small" data-i18n="fromStageApiShort">from the stage API</span></div>
+          </div>
+          <div class="hero-sim">
+            <span class="hero-sim-label" data-i18n="simAttackLabel">Test Attack Simulation</span>
+            <button type="button" class="switch sim-switch" id="simAttackSwitch" role="switch" aria-checked="false" data-i18n-aria="simAttackAria" aria-label="Toggle test attack simulation"><span class="switch-thumb"></span></button>
+          </div>
         </div>
         <div class="hero-shield off" id="heroShield" role="img" data-i18n-aria="heroShieldLabel" aria-label="Protection status">
-          <canvas id="heroGlobe" width="320" height="220" aria-hidden="true"></canvas>
-          <svg width="0" height="0" aria-hidden="true"><defs><linearGradient id="heroShieldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
+          <canvas id="heroStage3d" aria-hidden="true"></canvas>
+          <div class="stage-hud">
+            <div class="stage-hud-top">
+              <span class="stage-badge-alert" id="stageHudBadge" data-i18n="stageHudEngaged" hidden>SHIELD ENGAGED: BLOCKING THREATS</span>
+              <span class="stage-badge-sim" id="stageHudSim" data-i18n="simAttackOn" hidden>SIMULATION ON — test attack in progress</span>
+            </div>
+            <div class="stage-hud-bottom"><span class="stage-idle" id="stageHudIdle" data-i18n="stageHudIdle" hidden>Awaiting live traffic — the scene idles until packets arrive.</span></div>
+          </div>
         </div>
       </div>
       <div class="ov-grid">
@@ -740,7 +774,7 @@ html{background:var(--bg)}
           <h2 data-i18n="colRequests">Requests</h2>
           <div class="chart-legend">
             <span class="legend-item"><span class="legend-dot legend-total"></span><span data-i18n="cardTotalRps">Total requests</span></span>
-            <span class="legend-item"><span class="legend-dot legend-bypass"></span><span data-i18n="cardBypassRps">Bypassed requests</span></span>
+            <span class="legend-item"><span class="legend-dot legend-bypass-blue"></span><span data-i18n="cardBypassRps">Bypassed requests</span></span>
           </div>
         </div>
         <div class="chart-wrap">
@@ -2454,7 +2488,12 @@ ruleModeRaw: "Raw Expression",
 ruleModeAria: "Rule editor mode",
 ruleModalClose: "Close",
 ruleModalAria: "Create or edit a firewall rule",
-heroShieldLabel: "Protection status"
+heroShieldLabel: "Protection status",
+stageHudEngaged: "SHIELD ENGAGED: BLOCKING THREATS",
+stageHudIdle: "Awaiting live traffic — the scene idles until packets arrive.",
+simAttackLabel: "Test Attack Simulation",
+simAttackAria: "Toggle test attack simulation",
+simAttackOn: "SIMULATION ON — test attack in progress"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -3260,7 +3299,12 @@ ruleModeRaw: "रॉ एक्सप्रेशन",
 ruleModeAria: "नियम एडिटर मोड",
 ruleModalClose: "बंद करें",
 ruleModalAria: "फ़ायरवॉल नियम बनाएँ या बदलें",
-heroShieldLabel: "सुरक्षा स्थिति"
+heroShieldLabel: "सुरक्षा स्थिति",
+stageHudEngaged: "शील्ड सक्रिय: खतरों को रोका जा रहा है",
+stageHudIdle: "लाइव ट्रैफ़िक की प्रतीक्षा है — पैकेट आने तक दृश्य शांत रहेगा।",
+simAttackLabel: "टेस्ट अटैक सिम्युलेशन",
+simAttackAria: "टेस्ट अटैक सिम्युलेशन चालू/बंद करें",
+simAttackOn: "सिम्युलेशन चालू — टेस्ट अटैक जारी है"
 }
 };
 function t(key){
@@ -3608,9 +3652,9 @@ function drawTraffic(){
     xLabels: timeXLabels(trafficHist.length, 3),
     series: [
       {values: trafficHist.map(function(p){ return p[0]; }), lineClass: "chart-line-total", areaClass: "chart-area"},
-      {values: trafficHist.map(function(p){ return p[1]; }), lineClass: "chart-line-bypass", areaClass: null}
+      {values: trafficHist.map(function(p){ return p[1]; }), lineClass: "chart-line-bypass-blue", areaClass: null}
     ]
-  });
+  }) + '<line class="chart-scanline" x1="64" y1="28" x2="64" y2="174"/>';
   // First render per domain: draw the lines in once. Later polls
   // rebuild the polylines without the inline dash styles, so the
   // draw-in never replays. Skipped entirely under
@@ -3672,12 +3716,15 @@ function loadOverview(){
   var pFps = proxyAction("GET_FINGERPRINT_REQUESTS").catch(function(){ return null; });
   return Promise.all([pStats, pRps, pBrps, pTot, pByp, pIps, pFps]).then(function(r){
     var stats = r[0], rps = r[1], brps = r[2], tot = r[3], byp = r[4], ips = r[5], fps = r[6];
-    if(stats){ setStat("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setStat("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); setGauge("cCpuGauge", parseFloat(stats.CPU_USAGE)); setGauge("cRamGauge", parseFloat(stats.RAM_USAGE)); pushServer(dom, parseFloat(stats.CPU_USAGE), parseFloat(stats.RAM_USAGE)); }
+    if(stats){ var cpuV = parseFloat(stats.CPU_USAGE), ramV = parseFloat(stats.RAM_USAGE); setStat("cCpu", isFinite(cpuV) ? cpuV.toFixed(2) + "%" : "—"); setStat("cRam", isFinite(ramV) ? ramV.toFixed(2) + "%" : "—"); setGauge("cCpuGauge", cpuV); setGauge("cRamGauge", ramV); pushServer(dom, cpuV, ramV); }
     if(rps) setStat("cTotalRps", num(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND));
     if(brps) setStat("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     if(tot) setStat("cTotal", num(tot.TOTAL_REQUESTS));
     if(byp) setStat("cBypassed", num(byp.BYPASSED_REQUESTS));
+    if(rps) liveTotalRps = parseFloat(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND) || 0;
+    if(brps) liveBypassRps = parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND) || 0;
     if(rps && brps) pushTraffic(dom, parseFloat(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND), parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
+    syncStageHud();
     if(ips){
       setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, t("colIp"), t("colRequests")));
     }
@@ -3704,246 +3751,621 @@ function updateHeroState(){
   }
   el.classList.remove("ok", "warn", "bad", "off");
   el.classList.add(cls);
-  globeState = cls;
-  if(!globe3D) drawGlobe();
+  stageAlert = (cls === "warn" || cls === "bad");
+  syncStageHud();
 }
 
-/* Overview hero globe: vanilla canvas wireframe sphere + orbital
-   rings. Green pulse when connected, crimson when under attack or
-   Stage >= 2 (warn/bad both crimson; bad pulses faster), dim grey
-   when disconnected. rAF pauses when the tab is hidden or under
-   reduced-motion (one static frame is drawn instead). */
-var globeState = "off";
-var globeAngle = 0, globeRAF = null, globeRunning = false;
-function globeColors(){
-  if(globeState === "ok") return {main: "#10b981", soft: "rgba(16,185,129,.4)", accent: "#06b6d4"};
-  if(globeState === "warn") return {main: "#ef4444", soft: "rgba(239,68,68,.4)", accent: "#f59e0b"};
-  if(globeState === "bad") return {main: "#ef4444", soft: "rgba(239,68,68,.55)", accent: "#f59e0b"};
-  return {main: "#64748b", soft: "rgba(100,116,139,.35)", accent: "#38bdf8"};
-}
-/* WebGL core color, in Three.js hex form (same states as globeColors:
-   emerald #10b981 when safe/Stage 1, crimson #ef4444 under attack). */
-function globeColorHex(){
-  if(globeState === "ok") return 0x10b981;
-  if(globeState === "warn" || globeState === "bad") return 0xef4444;
-  return 0x64748b;
-}
-function drawGlobe(){
-  var cv = $("heroGlobe");
-  if(!cv) return;
-  var ctx = cv.getContext("2d");
-  if(!ctx) return;
-  var W = cv.width, H = cv.height, cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 16;
-  ctx.clearRect(0, 0, W, H);
-  var c = globeColors();
-  var t = Date.now() / 1000;
-  var pulse = globeState === "off" ? 0 : (globeState === "bad" ? 0.5 + 0.5 * Math.sin(t * 6) : 0.5 + 0.5 * Math.sin(t * 2.2));
-  /* Soft pulsing glow disc behind the sphere so the fallback reads as
-     a lit 3D core, not a flat line drawing. */
-  var glowR = R * 1.5;
-  var grad = ctx.createRadialGradient(cx, cy, R * 0.35, cx, cy, glowR);
-  grad.addColorStop(0, c.soft);
-  grad.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.globalAlpha = 0.45 + pulse * 0.3;
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.save();
-  ctx.shadowColor = c.main;
-  ctx.shadowBlur = 10 + pulse * 20;
-  ctx.strokeStyle = c.main;
-  ctx.globalAlpha = 1;
-  ctx.lineWidth = 2.2;
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-  var i, a, rx;
-  for(i = 0; i < 5; i++){
-    a = globeAngle + i * Math.PI / 5;
-    rx = Math.abs(Math.cos(a)) * R;
-    if(rx < 1.5) rx = 1.5;
-    ctx.globalAlpha = 0.62;
-    ctx.strokeStyle = c.main;
-    ctx.lineWidth = 1.3;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, rx, R, 0, 0, Math.PI * 2);
-    ctx.stroke();
+/* Overview hero: 3D Cyber-Defense & Traffic Flow Visualizer.
+   Full-width 320px stage: holographic Earth (left) -> hexagonal
+   energy shield (center) -> origin server core (right). Packets
+   are driven ONLY by the 3s poll data the dashboard already
+   fetches (liveTotalRps / liveBypassRps / heroStage / heroAttack);
+   at 0 rps the scene idles honestly (no fake packets). The "Test
+   Attack Simulation" switch is a dashboard-local visual: it
+   spawns extra crimson beams and changes no backend state.
+   If THREE/WebGL fails, an animated 2D canvas version of the same
+   scene runs instead — never a blank box. All motion is
+   transform/opacity only and pauses when the tab is hidden or
+   under prefers-reduced-motion. */
+var stageAlert = false;
+var stageSim = false;
+var liveTotalRps = 0, liveBypassRps = 0;
+var stageRunning = false, stageRAF = null, stageMode = "off";
+var stage3D = null, stage2D = null, stageErr = "";
+var stagePackets = [], stageRipples = [], stageSparks = [];
+var stageEarthRot = 0, stageDragRot = 0, stageMouseX = 0, stageMouseY = 0;
+var stageTiltX = 0, stageTiltY = 0;
+var stageAcc = {green: 0, red: 0};
+var stageLastTs = 0, stageHudTs = 0;
+var STAGE_MAX_PACKETS = 60;
+var STAGE_SPAN = 4.4;
+var STAGE_EARTH_R = 1.15;
+
+/* Deterministic value noise for the stylised landmass dots: a hash
+   lattice with trilinear interpolation. Stylised clusters only —
+   never real geography. */
+function stageNoise(x, y, z){
+  function h(ix, iy, iz){
+    /* Low-bias 32-bit integer hash (Wellons): Math.imul keeps the
+       multiply in 32 bits — plain * overflows the double-to-int32
+       coercion and clusters the output below 0.5. */
+    var n = (ix * 374761393 + iy * 668265263 + iz * 1440668113) | 0;
+    n = Math.imul(n ^ (n >>> 13), 1274126177);
+    n = n ^ (n >>> 16);
+    return (n >>> 0) / 4294967295;
   }
-  [-0.55, -0.28, 0, 0.28, 0.55].forEach(function(f){
-    var y = cy + f * R, w = Math.sqrt(Math.max(0, 1 - f * f)) * R;
-    ctx.globalAlpha = 0.45;
-    ctx.strokeStyle = c.main;
-    ctx.lineWidth = 1.3;
-    ctx.beginPath();
-    ctx.ellipse(cx, y, w, R * 0.16, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  });
-  /* Two tilted orbital rings with a glowing satellite dot each — the
-     first ring in the state colour, the second in the accent colour
-     (cyan when safe), so the two orbits stay distinguishable. */
-  [[-0.5, 1.35, globeAngle * 1.6], [0.42, 1.5, -globeAngle * 1.2]].forEach(function(rg, rgi){
-    ctx.globalAlpha = 0.75;
-    ctx.strokeStyle = rgi === 0 ? c.main : c.accent;
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, R * rg[1], R * 0.42, rg[0], 0, Math.PI * 2);
-    ctx.stroke();
-    var da = rg[2] % (Math.PI * 2);
-    var dx = cx + Math.cos(da) * R * rg[1] * Math.cos(rg[0]) - Math.sin(da) * R * 0.42 * Math.sin(rg[0]);
-    var dy = cy + Math.cos(da) * R * rg[1] * Math.sin(rg[0]) + Math.sin(da) * R * 0.42 * Math.cos(rg[0]);
-    ctx.save();
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = rgi === 0 ? c.main : c.accent;
-    ctx.shadowColor = ctx.fillStyle;
-    ctx.shadowBlur = 12;
-    ctx.beginPath();
-    ctx.arc(dx, dy, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  });
-  ctx.globalAlpha = 1;
+  function sm(t){ return t * t * (3 - 2 * t); }
+  function l(a, b, t){ return a + (b - a) * t; }
+  var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  var xf = x - xi, yf = y - yi, zf = z - zi;
+  var u = sm(xf), v = sm(yf), w = sm(zf);
+  var c000 = h(xi, yi, zi), c100 = h(xi + 1, yi, zi), c010 = h(xi, yi + 1, zi), c110 = h(xi + 1, yi + 1, zi);
+  var c001 = h(xi, yi, zi + 1), c101 = h(xi + 1, yi, zi + 1), c011 = h(xi, yi + 1, zi + 1), c111 = h(xi + 1, yi + 1, zi + 1);
+  return l(l(l(c000, c100, u), l(c010, c110, u), v), l(l(c001, c101, u), l(c011, c111, u), v), w);
 }
-function globeTick(){
-  if(document.hidden || reducedMotion){ globeRunning = false; drawGlobe(); return; }
-  globeAngle += 0.014;
-  drawGlobe();
-  globeRAF = requestAnimationFrame(globeTick);
+/* Landmass dots: Fibonacci-sphere points on the unit sphere, kept
+   where the noise mask passes. Shared by the WebGL and 2D paths. */
+function stageLandDots(){
+  var out = [], i, phi, theta, px, py, pz, N = 800;
+  for(i = 0; i < N; i++){
+    phi = Math.acos(1 - 2 * (i + 0.5) / N);
+    theta = Math.PI * (1 + Math.sqrt(5)) * i;
+    px = Math.sin(phi) * Math.cos(theta);
+    py = Math.sin(phi) * Math.sin(theta);
+    pz = Math.cos(phi);
+    if(stageNoise(px * 1.8 + 7.3, py * 1.8 + 3.1, pz * 1.8 + 11.7) > 0.58) out.push([px, py, pz]);
+  }
+  return out;
 }
-/* Real 3D WebGL core (vendored Three.js r128, served from the
-   protected dashboard path — no CDN). Wireframe icosahedron core,
-   two counter-rotating tilted orbital rings with glowing node
-   particles, mouse parallax, emerald/crimson color from the live
-   state. If THREE is missing or WebGL fails, startGlobe falls back
-   to the 2D canvas drawing above — never a blank box. */
-var globe3D = null, globe3DRAF = null, globe3DError = "";
-var globeMouseX = 0, globeMouseY = 0, globeTiltX = 0, globeTiltY = 0;
-function initWebGLGlobe(){
-  if(globe3D) return true;
-  if(typeof THREE === "undefined"){ globe3DError = "three.js not loaded"; return false; }
-  if(!window.WebGLRenderingContext){ globe3DError = "no WebGLRenderingContext"; return false; }
-  var cv = $("heroGlobe");
-  if(!cv){ globe3DError = "canvas missing"; return false; }
+/* World scale: the ortho frustum is 5.4 units tall; on wide stages
+   the world grows (up to 1.75x) so Earth/shield/server spread out
+   instead of floating in empty space. Same factor for 2D. */
+function stageWorldScale(w, h){
+  if(!w || !h) return 1;
+  return Math.min(1.75, Math.max(1, (5.4 * (w / h)) / 14));
+}
+function stageBez(p0, p1, p2, t){
+  var u = 1 - t;
+  return {x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
+          y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y,
+          z: u * u * p0.z + 2 * u * t * p1.z + t * t * p2.z};
+}
+/* A packet travels two quadratic segments: Earth -> shield point
+   (t 0..0.5) then shield -> server (t 0.5..1). The shield crossing
+   is exactly t = 0.5, so the collision event is exact. */
+function stageSpawnPacket(kind, delay){
+  if(stagePackets.length >= STAGE_MAX_PACKETS) return;
+  var y0 = (Math.random() * 2 - 1) * 0.9, z0 = (Math.random() * 2 - 1) * 0.5;
+  var y2 = (Math.random() * 2 - 1) * 0.7, z2 = (Math.random() * 2 - 1) * 0.4;
+  var p0 = {x: -STAGE_SPAN + STAGE_EARTH_R * 0.85, y: y0, z: z0};
+  var mid = {x: 0, y: (y0 + y2) / 2 + 0.55, z: (z0 + z2) / 2};
+  var p2 = {x: STAGE_SPAN - 0.6, y: y2, z: z2};
+  stagePackets.push({kind: kind, t: 0, dur: 1.5, delay: delay || 0,
+    a0: p0, a1: {x: (p0.x + mid.x) / 2, y: Math.max(p0.y, mid.y) + 0.35, z: (p0.z + mid.z) / 2}, a2: mid,
+    b0: mid, b1: {x: (mid.x + p2.x) / 2, y: Math.max(mid.y, p2.y) + 0.25, z: (mid.z + p2.z) / 2}, b2: p2,
+    hit: false, mesh: null});
+}
+function stagePacketPos(p){
+  if(p.t < 0.5) return stageBez(p.a0, p.a1, p.a2, p.t / 0.5);
+  return stageBez(p.b0, p.b1, p.b2, (p.t - 0.5) / 0.5);
+}
+function stageKillPacket(i){
+  var p = stagePackets[i];
+  if(p.mesh && stage3D && stage3D.world){ stage3D.world.remove(p.mesh); }
+  p.mesh = null;
+  stagePackets.splice(i, 1);
+}
+function stageRipple(kind, x, y){
+  stageRipples.push({kind: kind, t: 0, x: x, y: y});
+  if(stageRipples.length > 8) stageRipples.shift();
+}
+function stageBurst(x, y, z){
+  var vel = [], i, a, b, sp;
+  for(i = 0; i < 14; i++){
+    a = Math.random() * Math.PI * 2; b = Math.acos(2 * Math.random() - 1);
+    sp = 1.2 + Math.random() * 1.6;
+    vel.push([Math.sin(b) * Math.cos(a) * sp, Math.sin(b) * Math.sin(a) * sp, Math.cos(b) * sp]);
+  }
+  stageSparks.push({t: 0, x: x, y: y, z: z || 0, vel: vel, pts: null});
+  if(stageSparks.length > 4) stageSparks.shift();
+}
+/* Shared simulation step: spawn from live telemetry, move packets,
+   fire shield collisions. Pure state — no DOM/THREE access except
+   mesh cleanup in stageKillPacket. */
+function stageUpdate(dt){
+  var greenRate = stageSim ? 1.5 : Math.min(Math.max(0, liveBypassRps), 20);
+  var redRate = stageSim ? 55 : Math.min(Math.max(0, liveTotalRps - liveBypassRps), 20);
+  stageAcc.green += greenRate * dt;
+  stageAcc.red += redRate * dt;
+  while(stageAcc.green >= 1){ stageAcc.green -= 1; stageSpawnPacket("green", 0); }
+  while(stageAcc.red >= 1){ stageAcc.red -= 1; stageSpawnPacket("red", 0); }
+  var i, p, pos;
+  for(i = stagePackets.length - 1; i >= 0; i--){
+    p = stagePackets[i];
+    if(p.delay > 0){ p.delay -= dt; continue; }
+    p.t += dt / p.dur;
+    if(!p.hit && p.t >= 0.5){
+      p.hit = true;
+      pos = stagePacketPos(p);
+      stageRipple(p.kind, pos.x, pos.y);
+      if(p.kind === "red"){ stageBurst(pos.x, pos.y, pos.z); stageKillPacket(i); continue; }
+    }
+    if(p.t >= 1){
+      pos = stagePacketPos(p);
+      if(p.kind === "green") stageRipple("green", pos.x, pos.y);
+      stageKillPacket(i);
+    }
+  }
+  for(i = stageRipples.length - 1; i >= 0; i--){
+    stageRipples[i].t += dt / 0.7;
+    if(stageRipples[i].t >= 1) stageRipples.splice(i, 1);
+  }
+  for(i = stageSparks.length - 1; i >= 0; i--){
+    stageSparks[i].t += dt / 0.55;
+    if(stageSparks[i].t >= 1) stageSparks.splice(i, 1);
+  }
+  stageEarthRot += dt * (stageAlert ? 0.9 : 0.45);
+}
+function stageGlowTexture(){
+  var c = document.createElement("canvas"); c.width = 128; c.height = 128;
+  var g = c.getContext("2d");
+  var gr = g.createRadialGradient(64, 64, 4, 64, 64, 64);
+  gr.addColorStop(0, "rgba(255,255,255,.9)");
+  gr.addColorStop(0.35, "rgba(255,255,255,.28)");
+  gr.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+function initWebGLStage(){
+  if(stage3D) return true;
+  if(typeof THREE === "undefined"){ stageErr = "three.js not loaded"; return false; }
+  if(!window.WebGLRenderingContext){ stageErr = "no WebGLRenderingContext"; return false; }
+  var cv = $("heroStage3d");
+  if(!cv){ stageErr = "canvas missing"; return false; }
   try {
     var renderer = new THREE.WebGLRenderer({canvas: cv, alpha: true, antialias: true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(320, 220, false);
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(45, 320 / 220, 0.1, 100);
-    camera.position.z = 3.4;
-    var coreMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 1});
-    var core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.85, 1), coreMat);
-    scene.add(core);
-    /* Second inner core, smaller and counter-rotating, so the wireframe
-       reads as layered 3D depth in a still screenshot, not one flat mesh. */
-    var innerMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 0.5});
-    var inner = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), innerMat);
-    scene.add(inner);
-    var haloMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 0.28});
-    var halo = new THREE.Mesh(new THREE.SphereGeometry(1.06, 18, 12), haloMat);
-    scene.add(halo);
-    /* Soft glow sprite behind the core (canvas-generated radial texture,
-       no external asset): the core sits in a lit halo in stills too. */
-    var glowCv = document.createElement("canvas"); glowCv.width = 128; glowCv.height = 128;
-    var gctx = glowCv.getContext("2d");
-    var ggrad = gctx.createRadialGradient(64, 64, 4, 64, 64, 64);
-    ggrad.addColorStop(0, "rgba(255,255,255,.9)");
-    ggrad.addColorStop(0.35, "rgba(255,255,255,.28)");
-    ggrad.addColorStop(1, "rgba(255,255,255,0)");
-    gctx.fillStyle = ggrad; gctx.fillRect(0, 0, 128, 128);
-    var glowMat = new THREE.SpriteMaterial({map: new THREE.CanvasTexture(glowCv), color: globeColorHex(), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false});
-    var glow = new THREE.Sprite(glowMat); glow.scale.set(4.6, 4.6, 1); scene.add(glow);
-    function ringMat(){ return new THREE.MeshBasicMaterial({color: globeColorHex(), transparent: true, opacity: 0.9}); }
-    var ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.02, 8, 120), ringMat());
-    ring1.rotation.x = Math.PI / 2.6; ring1.rotation.y = 0.35;
-    var ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.68, 0.02, 8, 120), ringMat());
-    ring2.rotation.x = Math.PI / 1.8; ring2.rotation.y = -0.5;
-    scene.add(ring1); scene.add(ring2);
-    function nodePoints(n, r, size){
-      var pos = new Float32Array(n * 3), i, a, b;
-      for(i = 0; i < n; i++){
-        a = Math.random() * Math.PI * 2; b = Math.acos(2 * Math.random() - 1);
-        pos[i * 3] = r * Math.sin(b) * Math.cos(a);
-        pos[i * 3 + 1] = r * Math.sin(b) * Math.sin(a);
-        pos[i * 3 + 2] = r * Math.cos(b);
-      }
-      var g = new THREE.BufferGeometry();
-      g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-      var pts = new THREE.Points(g, new THREE.PointsMaterial({color: globeColorHex(), size: size, transparent: true, opacity: 0.95}));
-      scene.add(pts);
-      return pts;
+    /* Orthographic camera: a stylised command-center look with no
+       perspective distortion; frustum height fixed at 5.4 units and
+       the world group scales with aspect (see stageWorldScale). */
+    var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+    camera.position.set(0, 0, 20);
+    camera.lookAt(0, 0, 0);
+    var world = new THREE.Group();
+    scene.add(world);
+    var glowTex = stageGlowTexture();
+    /* --- Earth (left) --- */
+    var earth = new THREE.Group();
+    earth.position.set(-STAGE_SPAN, 0, 0);
+    var earthWire = new THREE.Mesh(new THREE.SphereGeometry(STAGE_EARTH_R, 28, 20),
+      new THREE.MeshBasicMaterial({color: 0x06b6d4, wireframe: true, transparent: true, opacity: 0.8}));
+    earth.add(earthWire);
+    var earthCore = new THREE.Mesh(new THREE.SphereGeometry(STAGE_EARTH_R * 0.98, 24, 18),
+      new THREE.MeshBasicMaterial({color: 0x06b6d4, transparent: true, opacity: 0.07}));
+    earth.add(earthCore);
+    var dotList = stageLandDots(), dotPos = [], d;
+    for(d = 0; d < dotList.length; d++){
+      dotPos.push(dotList[d][0] * 1.17, dotList[d][1] * 1.17, dotList[d][2] * 1.17);
     }
-    var nodes = nodePoints(90, 1.5, 0.06);
-    var nodes2 = nodePoints(30, 1.95, 0.085);
-    globe3D = {renderer: renderer, scene: scene, camera: camera, core: core, inner: inner, halo: halo, glow: glow, ring1: ring1, ring2: ring2, nodes: nodes, nodes2: nodes2,
-      mats: [coreMat, innerMat, haloMat, glowMat, ring1.material, ring2.material, nodes.material, nodes2.material], angle: 0, col: new THREE.Color(globeColorHex())};
-    var shield = $("heroShield");
-    if(shield){
-      shield.addEventListener("pointermove", function(ev){
-        var r = shield.getBoundingClientRect();
-        if(!r.width || !r.height) return;
-        globeMouseX = Math.max(-0.5, Math.min(0.5, (ev.clientX - r.left) / r.width - 0.5));
-        globeMouseY = Math.max(-0.5, Math.min(0.5, (ev.clientY - r.top) / r.height - 0.5));
-      });
-      shield.addEventListener("pointerleave", function(){ globeMouseX = 0; globeMouseY = 0; });
+    var dotGeo = new THREE.BufferGeometry();
+    dotGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(dotPos), 3));
+    var dots = new THREE.Points(dotGeo, new THREE.PointsMaterial({color: 0x10b981, size: 2.5, sizeAttenuation: false, transparent: true, opacity: 0.9}));
+    earth.add(dots);
+    var beacons = [], i, bphi, bth, bx, by, bz;
+    for(i = 0; i < 8; i++){
+      bphi = Math.acos(1 - 2 * (((i * 97 + 13) % 100) / 100));
+      bth = (i * 2.399) % (Math.PI * 2);
+      bx = Math.sin(bphi) * Math.cos(bth) * 1.18;
+      by = Math.sin(bphi) * Math.sin(bth) * 1.18;
+      bz = Math.cos(bphi) * 1.18;
+      var bm = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({color: 0x10b981}));
+      bm.position.set(bx, by, bz);
+      var bs = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, color: 0x10b981, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false}));
+      bs.scale.set(0.5, 0.5, 1);
+      bs.position.copy(bm.position);
+      earth.add(bm); earth.add(bs);
+      beacons.push({m: bm, s: bs, ph: i * 0.9});
     }
+    world.add(earth);
+    /* Faint glowing arcs from Earth toward the shield. */
+    var arcs = [];
+    [[0.7, 0.5], [-0.4, 0.8], [0.1, -0.8]].forEach(function(a){
+      var curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(-STAGE_SPAN + 0.9, a[0], 0.2),
+        new THREE.Vector3(-STAGE_SPAN / 2, a[0] + a[1], 0.5),
+        new THREE.Vector3(-0.4, a[0] * 0.5, 0.1));
+      var tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.012, 6, false),
+        new THREE.MeshBasicMaterial({color: 0x06b6d4, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false}));
+      world.add(tube);
+      arcs.push(tube);
+    });
+    /* --- Hexagonal shield (center) --- */
+    var shield = new THREE.Group();
+    var shieldDisc = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.7, 0.05, 6),
+      new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.16, side: THREE.DoubleSide}));
+    shieldDisc.rotation.x = Math.PI / 2;
+    shield.add(shieldDisc);
+    var shieldEdge = new THREE.LineSegments(new THREE.EdgesGeometry(shieldDisc.geometry),
+      new THREE.LineBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.95}));
+    shieldEdge.rotation.x = Math.PI / 2;
+    shield.add(shieldEdge);
+    var shieldRing = new THREE.Mesh(new THREE.RingGeometry(1.32, 1.48, 6),
+      new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.7, side: THREE.DoubleSide}));
+    shield.add(shieldRing);
+    var shieldGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, color: 0x10b981, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false}));
+    shieldGlow.scale.set(6.5, 6.5, 1);
+    shield.add(shieldGlow);
+    world.add(shield);
+    /* --- Origin server core (right) --- */
+    var server = new THREE.Group();
+    server.position.set(STAGE_SPAN, 0, 0);
+    var boxMat = new THREE.MeshBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.16});
+    var edgeMat = new THREE.LineBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.95});
+    for(i = 0; i < 3; i++){
+      var box = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.5, 1.15), boxMat);
+      box.position.y = -0.55 + i * 0.62;
+      var edges = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), edgeMat);
+      edges.position.copy(box.position);
+      server.add(box); server.add(edges);
+    }
+    var core = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.9, 12),
+      new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.85}));
+    server.add(core);
+    var srvRings = [];
+    [1.05, 1.35].forEach(function(r, ri){
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.015, 8, 80),
+        new THREE.MeshBasicMaterial({color: ri ? 0x06b6d4 : 0x10b981, transparent: true, opacity: 0.8}));
+      ring.rotation.x = Math.PI / 2.4;
+      server.add(ring);
+      srvRings.push(ring);
+    });
+    var srvGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, color: 0x38bdf8, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false}));
+    srvGlow.scale.set(4.2, 4.2, 1);
+    server.add(srvGlow);
+    var lights = [];
+    for(i = 0; i < 3; i++){
+      var lm = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8),
+        new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 1}));
+      lm.position.set(0.58, -0.55 + i * 0.62, 0.58);
+      server.add(lm);
+      lights.push(lm);
+    }
+    world.add(server);
+    var greenMat = new THREE.SpriteMaterial({map: glowTex, color: 0x10b981, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false});
+    var redMat = new THREE.SpriteMaterial({map: glowTex, color: 0xef4444, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false});
+    var ripplePool = [], sparkPool = [], ri;
+    for(ri = 0; ri < 8; ri++){
+      var rm = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 48),
+        new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false}));
+      rm.visible = false;
+      world.add(rm);
+      ripplePool.push(rm);
+    }
+    for(ri = 0; ri < 4; ri++){
+      var sg = new THREE.BufferGeometry();
+      sg.setAttribute("position", new THREE.BufferAttribute(new Float32Array(14 * 3), 3));
+      var sp = new THREE.Points(sg, new THREE.PointsMaterial({color: 0xef4444, size: 4, sizeAttenuation: false, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false}));
+      sp.visible = false;
+      world.add(sp);
+      sparkPool.push(sp);
+    }
+    stage3D = {renderer: renderer, scene: scene, camera: camera, world: world,
+      earth: earth, beacons: beacons, arcs: arcs,
+      shield: shield, shieldDisc: shieldDisc, shieldEdge: shieldEdge, shieldRing: shieldRing, shieldGlow: shieldGlow,
+      server: server, core: core, srvRings: srvRings, srvGlow: srvGlow, lights: lights,
+      greenMat: greenMat, redMat: redMat, ripplePool: ripplePool, sparkPool: sparkPool,
+      shieldCol: new THREE.Color(0x10b981)};
+    stageSizeCanvas();
+    var cv = $("heroStage3d"), dragging = false, lastX = 0;
+    cv.addEventListener("pointermove", function(ev){
+      var r = cv.getBoundingClientRect();
+      if(!r.width || !r.height) return;
+      stageMouseX = Math.max(-0.5, Math.min(0.5, (ev.clientX - r.left) / r.width - 0.5));
+      stageMouseY = Math.max(-0.5, Math.min(0.5, (ev.clientY - r.top) / r.height - 0.5));
+      if(dragging){ stageDragRot += (ev.clientX - lastX) * 0.008; lastX = ev.clientX; }
+    });
+    cv.addEventListener("pointerdown", function(ev){ dragging = true; lastX = ev.clientX; try{ cv.setPointerCapture(ev.pointerId); }catch(e){} });
+    cv.addEventListener("pointerup", function(){ dragging = false; });
+    cv.addEventListener("pointerleave", function(){ stageMouseX = 0; stageMouseY = 0; dragging = false; });
     return true;
-  } catch(e){ globe3D = null; globe3DError = (e && e.message) ? String(e.message) : "webgl context failed"; return false; }
+  } catch(e){ stage3D = null; stageErr = (e && e.message) ? String(e.message) : "webgl context failed"; return false; }
 }
-function globe3DTick(){
-  if(!globe3D) return;
-  if(document.hidden || reducedMotion){ globe3DRAF = null; return; }
-  var g = globe3D;
-  g.angle += 0.011;
-  var target = new THREE.Color(globeColorHex());
-  g.col.lerp(target, 0.06);
-  g.mats.forEach(function(m){ m.color.copy(g.col); });
-  var pulse = globeState === "bad" ? 0.5 + 0.5 * Math.sin(Date.now() / 1000 * 6) : (globeState === "off" ? 0 : 0.5 + 0.5 * Math.sin(Date.now() / 1000 * 2.2));
-  var s = 1 + pulse * 0.05;
-  g.core.scale.set(s, s, s);
-  var gs = 4.6 * (1 + pulse * 0.06);
-  g.glow.scale.set(gs, gs, 1);
-  g.core.rotation.x = g.angle * 0.7; g.core.rotation.y = g.angle;
-  g.inner.rotation.x = -g.angle * 0.9; g.inner.rotation.y = -g.angle * 0.6;
-  g.halo.rotation.y = -g.angle * 0.4;
-  g.ring1.rotation.z = g.angle * 1.15;
-  g.ring2.rotation.z = -g.angle * 0.95;
-  g.nodes.rotation.y = g.angle * 0.45;
-  g.nodes2.rotation.y = -g.angle * 0.5; g.nodes2.rotation.x = g.angle * 0.2;
-  globeTiltX += ((globeMouseY * 0.5) - globeTiltX) * 0.06;
-  globeTiltY += ((globeMouseX * 0.6) - globeTiltY) * 0.06;
-  g.scene.rotation.x = globeTiltX;
-  g.scene.rotation.y = globeTiltY;
+/* Size the stage canvas + ortho frustum from the live layout. */
+function stageSizeCanvas(){
+  var cv = $("heroStage3d");
+  if(!cv) return;
+  var w = cv.clientWidth || 1200, h = cv.clientHeight || 320;
+  if(stage3D){
+    stage3D.renderer.setSize(w, h, false);
+    var fh = 5.4, fw = fh * (w / h);
+    var cam = stage3D.camera;
+    cam.left = -fw / 2; cam.right = fw / 2; cam.top = fh / 2; cam.bottom = -fh / 2;
+    cam.updateProjectionMatrix();
+    stage3D.world.scale.setScalar(stageWorldScale(w, h));
+  }
+  if(stage2D){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+    stage2D.W = w; stage2D.H = h; stage2D.dpr = dpr;
+  }
+}
+function stageRender3D(t){
+  var g = stage3D;
+  if(!g) return;
+  var target = stageAlert ? new THREE.Color(0xf59e0b) : new THREE.Color(0x10b981);
+  g.shieldCol.lerp(target, 0.05);
+  g.shieldDisc.material.color.copy(g.shieldCol);
+  g.shieldEdge.material.color.copy(g.shieldCol);
+  g.shieldRing.material.color.copy(g.shieldCol);
+  g.shieldGlow.material.color.copy(g.shieldCol);
+  g.shieldGlow.material.opacity = 0.4 + 0.18 * Math.sin(t * 2.2);
+  g.earth.rotation.y = stageEarthRot + stageDragRot;
+  g.earth.rotation.x = 0.12;
+  var bi;
+  for(bi = 0; bi < g.beacons.length; bi++){
+    var b = g.beacons[bi];
+    var bp = 0.6 + 0.4 * Math.sin(t * 2.4 + b.ph);
+    b.s.material.opacity = 0.35 + 0.35 * bp;
+    b.s.scale.set(0.4 + 0.25 * bp, 0.4 + 0.25 * bp, 1);
+  }
+  g.shield.rotation.z += (stageAlert ? 0.9 : 0.25) / 60;
+  g.server.position.y = Math.sin(t * 1.2) * 0.08;
+  g.srvRings[0].scale.setScalar(1 + 0.06 * Math.sin(t * 2));
+  g.srvRings[1].scale.setScalar(1 + 0.06 * Math.sin(t * 2 + 1.2));
+  g.srvGlow.material.opacity = 0.35 + 0.15 * Math.sin(t * 3.1);
+  var li;
+  for(li = 0; li < g.lights.length; li++){
+    g.lights[li].material.opacity = (Math.sin(t * 3 + li * 2.1) > 0) ? 1 : 0.15;
+  }
+  var ai;
+  for(ai = 0; ai < g.arcs.length; ai++){
+    g.arcs[ai].material.opacity = 0.35 + 0.2 * Math.sin(t * 1.8 + ai * 1.3);
+  }
+  /* packets */
+  var i, p, pos;
+  for(i = 0; i < stagePackets.length; i++){
+    p = stagePackets[i];
+    if(p.delay > 0) continue;
+    if(!p.mesh){
+      p.mesh = new THREE.Sprite(p.kind === "green" ? g.greenMat : g.redMat);
+      p.mesh.scale.set(0.36, 0.11, 1);
+      g.world.add(p.mesh);
+    }
+    pos = stagePacketPos(p);
+    p.mesh.position.set(pos.x, pos.y, pos.z);
+  }
+  /* ripples */
+  for(i = 0; i < g.ripplePool.length; i++){
+    var rp = g.ripplePool[i], r = stageRipples[i];
+    if(!r){ rp.visible = false; continue; }
+    rp.visible = true;
+    rp.position.set(r.x, r.y, 0.15);
+    var rs = 0.2 + r.t * 2.1;
+    rp.scale.set(rs, rs, 1);
+    rp.material.opacity = (1 - r.t) * 0.9;
+    rp.material.color.setHex(r.kind === "green" ? 0x10b981 : 0xef4444);
+  }
+  /* sparks */
+  for(i = 0; i < g.sparkPool.length; i++){
+    var spk = g.sparkPool[i], s = stageSparks[i];
+    if(!s){ spk.visible = false; continue; }
+    spk.visible = true;
+    var attr = spk.geometry.getAttribute("position"), arr = attr.array, k;
+    for(k = 0; k < 14; k++){
+      arr[k * 3] = s.x + s.vel[k][0] * s.t * 0.55;
+      arr[k * 3 + 1] = s.y + s.vel[k][1] * s.t * 0.55;
+      arr[k * 3 + 2] = s.z + s.vel[k][2] * s.t * 0.55;
+    }
+    attr.needsUpdate = true;
+    spk.material.opacity = (1 - s.t) * 0.95;
+  }
+  /* mouse parallax on the camera (lerped) */
+  stageTiltX += ((stageMouseY * 0.5) - stageTiltX) * 0.06;
+  stageTiltY += ((stageMouseX * 0.6) - stageTiltY) * 0.06;
+  g.camera.position.x = stageTiltY;
+  g.camera.position.y = -stageTiltX;
+  g.camera.lookAt(0, 0, 0);
   g.renderer.render(g.scene, g.camera);
-  globe3DRAF = requestAnimationFrame(globe3DTick);
 }
-function startGlobe(){
-  if(globeRunning) return;
+/* 2D fallback: the same three-part scene on a 2D canvas, driven by
+   the same shared packet/ripple/spark state. */
+function stageInit2D(){
+  var cv = $("heroStage3d");
+  if(!cv) return;
+  var ctx = cv.getContext("2d");
+  if(!ctx) return;
+  stage2D = {ctx: ctx, W: cv.clientWidth || 1200, H: cv.clientHeight || 320, dpr: 1, dots: stageLandDots()};
+  stageSizeCanvas();
+}
+function stageHexPath(ctx, cx, cy, r, rot){
+  var i, a;
+  ctx.beginPath();
+  for(i = 0; i < 6; i++){
+    a = rot + i * Math.PI / 3;
+    if(i === 0) ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    else ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+  }
+  ctx.closePath();
+}
+function stageDraw2D(ts){
+  var c = stage2D;
+  if(!c) return;
+  var ctx = c.ctx, W = c.W, H = c.H, dpr = c.dpr || 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  var ws = stageWorldScale(W, H);
+  var S = (H / 5.4) * ws;
+  function X(x){ return W / 2 + x * ws * S; }
+  function Y(y){ return H / 2 - y * ws * S; }
+  var t = ts / 1000;
+  var alert = stageAlert;
+  var main = alert ? "#ef4444" : "#10b981", acc = alert ? "#f59e0b" : "#06b6d4";
+  var pulse = 0.5 + 0.5 * Math.sin(t * (alert ? 6 : 2.2));
+  /* Earth */
+  var ex = X(-STAGE_SPAN), ey = Y(0), R = STAGE_EARTH_R * ws * S;
+  var grad = ctx.createRadialGradient(ex, ey, R * 0.3, ex, ey, R * 1.6);
+  grad.addColorStop(0, alert ? "rgba(239,68,68,.28)" : "rgba(16,185,129,.28)");
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.globalAlpha = 0.5 + pulse * 0.3;
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.arc(ex, ey, R * 1.6, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.save();
+  ctx.shadowColor = acc; ctx.shadowBlur = 12 + pulse * 12;
+  ctx.strokeStyle = acc; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+  var i, a, rx;
+  for(i = 0; i < 5; i++){
+    a = stageEarthRot + stageDragRot + i * Math.PI / 5;
+    rx = Math.abs(Math.cos(a)) * R;
+    if(rx < 1.5) rx = 1.5;
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = acc; ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.ellipse(ex, ey, rx, R, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  /* landmass dots (orthographic projection, back side dimmed) */
+  var ca = Math.cos(stageEarthRot + stageDragRot), sa = Math.sin(stageEarthRot + stageDragRot);
+  for(i = 0; i < c.dots.length; i++){
+    var dp = c.dots[i];
+    var rx2 = dp[0] * ca + dp[2] * sa, rz2 = -dp[0] * sa + dp[2] * ca;
+    ctx.globalAlpha = rz2 > 0 ? 0.9 : 0.22;
+    ctx.fillStyle = main;
+    ctx.beginPath(); ctx.arc(ex + rx2 * R * 1.01, ey - dp[1] * R * 1.01, 1.6, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  /* Shield hexagon */
+  var hx = X(0), hy = Y(0), hr = 1.7 * ws * S;
+  ctx.save();
+  ctx.shadowColor = main; ctx.shadowBlur = 14 + pulse * 14;
+  stageHexPath(ctx, hx, hy, hr, t * (alert ? 0.9 : 0.25));
+  ctx.fillStyle = alert ? "rgba(245,158,11,.13)" : "rgba(16,185,129,.13)";
+  ctx.fill();
+  ctx.strokeStyle = main; ctx.lineWidth = 1.8; ctx.stroke();
+  ctx.restore();
+  stageHexPath(ctx, hx, hy, hr * 0.82, -t * 0.2);
+  ctx.globalAlpha = 0.6; ctx.strokeStyle = acc; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.globalAlpha = 1;
+  /* Server tower */
+  var sx = X(STAGE_SPAN), sy = Y(0) + Math.sin(t * 1.2) * 0.08 * ws * S;
+  var bw = 1.15 * ws * S, bh = 0.5 * ws * S;
+  ctx.save();
+  ctx.shadowColor = "#38bdf8"; ctx.shadowBlur = 12;
+  ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1.6;
+  ctx.fillStyle = "rgba(56,189,248,.12)";
+  for(i = 0; i < 3; i++){
+    var by = sy - 0.55 * ws * S + i * 0.62 * ws * S - bh / 2;
+    ctx.fillRect(sx - bw / 2, by, bw, bh);
+    ctx.strokeRect(sx - bw / 2, by, bw, bh);
+  }
+  ctx.restore();
+  ctx.strokeStyle = main; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(sx, sy - 0.95 * ws * S); ctx.lineTo(sx, sy + 0.95 * ws * S); ctx.stroke();
+  ctx.globalAlpha = 0.7 + 0.3 * Math.sin(t * 2);
+  ctx.strokeStyle = acc; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.ellipse(sx, sy, 1.05 * ws * S, 0.4 * ws * S, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(sx, sy, 1.35 * ws * S, 0.5 * ws * S, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.globalAlpha = 1;
+  /* packets */
+  var p, pos, pp;
+  for(i = 0; i < stagePackets.length; i++){
+    p = stagePackets[i];
+    if(p.delay > 0) continue;
+    pos = stagePacketPos(p);
+    pp = {x: X(pos.x), y: Y(pos.y)};
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = p.kind === "green" ? "#10b981" : "#ef4444";
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(pp.x, pp.y, 3.2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  /* ripples */
+  for(i = 0; i < stageRipples.length; i++){
+    var rp = stageRipples[i];
+    ctx.save();
+    ctx.globalAlpha = (1 - rp.t) * 0.9;
+    ctx.strokeStyle = rp.kind === "green" ? "#10b981" : "#ef4444";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(X(rp.x), Y(rp.y), (0.2 + rp.t * 2.1) * ws * S, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+  /* sparks */
+  for(i = 0; i < stageSparks.length; i++){
+    var sk = stageSparks[i], k;
+    ctx.save();
+    ctx.globalAlpha = (1 - sk.t) * 0.95;
+    ctx.fillStyle = "#ef4444";
+    ctx.shadowColor = "#ef4444"; ctx.shadowBlur = 8;
+    for(k = 0; k < 14; k++){
+      ctx.beginPath();
+      ctx.arc(X(sk.x + sk.vel[k][0] * sk.t * 0.55), Y(sk.y + sk.vel[k][1] * sk.t * 0.55), 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+/* HUD badges: alert badge (Stage>=2 / attack), sim badge, and the
+   honest idle state (0 rps, sim off, connected). */
+function syncStageHud(){
+  var badge = $("stageHudBadge"), sim = $("stageHudSim"), idle = $("stageHudIdle");
+  if(badge) badge.hidden = !stageAlert;
+  if(sim) sim.hidden = !stageSim;
+  var showIdle = !!(typeof connected !== "undefined" && connected) && !stageSim && liveTotalRps === 0 && stageMode !== "off";
+  if(idle) idle.hidden = !showIdle;
+  var sw = $("simAttackSwitch");
+  if(sw) sw.setAttribute("aria-checked", stageSim ? "true" : "false");
+}
+function stageTick(ts){
+  if(!stageRunning) return;
+  if(document.hidden || reducedMotion){
+    stageRunning = false;
+    if(stageMode === "three-webgl" && stage3D) stageRender3D(ts / 1000);
+    else if(stageMode === "canvas-2d-fallback") stageDraw2D(ts);
+    stageRAF = null;
+    return;
+  }
+  var dt = stageLastTs ? Math.min(0.1, (ts - stageLastTs) / 1000) : 0.016;
+  stageLastTs = ts;
+  stageUpdate(dt);
+  if(stageMode === "three-webgl" && stage3D) stageRender3D(ts / 1000);
+  else if(stageMode === "canvas-2d-fallback") stageDraw2D(ts);
+  if(ts - stageHudTs > 500){ stageHudTs = ts; syncStageHud(); }
+  stageRAF = requestAnimationFrame(stageTick);
+}
+function startStage(){
+  if(stageRunning) return;
   var shield = $("heroShield");
-  /* Report which renderer is actually driving the hero core — the
+  /* Report which renderer is actually driving the hero stage — the
      previous silent fallback made a dead 2D drawing indistinguishable
      from a working WebGL core in screenshots. The running browser
      inspection reads this line (and data-globe-renderer) to confirm. */
   function note(renderer, reason){
     try{ console.info("[SonuShield] globe renderer: " + renderer + (reason ? " (" + reason + ")" : "")); }catch(e){}
     if(shield) shield.setAttribute("data-globe-renderer", renderer);
+    stageMode = renderer;
   }
-  if(reducedMotion){ drawGlobe(); note("canvas-2d-fallback", "prefers-reduced-motion"); return; }
-  if(initWebGLGlobe()){
-    globeRunning = true;
-    globe3DRAF = requestAnimationFrame(globe3DTick);
+  stageSizeCanvas();
+  if(reducedMotion){ stageInit2D(); stageDraw2D(performance.now()); note("canvas-2d-fallback", "prefers-reduced-motion"); return; }
+  if(initWebGLStage()){
+    stageRunning = true;
+    stageLastTs = 0;
+    stageRAF = requestAnimationFrame(stageTick);
     note("three-webgl");
     return;
   }
-  globeRunning = true;
-  globeRAF = requestAnimationFrame(globeTick);
-  note("canvas-2d-fallback", globe3DError || "webgl init failed");
+  stageInit2D();
+  stageRunning = true;
+  stageLastTs = 0;
+  stageRAF = requestAnimationFrame(stageTick);
+  note("canvas-2d-fallback", stageErr || "webgl init failed");
 }
-function stopGlobe(){
-  globeRunning = false;
-  if(globeRAF){ cancelAnimationFrame(globeRAF); globeRAF = null; }
-  if(globe3DRAF){ cancelAnimationFrame(globe3DRAF); globe3DRAF = null; }
+function stopStage(){
+  stageRunning = false;
+  if(stageRAF){ cancelAnimationFrame(stageRAF); stageRAF = null; }
 }
 
 /* 3D tilt + cursor spotlight (pointer devices only, disabled under
@@ -6062,12 +6484,25 @@ document.addEventListener("keydown", function(ev){
 });
 /* 3D tilt on KPI cards and hero panels (pointer devices only). */
 bindTilt();
-/* Hero globe + mesh pause on hidden tab. */
-startGlobe();
+/* Hero 3D stage + mesh pause on hidden tab. */
+startStage();
 document.addEventListener("visibilitychange", function(){
   document.documentElement.classList.toggle("anim-paused", document.hidden);
-  if(document.hidden){ stopGlobe(); }
-  else startGlobe();
+  if(document.hidden){ stopStage(); }
+  else startStage();
+});
+window.addEventListener("resize", function(){ stageSizeCanvas(); });
+/* Test Attack Simulation: dashboard-local visual only — no backend
+   calls, no real traffic, no firewall/config changes. */
+var simAttackEl = $("simAttackSwitch");
+if(simAttackEl) simAttackEl.addEventListener("click", function(){
+  stageSim = !stageSim;
+  if(stageSim){
+    var si;
+    for(si = 0; si < 12; si++) stageSpawnPacket("red", Math.random() * 0.4);
+    for(si = 0; si < 3; si++) stageSpawnPacket("green", Math.random() * 0.6);
+  }
+  syncStageHud();
 });
 window.addEventListener("resize", syncStageSeg);
 $("settingsForm").addEventListener("submit", submitSettings);
