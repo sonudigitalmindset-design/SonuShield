@@ -16,8 +16,8 @@
 __CP_BOOTSTRAP__
 <style>
 /* Self-hosted fonts (OFL, latin subset, embedded via go:embed and
-   served as protected shell assets — no CDN, dashboard stays
-   offline-capable): Inter for UI text, JetBrains Mono for IPs,
+   served as protected shell assets — fully offline, no remote host):
+   Inter for UI text, JetBrains Mono for IPs,
    expressions, hostnames, and live counters. */
 @font-face{font-family:"Inter";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/Inter-Regular.woff2") format("woff2")}
 @font-face{font-family:"Inter";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/Inter-Medium.woff2") format("woff2")}
@@ -444,8 +444,13 @@ tr.selected td{background:var(--nav-active-bg)}
 .hero-shield.ok::before{background:radial-gradient(closest-side,rgba(16,185,129,.34),rgba(6,182,212,.15) 55%,transparent 75%)}
 .hero-shield.warn::before,.hero-shield.bad::before{background:radial-gradient(closest-side,rgba(239,68,68,.34),rgba(245,158,11,.15) 55%,transparent 75%)}
 .hero-shield{margin-top:14px;height:320px;overflow:hidden}
-#heroStage3d{display:block;width:100%;height:100%;cursor:grab}
-#heroStage3d:active{cursor:grabbing}
+.flow-svg{display:block;width:100%;height:100%}
+.flow-enter{animation:flowEnter .7s cubic-bezier(.22,1,.36,1) backwards}
+@keyframes flowEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.flow-shine{animation:flowShine 4.8s ease-in-out 1.2s infinite}
+@keyframes flowShine{0%{transform:translateY(0);opacity:0}10%{opacity:.14}30%{transform:translateY(40px);opacity:.14}60%{transform:translateY(40px);opacity:.14}75%{transform:translateY(80px);opacity:.14}90%{transform:translateY(80px);opacity:.14}100%{transform:translateY(0);opacity:0}}
+.flow-blocked-dash{animation:flowBlockedPulse 4.8s ease-in-out 2.4s infinite}
+@keyframes flowBlockedPulse{0%,55%{opacity:1}62%{opacity:.35}75%{opacity:1}100%{opacity:1}}
 .stage-hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;pointer-events:none;z-index:2}
 .stage-hud-top{display:flex;gap:8px;flex-wrap:wrap}
 .stage-hud-bottom{display:flex;justify-content:center}
@@ -455,7 +460,6 @@ tr.selected td{background:var(--nav-active-bg)}
 .stage-idle{color:var(--muted);font-size:12px;background:rgba(2,6,23,.45);border:1px solid var(--border);padding:4px 10px;border-radius:999px}
 .sim-switch[aria-checked="true"]{background:#dc2626;border-color:#ef4444;box-shadow:0 0 0 1px var(--ring),0 0 18px rgba(239,68,68,.65)}
 @media (max-width:640px){.hero-shield{height:260px}}
-.hero-shield svg{width:0;height:0}
 .hero-shield.ok{--hero-glow:rgba(16,185,129,.45)}
 .hero-shield.warn{--hero-glow:rgba(245,158,11,.5)}
 .hero-shield.bad{--hero-glow:rgba(239,68,68,.55)}
@@ -544,7 +548,6 @@ tr.selected td{background:var(--nav-active-bg)}
   .ov-split{grid-template-columns:1fr}
   .dom-inspector,.import-grid,.rep-mid,.ins-hero{grid-template-columns:1fr}
   .hero{grid-template-columns:1fr}
-  .hero-shield canvas{width:160px;height:110px}
 }
 /* ===== Visual engine overhaul: luxury obsidian command center =====
    Animated mesh glow, frosted glass, 3D tilt + spotlight, pill
@@ -663,7 +666,7 @@ html{background:var(--bg)}
 .terminal-head-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 /* Reduced motion: everything new goes still too. */
 @media (prefers-reduced-motion:reduce){
-  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.hero-shield canvas,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"],.stage-badge-alert,.chart-scanline,.card:hover::after,.panel:hover::after,.drawer,.drawer-overlay{animation:none}
+  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.flow-enter,.flow-shine,.flow-blocked-dash,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"],.stage-badge-alert,.chart-scanline,.card:hover::after,.panel:hover::after,.drawer,.drawer-overlay{animation:none}
   .switch,.switch .switch-thumb,.seg-indicator,.stage-matrix,.ls-collapsible,#maintForm .maint-extra{transition:none}
   .tilt{transform:none}
 }
@@ -749,7 +752,63 @@ html{background:var(--bg)}
           </div>
         </div>
         <div class="hero-shield off" id="heroShield" role="img" data-i18n-aria="heroShieldLabel" aria-label="Protection status">
-          <canvas id="heroStage3d" aria-hidden="true"></canvas>
+          <svg id="flowSvg" class="flow-svg" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs>
+              <marker id="flowArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker>
+              <marker id="flowArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#22c55e"/></marker>
+              <marker id="flowArrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#dc2626"/></marker>
+              <clipPath id="flowShieldClip"><rect x="600" y="50" width="240" height="190" rx="10"/></clipPath>
+            </defs>
+            <g font-family="Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
+              <g fill="none" stroke-width="2">
+                <path id="flowLaneIn" d="M 210 90 H 592" stroke="#64748b" marker-end="url(#flowArrow)"/>
+                <path id="flowLaneOut" d="M 840 90 H 1222" stroke="#22c55e" marker-end="url(#flowArrowGreen)"/>
+                <path id="flowLaneBot" d="M 210 242 H 592" stroke="#64748b" marker-end="url(#flowArrow)"/>
+                <path id="flowLaneBlocked" d="M 720 240 V 260 H 940" stroke="#dc2626" marker-end="url(#flowArrowRed)"/>
+              </g>
+              <g id="flowPackets"></g>
+              <g class="flow-enter" style="animation-delay:.1s">
+                <rect x="40" y="48" width="170" height="84" rx="10" fill="#111827" stroke="rgba(148,163,184,.3)"/>
+                <circle cx="125" cy="76" r="12" fill="#164e63"/>
+                <path d="M107 106 Q125 88 143 106" fill="#164e63"/>
+                <text x="125" y="158" text-anchor="middle" font-size="13" font-weight="600" fill="#94a3b8" data-i18n="flowVisitor">Real visitor</text>
+              </g>
+              <g class="flow-enter" style="animation-delay:.22s">
+                <rect x="40" y="200" width="170" height="84" rx="10" fill="#1c1214" stroke="rgba(239,68,68,.35)"/>
+                <rect x="103" y="217" width="44" height="30" rx="6" fill="rgba(239,68,68,.14)"/>
+                <circle cx="115" cy="232" r="3" fill="#ef4444"/><circle cx="135" cy="232" r="3" fill="#ef4444"/>
+                <text x="125" y="310" text-anchor="middle" font-size="13" font-weight="600" fill="#94a3b8" data-i18n="flowBot">Bot / attacker</text>
+              </g>
+              <g class="flow-enter" style="animation-delay:.34s">
+                <rect id="flowShieldBox" x="600" y="50" width="240" height="190" rx="10" fill="#0f172a" stroke="rgba(148,163,184,.4)"/>
+                <text x="720" y="86" text-anchor="middle" font-size="16" font-weight="700" fill="#ffffff">SonuShield</text>
+                <rect x="616" y="100" width="208" height="30" rx="6" fill="#1e293b"/>
+                <text x="720" y="119" text-anchor="middle" font-size="12" fill="#e0f2fe" data-i18n="flowTls">TLS fingerprint</text>
+                <rect x="616" y="140" width="208" height="30" rx="6" fill="#1e293b"/>
+                <text x="720" y="159" text-anchor="middle" font-size="12" fill="#e0f2fe" data-i18n="flowWaf">Firewall rules</text>
+                <rect id="flowStageRow" x="616" y="180" width="208" height="30" rx="6" fill="#f59e0b"/>
+                <text id="flowStageRowText" x="720" y="199" text-anchor="middle" font-size="12" font-weight="700" fill="#020617" data-i18n="flowChallenge">Challenge (stage 1–3)</text>
+                <g clip-path="url(#flowShieldClip)">
+                  <rect class="flow-shine" x="600" y="100" width="240" height="30" fill="#ffffff" opacity="0"/>
+                </g>
+                <rect id="flowShieldFlash" x="600" y="50" width="240" height="190" rx="10" fill="#fca5a5" opacity="0"/>
+              </g>
+              <g class="flow-enter" style="animation-delay:.46s">
+                <rect x="1230" y="48" width="170" height="84" rx="10" fill="#111827" stroke="rgba(148,163,184,.3)"/>
+                <rect x="1252" y="61" width="76" height="14" rx="4" fill="rgba(16,185,129,.28)"/>
+                <rect x="1252" y="81" width="76" height="14" rx="4" fill="rgba(16,185,129,.28)"/>
+                <text x="1315" y="158" text-anchor="middle" font-size="13" font-weight="600" fill="#94a3b8" data-i18n="flowBackend">Your backend</text>
+              </g>
+              <g class="flow-enter" id="flowBlockedBox" style="animation-delay:.58s">
+                <rect id="flowBlockedRect" x="940" y="200" width="210" height="84" rx="10" fill="#111827" stroke="#dc2626" stroke-width="1.5"/>
+                <rect class="flow-blocked-dash" x="940" y="200" width="210" height="84" rx="10" fill="none" stroke="#dc2626" stroke-dasharray="5 4"/>
+                <text x="1045" y="236" text-anchor="middle" font-size="15" font-weight="700" fill="#f87171" data-i18n="flowBlocked">✕ Blocked</text>
+                <text x="1045" y="258" text-anchor="middle" font-size="12" fill="#94a3b8" data-i18n="flowBlockedSub">rate-limited / susLv ≥ 4</text>
+                <text id="flowBlockedCount" x="1045" y="278" text-anchor="middle" font-size="12" fill="#f87171">Blocked: 0</text>
+              </g>
+              <text id="flowPassed" x="1080" y="112" font-size="12" font-weight="600" fill="#22c55e" opacity="0" data-i18n="flowPassed">passed</text>
+            </g>
+          </svg>
           <div class="stage-hud">
             <div class="stage-hud-top">
               <span class="stage-badge-alert" id="stageHudBadge" data-i18n="stageHudEngaged" hidden>SHIELD ENGAGED: BLOCKING THREATS</span>
@@ -1602,10 +1661,8 @@ html{background:var(--bg)}
     </section>
   </main>
 </div>
-<!-- Vendored Three.js r128 (MIT), served from the protected dashboard
-     path like the fonts — no CDN, the dashboard stays offline-capable.
-     Loads synchronously before the main script so window.THREE exists. -->
-<script src="./vendor/three-r128.min.js"></script>
+/* The hero is a live SVG flow diagram now; Three.js is no longer
+   loaded by the page. The vendored file stays in the repo (unused). */
 <script>
 (function(){
 "use strict";
@@ -2493,7 +2550,18 @@ stageHudEngaged: "SHIELD ENGAGED: BLOCKING THREATS",
 stageHudIdle: "Awaiting live traffic — the scene idles until packets arrive.",
 simAttackLabel: "Test Attack Simulation",
 simAttackAria: "Toggle test attack simulation",
-simAttackOn: "SIMULATION ON — test attack in progress"
+simAttackOn: "SIMULATION ON — test attack in progress",
+flowVisitor: "Real visitor",
+flowBot: "Bot / attacker",
+flowTls: "TLS fingerprint",
+flowWaf: "Firewall rules",
+flowChallenge: "Challenge (stage 1–3)",
+flowChallengeStage: "Challenge · Stage {0}",
+flowBackend: "Your backend",
+flowBlocked: "✕ Blocked",
+flowBlockedSub: "rate-limited / susLv ≥ 4",
+flowBlockedCount: "Blocked: {0}",
+flowPassed: "passed"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -3304,7 +3372,18 @@ stageHudEngaged: "शील्ड सक्रिय: खतरों को र
 stageHudIdle: "लाइव ट्रैफ़िक की प्रतीक्षा है — पैकेट आने तक दृश्य शांत रहेगा।",
 simAttackLabel: "टेस्ट अटैक सिम्युलेशन",
 simAttackAria: "टेस्ट अटैक सिम्युलेशन चालू/बंद करें",
-simAttackOn: "सिम्युलेशन चालू — टेस्ट अटैक जारी है"
+simAttackOn: "सिम्युलेशन चालू — टेस्ट अटैक जारी है",
+flowVisitor: "असली विज़िटर",
+flowBot: "बॉट / हमलावर",
+flowTls: "TLS फ़िंगरप्रिंट",
+flowWaf: "फ़ायरवॉल नियम",
+flowChallenge: "चैलेंज (स्टेज 1–3)",
+flowChallengeStage: "चैलेंज · स्टेज {0}",
+flowBackend: "आपका बैकएंड",
+flowBlocked: "✕ ब्लॉक किया गया",
+flowBlockedSub: "rate-limited / susLv ≥ 4",
+flowBlockedCount: "ब्लॉक: {0}",
+flowPassed: "पास हुआ"
 }
 };
 function t(key){
@@ -3721,6 +3800,8 @@ function loadOverview(){
     if(brps) setStat("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     if(tot) setStat("cTotal", num(tot.TOTAL_REQUESTS));
     if(byp) setStat("cBypassed", num(byp.BYPASSED_REQUESTS));
+    if(tot) liveTotalAll = parseFloat(tot.TOTAL_REQUESTS) || 0;
+    if(byp) liveBypassAll = parseFloat(byp.BYPASSED_REQUESTS) || 0;
     if(rps) liveTotalRps = parseFloat(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND) || 0;
     if(brps) liveBypassRps = parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND) || 0;
     if(rps && brps) pushTraffic(dom, parseFloat(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND), parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
@@ -3755,617 +3836,197 @@ function updateHeroState(){
   syncStageHud();
 }
 
-/* Overview hero: 3D Cyber-Defense & Traffic Flow Visualizer.
-   Full-width 320px stage: holographic Earth (left) -> hexagonal
-   energy shield (center) -> origin server core (right). Packets
-   are driven ONLY by the 3s poll data the dashboard already
+/* Overview hero: live request flow (request-flow.svg, dark theme).
+   Inline SVG diagram + JS packet engine on requestAnimationFrame.
+   Packets are driven ONLY by the 3s poll data the dashboard already
    fetches (liveTotalRps / liveBypassRps / heroStage / heroAttack);
    at 0 rps the scene idles honestly (no fake packets). The "Test
-   Attack Simulation" switch is a dashboard-local visual: it
-   spawns extra crimson beams and changes no backend state.
-   If THREE/WebGL fails, an animated 2D canvas version of the same
-   scene runs instead — never a blank box. All motion is
-   transform/opacity only and pauses when the tab is hidden or
-   under prefers-reduced-motion. */
+   Attack Simulation" switch is a dashboard-local visual: it floods
+   the bot lane with red packets and changes no backend state.
+   If the packet engine fails, the static diagram + CSS shine still
+   show — never a blank box. All motion pauses when the tab is hidden
+   or under prefers-reduced-motion. */
 var stageAlert = false;
 var stageSim = false;
 var liveTotalRps = 0, liveBypassRps = 0;
-var stageRunning = false, stageRAF = null, stageMode = "off";
-var stage3D = null, stage2D = null, stageErr = "";
-var stagePackets = [], stageRipples = [], stageSparks = [];
-var stageEarthRot = 0, stageDragRot = 0, stageMouseX = 0, stageMouseY = 0;
-var stageTiltX = 0, stageTiltY = 0;
-var stageAcc = {green: 0, red: 0};
-var stageLastTs = 0, stageHudTs = 0;
-var STAGE_MAX_PACKETS = 60;
-var STAGE_SPAN = 4.4;
-var STAGE_EARTH_R = 1.15;
-
-/* Deterministic value noise for the stylised landmass dots: a hash
-   lattice with trilinear interpolation. Stylised clusters only —
-   never real geography. */
-function stageNoise(x, y, z){
-  function h(ix, iy, iz){
-    /* Low-bias 32-bit integer hash (Wellons): Math.imul keeps the
-       multiply in 32 bits — plain * overflows the double-to-int32
-       coercion and clusters the output below 0.5. */
-    var n = (ix * 374761393 + iy * 668265263 + iz * 1440668113) | 0;
-    n = Math.imul(n ^ (n >>> 13), 1274126177);
-    n = n ^ (n >>> 16);
-    return (n >>> 0) / 4294967295;
-  }
-  function sm(t){ return t * t * (3 - 2 * t); }
-  function l(a, b, t){ return a + (b - a) * t; }
-  var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
-  var xf = x - xi, yf = y - yi, zf = z - zi;
-  var u = sm(xf), v = sm(yf), w = sm(zf);
-  var c000 = h(xi, yi, zi), c100 = h(xi + 1, yi, zi), c010 = h(xi, yi + 1, zi), c110 = h(xi + 1, yi + 1, zi);
-  var c001 = h(xi, yi, zi + 1), c101 = h(xi + 1, yi, zi + 1), c011 = h(xi, yi + 1, zi + 1), c111 = h(xi + 1, yi + 1, zi + 1);
-  return l(l(l(c000, c100, u), l(c010, c110, u), v), l(l(c001, c101, u), l(c011, c111, u), v), w);
+var liveTotalAll = 0, liveBypassAll = 0;
+var flowRunning = false, flowRAF = null, flowMode = "off";
+var flowPackets = [], flowAcc = {green: 0, red: 0};
+var flowLastTs = 0, flowHudTs = 0, flowFlashT = 0, flowBlockedT = 0, flowPassedT = 0;
+var FLOW_MAX_PACKETS = 44;
+var FLOW_LANES = {in: "flowLaneIn", out: "flowLaneOut", bot: "flowLaneBot", blocked: "flowLaneBlocked"};
+var flowLens = {};
+/* Lane path helpers: packets ride the SVG <path> geometry via
+   getPointAtLength, so the JS and the diagram can never drift apart. */
+function flowLaneEl(id){ return document.getElementById(id); }
+function flowLaneLen(id){
+  if(flowLens[id] != null) return flowLens[id];
+  var p = flowLaneEl(id), L = 0;
+  try{ L = p ? p.getTotalLength() : 0; }catch(e){ L = 0; }
+  flowLens[id] = L || 382;
+  return flowLens[id];
 }
-/* Landmass dots: Fibonacci-sphere points on the unit sphere, kept
-   where the noise mask passes. Shared by the WebGL and 2D paths. */
-function stageLandDots(){
-  var out = [], i, phi, theta, px, py, pz, N = 800;
-  for(i = 0; i < N; i++){
-    phi = Math.acos(1 - 2 * (i + 0.5) / N);
-    theta = Math.PI * (1 + Math.sqrt(5)) * i;
-    px = Math.sin(phi) * Math.cos(theta);
-    py = Math.sin(phi) * Math.sin(theta);
-    pz = Math.cos(phi);
-    if(stageNoise(px * 1.8 + 7.3, py * 1.8 + 3.1, pz * 1.8 + 11.7) > 0.58) out.push([px, py, pz]);
-  }
-  return out;
+function flowPointAt(id, d){
+  var p = flowLaneEl(id);
+  if(!p) return {x: 0, y: 0};
+  try{
+    var pt = p.getPointAtLength(Math.max(0, Math.min(d, flowLaneLen(id))));
+    return {x: pt.x, y: pt.y};
+  }catch(e){ return {x: 0, y: 0}; }
 }
-/* World scale: the ortho frustum is 5.4 units tall; on wide stages
-   the world grows (up to 1.75x) so Earth/shield/server spread out
-   instead of floating in empty space. Same factor for 2D. */
-function stageWorldScale(w, h){
-  if(!w || !h) return 1;
-  return Math.min(1.75, Math.max(1, (5.4 * (w / h)) / 14));
+function flowSegLane(p){
+  return p.kind === "green" ? (p.seg === 0 ? FLOW_LANES.in : FLOW_LANES.out)
+                            : (p.seg === 0 ? FLOW_LANES.bot : FLOW_LANES.blocked);
 }
-function stageBez(p0, p1, p2, t){
-  var u = 1 - t;
-  return {x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
-          y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y,
-          z: u * u * p0.z + 2 * u * t * p1.z + t * t * p2.z};
+function flowSegDur(p){
+  return p.kind === "green" ? 0.7 : (p.seg === 0 ? 0.55 : 0.45);
 }
-/* A packet travels two quadratic segments: Earth -> shield point
-   (t 0..0.5) then shield -> server (t 0.5..1). The shield crossing
-   is exactly t = 0.5, so the collision event is exact. */
-function stageSpawnPacket(kind, delay){
-  if(stagePackets.length >= STAGE_MAX_PACKETS) return;
-  var y0 = (Math.random() * 2 - 1) * 0.9, z0 = (Math.random() * 2 - 1) * 0.5;
-  var y2 = (Math.random() * 2 - 1) * 0.7, z2 = (Math.random() * 2 - 1) * 0.4;
-  var p0 = {x: -STAGE_SPAN + STAGE_EARTH_R * 0.85, y: y0, z: z0};
-  var mid = {x: 0, y: (y0 + y2) / 2 + 0.55, z: (z0 + z2) / 2};
-  var p2 = {x: STAGE_SPAN - 0.6, y: y2, z: z2};
-  stagePackets.push({kind: kind, t: 0, dur: 1.5, delay: delay || 0,
-    a0: p0, a1: {x: (p0.x + mid.x) / 2, y: Math.max(p0.y, mid.y) + 0.35, z: (p0.z + mid.z) / 2}, a2: mid,
-    b0: mid, b1: {x: (mid.x + p2.x) / 2, y: Math.max(mid.y, p2.y) + 0.25, z: (mid.z + p2.z) / 2}, b2: p2,
-    hit: false, mesh: null});
+function flowSpawnPacket(kind, delay){
+  if(flowPackets.length >= FLOW_MAX_PACKETS) return;
+  var g = document.getElementById("flowPackets");
+  if(!g) return;
+  var NS = "http://www.w3.org/2000/svg";
+  var col = kind === "green" ? "#22c55e" : "#ef4444";
+  var grp = document.createElementNS(NS, "g");
+  var trail = document.createElementNS(NS, "line");
+  trail.setAttribute("stroke", col);
+  trail.setAttribute("stroke-width", "3");
+  trail.setAttribute("stroke-linecap", "round");
+  trail.setAttribute("opacity", "0.55");
+  var halo = document.createElementNS(NS, "circle");
+  halo.setAttribute("r", "9");
+  halo.setAttribute("fill", col);
+  halo.setAttribute("opacity", "0.3");
+  var head = document.createElementNS(NS, "circle");
+  head.setAttribute("r", "4.5");
+  head.setAttribute("fill", col);
+  grp.appendChild(trail);
+  grp.appendChild(halo);
+  grp.appendChild(head);
+  g.appendChild(grp);
+  flowPackets.push({kind: kind, seg: 0, t: 0, delay: delay || 0, el: grp, trail: trail, halo: halo, head: head});
 }
-function stagePacketPos(p){
-  if(p.t < 0.5) return stageBez(p.a0, p.a1, p.a2, p.t / 0.5);
-  return stageBez(p.b0, p.b1, p.b2, (p.t - 0.5) / 0.5);
-}
-function stageKillPacket(i){
-  var p = stagePackets[i];
-  if(p.mesh && stage3D && stage3D.world){ stage3D.world.remove(p.mesh); }
-  p.mesh = null;
-  stagePackets.splice(i, 1);
-}
-function stageRipple(kind, x, y){
-  stageRipples.push({kind: kind, t: 0, x: x, y: y});
-  if(stageRipples.length > 8) stageRipples.shift();
-}
-function stageBurst(x, y, z){
-  var vel = [], i, a, b, sp;
-  for(i = 0; i < 14; i++){
-    a = Math.random() * Math.PI * 2; b = Math.acos(2 * Math.random() - 1);
-    sp = 1.2 + Math.random() * 1.6;
-    vel.push([Math.sin(b) * Math.cos(a) * sp, Math.sin(b) * Math.sin(a) * sp, Math.cos(b) * sp]);
-  }
-  stageSparks.push({t: 0, x: x, y: y, z: z || 0, vel: vel, pts: null});
-  if(stageSparks.length > 4) stageSparks.shift();
+function flowKillPacket(i){
+  var p = flowPackets[i];
+  if(p.el && p.el.parentNode) p.el.parentNode.removeChild(p.el);
+  p.el = null;
+  flowPackets.splice(i, 1);
 }
 /* Shared simulation step: spawn from live telemetry, move packets,
-   fire shield collisions. Pure state — no DOM/THREE access except
-   mesh cleanup in stageKillPacket. */
-function stageUpdate(dt){
+   fire the shield impact (red) and backend arrival (green). Pure
+   state — the only DOM write is packet removal here. */
+function flowUpdate(dt){
   var greenRate = stageSim ? 1.5 : Math.min(Math.max(0, liveBypassRps), 20);
   var redRate = stageSim ? 55 : Math.min(Math.max(0, liveTotalRps - liveBypassRps), 20);
-  stageAcc.green += greenRate * dt;
-  stageAcc.red += redRate * dt;
-  while(stageAcc.green >= 1){ stageAcc.green -= 1; stageSpawnPacket("green", 0); }
-  while(stageAcc.red >= 1){ stageAcc.red -= 1; stageSpawnPacket("red", 0); }
-  var i, p, pos;
-  for(i = stagePackets.length - 1; i >= 0; i--){
-    p = stagePackets[i];
+  flowAcc.green += greenRate * dt;
+  flowAcc.red += redRate * dt;
+  while(flowAcc.green >= 1){ flowAcc.green -= 1; flowSpawnPacket("green", 0); }
+  while(flowAcc.red >= 1){ flowAcc.red -= 1; flowSpawnPacket("red", 0); }
+  var i, p;
+  for(i = flowPackets.length - 1; i >= 0; i--){
+    p = flowPackets[i];
     if(p.delay > 0){ p.delay -= dt; continue; }
-    p.t += dt / p.dur;
-    if(!p.hit && p.t >= 0.5){
-      p.hit = true;
-      pos = stagePacketPos(p);
-      stageRipple(p.kind, pos.x, pos.y);
-      if(p.kind === "red"){ stageBurst(pos.x, pos.y, pos.z); stageKillPacket(i); continue; }
-    }
-    if(p.t >= 1){
-      pos = stagePacketPos(p);
-      if(p.kind === "green") stageRipple("green", pos.x, pos.y);
-      stageKillPacket(i);
+    p.t += dt / flowSegDur(p);
+    if(p.seg === 0 && p.t >= 1){
+      p.seg = 1; p.t = 0;
+      if(p.kind === "red") flowFlashT = 1;
+    } else if(p.seg === 1 && p.t >= 1){
+      if(p.kind === "green") flowPassedT = 1;
+      else flowBlockedT = 1;
+      flowKillPacket(i);
     }
   }
-  for(i = stageRipples.length - 1; i >= 0; i--){
-    stageRipples[i].t += dt / 0.7;
-    if(stageRipples[i].t >= 1) stageRipples.splice(i, 1);
-  }
-  for(i = stageSparks.length - 1; i >= 0; i--){
-    stageSparks[i].t += dt / 0.55;
-    if(stageSparks[i].t >= 1) stageSparks.splice(i, 1);
-  }
-  stageEarthRot += dt * (stageAlert ? 0.9 : 0.45);
+  if(flowFlashT > 0) flowFlashT = Math.max(0, flowFlashT - dt / 0.5);
+  if(flowBlockedT > 0) flowBlockedT = Math.max(0, flowBlockedT - dt / 0.6);
+  if(flowPassedT > 0) flowPassedT = Math.max(0, flowPassedT - dt / 1.2);
 }
-function stageGlowTexture(){
-  var c = document.createElement("canvas"); c.width = 128; c.height = 128;
-  var g = c.getContext("2d");
-  var gr = g.createRadialGradient(64, 64, 4, 64, 64, 64);
-  gr.addColorStop(0, "rgba(255,255,255,.9)");
-  gr.addColorStop(0.35, "rgba(255,255,255,.28)");
-  gr.addColorStop(1, "rgba(255,255,255,0)");
-  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
-  return new THREE.CanvasTexture(c);
-}
-function initWebGLStage(){
-  if(stage3D) return true;
-  if(typeof THREE === "undefined"){ stageErr = "three.js not loaded"; return false; }
-  if(!window.WebGLRenderingContext){ stageErr = "no WebGLRenderingContext"; return false; }
-  var cv = $("heroStage3d");
-  if(!cv){ stageErr = "canvas missing"; return false; }
-  try {
-    var renderer = new THREE.WebGLRenderer({canvas: cv, alpha: true, antialias: true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    var scene = new THREE.Scene();
-    /* Orthographic camera: a stylised command-center look with no
-       perspective distortion; frustum height fixed at 5.4 units and
-       the world group scales with aspect (see stageWorldScale). */
-    var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
-    camera.position.set(0, 0, 20);
-    camera.lookAt(0, 0, 0);
-    var world = new THREE.Group();
-    scene.add(world);
-    var glowTex = stageGlowTexture();
-    /* --- Earth (left) --- */
-    var earth = new THREE.Group();
-    earth.position.set(-STAGE_SPAN, 0, 0);
-    var earthWire = new THREE.Mesh(new THREE.SphereGeometry(STAGE_EARTH_R, 28, 20),
-      new THREE.MeshBasicMaterial({color: 0x06b6d4, wireframe: true, transparent: true, opacity: 0.8}));
-    earth.add(earthWire);
-    var earthCore = new THREE.Mesh(new THREE.SphereGeometry(STAGE_EARTH_R * 0.98, 24, 18),
-      new THREE.MeshBasicMaterial({color: 0x06b6d4, transparent: true, opacity: 0.07}));
-    earth.add(earthCore);
-    var dotList = stageLandDots(), dotPos = [], d;
-    for(d = 0; d < dotList.length; d++){
-      dotPos.push(dotList[d][0] * 1.17, dotList[d][1] * 1.17, dotList[d][2] * 1.17);
-    }
-    var dotGeo = new THREE.BufferGeometry();
-    dotGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(dotPos), 3));
-    var dots = new THREE.Points(dotGeo, new THREE.PointsMaterial({color: 0x10b981, size: 2.5, sizeAttenuation: false, transparent: true, opacity: 0.9}));
-    earth.add(dots);
-    var beacons = [], i, bphi, bth, bx, by, bz;
-    for(i = 0; i < 8; i++){
-      bphi = Math.acos(1 - 2 * (((i * 97 + 13) % 100) / 100));
-      bth = (i * 2.399) % (Math.PI * 2);
-      bx = Math.sin(bphi) * Math.cos(bth) * 1.18;
-      by = Math.sin(bphi) * Math.sin(bth) * 1.18;
-      bz = Math.cos(bphi) * 1.18;
-      var bm = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({color: 0x10b981}));
-      bm.position.set(bx, by, bz);
-      var bs = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, color: 0x10b981, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false}));
-      bs.scale.set(0.5, 0.5, 1);
-      bs.position.copy(bm.position);
-      earth.add(bm); earth.add(bs);
-      beacons.push({m: bm, s: bs, ph: i * 0.9});
-    }
-    world.add(earth);
-    /* Faint glowing arcs from Earth toward the shield. */
-    var arcs = [];
-    [[0.7, 0.5], [-0.4, 0.8], [0.1, -0.8]].forEach(function(a){
-      var curve = new THREE.QuadraticBezierCurve3(
-        new THREE.Vector3(-STAGE_SPAN + 0.9, a[0], 0.2),
-        new THREE.Vector3(-STAGE_SPAN / 2, a[0] + a[1], 0.5),
-        new THREE.Vector3(-0.4, a[0] * 0.5, 0.1));
-      var tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.012, 6, false),
-        new THREE.MeshBasicMaterial({color: 0x06b6d4, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false}));
-      world.add(tube);
-      arcs.push(tube);
-    });
-    /* --- Hexagonal shield (center) --- */
-    var shield = new THREE.Group();
-    var shieldDisc = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.7, 0.05, 6),
-      new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.16, side: THREE.DoubleSide}));
-    shieldDisc.rotation.x = Math.PI / 2;
-    shield.add(shieldDisc);
-    var shieldEdge = new THREE.LineSegments(new THREE.EdgesGeometry(shieldDisc.geometry),
-      new THREE.LineBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.95}));
-    shieldEdge.rotation.x = Math.PI / 2;
-    shield.add(shieldEdge);
-    var shieldRing = new THREE.Mesh(new THREE.RingGeometry(1.32, 1.48, 6),
-      new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.7, side: THREE.DoubleSide}));
-    shield.add(shieldRing);
-    var shieldGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, color: 0x10b981, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false}));
-    shieldGlow.scale.set(6.5, 6.5, 1);
-    shield.add(shieldGlow);
-    world.add(shield);
-    /* --- Origin server core (right) --- */
-    var server = new THREE.Group();
-    server.position.set(STAGE_SPAN, 0, 0);
-    var boxMat = new THREE.MeshBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.16});
-    var edgeMat = new THREE.LineBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.95});
-    for(i = 0; i < 3; i++){
-      var box = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.5, 1.15), boxMat);
-      box.position.y = -0.55 + i * 0.62;
-      var edges = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), edgeMat);
-      edges.position.copy(box.position);
-      server.add(box); server.add(edges);
-    }
-    var core = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.9, 12),
-      new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.85}));
-    server.add(core);
-    var srvRings = [];
-    [1.05, 1.35].forEach(function(r, ri){
-      var ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.015, 8, 80),
-        new THREE.MeshBasicMaterial({color: ri ? 0x06b6d4 : 0x10b981, transparent: true, opacity: 0.8}));
-      ring.rotation.x = Math.PI / 2.4;
-      server.add(ring);
-      srvRings.push(ring);
-    });
-    var srvGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, color: 0x38bdf8, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false}));
-    srvGlow.scale.set(4.2, 4.2, 1);
-    server.add(srvGlow);
-    var lights = [];
-    for(i = 0; i < 3; i++){
-      var lm = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8),
-        new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 1}));
-      lm.position.set(0.58, -0.55 + i * 0.62, 0.58);
-      server.add(lm);
-      lights.push(lm);
-    }
-    world.add(server);
-    var greenMat = new THREE.SpriteMaterial({map: glowTex, color: 0x10b981, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false});
-    var redMat = new THREE.SpriteMaterial({map: glowTex, color: 0xef4444, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false});
-    var ripplePool = [], sparkPool = [], ri;
-    for(ri = 0; ri < 8; ri++){
-      var rm = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 48),
-        new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false}));
-      rm.visible = false;
-      world.add(rm);
-      ripplePool.push(rm);
-    }
-    for(ri = 0; ri < 4; ri++){
-      var sg = new THREE.BufferGeometry();
-      sg.setAttribute("position", new THREE.BufferAttribute(new Float32Array(14 * 3), 3));
-      var sp = new THREE.Points(sg, new THREE.PointsMaterial({color: 0xef4444, size: 4, sizeAttenuation: false, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false}));
-      sp.visible = false;
-      world.add(sp);
-      sparkPool.push(sp);
-    }
-    stage3D = {renderer: renderer, scene: scene, camera: camera, world: world,
-      earth: earth, beacons: beacons, arcs: arcs,
-      shield: shield, shieldDisc: shieldDisc, shieldEdge: shieldEdge, shieldRing: shieldRing, shieldGlow: shieldGlow,
-      server: server, core: core, srvRings: srvRings, srvGlow: srvGlow, lights: lights,
-      greenMat: greenMat, redMat: redMat, ripplePool: ripplePool, sparkPool: sparkPool,
-      shieldCol: new THREE.Color(0x10b981)};
-    stageSizeCanvas();
-    var cv = $("heroStage3d"), dragging = false, lastX = 0;
-    cv.addEventListener("pointermove", function(ev){
-      var r = cv.getBoundingClientRect();
-      if(!r.width || !r.height) return;
-      stageMouseX = Math.max(-0.5, Math.min(0.5, (ev.clientX - r.left) / r.width - 0.5));
-      stageMouseY = Math.max(-0.5, Math.min(0.5, (ev.clientY - r.top) / r.height - 0.5));
-      if(dragging){ stageDragRot += (ev.clientX - lastX) * 0.008; lastX = ev.clientX; }
-    });
-    cv.addEventListener("pointerdown", function(ev){ dragging = true; lastX = ev.clientX; try{ cv.setPointerCapture(ev.pointerId); }catch(e){} });
-    cv.addEventListener("pointerup", function(){ dragging = false; });
-    cv.addEventListener("pointerleave", function(){ stageMouseX = 0; stageMouseY = 0; dragging = false; });
-    return true;
-  } catch(e){ stage3D = null; stageErr = (e && e.message) ? String(e.message) : "webgl context failed"; return false; }
-}
-/* Size the stage canvas + ortho frustum from the live layout. */
-function stageSizeCanvas(){
-  var cv = $("heroStage3d");
-  if(!cv) return;
-  var w = cv.clientWidth || 1200, h = cv.clientHeight || 320;
-  if(stage3D){
-    stage3D.renderer.setSize(w, h, false);
-    var fh = 5.4, fw = fh * (w / h);
-    var cam = stage3D.camera;
-    cam.left = -fw / 2; cam.right = fw / 2; cam.top = fh / 2; cam.bottom = -fh / 2;
-    cam.updateProjectionMatrix();
-    stage3D.world.scale.setScalar(stageWorldScale(w, h));
+/* Position packets + transient effects (impact flash, blocked pulse,
+   "passed" label). The trail is the path segment just travelled, so
+   a still frame always shows streaks, not dots. */
+function flowDraw(){
+  var i, p, lane, L, pos, prev;
+  for(i = 0; i < flowPackets.length; i++){
+    p = flowPackets[i];
+    if(p.delay > 0 || !p.el) continue;
+    lane = flowSegLane(p); L = flowLaneLen(lane);
+    pos = flowPointAt(lane, p.t * L);
+    prev = flowPointAt(lane, Math.max(0, p.t - 0.09) * L);
+    p.trail.setAttribute("x1", prev.x.toFixed(1)); p.trail.setAttribute("y1", prev.y.toFixed(1));
+    p.trail.setAttribute("x2", pos.x.toFixed(1)); p.trail.setAttribute("y2", pos.y.toFixed(1));
+    p.halo.setAttribute("cx", pos.x.toFixed(1)); p.halo.setAttribute("cy", pos.y.toFixed(1));
+    p.head.setAttribute("cx", pos.x.toFixed(1)); p.head.setAttribute("cy", pos.y.toFixed(1));
   }
-  if(stage2D){
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = Math.round(w * dpr);
-    cv.height = Math.round(h * dpr);
-    stage2D.W = w; stage2D.H = h; stage2D.dpr = dpr;
+  var fl = document.getElementById("flowShieldFlash");
+  if(fl) fl.setAttribute("opacity", (flowFlashT * 0.45).toFixed(2));
+  var ps = document.getElementById("flowPassed");
+  if(ps) ps.setAttribute("opacity", flowPassedT.toFixed(2));
+  var br = document.getElementById("flowBlockedRect");
+  if(br){
+    br.setAttribute("stroke-width", (1.5 + flowBlockedT * 1.5).toFixed(1));
+    br.setAttribute("stroke", flowBlockedT > 0.4 ? "#f87171" : "#dc2626");
   }
 }
-function stageRender3D(t){
-  var g = stage3D;
-  if(!g) return;
-  var target = stageAlert ? new THREE.Color(0xf59e0b) : new THREE.Color(0x10b981);
-  g.shieldCol.lerp(target, 0.05);
-  g.shieldDisc.material.color.copy(g.shieldCol);
-  g.shieldEdge.material.color.copy(g.shieldCol);
-  g.shieldRing.material.color.copy(g.shieldCol);
-  g.shieldGlow.material.color.copy(g.shieldCol);
-  g.shieldGlow.material.opacity = 0.4 + 0.18 * Math.sin(t * 2.2);
-  g.earth.rotation.y = stageEarthRot + stageDragRot;
-  g.earth.rotation.x = 0.12;
-  var bi;
-  for(bi = 0; bi < g.beacons.length; bi++){
-    var b = g.beacons[bi];
-    var bp = 0.6 + 0.4 * Math.sin(t * 2.4 + b.ph);
-    b.s.material.opacity = 0.35 + 0.35 * bp;
-    b.s.scale.set(0.4 + 0.25 * bp, 0.4 + 0.25 * bp, 1);
-  }
-  g.shield.rotation.z += (stageAlert ? 0.9 : 0.25) / 60;
-  g.server.position.y = Math.sin(t * 1.2) * 0.08;
-  g.srvRings[0].scale.setScalar(1 + 0.06 * Math.sin(t * 2));
-  g.srvRings[1].scale.setScalar(1 + 0.06 * Math.sin(t * 2 + 1.2));
-  g.srvGlow.material.opacity = 0.35 + 0.15 * Math.sin(t * 3.1);
-  var li;
-  for(li = 0; li < g.lights.length; li++){
-    g.lights[li].material.opacity = (Math.sin(t * 3 + li * 2.1) > 0) ? 1 : 0.15;
-  }
-  var ai;
-  for(ai = 0; ai < g.arcs.length; ai++){
-    g.arcs[ai].material.opacity = 0.35 + 0.2 * Math.sin(t * 1.8 + ai * 1.3);
-  }
-  /* packets */
-  var i, p, pos;
-  for(i = 0; i < stagePackets.length; i++){
-    p = stagePackets[i];
-    if(p.delay > 0) continue;
-    if(!p.mesh){
-      p.mesh = new THREE.Sprite(p.kind === "green" ? g.greenMat : g.redMat);
-      p.mesh.scale.set(0.36, 0.11, 1);
-      g.world.add(p.mesh);
-    }
-    pos = stagePacketPos(p);
-    p.mesh.position.set(pos.x, pos.y, pos.z);
-  }
-  /* ripples */
-  for(i = 0; i < g.ripplePool.length; i++){
-    var rp = g.ripplePool[i], r = stageRipples[i];
-    if(!r){ rp.visible = false; continue; }
-    rp.visible = true;
-    rp.position.set(r.x, r.y, 0.15);
-    var rs = 0.2 + r.t * 2.1;
-    rp.scale.set(rs, rs, 1);
-    rp.material.opacity = (1 - r.t) * 0.9;
-    rp.material.color.setHex(r.kind === "green" ? 0x10b981 : 0xef4444);
-  }
-  /* sparks */
-  for(i = 0; i < g.sparkPool.length; i++){
-    var spk = g.sparkPool[i], s = stageSparks[i];
-    if(!s){ spk.visible = false; continue; }
-    spk.visible = true;
-    var attr = spk.geometry.getAttribute("position"), arr = attr.array, k;
-    for(k = 0; k < 14; k++){
-      arr[k * 3] = s.x + s.vel[k][0] * s.t * 0.55;
-      arr[k * 3 + 1] = s.y + s.vel[k][1] * s.t * 0.55;
-      arr[k * 3 + 2] = s.z + s.vel[k][2] * s.t * 0.55;
-    }
-    attr.needsUpdate = true;
-    spk.material.opacity = (1 - s.t) * 0.95;
-  }
-  /* mouse parallax on the camera (lerped) */
-  stageTiltX += ((stageMouseY * 0.5) - stageTiltX) * 0.06;
-  stageTiltY += ((stageMouseX * 0.6) - stageTiltY) * 0.06;
-  g.camera.position.x = stageTiltY;
-  g.camera.position.y = -stageTiltX;
-  g.camera.lookAt(0, 0, 0);
-  g.renderer.render(g.scene, g.camera);
-}
-/* 2D fallback: the same three-part scene on a 2D canvas, driven by
-   the same shared packet/ripple/spark state. */
-function stageInit2D(){
-  var cv = $("heroStage3d");
-  if(!cv) return;
-  var ctx = cv.getContext("2d");
-  if(!ctx) return;
-  stage2D = {ctx: ctx, W: cv.clientWidth || 1200, H: cv.clientHeight || 320, dpr: 1, dots: stageLandDots()};
-  stageSizeCanvas();
-}
-function stageHexPath(ctx, cx, cy, r, rot){
-  var i, a;
-  ctx.beginPath();
-  for(i = 0; i < 6; i++){
-    a = rot + i * Math.PI / 3;
-    if(i === 0) ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-    else ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-  }
-  ctx.closePath();
-}
-function stageDraw2D(ts){
-  var c = stage2D;
-  if(!c) return;
-  var ctx = c.ctx, W = c.W, H = c.H, dpr = c.dpr || 1;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-  var ws = stageWorldScale(W, H);
-  var S = (H / 5.4) * ws;
-  function X(x){ return W / 2 + x * ws * S; }
-  function Y(y){ return H / 2 - y * ws * S; }
-  var t = ts / 1000;
-  var alert = stageAlert;
-  var main = alert ? "#ef4444" : "#10b981", acc = alert ? "#f59e0b" : "#06b6d4";
-  var pulse = 0.5 + 0.5 * Math.sin(t * (alert ? 6 : 2.2));
-  /* Earth */
-  var ex = X(-STAGE_SPAN), ey = Y(0), R = STAGE_EARTH_R * ws * S;
-  var grad = ctx.createRadialGradient(ex, ey, R * 0.3, ex, ey, R * 1.6);
-  grad.addColorStop(0, alert ? "rgba(239,68,68,.28)" : "rgba(16,185,129,.28)");
-  grad.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.globalAlpha = 0.5 + pulse * 0.3;
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.arc(ex, ey, R * 1.6, 0, Math.PI * 2); ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.save();
-  ctx.shadowColor = acc; ctx.shadowBlur = 12 + pulse * 12;
-  ctx.strokeStyle = acc; ctx.lineWidth = 1.8;
-  ctx.beginPath(); ctx.arc(ex, ey, R, 0, Math.PI * 2); ctx.stroke();
-  ctx.restore();
-  var i, a, rx;
-  for(i = 0; i < 5; i++){
-    a = stageEarthRot + stageDragRot + i * Math.PI / 5;
-    rx = Math.abs(Math.cos(a)) * R;
-    if(rx < 1.5) rx = 1.5;
-    ctx.globalAlpha = 0.55;
-    ctx.strokeStyle = acc; ctx.lineWidth = 1.1;
-    ctx.beginPath(); ctx.ellipse(ex, ey, rx, R, 0, 0, Math.PI * 2); ctx.stroke();
-  }
-  /* landmass dots (orthographic projection, back side dimmed) */
-  var ca = Math.cos(stageEarthRot + stageDragRot), sa = Math.sin(stageEarthRot + stageDragRot);
-  for(i = 0; i < c.dots.length; i++){
-    var dp = c.dots[i];
-    var rx2 = dp[0] * ca + dp[2] * sa, rz2 = -dp[0] * sa + dp[2] * ca;
-    ctx.globalAlpha = rz2 > 0 ? 0.9 : 0.22;
-    ctx.fillStyle = main;
-    ctx.beginPath(); ctx.arc(ex + rx2 * R * 1.01, ey - dp[1] * R * 1.01, 1.6, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-  /* Shield hexagon */
-  var hx = X(0), hy = Y(0), hr = 1.7 * ws * S;
-  ctx.save();
-  ctx.shadowColor = main; ctx.shadowBlur = 14 + pulse * 14;
-  stageHexPath(ctx, hx, hy, hr, t * (alert ? 0.9 : 0.25));
-  ctx.fillStyle = alert ? "rgba(245,158,11,.13)" : "rgba(16,185,129,.13)";
-  ctx.fill();
-  ctx.strokeStyle = main; ctx.lineWidth = 1.8; ctx.stroke();
-  ctx.restore();
-  stageHexPath(ctx, hx, hy, hr * 0.82, -t * 0.2);
-  ctx.globalAlpha = 0.6; ctx.strokeStyle = acc; ctx.lineWidth = 1.2; ctx.stroke();
-  ctx.globalAlpha = 1;
-  /* Server tower */
-  var sx = X(STAGE_SPAN), sy = Y(0) + Math.sin(t * 1.2) * 0.08 * ws * S;
-  var bw = 1.15 * ws * S, bh = 0.5 * ws * S;
-  ctx.save();
-  ctx.shadowColor = "#38bdf8"; ctx.shadowBlur = 12;
-  ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1.6;
-  ctx.fillStyle = "rgba(56,189,248,.12)";
-  for(i = 0; i < 3; i++){
-    var by = sy - 0.55 * ws * S + i * 0.62 * ws * S - bh / 2;
-    ctx.fillRect(sx - bw / 2, by, bw, bh);
-    ctx.strokeRect(sx - bw / 2, by, bw, bh);
-  }
-  ctx.restore();
-  ctx.strokeStyle = main; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(sx, sy - 0.95 * ws * S); ctx.lineTo(sx, sy + 0.95 * ws * S); ctx.stroke();
-  ctx.globalAlpha = 0.7 + 0.3 * Math.sin(t * 2);
-  ctx.strokeStyle = acc; ctx.lineWidth = 1.4;
-  ctx.beginPath(); ctx.ellipse(sx, sy, 1.05 * ws * S, 0.4 * ws * S, 0, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(sx, sy, 1.35 * ws * S, 0.5 * ws * S, 0, 0, Math.PI * 2); ctx.stroke();
-  ctx.globalAlpha = 1;
-  /* packets */
-  var p, pos, pp;
-  for(i = 0; i < stagePackets.length; i++){
-    p = stagePackets[i];
-    if(p.delay > 0) continue;
-    pos = stagePacketPos(p);
-    pp = {x: X(pos.x), y: Y(pos.y)};
-    ctx.save();
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = p.kind === "green" ? "#10b981" : "#ef4444";
-    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10;
-    ctx.beginPath(); ctx.arc(pp.x, pp.y, 3.2, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-  }
-  /* ripples */
-  for(i = 0; i < stageRipples.length; i++){
-    var rp = stageRipples[i];
-    ctx.save();
-    ctx.globalAlpha = (1 - rp.t) * 0.9;
-    ctx.strokeStyle = rp.kind === "green" ? "#10b981" : "#ef4444";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(X(rp.x), Y(rp.y), (0.2 + rp.t * 2.1) * ws * S, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore();
-  }
-  /* sparks */
-  for(i = 0; i < stageSparks.length; i++){
-    var sk = stageSparks[i], k;
-    ctx.save();
-    ctx.globalAlpha = (1 - sk.t) * 0.95;
-    ctx.fillStyle = "#ef4444";
-    ctx.shadowColor = "#ef4444"; ctx.shadowBlur = 8;
-    for(k = 0; k < 14; k++){
-      ctx.beginPath();
-      ctx.arc(X(sk.x + sk.vel[k][0] * sk.t * 0.55), Y(sk.y + sk.vel[k][1] * sk.t * 0.55), 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-  ctx.globalAlpha = 1;
-}
-/* HUD badges: alert badge (Stage>=2 / attack), sim badge, and the
-   honest idle state (0 rps, sim off, connected). */
-function syncStageHud(){
+/* HUD badges + live flow readouts: the Challenge row follows the live
+   Stage (1/2/3 from the API), the shield box glows amber/crimson at
+   Stage>=2 / attack, the Blocked box shows the live blocked all-time
+   count (total - bypassed). */
+function flowSyncHud(){
   var badge = $("stageHudBadge"), sim = $("stageHudSim"), idle = $("stageHudIdle");
   if(badge) badge.hidden = !stageAlert;
   if(sim) sim.hidden = !stageSim;
-  var showIdle = !!(typeof connected !== "undefined" && connected) && !stageSim && liveTotalRps === 0 && stageMode !== "off";
+  var showIdle = !!(typeof connected !== "undefined" && connected) && !stageSim && liveTotalRps === 0 && flowMode !== "off";
   if(idle) idle.hidden = !showIdle;
   var sw = $("simAttackSwitch");
   if(sw) sw.setAttribute("aria-checked", stageSim ? "true" : "false");
+  var stg = (heroStage != null && heroStage !== "") ? String(heroStage) : "";
+  var row = document.getElementById("flowStageRowText");
+  if(row) row.textContent = stg ? t("flowChallengeStage", stg) : t("flowChallenge");
+  var box = document.getElementById("flowShieldBox");
+  if(box) box.setAttribute("stroke", stageAlert ? (stg === "3" ? "#ef4444" : "#f59e0b") : "rgba(148,163,184,.4)");
+  var bc = document.getElementById("flowBlockedCount");
+  if(bc) bc.textContent = t("flowBlockedCount", num(Math.max(0, Math.round(liveTotalAll - liveBypassAll))));
 }
-function stageTick(ts){
-  if(!stageRunning) return;
+function syncStageHud(){ flowSyncHud(); }
+function flowTick(ts){
+  if(!flowRunning) return;
   if(document.hidden || reducedMotion){
-    stageRunning = false;
-    if(stageMode === "three-webgl" && stage3D) stageRender3D(ts / 1000);
-    else if(stageMode === "canvas-2d-fallback") stageDraw2D(ts);
-    stageRAF = null;
+    flowRunning = false;
+    flowDraw();
+    flowRAF = null;
     return;
   }
-  var dt = stageLastTs ? Math.min(0.1, (ts - stageLastTs) / 1000) : 0.016;
-  stageLastTs = ts;
-  stageUpdate(dt);
-  if(stageMode === "three-webgl" && stage3D) stageRender3D(ts / 1000);
-  else if(stageMode === "canvas-2d-fallback") stageDraw2D(ts);
-  if(ts - stageHudTs > 500){ stageHudTs = ts; syncStageHud(); }
-  stageRAF = requestAnimationFrame(stageTick);
+  var dt = flowLastTs ? Math.min(0.1, (ts - flowLastTs) / 1000) : 0.016;
+  flowLastTs = ts;
+  flowUpdate(dt);
+  flowDraw();
+  if(ts - flowHudTs > 500){ flowHudTs = ts; flowSyncHud(); }
+  flowRAF = requestAnimationFrame(flowTick);
 }
-function startStage(){
-  if(stageRunning) return;
+function startFlow(){
+  if(flowRunning) return;
   var shield = $("heroShield");
-  /* Report which renderer is actually driving the hero stage — the
-     previous silent fallback made a dead 2D drawing indistinguishable
-     from a working WebGL core in screenshots. The running browser
-     inspection reads this line (and data-globe-renderer) to confirm. */
+  /* Report which renderer drives the hero — the static SVG diagram is
+     always present, so this line says whether the packet engine is
+     live or the diagram is standing still. */
   function note(renderer, reason){
-    try{ console.info("[SonuShield] globe renderer: " + renderer + (reason ? " (" + reason + ")" : "")); }catch(e){}
-    if(shield) shield.setAttribute("data-globe-renderer", renderer);
-    stageMode = renderer;
+    try{ console.info("[SonuShield] flow renderer: " + renderer + (reason ? " (" + reason + ")" : "")); }catch(e){}
+    if(shield) shield.setAttribute("data-flow-renderer", renderer);
+    flowMode = renderer;
   }
-  stageSizeCanvas();
-  if(reducedMotion){ stageInit2D(); stageDraw2D(performance.now()); note("canvas-2d-fallback", "prefers-reduced-motion"); return; }
-  if(initWebGLStage()){
-    stageRunning = true;
-    stageLastTs = 0;
-    stageRAF = requestAnimationFrame(stageTick);
-    note("three-webgl");
-    return;
+  try{
+    flowLens = {};
+    flowRunning = true;
+    flowLastTs = 0;
+    flowRAF = requestAnimationFrame(flowTick);
+    note("svg-live");
+  }catch(e){
+    flowRunning = false;
+    note("svg-static", (e && e.message) ? String(e.message) : "flow init failed");
   }
-  stageInit2D();
-  stageRunning = true;
-  stageLastTs = 0;
-  stageRAF = requestAnimationFrame(stageTick);
-  note("canvas-2d-fallback", stageErr || "webgl init failed");
 }
-function stopStage(){
-  stageRunning = false;
-  if(stageRAF){ cancelAnimationFrame(stageRAF); stageRAF = null; }
+function stopFlow(){
+  flowRunning = false;
+  if(flowRAF){ cancelAnimationFrame(flowRAF); flowRAF = null; }
 }
 
 /* 3D tilt + cursor spotlight (pointer devices only, disabled under
@@ -6484,14 +6145,13 @@ document.addEventListener("keydown", function(ev){
 });
 /* 3D tilt on KPI cards and hero panels (pointer devices only). */
 bindTilt();
-/* Hero 3D stage + mesh pause on hidden tab. */
-startStage();
+/* Hero live flow + mesh pause on hidden tab. */
+startFlow();
 document.addEventListener("visibilitychange", function(){
   document.documentElement.classList.toggle("anim-paused", document.hidden);
-  if(document.hidden){ stopStage(); }
-  else startStage();
+  if(document.hidden){ stopFlow(); }
+  else startFlow();
 });
-window.addEventListener("resize", function(){ stageSizeCanvas(); });
 /* Test Attack Simulation: dashboard-local visual only — no backend
    calls, no real traffic, no firewall/config changes. */
 var simAttackEl = $("simAttackSwitch");
@@ -6499,8 +6159,8 @@ if(simAttackEl) simAttackEl.addEventListener("click", function(){
   stageSim = !stageSim;
   if(stageSim){
     var si;
-    for(si = 0; si < 12; si++) stageSpawnPacket("red", Math.random() * 0.4);
-    for(si = 0; si < 3; si++) stageSpawnPacket("green", Math.random() * 0.6);
+    for(si = 0; si < 12; si++) flowSpawnPacket("red", Math.random() * 0.4);
+    for(si = 0; si < 3; si++) flowSpawnPacket("green", Math.random() * 0.6);
   }
   syncStageHud();
 });

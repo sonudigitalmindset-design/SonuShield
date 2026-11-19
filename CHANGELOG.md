@@ -6,44 +6,48 @@ see [LICENSE](LICENSE) and the credits endpoint. This changelog covers the
 SonuShield work only; upstream history before the fork point is in the git
 log.
 
-## Unreleased — Overview 3D Defense Theater (SW v15)
+## Unreleased — Overview Live Request Flow (SW v16)
 
-- The Overview hero is now a full-width (320px) 3D Cyber-Defense &
-  Traffic Flow Visualizer (vendored Three.js r128, no CDN): a
-  rotating holographic Earth (wireframe + stylised dotted landmass
-  clusters + pulsing beacons + glowing arcs) on the left, a glowing
-  translucent hexagonal energy shield in the center, and a levitating
-  origin server core with pulsing rings and heartbeat glow on the
-  right. Mouse drag rotates the Earth; hover tilts the scene.
+- The Overview hero is now a full-width (320px) LIVE request-flow
+  diagram (inline SVG, modelled 1:1 on `docs/assets/request-flow.svg`,
+  dark theme): two lanes on the left — Real visitor (top) and Bot /
+  attacker (bottom) — a dark SonuShield box in the center with three
+  rows (TLS fingerprint, Firewall rules, Challenge stage 1–3), Your
+  backend top-right, and a red dashed Blocked box bottom-right.
+  Arrows: visitor → shield, shield → backend (green), bot → shield,
+  shield → blocked (red). The 3D Earth/shield/server scene is retired
+  and the Three.js script tag is removed from the page (the vendored
+  file stays in the repo, unused by the page).
 - Packets are driven ONLY by the 3s poll the dashboard already
-  fetches: emerald packets proportional to bypassed rps, crimson
-  packets proportional to (total − bypassed) rps (capped at 60 live
-  packets). Crimson packets burst into sparks + an impact ripple at
-  the shield and disintegrate; emerald packets pass through with a
-  green ripple into the server. At 0 rps the scene idles honestly
-  ("Awaiting live traffic") — no fake packets are ever shown.
-- Stage >= 2 or Under Attack shifts the shield aura to amber/crimson,
-  speeds the shield rotation, and shows the floating HUD badge
-  "SHIELD ENGAGED: BLOCKING THREATS".
-- New "Test Attack Simulation" switch (top-right of the visualizer):
-  dashboard-local visual only — no backend calls, no real traffic,
-  no config changes. When ON it launches 40+ crimson DDoS beams at
-  the shield (with sparks/ripples) while a small emerald trickle
-  passes through; OFF returns to live-driven emission.
-- Micro-animations: KPI counters already tweened via setStat (380ms,
-  exact landing); CPU/RAM now always render to 2 decimals. The
-  Requests chart has a glowing neon stroke (emerald total, blue
-  #3b82f6 bypassed) and an animated vertical scanline sweeping the
-  chart every 3s poll. Cards get a neon border shimmer on hover;
-  drawers slide in with translateX(0) + backdrop blur.
-- The old small corner globe (`heroGlobe`) is retired; the new scene
-  keeps the same renderer reporting (`console.info("[SonuShield]
-  globe renderer: three-webgl | canvas-2d-fallback (reason)")` +
-  `data-globe-renderer` on `#heroShield`). If WebGL/THREE fails, an
-  animated 2D canvas version of the same three-part scene runs —
-  never a blank box.
-- All motion is transform/opacity only and pauses when the tab is
-  hidden or under prefers-reduced-motion.
+  fetches — no new API calls: green packets flow visitor → shield →
+  backend at a rate proportional to bypassed rps, red packets flow
+  bot → shield → Blocked box at a rate proportional to (total −
+  bypassed) rps (each capped at 20/s, max 44 live packets). Packets
+  ride the SVG lane paths (`getPointAtLength`), with a 3px glowing
+  trail + halo + bright core, so a still frame always shows streaks,
+  not dots. Red packets flash the shield on impact and pulse the
+  Blocked box; each green arrival pulses a "passed" label at the
+  backend. At 0 rps the diagram idles honestly ("Awaiting live
+  traffic") — no fake packets are ever shown.
+- The Challenge row highlights the CURRENT live Stage (1/2/3 from
+  the API); the Blocked box shows the live blocked all-time count
+  (total − bypassed). Stage >= 2 or Under Attack glows the SonuShield
+  box amber/crimson and shows the floating HUD badge "SHIELD ENGAGED:
+  BLOCKING THREATS".
+- The "Test Attack Simulation" switch (top-right, labelled
+  SIMULATION, dashboard-local visual only — no backend calls, no real
+  traffic, no config changes) floods the bot lane with red packets
+  (55/s, 40+ live) that all get blocked with a visible shield flash +
+  blocked-box pulse, while a small green trickle (1.5/s) still passes.
+  OFF returns to live-driven flow.
+- The hero keeps the same renderer reporting, now for the flow:
+  `console.info("[SonuShield] flow renderer: svg-live | svg-static
+  (reason)")` + `data-flow-renderer` on `#heroShield`. If the packet
+  engine fails, the static diagram + CSS shine still show — never a
+  blank box. All motion is transform/opacity only and pauses when the
+  tab is hidden or under prefers-reduced-motion.
+- KPI counter tweens (exact landing), the neon Requests chart +
+  scanline, card hover shimmer, and drawer slide-ins are unchanged.
 
 ## Baseline — balooProxy v1.5 (upstream)
 
