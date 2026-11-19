@@ -6,6 +6,29 @@ see [LICENSE](LICENSE) and the credits endpoint. This changelog covers the
 SonuShield work only; upstream history before the fork point is in the git
 log.
 
+## Matte-build defect fixes (2026-11-19)
+
+- Fixed the 5 defects found in the user's own dark + light screenshots of
+  the matte build (KPI layout untouched — it works): (1) the Blocked node
+  no longer overlaps the idle pill — the pill moved out of the diagram to
+  a caption in the schematic card's top-right corner; (2) the "Challenge ·
+  Stage 1" pill is amber + dark text in BOTH themes (the light theme never
+  defined --accent-warn/--text-*, so the pill rendered black-on-black;
+  the missing light-theme variables are now defined, and the pill uses
+  dedicated --stage-bg/--stage-text vars, contrast 9.22:1); (3) CPU/RAM
+  mini sparklines now use a FIXED 0–100 scale, so 2% reads as an honest,
+  calm, nearly-flat line near the bottom instead of a noise-amplified
+  zigzag (20-sample buffer + Bezier smoothing kept); (4) dial gauges got
+  a clearly visible full track, a longer/thicker needle (exact math
+  unchanged: 0% -> -90 deg, 100% -> +90 deg), a center dot, and CPU/RAM
+  labels; (5) Requests + Server load charts are no longer blank boxes at
+  zero traffic — ROOT CAUSE: `.hidden = false` never unhides SVG elements
+  (no `hidden` IDL on SVGElement), so the chart SVGs stayed display:none
+  while the empty-state divs were hidden too; the code now toggles the
+  `hidden` attribute, and the charts draw visible axes + gridlines + a
+  flat baseline at the bottom. Zero still shows zero — no fake data.
+- Service worker shell v20 -> v21.
+
 ## Matte Minimal redesign (2026-11-19)
 
 - Stripped all neon glow, aurora/mesh orbs, 3D tilt + spotlight, gradient
