@@ -37,6 +37,7 @@ __CP_BOOTSTRAP__
 :root{
   color-scheme:light;
   --bg:#f8fafc; --surface:#ffffff; --panel:#ffffff; --panel-2:#f1f5f9;
+  --panel-glass:rgba(255,255,255,.90);
   --border:#e2e8f0; --border-strong:#cbd5e1;
   --text:#020617; --muted:#475569; --faint:#64748b;
   --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#0369a1;
@@ -70,6 +71,7 @@ __CP_BOOTSTRAP__
      #111827, glass top highlight + multi-layered soft shadows.
      Every text pair clears 4.5:1 on its surface. */
   --bg:#090d16; --surface:#111827; --panel:#111827; --panel-2:#1a2233;
+  --panel-glass:rgba(17,24,39,.90);
   --border:#1e293b; --border-strong:#334155;
   --text:#f1f5f9; --muted:#cbd5e1; --faint:#94a3b8;
   --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#7dd3fc;
@@ -206,7 +208,7 @@ input,select,textarea{color:var(--text);background:var(--input-bg);border:1px so
 .navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
 .navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
 .main{flex:1;padding:20px 24px 48px;min-width:0}
-.main > section, .main > .banner{max-width:1600px}
+.main > section, .main > .banner{max-width:1680px;margin:0 auto}
 .view{display:none}
 .view.active{display:block}
 h1{font-size:20px;line-height:1.3;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
@@ -216,12 +218,12 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 
 /* Cards, panels, tables */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:12px}
-.card{background:var(--panel);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
+.card{background:var(--panel-glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
 .card .label{font-size:12.5px;font-weight:500;color:var(--muted)}
 .card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums;font-family:var(--mono)}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
 .card .foot{font-size:12px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
+.panel{background:var(--panel-glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
 .panel > h2:first-child{margin-top:0}
 .panel p:last-child, .panel ul:last-child{margin-bottom:0}
 .panel ul{margin:8px 0;padding-left:20px}
@@ -383,13 +385,52 @@ tr.selected td{background:var(--nav-active-bg)}
 /* Bottom split row: Top IPs | Unknown Fingerprints, 50/50. */
 .ov-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .ov-split .panel{margin-top:0}
-/* Firewall sub-tabs: show/hide only, no form is rebuilt. */
-.fwtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin:4px 0 12px;flex-wrap:wrap}
-.fwtab-btn{border:none;background:transparent;padding:8px 12px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0}
-.fwtab-btn:hover{color:var(--text);background:var(--panel-2)}
-.fwtab-btn[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
-.fwtab-panel{margin-top:0}
-.fwtab-panel .panel:first-child{margin-top:0}
+/* Sub-tabs (firewall + domains + settings + reports + insights):
+   show/hide only, no form is rebuilt. .fwtabs keeps the firewall's
+   existing class; .subtabs is the generic alias for the other pages. */
+.fwtabs,.subtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin:4px 0 12px;flex-wrap:wrap}
+.fwtab-btn,.subtab-btn{border:none;background:transparent;padding:8px 12px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0}
+.fwtab-btn:hover,.subtab-btn:hover{color:var(--text);background:var(--panel-2)}
+.fwtab-btn[aria-selected="true"],.subtab-btn[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
+.fwtab-panel,.subtab-panel{margin-top:0}
+.fwtab-panel .panel:first-child,.subtab-panel .panel:first-child{margin-top:0}
+/* Domains inspector: metrics + config on the left, quick actions on
+   the right. Import grid, reports middle row, and insights hero use
+   the same 12-col language as the Overview grid. */
+.dom-inspector{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;margin-top:12px}
+.dom-inspector .panel{margin-top:0}
+.import-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.import-grid .panel{margin-top:0}
+.rep-mid{display:grid;grid-template-columns:7fr 5fr;gap:12px;margin-top:12px}
+.rep-mid .panel{margin-top:0}
+.rep-mid #reportSide .panel:first-child{margin-top:0}
+.ins-hero{display:grid;grid-template-columns:4fr 8fr;gap:12px;margin-bottom:12px}
+.ins-hero .panel{margin-top:0}
+/* Quick actions stack vertically in the inspector's side column. */
+.qa-col{flex-direction:column;align-items:stretch}
+.qa-col button,.qa-col select{width:100%}
+.qa-col input{max-width:100%}
+/* Sticky settings bar: floats at the viewport bottom while the form
+   scrolls, hidden until a change is made. */
+.stickybar{position:sticky;bottom:12px;z-index:20;background:var(--panel-glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:10px 14px;margin-top:16px}
+/* Report KPI icons: small Lucide-style glyphs with a soft accent glow. */
+.rep-kpis .card{position:relative}
+.rep-kpi-ico{position:absolute;top:12px;right:14px;color:var(--accent-text);filter:drop-shadow(0 0 6px var(--ring));opacity:.9}
+.rep-kpis .card .label{padding-right:28px}
+.card .foot .badge{margin:2px 4px 0 0}
+/* Security-grade radial gauge: live score drives the ring; the ring
+   glows emerald for A/B, amber for C, red for D/F. Static (no motion)
+   so reduced-motion needs no special case. */
+.grade-gauge{position:relative;width:148px;margin:6px auto 2px;text-align:center}
+.grade-ring{width:148px;height:148px;display:block}
+.grade-ring-bg{fill:none;stroke:var(--panel-2);stroke-width:9}
+.grade-ring-fg{fill:none;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .6s var(--ease-out)}
+.grade-ring-fg.ok{stroke:var(--ok-text);filter:drop-shadow(0 0 10px var(--glow-ok))}
+.grade-ring-fg.warn{stroke:var(--amber);filter:drop-shadow(0 0 10px var(--glow-warn))}
+.grade-ring-fg.bad{stroke:var(--bad-text);filter:drop-shadow(0 0 10px var(--glow-bad))}
+.grade-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.grade-letter{font-size:44px;font-weight:700;line-height:1}
+.grade-score{font-size:12.5px;color:var(--muted);margin-top:4px}
 .fw-toolbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:0 0 12px}
 .fw-toolbar .spacer{flex:1}
 /* Rule drawer: slide-over from the right, full-width on mobile.
@@ -419,6 +460,7 @@ tr.selected td{background:var(--nav-active-bg)}
   .ov-grid .card{grid-column:span 6}
   .ov-grid .span-2,.ov-grid .span-4{grid-column:span 6!important}
   .ov-split{grid-template-columns:1fr}
+  .dom-inspector,.import-grid,.rep-mid,.ins-hero{grid-template-columns:1fr}
   .hero{grid-template-columns:1fr}
   .hero-shield svg{width:76px;height:auto}
 }
@@ -577,6 +619,13 @@ tr.selected td{background:var(--nav-active-bg)}
     <section id="view-domains" class="view">
       <h1 data-i18n="domTitle">Domains</h1>
       <p class="sub" data-i18n="domSub">Configured domains from the API. Select a domain to inspect and manage it everywhere in this dashboard.</p>
+      <div class="fw-toolbar"><span class="spacer"></span><button type="button" class="primary" id="domAddBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="domAddBtn">Add domain</span></button></div>
+      <div class="subtabs" role="tablist" data-i18n-aria="domTabsAria" aria-label="Domain sections">
+        <button type="button" class="subtab-btn" id="domTabConfig" role="tab" aria-selected="true" data-i18n="domTabConfig">Configured domains &amp; inspector</button>
+        <button type="button" class="subtab-btn" id="domTabTenants" role="tab" aria-selected="false" data-i18n="domTabTenants">Tenants &amp; usage</button>
+        <button type="button" class="subtab-btn" id="domTabImport" role="tab" aria-selected="false" data-i18n="domTabImport">Bulk import (JSON / Nginx / Apache)</button>
+      </div>
+      <div class="subtab-panel" id="domPanelConfig" role="tabpanel">
       <div class="panel">
         <h2 data-i18n="domConfiguredTitle">Configured domains</h2>
         <div id="domList"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
@@ -586,19 +635,33 @@ tr.selected td{background:var(--nav-active-bg)}
         <input id="domainInput" class="grow" type="text" spellcheck="false" autocomplete="off" placeholder="example.com" style="flex:1;min-width:180px">
         <button id="domainBtn" type="button" class="primary" data-i18n="inspectBtn">Inspect domain</button>
       </div>
-      <div class="panel">
-        <h2 id="domTitle">—</h2>
-        <div id="domBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+      <div class="inline-err" id="tplError" role="alert"></div>
+      <div class="inline-ok" id="tplOk" role="status"></div>
+      <div class="dom-inspector" id="domInspector" hidden>
+        <div class="panel">
+          <h2 id="domTitle">—</h2>
+          <div id="domBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        </div>
+        <div class="panel">
+          <h2 data-i18n="domQuickActions">Quick actions</h2>
+          <div id="domQuickActions"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        </div>
       </div>
+      </div>
+      <div class="subtab-panel" id="domPanelTenants" role="tabpanel" hidden>
       <div class="panel">
         <h2 data-i18n="tenantsTitle">Tenants</h2>
         <p class="small muted" data-i18n="tenantsNote">Usage per tenant, from live counters. “Blocked” is approximated as total requests minus requests that passed a challenge. Bandwidth is an estimate: proxied and cache-served traffic only (challenge pages, block pages, and WebSocket traffic are not counted). Tenant assignment is config-file-only.</p>
         <div id="tenantBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
       </div>
-      <div class="inline-err" id="tplError" role="alert"></div>
-      <div class="inline-ok" id="tplOk" role="status"></div>
+      </div>
+    <div class="drawer-overlay" id="domModal" hidden>
+      <div class="drawer" role="dialog" aria-modal="true" data-i18n-aria="domModalAria" aria-label="Add a domain">
+        <div class="drawer-head">
+          <h2 data-i18n="tplTitle">New domain from template</h2>
+          <button type="button" class="iconbtn" id="domModalClose" data-i18n-aria="domModalClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
       <div class="panel">
-        <h2 data-i18n="tplTitle">New domain from template</h2>
         <p class="small muted" data-i18n="tplNote">Templates are starting points with sane presets — WAF log-only, and caching or compression where it fits the site kind. Adjust settings afterwards; no template ships firewall rules. Creating a domain reloads the configuration, which resets per-domain counters and stage state, exactly as a manual reload does.</p>
         <form id="tplForm">
           <div class="formgrid">
@@ -634,6 +697,10 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </form>
       </div>
+      </div>
+    </div>
+      <div class="subtab-panel" id="domPanelImport" role="tabpanel" hidden>
+      <div class="import-grid">
       <div class="panel">
         <h2 data-i18n="importTitle">Import domains</h2>
         <p class="small muted" data-i18n="importNote">Bulk-create domains from JSON or CSV. Every entry is validated first — an invalid import is rejected and nothing changes. Importing reloads the configuration, as creating a single domain does.</p>
@@ -678,6 +745,8 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </form>
         <div id="srvImportResult" style="margin-top:12px"></div>
+      </div>
+      </div>
       </div>
     </section>
 
@@ -1013,7 +1082,14 @@ tr.selected td{background:var(--nav-active-bg)}
       <p class="sub"><span data-i18n="setSubPre">Configuration for </span><strong id="settingsDomain">—</strong><span data-i18n="setSubPost">. Saved changes are written to <code>config.json</code> on the server immediately and survive restarts. Secrets, backends, schemes, and certificate paths can only be changed in <code>config.json</code> on the server, followed by Reload config.</span></p>
       <div class="inline-err" id="settingsError" role="alert"></div>
       <div class="inline-ok" id="settingsOk" role="status"></div>
+      <div class="subtabs" role="tablist" data-i18n-aria="setTabsAria" aria-label="Settings sections">
+        <button type="button" class="subtab-btn" id="setTabThresh" role="tab" aria-selected="true" data-i18n="setTabThresh">Traffic &amp; attack thresholds</button>
+        <button type="button" class="subtab-btn" id="setTabPow" role="tab" aria-selected="false" data-i18n="setTabPow">WAF &amp; proof-of-work</button>
+        <button type="button" class="subtab-btn" id="setTabFeatures" role="tab" aria-selected="false" data-i18n="setTabFeatures">System &amp; proxy features</button>
+        <button type="button" class="subtab-btn" id="setTabBackups" role="tab" aria-selected="false" data-i18n="setTabBackups">Config backups</button>
+      </div>
       <form id="settingsForm">
+        <div class="subtab-panel" id="setPanelThresh" role="tabpanel">
         <div class="panel">
           <h2 data-i18n="setThreshTitle">Attack thresholds</h2>
           <div class="formgrid">
@@ -1026,6 +1102,8 @@ tr.selected td{background:var(--nav-active-bg)}
             <div class="field"><label for="setStage2Difficulty" data-i18n="setDiffLabel">Stage 2 difficulty (0 = default)</label><input id="setStage2Difficulty" type="number" min="0" max="16" step="1"><div class="hint" data-i18n="setDiffHint">Proof-of-work difficulty. 0 uses the default of 5.</div></div>
           </div>
         </div>
+        </div>
+        <div class="subtab-panel" id="setPanelPow" role="tabpanel" hidden>
         <div class="panel">
           <h2 data-i18n="setPowTitle">Proof-of-work &amp; challenges</h2>
           <div class="formgrid">
@@ -1049,21 +1127,26 @@ tr.selected td{background:var(--nav-active-bg)}
             <div class="field"><label for="setRulesDryRun" data-i18n="setDryRunLabel">Rules dry-run mode</label><select id="setRulesDryRun"><option value="false" data-i18n="setDryRunOff">Off — rules enforced</option><option value="true" data-i18n="setDryRunOn">On — log matches, take no action</option></select><div class="hint" data-i18n="setDryRunHint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
           </div>
         </div>
-        <div class="btnrow">
+        </div>
+        <div class="btnrow stickybar" id="settingsStickyBar" hidden>
           <button class="primary" type="submit" data-i18n="setSaveBtn">Save settings</button>
           <button type="button" id="settingsReloadBtn" data-i18n="setReloadBtn">Reload current values</button>
         </div>
       </form>
+      <div class="subtab-panel" id="setPanelFeatures" role="tabpanel" hidden>
       <div class="panel">
         <h2 data-i18n="setProxyTitle">Proxy features</h2>
         <div id="proxyFeatures"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
         <div class="btnrow"><button type="button" id="refreshFeedBtn" data-i18n="setRefreshFeedBtn">Refresh reputation feed</button></div>
       </div>
+      </div>
+      <div class="subtab-panel" id="setPanelBackups" role="tabpanel" hidden>
       <div class="panel">
         <h2 data-i18n="setBackupsTitle">Configuration backups</h2>
         <p class="small muted" data-i18n="setBackupsNote">Every saved change keeps the previous <code>config.json</code> as a backup, newest first. Restoring validates the backup first, backs up the current file, and reloads the proxy.</p>
         <div id="backupList"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
         <div class="btnrow"><button type="button" id="backupsReloadBtn" data-i18n="setBackupsReloadBtn">Reload list</button></div>
+      </div>
       </div>
     </section>
 
@@ -1079,6 +1162,7 @@ tr.selected td{background:var(--nav-active-bg)}
       </div>
       <div class="inline-err" id="reportError" role="alert"></div>
       <div id="reportBody"><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+      <div class="rep-mid">
       <div class="panel">
         <h2 data-i18n="mapTitle">Attack map</h2>
         <p class="small muted" data-i18n="mapNote">Top countries by blocked and challenged requests in the window, from the JSON log's country field. Shown only when a GeoIP database is configured — without one, no country data exists. The globe is schematic: dot positions are approximate country centroids, not precise locations.</p>
@@ -1092,17 +1176,63 @@ tr.selected td{background:var(--nav-active-bg)}
         </div>
         <div id="mapBody"><div class="state" data-i18n="mapNoMap">No map loaded yet.</div></div>
       </div>
+      <div id="reportSide"><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+      </div>
+      <div class="panel">
+        <div class="subtabs" role="tablist" data-i18n-aria="repTabsAria" aria-label="Report sections">
+          <button type="button" class="subtab-btn" id="repTabVerified" role="tab" aria-selected="true" data-i18n="repTopVerified">Top verified IPs</button>
+          <button type="button" class="subtab-btn" id="repTabUnverified" role="tab" aria-selected="false" data-i18n="repTopUnverified">Top unverified IPs</button>
+          <button type="button" class="subtab-btn" id="repTabFps" role="tab" aria-selected="false" data-i18n="repTopFps">Unknown fingerprints</button>
+          <button type="button" class="subtab-btn" id="repTabCountries" role="tab" aria-selected="false" data-i18n="repCountries">Countries</button>
+          <button type="button" class="subtab-btn" id="repTabBlocks" role="tab" aria-selected="false" data-i18n="repBlocks">Blocks by reason</button>
+          <button type="button" class="subtab-btn" id="repTabWaf" role="tab" aria-selected="false" data-i18n="repWaf">WAF matches</button>
+        </div>
+        <div class="subtab-panel" id="repPanelVerified" role="tabpanel"><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+        <div class="subtab-panel" id="repPanelUnverified" role="tabpanel" hidden><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+        <div class="subtab-panel" id="repPanelFps" role="tabpanel" hidden><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+        <div class="subtab-panel" id="repPanelCountries" role="tabpanel" hidden><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+        <div class="subtab-panel" id="repPanelBlocks" role="tabpanel" hidden><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+        <div class="subtab-panel" id="repPanelWaf" role="tabpanel" hidden><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
+      </div>
+      <div id="repGenerated"></div>
     </section>
 
     <section id="view-insights" class="view">
       <h1 data-i18n="insTitle">Insights</h1>
       <p class="sub"><span data-i18n="insSubPre">Latency, attacks, configuration grade, and shadow evaluation for </span><strong id="insightsDomain">—</strong><span data-i18n="insSubPost">. All figures come from live proxy state — nothing is sampled from a third party.</span></p>
+      <div class="ins-hero">
+      <div class="panel">
+        <h2 data-i18n="gradeTitle">Security grade</h2>
+        <div id="gradeHero"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+        <div class="btnrow"><button type="button" id="gradeReloadBtn" data-i18n="gradeReloadBtn">Re-run grade scan</button></div>
+      </div>
       <div class="panel">
         <h2 data-i18n="latTitle">Latency &amp; SLA</h2>
         <p class="small muted" data-i18n="latNote">Proxy latency is measured from middleware entry to the first backend attempt; TTFB from the first attempt to response headers; total until the body is fully read. The window holds the last 512 sampled requests per domain. Uptime here is the origin success rate over that window, not wall-clock uptime.</p>
         <div id="latBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
         <div class="btnrow"><button type="button" id="latReloadBtn" data-i18n="latReloadBtn">Reload latency</button></div>
       </div>
+      </div>
+      <div class="subtabs" role="tablist" data-i18n-aria="insTabsAria" aria-label="Insights sections">
+        <button type="button" class="subtab-btn" id="insTabAudit" role="tab" aria-selected="true" data-i18n="insTabAudit">Audit checklist</button>
+        <button type="button" class="subtab-btn" id="insTabPm" role="tab" aria-selected="false" data-i18n="pmTitle">Attack timeline &amp; postmortem</button>
+        <button type="button" class="subtab-btn" id="insTabShadow" role="tab" aria-selected="false" data-i18n="insTabShadowRum">Shadow &amp; RUM</button>
+        <button type="button" class="subtab-btn" id="insTabCerts" role="tab" aria-selected="false" data-i18n="certTitle">Certificates &amp; subdomains</button>
+      </div>
+      <div class="subtab-panel" id="insPanelAudit" role="tabpanel">
+      <div class="panel">
+        <div class="panel-head"><h2 data-i18n="insAuditTitle">Configuration audit checklist</h2>
+          <div class="themeseg" role="group" data-i18n-aria="insFilterAria" aria-label="Filter checks">
+            <button type="button" id="gradeFilterAll" aria-pressed="true" data-i18n="insFilterAll">All</button>
+            <button type="button" id="gradeFilterWarn" aria-pressed="false" data-i18n="insFilterWarn">Warnings</button>
+            <button type="button" id="gradeFilterPass" aria-pressed="false" data-i18n="insFilterPass">Passed</button>
+          </div>
+        </div>
+        <p class="small muted" data-i18n="gradeNote">A configuration audit of the running proxy — TLS settings, header config, challenge coverage, and secret hygiene. It is not a penetration test: it makes no network probes and never prints a secret.</p>
+        <div id="gradeBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+      </div>
+      </div>
+      <div class="subtab-panel" id="insPanelPm" role="tabpanel" hidden>
       <div class="panel">
         <h2 data-i18n="pmTitle">Attack timeline &amp; postmortem</h2>
         <p class="small muted" data-i18n="pmNote">Built from the attack timeline and the live counters already kept by the proxy. IP and fingerprint tallies are proxy-wide and labelled as such in the report.</p>
@@ -1116,12 +1246,8 @@ tr.selected td{background:var(--nav-active-bg)}
         </div>
         <div id="pmBody"><div class="state" data-i18n="pmNoReport">No postmortem loaded yet.</div></div>
       </div>
-      <div class="panel">
-        <h2 data-i18n="gradeTitle">Security grade</h2>
-        <p class="small muted" data-i18n="gradeNote">A configuration audit of the running proxy — TLS settings, header config, challenge coverage, and secret hygiene. It is not a penetration test: it makes no network probes and never prints a secret.</p>
-        <div id="gradeBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
-        <div class="btnrow"><button type="button" id="gradeReloadBtn" data-i18n="gradeReloadBtn">Re-run grade scan</button></div>
       </div>
+      <div class="subtab-panel" id="insPanelShadow" role="tabpanel" hidden>
       <div class="panel">
         <h2 data-i18n="shadowTitle">Shadow report</h2>
         <p class="small muted" data-i18n="shadowNote">What the shadow rules and shadow WAF <em>would</em> have decided, had they been enforced. Shadow decisions never affect traffic. Empty until shadow rules or shadow WAF are configured for the domain.</p>
@@ -1134,11 +1260,14 @@ tr.selected td{background:var(--nav-active-bg)}
         <div id="rumBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
         <div class="btnrow"><button type="button" id="rumReloadBtn" data-i18n="rumReloadBtn">Reload RUM</button></div>
       </div>
+      </div>
+      <div class="subtab-panel" id="insPanelCerts" role="tabpanel" hidden>
       <div class="panel">
         <h2 data-i18n="certTitle">Certificates &amp; subdomains</h2>
         <p class="small muted" data-i18n="certNote">Expiry for every configured certificate file, and the last DNS results for operator-listed subdomains. No certificate or subdomain data leaves the proxy.</p>
         <div id="certBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
         <div class="btnrow"><button type="button" id="certReloadBtn" data-i18n="certReloadBtn">Reload certificates</button></div>
+      </div>
       </div>
     </section>
 
@@ -1415,6 +1544,14 @@ noDataYet: "No data yet. Connect to load live data.",
 domTitle: "Domains",
 domSub: "Configured domains from the API. Select a domain to inspect and manage it everywhere in this dashboard.",
 domConfiguredTitle: "Configured domains",
+domAddBtn: "Add domain",
+domTabsAria: "Domain sections",
+domQuickActions: "Quick actions",
+domModalAria: "Add a domain",
+domModalClose: "Close",
+domTabConfig: "Configured domains & inspector",
+domTabTenants: "Tenants & usage",
+domTabImport: "Bulk import (JSON / Nginx / Apache)",
 inspectLabel: "Or inspect a name directly",
 inspectBtn: "Inspect domain",
 tenantsTitle: "Tenants",
@@ -1535,6 +1672,11 @@ setTitle: "Settings",
 setSubPre: "Configuration for ",
 setSubPost: ". Saved changes are written to <code>config.json</code> on the server immediately and survive restarts. Secrets, backends, schemes, and certificate paths can only be changed in <code>config.json</code> on the server, followed by Reload config.",
 setThreshTitle: "Attack thresholds",
+setTabsAria: "Settings sections",
+setTabThresh: "Traffic & attack thresholds",
+setTabPow: "WAF & proof-of-work",
+setTabFeatures: "System & proxy features",
+setTabBackups: "Config backups",
 setBypass1Label: "Bypass Stage 1 (r/s)",
 setBypass1Hint: "Bypassed requests/s that trigger Stage 2.",
 setBypass2Label: "Bypass Stage 2 (r/s)",
@@ -1583,6 +1725,7 @@ repTitle: "Attack report",
 repSubPre: "Attack summary for ",
 repSubPost: ", built from live counters. IP and fingerprint tallies are proxy-wide and labelled as such in the report.",
 repTopLabel: "Show top",
+repTabsAria: "Report sections",
 repLoadBtn: "Load report",
 repJsonBtn: "Download JSON",
 repCsvBtn: "Download CSV",
@@ -1880,6 +2023,14 @@ insTitle: "Insights",
 insSubPre: "Latency, attacks, configuration grade, and shadow evaluation for ",
 insSubPost: ". All figures come from live proxy state — nothing is sampled from a third party.",
 latTitle: "Latency & SLA",
+insTabsAria: "Insights sections",
+insTabAudit: "Audit checklist",
+insTabShadowRum: "Shadow & RUM",
+insAuditTitle: "Configuration audit checklist",
+insFilterAll: "All",
+insFilterWarn: "Warnings",
+insFilterPass: "Passed",
+insFilterAria: "Filter checks",
 latNote: "Proxy latency is measured from middleware entry to the first backend attempt; TTFB from the first attempt to response headers; total until the body is fully read. The window holds the last 512 sampled requests per domain. Uptime here is the origin success rate over that window, not wall-clock uptime.",
 latReloadBtn: "Reload latency",
 latCardTtfb: "TTFB",
@@ -2189,6 +2340,14 @@ noDataYet: "अभी कोई data नहीं। Live data load करने
 domTitle: "Domains",
 domSub: "API से configured domains। किसी domain को select करें — फिर पूरे dashboard में वही domain inspect और manage होगा।",
 domConfiguredTitle: "Configured domains",
+domAddBtn: "डोमेन जोड़ें",
+domTabsAria: "डोमेन अनुभाग",
+domQuickActions: "त्वरित कार्रवाइयाँ",
+domModalAria: "डोमेन जोड़ें",
+domModalClose: "बंद करें",
+domTabConfig: "कॉन्फ़िगर किए गए डोमेन और इंस्पेक्टर",
+domTabTenants: "टेनेंट और उपयोग",
+domTabImport: "बल्क इम्पोर्ट (JSON / Nginx / Apache)",
 inspectLabel: "या सीधे कोई नाम inspect करें",
 inspectBtn: "Domain inspect करें",
 tenantsTitle: "Tenants",
@@ -2309,6 +2468,11 @@ setTitle: "Settings",
 setSubPre: "",
 setSubPost: " का configuration। Save किए गए changes तुरंत server पर <code>config.json</code> में लिखे जाते हैं और restart के बाद भी रहते हैं। Secrets, backends, schemes और certificate paths सिर्फ server पर <code>config.json</code> में बदले जा सकते हैं, फिर Reload config करें।",
 setThreshTitle: "Attack thresholds",
+setTabsAria: "सेटिंग्स अनुभाग",
+setTabThresh: "ट्रैफ़िक और अटैक थ्रेशोल्ड",
+setTabPow: "WAF और प्रूफ़-ऑफ़-वर्क",
+setTabFeatures: "सिस्टम और प्रॉक्सी सुविधाएँ",
+setTabBackups: "कॉन्फ़िग बैकअप",
 setBypass1Label: "Bypass Stage 1 (r/s)",
 setBypass1Hint: "इतने bypassed requests/s पर Stage 2 शुरू होता है।",
 setBypass2Label: "Bypass Stage 2 (r/s)",
@@ -2357,6 +2521,7 @@ repTitle: "Attack report",
 repSubPre: "",
 repSubPost: " की attack summary, live counters से बनी हुई। IP और fingerprint की गिनती पूरे proxy की है और report में वैसी ही labelled है।",
 repTopLabel: "Top दिखाएँ",
+repTabsAria: "रिपोर्ट अनुभाग",
 repLoadBtn: "Report load करें",
 repJsonBtn: "JSON download करें",
 repCsvBtn: "CSV download करें",
@@ -2654,6 +2819,14 @@ insTitle: "Insights",
 insSubPre: "Latency, attacks, configuration grade, और shadow evaluation — ",
 insSubPost: " के लिए। सारे figures live proxy state से हैं — किसी third party से कुछ sample नहीं होता।",
 latTitle: "Latency & SLA",
+insTabsAria: "इनसाइट्स अनुभाग",
+insTabAudit: "ऑडिट चेकलिस्ट",
+insTabShadowRum: "शैडो और RUM",
+insAuditTitle: "कॉन्फ़िगरेशन ऑडिट चेकलिस्ट",
+insFilterAll: "सभी",
+insFilterWarn: "चेतावनियाँ",
+insFilterPass: "पास",
+insFilterAria: "जाँच फ़िल्टर करें",
 latNote: "Proxy latency middleware entry से पहले backend attempt तक मापी जाती है; TTFB पहले attempt से response headers तक; total, body पूरी पढ़ी जाने तक। Window में per domain आखिरी 512 sampled requests रहते हैं। यहाँ uptime उस window का origin success rate है, wall-clock uptime नहीं।",
 latReloadBtn: "Latency reload करें",
 latCardTtfb: "TTFB",
@@ -3428,6 +3601,7 @@ function createFromTemplate(ev){
     $("tplCert").value = "";
     $("tplKey").value = "";
     loadDomains(); loadDomainPanel(); loadTenants();
+    closeDomModal();
   }).catch(function(err){
     showInline("tplError", "tplOk", t("errCreateDomain", err.message), "");
   });
@@ -3531,6 +3705,7 @@ function loadDomainPanel(){
     var cfg = r[0];
     if(!cfg && !r[1] && !r[2] && !r[3] && !r[4]){
       setHTML("domBody", '<div class="state"><strong>' + t("noData") + '</strong><br>' + t("errDomainMissing") + '</div>');
+      $("domInspector").hidden = false;
       return;
     }
     var h = '<table><tbody>'
@@ -3556,11 +3731,14 @@ function loadDomainPanel(){
     } else {
       h += "<tr><td>" + t("cacheRowTitle") + "</td><td>" + t("cacheDisabled") + "</td></tr>";
     }
-    setHTML("domBody", h + "</tbody></table>"
-      + '<div class="btnrow" style="margin-top:12px"><button type="button" id="purgeCacheBtn">' + t("purgeCacheBtn") + '</button>'
+    setHTML("domBody", h + "</tbody></table>");
+    /* Quick actions live in the inspector's side column, not under the
+       table: same buttons, same handlers, same IDs. */
+    setHTML("domQuickActions", '<div class="btnrow qa-col"><button type="button" id="purgeCacheBtn">' + t("purgeCacheBtn") + '</button>'
       + '<select id="purgeCacheSel"><option value="path">' + t("purgeSelectorPath") + '</option><option value="prefix">' + t("purgeSelectorPrefix") + '</option><option value="tag">' + t("purgeSelectorTag") + '</option></select>'
       + '<input id="purgeCacheVal" type="text" spellcheck="false" autocomplete="off" style="width:220px" placeholder="' + t("purgeValuePlaceholder") + '">'
       + '<button type="button" id="purgeCacheSelBtn">' + t("purgeSelectiveBtn") + '</button><span class="small muted" id="purgeCacheNote"></span></div>');
+    $("domInspector").hidden = false;
     var purgeBtn = $("purgeCacheBtn");
     if(purgeBtn){
       purgeBtn.addEventListener("click", function(){
@@ -3603,6 +3781,90 @@ function showFwTab(name){
     if(btn) btn.setAttribute("aria-selected", n === name ? "true" : "false");
     if(panel) panel.hidden = n !== name;
   });
+}
+/* Domains sub-tabs + Add Domain drawer: the same show/hide pattern as
+   the firewall tabs; the template form keeps its IDs and handlers. */
+var DOM_TABS = ["Config", "Tenants", "Import"];
+function showDomTab(name){
+  DOM_TABS.forEach(function(n){
+    var btn = $("domTab" + n), panel = $("domPanel" + n);
+    if(btn) btn.setAttribute("aria-selected", n === name ? "true" : "false");
+    if(panel) panel.hidden = n !== name;
+  });
+}
+var domModalLastFocus = null;
+function openDomModal(){
+  domModalLastFocus = document.activeElement;
+  $("domModal").hidden = false;
+  var target = $("tplName");
+  if(target) target.focus();
+}
+function closeDomModal(){
+  $("domModal").hidden = true;
+  if(domModalLastFocus && domModalLastFocus.focus) domModalLastFocus.focus();
+}
+/* Settings sub-tabs: thresholds / PoW+WAF / features / backups. The
+   sticky save bar is shown by input/change events on the form (see
+   init) and hidden again by loadSettings once values are fresh. */
+var SET_TABS = ["Thresh", "Pow", "Features", "Backups"];
+function showSetTab(name){
+  SET_TABS.forEach(function(n){
+    var btn = $("setTab" + n), panel = $("setPanel" + n);
+    if(btn) btn.setAttribute("aria-selected", n === name ? "true" : "false");
+    if(panel) panel.hidden = n !== name;
+  });
+}
+/* Reports sub-tabs: the six data tables share one card. */
+var REP_TABS = ["Verified", "Unverified", "Fps", "Countries", "Blocks", "Waf"];
+function showRepTab(name){
+  REP_TABS.forEach(function(n){
+    var btn = $("repTab" + n), panel = $("repPanel" + n);
+    if(btn) btn.setAttribute("aria-selected", n === name ? "true" : "false");
+    if(panel) panel.hidden = n !== name;
+  });
+}
+/* Insights sub-tabs: audit checklist / postmortem / shadow+RUM / certs. */
+var INS_TABS = ["Audit", "Pm", "Shadow", "Certs"];
+function showInsTab(name){
+  INS_TABS.forEach(function(n){
+    var btn = $("insTab" + n), panel = $("insPanel" + n);
+    if(btn) btn.setAttribute("aria-selected", n === name ? "true" : "false");
+    if(panel) panel.hidden = n !== name;
+  });
+}
+/* Audit checklist filter: All shows every row; Warnings shows warn +
+   fail rows; Passed shows pass rows only. Info rows appear under All
+   only. Re-applied after every grade re-render. */
+var gradeFilter = "all";
+function applyGradeFilter(){
+  document.querySelectorAll("#gradeBody tr[data-grade-status]").forEach(function(row){
+    var s = row.getAttribute("data-grade-status");
+    var show = gradeFilter === "all" || (gradeFilter === "warn" ? (s === "warn" || s === "fail") : (gradeFilter === "pass" ? s === "pass" : true));
+    row.style.display = show ? "" : "none";
+  });
+  [["All", "all"], ["Warn", "warn"], ["Pass", "pass"]].forEach(function(pair){
+    var b = $("gradeFilter" + pair[0]);
+    if(b) b.setAttribute("aria-pressed", gradeFilter === pair[1] ? "true" : "false");
+  });
+}
+function setGradeFilter(f){ gradeFilter = f; applyGradeFilter(); }
+/* Grade ring color: emerald for A/B, amber for C, red for D/F. */
+function gradeRingClass(grade){
+  var g = String(grade || "").charAt(0);
+  if(g === "A" || g === "B") return "ok";
+  if(g === "C") return "warn";
+  if(g === "D" || g === "F") return "bad";
+  return "";
+}
+/* p50/p95/p99 pills for the latency cards: badge spans carrying the
+   same values as the table below the cards. */
+function latPills(pairs){
+  return pairs.map(function(p){ return '<span class="badge">' + p[0] + ' ' + fmtMs(p[1]) + '</span>'; }).join(" ");
+}
+/* Status badge for proxy-feature rows: ok state glows, off state is
+   a plain neutral badge. */
+function pfBadge(on, onWord, offWord){
+  return on ? '<span class="badge stage1">' + onWord + '</span>' : '<span class="badge">' + offWord + '</span>';
 }
 /* Rule drawer (slide-over): the Visual Builder and the Raw
    Expression form live inside it. Opening for an edit shows Raw;
@@ -4180,6 +4442,7 @@ var countryCentroids = {US:[39.8,-98.5],CN:[35,105],RU:[60,90],IN:[21,78],BR:[-1
 function attackMapSVG(countries, max){
   var cx = 180, cy = 100, r = 88;
   var s = '<svg viewBox="0 0 360 200" width="100%" role="img" aria-label="' + t("mapAriaLabel") + '" style="max-width:640px;display:block;margin:0 auto 12px">';
+  s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" style="fill:var(--panel-2)" opacity="0.55"/>';
   s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.6"/>';
   s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + r + '" ry="30" fill="none" stroke="#94a3b8" stroke-width="0.5" opacity="0.35"/>';
   s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="30" ry="' + r + '" fill="none" stroke="#94a3b8" stroke-width="0.5" opacity="0.35"/>';
@@ -4253,6 +4516,8 @@ function loadSettings(){
     setText("settingsProvider", r.CHALLENGE_PROVIDER || t("providerNone"));
     setText("settingsKeys", r.CHALLENGE_KEYS_CONFIGURED ? t("yes") : t("no"));
     showInline("settingsError", "settingsOk", "", "");
+    /* Freshly loaded values are clean: hide the sticky save bar. */
+    $("settingsStickyBar").hidden = true;
   }).catch(function(err){
     showInline("settingsError", "settingsOk", t("errLoadSettings", err.message), "");
   });
@@ -4288,11 +4553,11 @@ function submitSettings(ev){
 function loadProxyFeatures(){
   return proxyAction("GET_PROXY_FEATURES").then(function(r){
     var h = '<table><tbody>'
-      + "<tr><td>" + t("pfQuiet") + "</td><td>" + (r.QUIET_MODE ? t("onWord") : t("offWord")) + "</td></tr>"
-      + "<tr><td>" + t("pfAutoSsl") + "</td><td>" + (r.AUTO_SSL ? t("enabledWord") : t("disabledWord")) + (r.AUTO_SSL_ACTIVE ? t("activeSuffix") : "") + "</td></tr>"
-      + "<tr><td>" + t("pfGeoCountry") + "</td><td>" + (r.GEO_COUNTRY_LOADED ? t("loadedWord") : t("notLoadedWord")) + "</td></tr>"
-      + "<tr><td>" + t("pfGeoAsn") + "</td><td>" + (r.GEO_ASN_LOADED ? t("loadedWord") : t("notLoadedWord")) + "</td></tr>"
-      + "<tr><td>" + t("pfRepFeed") + "</td><td>" + (r.REPUTATION_FEED_CONFIGURED ? t("configuredWord") : t("notConfiguredWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfQuiet") + "</td><td>" + pfBadge(r.QUIET_MODE, t("onWord"), t("offWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfAutoSsl") + "</td><td>" + pfBadge(r.AUTO_SSL, t("enabledWord"), t("disabledWord")) + (r.AUTO_SSL_ACTIVE ? t("activeSuffix") : "") + "</td></tr>"
+      + "<tr><td>" + t("pfGeoCountry") + "</td><td>" + pfBadge(r.GEO_COUNTRY_LOADED, t("loadedWord"), t("notLoadedWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfGeoAsn") + "</td><td>" + pfBadge(r.GEO_ASN_LOADED, t("loadedWord"), t("notLoadedWord")) + "</td></tr>"
+      + "<tr><td>" + t("pfRepFeed") + "</td><td>" + pfBadge(r.REPUTATION_FEED_CONFIGURED, t("configuredWord"), t("notConfiguredWord")) + "</td></tr>"
       + "<tr><td>" + t("pfRepSize") + "</td><td>" + t("repListSize", num(r.REPUTATION_LOCAL_IPS), num(r.REPUTATION_LOCAL_NETWORKS), num(r.REPUTATION_FEED_IPS), num(r.REPUTATION_FEED_NETWORKS)) + "</td></tr>"
       + "</tbody></table>";
     setHTML("proxyFeatures", h);
@@ -4350,33 +4615,43 @@ function countPanel(mapObj, keyLabel){
   return (bars ? '<div class="chart-block">' + bars + '</div>' : "") + countTable(mapObj, keyLabel);
 }
 
+/* Report KPI icons: hand-inlined Lucide-style glyphs, glowing via CSS. */
+var ICO_ACTIVITY = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>';
+var ICO_SHIELD_CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 2.6V11c0 4.4-3 7.6-7 9.4C8 18.6 5 15.4 5 11V5.6L12 3z"/><path d="M9 11.6l2.2 2.2 4-4.2"/></svg>';
+var ICO_TREND_UP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>';
+var ICO_GAUGE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 15a8.5 8.5 0 1 0-16.4 0"/><path d="M12 15l3.5-5.5"/></svg>';
+/* renderReport splits one report across the new layout: KPI cards go
+   to reportBody, Challenges + Backend Health to the middle-row side
+   column, the six data tables into the tabbed card, and the generated
+   footnote under it. Same values, same builders, no new API calls. */
 function renderReport(rep){
-  var h = '<div class="cards">'
-    + '<div class="card"><div class="label">' + t("cardTotalRps") + '</div><div class="value">' + num(rep.total_requests) + '</div><div class="foot">' + t("cardTotalFoot") + '</div></div>'
-    + '<div class="card"><div class="label">' + t("repCardBypassed") + '</div><div class="value">' + num(rep.bypassed_requests) + '</div><div class="foot">' + t("repCardBypassedFoot") + '</div></div>'
-    + '<div class="card"><div class="label">' + t("repCardPeak") + '</div><div class="value">' + num(rep.peak_requests_per_second) + '</div><div class="foot">' + t("repCardPeakFoot", num(rep.peak_bypassed_per_second)) + '</div></div>'
-    + '<div class="card"><div class="label">' + t("stageTitle") + '</div><div class="value">' + esc(String(rep.stage)) + '</div><div class="foot">' + (rep.stage_manually_set ? t("repLocked") : t("repAutomatic")) + (rep.raw_attack || rep.bypass_attack ? t("repUnderAttack") : "") + '</div></div>'
+  var h = '<div class="cards rep-kpis">'
+    + '<div class="card"><span class="rep-kpi-ico" aria-hidden="true">' + ICO_ACTIVITY + '</span><div class="label">' + t("cardTotalRps") + '</div><div class="value">' + num(rep.total_requests) + '</div><div class="foot">' + t("cardTotalFoot") + '</div></div>'
+    + '<div class="card"><span class="rep-kpi-ico" aria-hidden="true">' + ICO_SHIELD_CHECK + '</span><div class="label">' + t("repCardBypassed") + '</div><div class="value">' + num(rep.bypassed_requests) + '</div><div class="foot">' + t("repCardBypassedFoot") + '</div></div>'
+    + '<div class="card"><span class="rep-kpi-ico" aria-hidden="true">' + ICO_TREND_UP + '</span><div class="label">' + t("repCardPeak") + '</div><div class="value">' + num(rep.peak_requests_per_second) + '</div><div class="foot">' + t("repCardPeakFoot", num(rep.peak_bypassed_per_second)) + '</div></div>'
+    + '<div class="card"><span class="rep-kpi-ico" aria-hidden="true">' + ICO_GAUGE + '</span><div class="label">' + t("stageTitle") + '</div><div class="value">' + esc(String(rep.stage)) + '</div><div class="foot">' + (rep.stage_manually_set ? t("repLocked") : t("repAutomatic")) + (rep.raw_attack || rep.bypass_attack ? t("repUnderAttack") : "") + '</div></div>'
     + '</div>';
-  h += '<div class="panel"><h2>' + t("repBlocks") + '</h2>' + countPanel(rep.blocks_by_reason, t("repReason")) + '</div>';
-  h += '<div class="panel"><h2>' + t("repChallenges") + '</h2>' + countPanel(rep.challenges_by_stage, t("stageTitle")) + '</div>';
-  h += '<div class="panel"><h2>' + t("repWaf") + '</h2>' + countPanel(rep.waf_matches_by_rule, t("colRule")) + '</div>';
-  h += '<div class="panel"><h2>' + t("colBackend") + '</h2><table><tbody>'
+  setHTML("reportBody", h);
+  var side = '<div class="panel"><h2>' + t("repChallenges") + '</h2>' + countPanel(rep.challenges_by_stage, t("stageTitle")) + '</div>'
+    + '<div class="panel"><h2>' + t("colBackend") + '</h2><table><tbody>'
     + "<tr><td>" + t("repReqOk") + "</td><td>" + num(rep.backend_requests_ok) + "</td></tr>"
     + "<tr><td>" + t("repReqFailed") + "</td><td>" + num(rep.backend_requests_failed) + "</td></tr>"
     + "<tr><td>" + t("repLatency") + "</td><td>" + (rep.backend_latency_avg_seconds != null ? t("repLatencySec", rep.backend_latency_avg_seconds.toFixed(3)) : "—") + "</td></tr>"
     + "</tbody></table></div>";
+  setHTML("reportSide", side);
   var ipRows = function(list){
     if(!list || !list.length) return '<p class="small muted">' + t("noneInWindow") + '</p>';
     var tbl = '<table><thead><tr><th>' + t("lsIpLabel") + '</th><th>' + t("colRequests") + '</th><th>' + t("colCountry") + '</th><th>' + t("colAsn") + '</th></tr></thead><tbody>';
     list.forEach(function(e){ tbl += "<tr><td class='mono'>" + esc(e.ip) + "</td><td>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
     return tbl + "</tbody></table>";
   };
-  h += '<div class="panel"><h2>' + t("repTopVerified") + '</h2>' + ipRows(rep.top_verified_ips_proxy_wide) + '</div>';
-  h += '<div class="panel"><h2>' + t("repTopUnverified") + '</h2>' + ipRows(rep.top_unverified_ips_proxy_wide) + '</div>';
-  h += '<div class="panel"><h2>' + t("repTopFps") + '</h2>' + countTable((rep.top_unknown_fingerprints_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("repFingerprint")) + '</div>';
-  h += '<div class="panel"><h2>' + t("repCountries") + '</h2>' + countTable((rep.countries_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("colCountry")) + '</div>';
-  h += '<p class="small muted">' + t("repGenerated", esc(rep.generated_at || ""), num(rep.window_seconds)) + '</p>';
-  setHTML("reportBody", h);
+  setHTML("repPanelVerified", ipRows(rep.top_verified_ips_proxy_wide));
+  setHTML("repPanelUnverified", ipRows(rep.top_unverified_ips_proxy_wide));
+  setHTML("repPanelFps", countTable((rep.top_unknown_fingerprints_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("repFingerprint")));
+  setHTML("repPanelCountries", countTable((rep.countries_proxy_wide || []).reduce(function(m, e){ m[e.key] = e.count; return m; }, {}), t("colCountry")));
+  setHTML("repPanelBlocks", countPanel(rep.blocks_by_reason, t("repReason")));
+  setHTML("repPanelWaf", countPanel(rep.waf_matches_by_rule, t("colRule")));
+  setHTML("repGenerated", '<p class="small muted">' + t("repGenerated", esc(rep.generated_at || ""), num(rep.window_seconds)) + '</p>');
 }
 
 function reportTopValue(){
@@ -4389,10 +4664,12 @@ function reportTopValue(){
 function loadReport(){
   showInline("reportError", null, "", "");
   setHTML("reportBody", '<div class="state loading">' + t("loadingReport") + '</div>');
+  setHTML("reportSide", '<div class="state loading">' + t("loadingReport") + '</div>');
   return domainAction(currentDomain, "GET_ATTACK_REPORT?format=json&top=" + reportTopValue()).then(function(r){
     renderReport(r.REPORT || {});
   }).catch(function(err){
     setHTML("reportBody", '<div class="state">' + t("repNoReport") + '</div>');
+    setHTML("reportSide", '<div class="state">' + t("repNoReport") + '</div>');
     showInline("reportError", null, t("errLoadReport", err.message), "");
   });
 }
@@ -4591,9 +4868,9 @@ function loadRUM(){
 function loadLatency(){
   return domainAction(currentDomain, "GET_LATENCY").then(function(r){
     var h = '<div class="cards">'
-      + '<div class="card"><div class="label">' + t("latCardTtfb") + '</div><div class="value">' + fmtMs(r.TTFB_P95_MS) + '</div><div class="foot">' + t("latP95") + '</div></div>'
-      + '<div class="card"><div class="label">' + t("latCardTotal") + '</div><div class="value">' + fmtMs(r.TOTAL_P95_MS) + '</div><div class="foot">' + t("latP95") + '</div></div>'
-      + '<div class="card"><div class="label">' + t("latCardProxy") + '</div><div class="value">' + fmtMs(r.PROXY_MEAN_MS) + '</div><div class="foot">' + t("latMean") + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardTtfb") + '</div><div class="value">' + fmtMs(r.TTFB_P95_MS) + '</div><div class="foot">' + latPills([["p50", r.TTFB_P50_MS], ["p95", r.TTFB_P95_MS], ["p99", r.TTFB_P99_MS]]) + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardTotal") + '</div><div class="value">' + fmtMs(r.TOTAL_P95_MS) + '</div><div class="foot">' + latPills([["p50", r.TOTAL_P50_MS], ["p95", r.TOTAL_P95_MS], ["p99", r.TOTAL_P99_MS]]) + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardProxy") + '</div><div class="value">' + fmtMs(r.PROXY_MEAN_MS) + '</div><div class="foot">' + t("latMean") + ' · ' + t("latBudget") + ' ' + fmtPct(r.ERROR_BUDGET_REMAINING_PCT) + '</div></div>'
       + '<div class="card"><div class="label">' + t("latCardUptime") + '</div><div class="value">' + fmtPct(r.UPTIME_PCT) + '</div><div class="foot">' + t("latSlaTarget", fmtPct(r.SLA_TARGET_PCT)) + '</div></div>'
       + '</div>';
     var latRows = [
@@ -4706,16 +4983,30 @@ function loadPostmortem(format){
 
 function loadGrade(){
   return proxyAction("GET_SECURITY_GRADE").then(function(r){
-    var h = '<div class="cards"><div class="card"><div class="label">' + t("gradeTitle") + '</div><div class="value">' + esc(String(r.GRADE || "—")) + '</div><div class="foot">' + t("gradeScore", num(r.SCORE)) + '</div></div></div>';
+    /* Hero gauge: live score drives the ring, live grade the letter;
+       nothing is hardcoded — the "A · 96/100" look is just what a
+       good grade renders as. */
+    var score = Math.max(0, Math.min(100, Number(r.SCORE) || 0));
+    var circ = 2 * Math.PI * 54;
+    var gauge = '<div class="grade-gauge">'
+      + '<svg class="grade-ring" viewBox="0 0 128 128" role="img" aria-label="' + esc(String(r.GRADE || "—") + " " + score + "/100") + '">'
+      + '<circle class="grade-ring-bg" cx="64" cy="64" r="54"/>'
+      + '<circle class="grade-ring-fg ' + gradeRingClass(r.GRADE) + '" cx="64" cy="64" r="54" stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + (circ * (1 - score / 100)).toFixed(1) + '"/>'
+      + '</svg>'
+      + '<div class="grade-center"><div class="grade-letter">' + esc(String(r.GRADE || "—")) + '</div><div class="grade-score">' + t("gradeScore", num(score)) + '</div></div>'
+      + '</div>';
+    setHTML("gradeHero", gauge);
     var checks = r.CHECKS || [];
-    h += '<table><thead><tr><th>' + t("gradeCheck") + '</th><th>' + t("gradeSeverity") + '</th><th>' + t("gradeStatus") + '</th><th>' + t("gradeDetail") + '</th><th>' + t("gradeGuidance") + '</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>' + t("gradeCheck") + '</th><th>' + t("gradeSeverity") + '</th><th>' + t("gradeStatus") + '</th><th>' + t("gradeDetail") + '</th><th>' + t("gradeGuidance") + '</th></tr></thead><tbody>';
     checks.forEach(function(c){
-      h += "<tr><td>" + esc(c.title) + "</td><td>" + esc(c.severity) + "</td><td>" + gradeBadge(c.status) + "</td><td>" + esc(c.detail) + "</td><td>" + esc(c.guidance) + "</td></tr>";
+      h += "<tr data-grade-status=\"" + esc(c.status) + "\"><td>" + esc(c.title) + "</td><td>" + esc(c.severity) + "</td><td>" + gradeBadge(c.status) + "</td><td>" + esc(c.detail) + "</td><td>" + esc(c.guidance) + "</td></tr>";
     });
     h += "</tbody></table>";
     h += '<p class="small muted">' + esc(r.DISCLAIMER || "") + '</p>';
     setHTML("gradeBody", h);
+    applyGradeFilter();
   }).catch(function(err){
+    setHTML("gradeHero", '<div class="state state-error"><strong>' + t("errLoadGrade") + '</strong><br>' + esc(err.message) + '</div>');
     setHTML("gradeBody", '<div class="state state-error"><strong>' + t("errLoadGrade") + '</strong><br>' + esc(err.message) + '</div>');
   });
 }
@@ -5021,6 +5312,19 @@ $("ruleModal").addEventListener("click", function(ev){ if(ev.target === $("ruleM
 document.addEventListener("keydown", function(ev){ if(ev.key === "Escape" && !$("ruleModal").hidden) closeRuleModal(); });
 $("ruleModeVisual").addEventListener("click", function(){ setRuleMode("visual"); });
 $("ruleModeRaw").addEventListener("click", function(){ setRuleMode("raw"); });
+DOM_TABS.forEach(function(n){ var b = $("domTab" + n); if(b) b.addEventListener("click", function(){ showDomTab(n); }); });
+$("domAddBtn").addEventListener("click", function(){ openDomModal(); });
+$("domModalClose").addEventListener("click", closeDomModal);
+$("domModal").addEventListener("click", function(ev){ if(ev.target === $("domModal")) closeDomModal(); });
+document.addEventListener("keydown", function(ev){ if(ev.key === "Escape" && !$("domModal").hidden) closeDomModal(); });
+SET_TABS.forEach(function(n){ var b = $("setTab" + n); if(b) b.addEventListener("click", function(){ showSetTab(n); }); });
+$("settingsForm").addEventListener("input", function(){ $("settingsStickyBar").hidden = false; });
+$("settingsForm").addEventListener("change", function(){ $("settingsStickyBar").hidden = false; });
+REP_TABS.forEach(function(n){ var b = $("repTab" + n); if(b) b.addEventListener("click", function(){ showRepTab(n); }); });
+INS_TABS.forEach(function(n){ var b = $("insTab" + n); if(b) b.addEventListener("click", function(){ showInsTab(n); }); });
+$("gradeFilterAll").addEventListener("click", function(){ setGradeFilter("all"); });
+$("gradeFilterWarn").addEventListener("click", function(){ setGradeFilter("warn"); });
+$("gradeFilterPass").addEventListener("click", function(){ setGradeFilter("pass"); });
 $("ipEntryForm").addEventListener("submit", submitIPEntryForm);
 $("simForm").addEventListener("submit", function(ev){
   ev.preventDefault();

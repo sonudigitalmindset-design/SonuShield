@@ -411,6 +411,41 @@ names, or challenge flow semantics.
   Firewall page. One closing tag added; the page is now
   tag-balanced. Service-worker shell bumped to v10.
 
+### Dashboard refactor: Domains, Settings, Reports, Insights
+
+- Container is now `max-width:1680px` centered, so wide monitors keep
+  no dead right margin. Cards and panels are translucent glass
+  (`#111827` at 90% with `backdrop-filter: blur(12px)`) with the
+  existing top-edge inner glow and layered shadows.
+- Domains: `+ Add Domain` opens a slide-over drawer with the existing
+  "New domain from template" form (closes on successful create, as
+  the rule drawer does); three sub-tabs — Configured Domains &
+  Inspector (default), Tenants & Usage, Bulk Import (JSON / Nginx /
+  Apache in a 2-column grid). Clicking a domain opens a split-view
+  inspector: metrics and config summary on the left, quick actions
+  (edge-cache purge) on the right, from the same loads as before.
+- Settings: four sub-tabs — Traffic & Attack Thresholds, WAF &
+  Proof-of-Work, System & Proxy Features (status values now render
+  as badges), Config Backups — plus a sticky bottom action bar that
+  appears when a field changes and calls the existing Save / Reload
+  handlers; it hides again once values are freshly loaded.
+- Reports: the four KPI cards keep their values and gain glowing
+  icons; the middle row is a 7/5 grid with the attack map (now with
+  a theme-aware ocean disc behind the globe) beside Challenges by
+  Stage + Backend Health; the six data tables share one tabbed card
+  so empty states stop wasting vertical space.
+- Insights: hero row splits 4/8 — a radial-gauge Security Grade card
+  (live grade and score drive the ring; emerald for A/B, amber for
+  C, red for D/F, never a hardcoded grade) beside Latency & SLA
+  telemetry with p50/p95/p99 pills. Deep diagnostics are sub-tabs:
+  Configuration Audit Checklist (All / Warnings / Passed filter
+  pills), Attack Timeline & Postmortem, Shadow Report & RUM, and
+  Certificates & Subdomains.
+- No IDs, data attributes, API calls, form handlers, or JS state
+  logic were renamed or rebuilt; sections were moved, renderers
+  split across existing containers. Service-worker shell bumped to
+  v11.
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without

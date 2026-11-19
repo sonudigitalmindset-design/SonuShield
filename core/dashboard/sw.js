@@ -15,7 +15,7 @@
  */
 "use strict";
 
-var SHELL_VERSION = "sonushield-shell-v10";
+var SHELL_VERSION = "sonushield-shell-v11";
 var SHELL_URLS = [
   "./dashboard",
   "./manifest.webmanifest",
