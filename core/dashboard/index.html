@@ -126,7 +126,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 .spinner{width:12px;height:12px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);animation:spin .7s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* Theme switching + hover states ease through color tokens only — never layout. */
-body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
+body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 .pill .dot{transition:background-color var(--dur-med) var(--ease-out)}
 /* Connected-status dot breathes with a soft ring pulse. */
 .pill.ok .dot{animation:dotGlow 1.8s var(--ease-in-out) infinite}
@@ -179,19 +179,49 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 @keyframes barIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 /* Nav active indicator: an accent bar that grows vertically into place. */
 .navbtn{position:relative}
-.navbtn::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--accent);transform:scaleY(0);transform-origin:center;transition:transform var(--dur-med) var(--ease-out)}
+.navbtn::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--accent);transform:scaleY(0);transform-origin:center;transition:transform var(--dur-fast) var(--ease-out)}
 .navbtn.active::before{transform:scaleY(1);background:#3b82f6;box-shadow:0 0 12px #3b82f6}
 /* Buttons lift on hover and settle on press; table rows cross-fade on hover. */
-button,.btn{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
+button,.btn{transition:background-color var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 button:hover:not(:disabled),.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 button:active:not(:disabled),.btn:active{transform:translateY(0)}
 td{transition:background-color var(--dur-fast) var(--ease-out)}
+/* Polish pass: tabular numbers, glass tooltips, glass toasts, sensor empty states. */
+.num{font-variant-numeric:tabular-nums}
+td{font-variant-numeric:tabular-nums}
+.chart-svg text{font-variant-numeric:tabular-nums}
+.label-wrap{display:flex;align-items:center;gap:6px;margin:0 0 6px}
+.label-wrap label{margin:0}
+.info-wrap{position:relative;display:inline-flex;vertical-align:middle;flex:none}
+.info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--border-strong,#94a3b8);background:transparent;color:var(--muted);font-size:11px;font-weight:600;line-height:1;cursor:pointer;padding:0}
+.info:hover,.info:focus-visible{color:var(--text);border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
+.tip{position:absolute;top:calc(100% + 8px);left:0;width:240px;max-width:70vw;padding:10px 12px;border-radius:10px;background:rgba(13,19,34,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);color:#e2e8f0;font-size:12.5px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:normal;box-shadow:0 16px 40px -12px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity 150ms var(--ease-out),transform 150ms var(--ease-out),visibility 150ms;z-index:80;pointer-events:none;white-space:normal;text-align:left}
+.info:hover + .tip,.info:focus-visible + .tip,.info-wrap:focus-within .tip,.info.open + .tip{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+.toasts{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:min(360px,calc(100vw - 40px))}
+.toast{position:relative;display:flex;align-items:flex-start;gap:10px;padding:12px 34px 14px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(13,19,34,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#f1f5f9;box-shadow:0 16px 40px -12px rgba(0,0,0,.6);overflow:hidden;animation:toastIn 200ms var(--ease-out)}
+.toast.out{animation:toastOut 180ms var(--ease-out) forwards}
+.toast-icon{flex:none;width:18px;height:18px;margin-top:1px}
+.toast-ok .toast-icon{color:#10b981}
+.toast-err .toast-icon{color:#ef4444}
+.toast-msg{font-size:13.5px;line-height:1.45}
+.toast-close{position:absolute;top:6px;right:6px;width:22px;height:22px;border:0;background:transparent;color:#94a3b8;font-size:15px;line-height:1;cursor:pointer;padding:0}
+.toast-close:hover{color:#f1f5f9}
+.toast-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:currentColor;opacity:.55;animation:toastBar 4s linear forwards}
+.toast-ok .toast-bar{color:#10b981}
+.toast-err .toast-bar{color:#ef4444}
+@keyframes toastIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(24px)}}
+@keyframes toastBar{from{width:100%}to{width:0}}
+.empty-state{display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 12px;color:var(--muted);font-size:13px;text-align:center}
+.radar-dot{position:relative;flex:none;width:10px;height:10px;border-radius:50%;background:#10b981}
+.radar-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid #10b981;animation:radarPing 2s var(--ease-out) infinite}
+@keyframes radarPing{0%{transform:scale(.6);opacity:.9}80%{transform:scale(1.8);opacity:0}100%{transform:scale(1.8);opacity:0}}
 @media (prefers-reduced-motion:reduce){
-  .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .cards .card,.view.active .ov-grid .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading{animation:none}
+  .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .cards .card,.view.active .ov-grid .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading,.tip,.toast,.toast-bar,.radar-dot::after{animation:none}
   .state.loading::before{animation:none}
   .state.loading::after{display:none}
   .navbtn::before{transition:none}
-  body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot,td{transition:none}
+  body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot,td,.tip{transition:none}
   button:hover:not(:disabled),.btn:hover{transform:none}
   .cards .card:hover,.ov-grid .card:hover{transform:none}
   .hero-shield,.hero-shield svg{animation:none}
@@ -244,12 +274,12 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 
 /* Cards, panels, tables */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:12px}
-.card{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
+.card{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm)}
 .card .label{font-size:12.5px;font-weight:500;color:var(--muted)}
 .card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums;font-family:var(--mono)}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
 .card .foot{font-size:12px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
+.panel{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);margin-top:12px}
 /* 3D Frosted Glass Slab (dark default): exact slab spec — blur 20px
    plus the deep drop + inner top highlight. The tokens above already
    carry the slab background and borders in dark mode. */
@@ -375,7 +405,7 @@ tbody tr:hover td{background:var(--panel-2)}
 .banner{display:none;border:1px solid var(--banner-border);border-left:3px solid var(--bad-text);background:var(--banner-bg);color:var(--banner-text);border-radius:var(--radius);padding:12px 16px;margin-bottom:var(--space-2)}
 .banner.show{display:block}
 .auth{max-width:440px;margin:48px auto}
-.auth .panel{padding:var(--space-3);box-shadow:var(--shadow-md)}
+.auth .panel{padding:20px;box-shadow:var(--shadow-md)}
 .auth label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 8px}
 .auth label:first-of-type{margin-top:0}
 .auth input{width:100%}
@@ -539,7 +569,7 @@ tr.selected td{background:var(--nav-active-bg)}
   .navbtn .tag{display:none}
   .main{padding:16px 16px 32px}
   .topbar{padding:8px 12px;gap:8px;flex-wrap:wrap}
-  .panel{padding:14px 16px}
+  .panel{padding:20px}
   .server-grid{grid-template-columns:1fr}
   .bar-row.wide .lbl{width:120px}
   .bar-row.wide .val{width:76px}
@@ -804,7 +834,7 @@ html{background:var(--bg)}
                 <rect class="flow-blocked-dash" x="940" y="200" width="210" height="84" rx="10" fill="none" stroke="#dc2626" stroke-dasharray="5 4"/>
                 <text x="1045" y="236" text-anchor="middle" font-size="15" font-weight="700" fill="#f87171" data-i18n="flowBlocked">✕ Blocked</text>
                 <text x="1045" y="258" text-anchor="middle" font-size="12" fill="#94a3b8" data-i18n="flowBlockedSub">rate-limited / susLv ≥ 4</text>
-                <text id="flowBlockedCount" x="1045" y="278" text-anchor="middle" font-size="12" fill="#f87171">Blocked: 0</text>
+                <text id="flowBlockedCount" class="num" x="1045" y="278" text-anchor="middle" font-size="12" fill="#f87171">Blocked: 0</text>
               </g>
               <text id="flowPassed" x="1080" y="112" font-size="12" font-weight="600" fill="#22c55e" opacity="0" data-i18n="flowPassed">passed</text>
             </g>
@@ -819,14 +849,14 @@ html{background:var(--bg)}
         </div>
       </div>
       <div class="ov-grid">
-        <div class="card span-3"><div class="label" data-i18n="cardTotalRps">Total requests</div><div class="value" id="cTotalRps">—</div><div class="foot" data-i18n="cardTotalRpsFoot">per second, all requests</div></div>
-        <div class="card span-3"><div class="label" data-i18n="cardBypassRps">Bypassed requests</div><div class="value" id="cBypassRps">—</div><div class="foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div></div>
-        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardCpu">CPU usage</div><div class="value" id="cCpu">—</div><div class="foot" data-i18n="cardCpuFoot">server CPU, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg" id="cCpuGauge" cx="18" cy="18" r="15.5"/></svg></div>
-        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardRam">RAM usage</div><div class="value" id="cRam">—</div><div class="foot" data-i18n="cardRamFoot">proxy memory, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg ram" id="cRamGauge" cx="18" cy="18" r="15.5"/></svg></div>
-        <div class="card span-2"><div class="label" data-i18n="cardStage">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
-        <div class="card span-4"><div class="label" data-i18n="cardTotal">Total (all time)</div><div class="value" id="cTotal">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
-        <div class="card span-4"><div class="label" data-i18n="cardBypassed">Bypassed (all time)</div><div class="value" id="cBypassed">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
-        <div class="card span-4"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
+        <div class="card span-3"><div class="label" data-i18n="cardTotalRps">Total requests</div><div class="value num" id="cTotalRps">—</div><div class="foot" data-i18n="cardTotalRpsFoot">per second, all requests</div></div>
+        <div class="card span-3"><div class="label"><span data-i18n="cardBypassRps">Bypassed requests</span> <span class="info-wrap"><button type="button" class="info" aria-expanded="false" data-i18n-aria="infoAria" aria-label="More information" aria-describedby="ttBypassed">?</button><span class="tip" role="tooltip" id="ttBypassed" data-i18n="tipBypassed">Requests that passed every check without a challenge and went straight to your backend.</span></span></div><div class="value num" id="cBypassRps">—</div><div class="foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div></div>
+        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardCpu">CPU usage</div><div class="value num" id="cCpu">—</div><div class="foot" data-i18n="cardCpuFoot">server CPU, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg" id="cCpuGauge" cx="18" cy="18" r="15.5"/></svg></div>
+        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardRam">RAM usage</div><div class="value num" id="cRam">—</div><div class="foot" data-i18n="cardRamFoot">proxy memory, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg ram" id="cRamGauge" cx="18" cy="18" r="15.5"/></svg></div>
+        <div class="card span-2"><div class="label" data-i18n="cardStage">Stage</div><div class="value num" id="cStage">—</div><div class="foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
+        <div class="card span-4"><div class="label" data-i18n="cardTotal">Total (all time)</div><div class="value num" id="cTotal">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
+        <div class="card span-4"><div class="label" data-i18n="cardBypassed">Bypassed (all time)</div><div class="value num" id="cBypassed">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
+        <div class="card span-4"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value num" id="cLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
       </div>
       <div class="panel chart-panel">
         <div class="panel-head">
@@ -838,7 +868,7 @@ html{background:var(--bg)}
         </div>
         <div class="chart-wrap">
           <svg id="trafficChart" class="chart-svg" viewBox="0 0 1200 200" role="img" aria-hidden="true" hidden></svg>
-          <div class="state" id="trafficEmpty" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+          <div class="empty-state" id="trafficEmpty"><span class="radar-dot" aria-hidden="true"></span><span data-i18n="sensorActive">Sensor active — awaiting traffic</span></div>
         </div>
       </div>
       <div class="panel chart-panel">
@@ -847,17 +877,17 @@ html{background:var(--bg)}
         </div>
         <div class="server-grid">
           <div>
-            <div class="chart-subhead"><span class="chart-title" data-i18n="cardCpu">CPU usage</span><span class="chart-summary" id="cpuSummary"></span></div>
+            <div class="chart-subhead"><span class="chart-title" data-i18n="cardCpu">CPU usage</span><span class="chart-summary num" id="cpuSummary"></span></div>
             <div class="chart-wrap">
               <svg id="cpuChart" class="chart-svg chart-sm" viewBox="0 0 600 170" role="img" aria-hidden="true" hidden></svg>
-              <div class="state" id="cpuEmpty" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+              <div class="empty-state" id="cpuEmpty"><span class="radar-dot" aria-hidden="true"></span><span data-i18n="sensorActive">Sensor active — awaiting traffic</span></div>
             </div>
           </div>
           <div>
-            <div class="chart-subhead"><span class="chart-title" data-i18n="cardRam">RAM usage</span><span class="chart-summary" id="ramSummary"></span></div>
+            <div class="chart-subhead"><span class="chart-title" data-i18n="cardRam">RAM usage</span><span class="chart-summary num" id="ramSummary"></span></div>
             <div class="chart-wrap">
               <svg id="ramChart" class="chart-svg chart-sm" viewBox="0 0 600 170" role="img" aria-hidden="true" hidden></svg>
-              <div class="state" id="ramEmpty" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+              <div class="empty-state" id="ramEmpty"><span class="radar-dot" aria-hidden="true"></span><span data-i18n="sensorActive">Sensor active — awaiting traffic</span></div>
             </div>
           </div>
         </div>
@@ -1239,14 +1269,14 @@ html{background:var(--bg)}
       <h1 data-i18n="stageTitle">Stage</h1>
       <p class="sub"><span data-i18n="stageSubPre">The current challenge stage for </span><strong id="stageDomain">—</strong><span data-i18n="stageSubPost">.</span></p>
       <div class="cards">
-        <div class="card stage-ring-card ring-off" id="stageCardCurrent"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="stageCardCurrent">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
-        <div class="card stage-ring-card ring-off" id="stageCardLocked"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="stageLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
-        <div class="card stage-ring-card ring-off" id="stageCardAttack"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="stageCardAttack">Under attack</div><div class="value" id="stageAttack">—</div><div class="foot" data-i18n="stageCardAttackFoot">raw or bypassing attack in progress</div></div>
+        <div class="card stage-ring-card ring-off" id="stageCardCurrent"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="stageCardCurrent">Current stage</div><div class="value num" id="stageBig">—</div><div class="foot" id="stageBigFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
+        <div class="card stage-ring-card ring-off" id="stageCardLocked"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value num" id="stageLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
+        <div class="card stage-ring-card ring-off" id="stageCardAttack"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="stageCardAttack">Under attack</div><div class="value num" id="stageAttack">—</div><div class="foot" data-i18n="stageCardAttackFoot">raw or bypassing attack in progress</div></div>
       </div>
       <div class="inline-err" id="stageError" role="alert"></div>
       <div class="inline-ok" id="stageOk" role="status"></div>
       <div class="panel">
-        <h2 data-i18n="stageChangeTitle">Change the stage</h2>
+        <h2><span data-i18n="stageChangeTitle">Change the stage</span> <span class="info-wrap"><button type="button" class="info" aria-expanded="false" data-i18n-aria="infoAria" aria-label="More information" aria-describedby="ttStage">?</button><span class="tip" role="tooltip" id="ttStage" data-i18n="tipStage">Stage 1 checks a cookie, Stage 2 asks the browser to solve a small puzzle, Stage 3 shows a captcha. Higher stages stop more bots — but also slow real visitors more.</span></span></h2>
         <div class="segcontrol" id="stageSeg" role="group" data-i18n-aria="stageSegAria" aria-label="Stage selector">
           <span class="seg-indicator" id="stageSegInd" aria-hidden="true"></span>
           <button type="button" data-stage="0" data-i18n="stageBtnAuto">Automatic (unlock)</button>
@@ -1392,7 +1422,7 @@ html{background:var(--bg)}
         <div class="panel">
           <h2 data-i18n="setPowTitle">Proof-of-work &amp; challenges</h2>
           <div class="formgrid">
-            <div class="field"><label for="setAdaptivePow" data-i18n="setAdaptiveLabel">Adaptive proof-of-work</label><select id="setAdaptivePow" class="switch-underlying"><option value="true" data-i18n="setAdaptiveEnabled">Enabled</option><option value="false" data-i18n="setAdaptiveDisabled">Disabled</option></select><button type="button" class="switch" id="swAdaptivePow" role="switch" aria-checked="false" data-i18n-aria="setAdaptiveLabel" aria-label="Adaptive proof-of-work"><span class="switch-thumb"></span></button><div class="hint" data-i18n="setAdaptiveHint">Difficulty scales with bypassed traffic between the bounds below.</div></div>
+            <div class="field"><div class="label-wrap"><label for="setAdaptivePow" data-i18n="setAdaptiveLabel">Adaptive proof-of-work</label><span class="info-wrap"><button type="button" class="info" aria-expanded="false" data-i18n-aria="infoAria" aria-label="More information" aria-describedby="ttAdaptivePow">?</button><span class="tip" role="tooltip" id="ttAdaptivePow" data-i18n="tipAdaptivePow">The puzzle gets harder on its own when more requests start passing Stage 1 — a sign of heavy load or an attack — and eases off when traffic is calm, so real visitors are barely delayed.</span></span></div><select id="setAdaptivePow" class="switch-underlying"><option value="true" data-i18n="setAdaptiveEnabled">Enabled</option><option value="false" data-i18n="setAdaptiveDisabled">Disabled</option></select><button type="button" class="switch" id="swAdaptivePow" role="switch" aria-checked="false" data-i18n-aria="setAdaptiveLabel" aria-label="Adaptive proof-of-work"><span class="switch-thumb"></span></button><div class="hint" data-i18n="setAdaptiveHint">Difficulty scales with bypassed traffic between the bounds below.</div></div>
             <div class="field"><label for="setPowMin" data-i18n="setPowMinLabel">PoW difficulty min (0 = default)</label><input id="setPowMin" type="number" min="0" max="16" step="1"></div>
             <div class="field"><label for="setPowMax" data-i18n="setPowMaxLabel">PoW difficulty max (0 = default)</label><input id="setPowMax" type="number" min="0" max="16" step="1"></div>
           </div>
@@ -1409,7 +1439,7 @@ html{background:var(--bg)}
         <div class="panel">
           <h2 data-i18n="navRules">Firewall rules</h2>
           <div class="formgrid">
-            <div class="field"><label for="setRulesDryRun" data-i18n="setDryRunLabel">Rules dry-run mode</label><select id="setRulesDryRun" class="switch-underlying"><option value="false" data-i18n="setDryRunOff">Off — rules enforced</option><option value="true" data-i18n="setDryRunOn">On — log matches, take no action</option></select><button type="button" class="switch" id="swRulesDryRun" role="switch" aria-checked="false" data-i18n-aria="setDryRunLabel" aria-label="Rules dry-run mode"><span class="switch-thumb"></span></button><div class="hint" data-i18n="setDryRunHint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
+            <div class="field"><div class="label-wrap"><label for="setRulesDryRun" data-i18n="setDryRunLabel">Rules dry-run mode</label><span class="info-wrap"><button type="button" class="info" aria-expanded="false" data-i18n-aria="infoAria" aria-label="More information" aria-describedby="ttDryRun">?</button><span class="tip" role="tooltip" id="ttDryRun" data-i18n="tipDryRun">Rule matches are only written to the log — nothing is blocked or challenged — so you can test a rule safely before it goes live.</span></span></div><select id="setRulesDryRun" class="switch-underlying"><option value="false" data-i18n="setDryRunOff">Off — rules enforced</option><option value="true" data-i18n="setDryRunOn">On — log matches, take no action</option></select><button type="button" class="switch" id="swRulesDryRun" role="switch" aria-checked="false" data-i18n-aria="setDryRunLabel" aria-label="Rules dry-run mode"><span class="switch-thumb"></span></button><div class="hint" data-i18n="setDryRunHint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
           </div>
         </div>
         </div>
@@ -1661,6 +1691,7 @@ html{background:var(--bg)}
     </section>
   </main>
 </div>
+<div id="toastRegion" class="toasts" aria-live="polite"></div>
 /* The hero is a live SVG flow diagram now; Three.js is no longer
    loaded by the page. The vendored file stays in the repo (unused). */
 <script>
@@ -1705,6 +1736,45 @@ function showBanner(msg){
   b.textContent = msg;
   b.classList.add("show");
 }
+/* Toasts: bottom-right glass notifications for confirmations.
+   Errors keep their inline/banner surface (they must persist); toasts are
+   for success confirmations only. Auto-dismiss 4s, progress bar, hover pauses. */
+function showToast(msg, kind){
+  var region = $("toastRegion"); if(!region || !msg) return;
+  while(region.children.length > 3){ region.removeChild(region.firstChild); }
+  var el = document.createElement("div");
+  el.className = "toast toast-" + (kind === "err" ? "err" : "ok");
+  el.setAttribute("role", "status");
+  var icon = (kind === "err")
+    ? '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    : '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  el.innerHTML = icon + '<span class="toast-msg"></span><button type="button" class="toast-close" aria-label="' + esc(t("toastDismiss")) + '">\u00d7</button><span class="toast-bar"></span>';
+  el.querySelector(".toast-msg").textContent = msg;
+  var bar = el.querySelector(".toast-bar");
+  var timer = null;
+  function dismiss(){ if(el.parentNode){ el.classList.add("out"); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 200); } }
+  function arm(){ timer = setTimeout(dismiss, 4000); }
+  el.querySelector(".toast-close").addEventListener("click", function(){ if(timer) clearTimeout(timer); dismiss(); });
+  el.addEventListener("mouseenter", function(){ if(timer){ clearTimeout(timer); timer = null; } if(bar) bar.style.animationPlayState = "paused"; });
+  el.addEventListener("mouseleave", function(){ if(bar){ bar.style.animation = "none"; void bar.offsetWidth; bar.style.animation = ""; } arm(); });
+  region.appendChild(el);
+  arm();
+}
+/* Info tooltips: click toggles (touch), hover/focus via CSS; Escape or an
+   outside click closes. */
+document.querySelectorAll(".info").forEach(function(btn){
+  btn.addEventListener("click", function(ev){
+    ev.preventDefault();
+    var open = btn.classList.toggle("open");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+});
+document.addEventListener("keydown", function(ev){
+  if(ev.key === "Escape"){ document.querySelectorAll(".info.open").forEach(function(b){ b.classList.remove("open"); b.setAttribute("aria-expanded", "false"); }); }
+});
+document.addEventListener("click", function(ev){
+  document.querySelectorAll(".info.open").forEach(function(b){ if(!b.parentNode.contains(ev.target)){ b.classList.remove("open"); b.setAttribute("aria-expanded", "false"); } });
+});
 
 /* Theme: Luxury Cyber-Dark is the default; Light is opt-in via the
    Sun/Moon switch. Persisted in localStorage; an invalid value
@@ -2561,7 +2631,15 @@ flowBackend: "Your backend",
 flowBlocked: "✕ Blocked",
 flowBlockedSub: "rate-limited / susLv ≥ 4",
 flowBlockedCount: "Blocked: {0}",
-flowPassed: "passed"
+flowPassed: "passed",
+tipBypassed: "Requests that passed every check without a challenge and went straight to your backend.",
+tipStage: "Stage 1 checks a cookie, Stage 2 asks the browser to solve a small puzzle, Stage 3 shows a captcha. Higher stages stop more bots — but also slow real visitors more.",
+tipAdaptivePow: "The puzzle gets harder on its own when more requests start passing Stage 1 — a sign of heavy load or an attack — and eases off when traffic is calm, so real visitors are barely delayed.",
+tipDryRun: "Rule matches are only written to the log — nothing is blocked or challenged — so you can test a rule safely before it goes live.",
+infoAria: "More information",
+sensorActive: "Sensor active — awaiting traffic",
+configReloaded: "Configuration reloaded.",
+toastDismiss: "Dismiss notification"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -3383,7 +3461,15 @@ flowBackend: "आपका बैकएंड",
 flowBlocked: "✕ ब्लॉक किया गया",
 flowBlockedSub: "rate-limited / susLv ≥ 4",
 flowBlockedCount: "ब्लॉक: {0}",
-flowPassed: "पास हुआ"
+flowPassed: "पास हुआ",
+tipBypassed: "ऐसे requests जो बिना किसी challenge के सारी जाँच पास करके सीधे आपके backend तक पहुँच गए।",
+tipStage: "स्टेज 1 कुकी जाँचता है, स्टेज 2 ब्राउज़र से एक छोटी पहेली हल करवाता है, स्टेज 3 कैप्चा दिखाता है। ऊँचा स्टेज ज़्यादा bots रोकता है — लेकिन असली visitors को भी ज़्यादा धीमा करता है।",
+tipAdaptivePow: "जब स्टेज 1 से ज़्यादा requests पास होने लगें — भारी load या हमले का संकेत — तो पहेली अपने आप कठिन हो जाती है, और traffic शांत होने पर आसान हो जाती है, ताकि असली visitors को देर न हो।",
+tipDryRun: "नियम के match सिर्फ़ log में लिखे जाते हैं — कुछ भी block या challenge नहीं होता — ताकि आप किसी नियम को live करने से पहले सुरक्षित तरीके से test कर सकें।",
+infoAria: "और जानकारी",
+sensorActive: "सेंसर चालू है — traffic का इंतज़ार है",
+configReloaded: "Configuration reload हो गया।",
+toastDismiss: "Notification बंद करें"
 }
 };
 function t(key){
@@ -3494,10 +3580,10 @@ function topTable(mapObj, keyLabel, valLabel, limit){
   var rows = Object.keys(mapObj || {}).map(function(k){ return [k, Number(mapObj[k]) || 0]; });
   rows.sort(function(a,b){ return b[1]-a[1]; });
   rows = rows.slice(0, limit || 10);
-  if(!rows.length) return '<div class="state">' + t("noDataWindow") + '</div>';
+  if(!rows.length) return '<div class="empty-state"><span class="radar-dot" aria-hidden="true"></span><span>' + t("sensorActive") + '</span></div>';
   var h = '<table><thead><tr><th>' + esc(keyLabel) + '</th><th>' + esc(valLabel) + '</th></tr></thead><tbody>';
   rows.forEach(function(r){
-    h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td>" + num(r[1]) + "</td></tr>";
+    h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td class='num'>" + num(r[1]) + "</td></tr>";
   });
   return h + "</tbody></table>";
 }
@@ -3692,7 +3778,7 @@ function hBars(rows, opts){
   var h = "";
   for(i = 0; i < list.length; i++){
     var pct = Math.max(0, Math.min(100, (list[i][1] / max) * 100));
-    h += '<div class="bar-row wide"><span class="lbl">' + esc(list[i][0]) + '</span><span class="track"><span class="fill' + (list[i][2] ? " " + list[i][2] : "") + '" style="display:block;width:' + pct.toFixed(1) + '%"></span></span><span class="val">' + fmt(list[i][1]) + '</span></div>';
+    h += '<div class="bar-row wide"><span class="lbl">' + esc(list[i][0]) + '</span><span class="track"><span class="fill' + (list[i][2] ? " " + list[i][2] : "") + '" style="display:block;width:' + pct.toFixed(1) + '%"></span></span><span class="val num">' + fmt(list[i][1]) + '</span></div>';
   }
   return h;
 }
@@ -3806,6 +3892,7 @@ function loadOverview(){
     if(brps) liveBypassRps = parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND) || 0;
     if(rps && brps) pushTraffic(dom, parseFloat(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND), parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     syncStageHud();
+    flowPollStep();
     if(ips){
       setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, t("colIp"), t("colRequests")));
     }
@@ -3844,13 +3931,15 @@ function updateHeroState(){
    Attack Simulation" switch is a dashboard-local visual: it floods
    the bot lane with red packets and changes no backend state.
    If the packet engine fails, the static diagram + CSS shine still
-   show — never a blank box. All motion pauses when the tab is hidden
-   or under prefers-reduced-motion. */
+   show — never a blank box. All motion pauses when the tab is hidden;
+   under prefers-reduced-motion the packets step once per poll tick
+   instead of animating smoothly. */
 var stageAlert = false;
 var stageSim = false;
 var liveTotalRps = 0, liveBypassRps = 0;
 var liveTotalAll = 0, liveBypassAll = 0;
 var flowRunning = false, flowRAF = null, flowMode = "off";
+var flowStepMode = false, flowLastAdvance = 0;
 var flowPackets = [], flowAcc = {green: 0, red: 0};
 var flowLastTs = 0, flowHudTs = 0, flowFlashT = 0, flowBlockedT = 0, flowPassedT = 0;
 var FLOW_MAX_PACKETS = 44;
@@ -3890,15 +3979,15 @@ function flowSpawnPacket(kind, delay){
   var grp = document.createElementNS(NS, "g");
   var trail = document.createElementNS(NS, "line");
   trail.setAttribute("stroke", col);
-  trail.setAttribute("stroke-width", "3");
+  trail.setAttribute("stroke-width", "5");
   trail.setAttribute("stroke-linecap", "round");
-  trail.setAttribute("opacity", "0.55");
+  trail.setAttribute("opacity", "0.75");
   var halo = document.createElementNS(NS, "circle");
-  halo.setAttribute("r", "9");
+  halo.setAttribute("r", "12");
   halo.setAttribute("fill", col);
-  halo.setAttribute("opacity", "0.3");
+  halo.setAttribute("opacity", "0.35");
   var head = document.createElementNS(NS, "circle");
-  head.setAttribute("r", "4.5");
+  head.setAttribute("r", "6");
   head.setAttribute("fill", col);
   grp.appendChild(trail);
   grp.appendChild(halo);
@@ -3989,21 +4078,39 @@ function flowSyncHud(){
 function syncStageHud(){ flowSyncHud(); }
 function flowTick(ts){
   if(!flowRunning) return;
-  if(document.hidden || reducedMotion){
+  if(document.hidden){
+    /* Hidden tab: stop cleanly; the visibilitychange handler restarts
+       via startFlow() when the tab is shown again. */
     flowRunning = false;
-    flowDraw();
     flowRAF = null;
+    flowDraw();
     return;
   }
-  var dt = flowLastTs ? Math.min(0.1, (ts - flowLastTs) / 1000) : 0.016;
-  flowLastTs = ts;
-  flowUpdate(dt);
-  flowDraw();
-  if(ts - flowHudTs > 500){ flowHudTs = ts; flowSyncHud(); }
-  flowRAF = requestAnimationFrame(flowTick);
+  if(reducedMotion){
+    /* Reduced motion: hand over to poll-tick stepping (flowPollStep).
+       The old code set flowRunning = false here with no restart path,
+       so a single reduced-motion frame killed every packet forever. */
+    flowStepMode = true;
+    flowRAF = null;
+    flowDraw();
+    return;
+  }
+  try{
+    var dt = flowLastTs ? Math.min(0.1, (ts - flowLastTs) / 1000) : 0.016;
+    flowLastTs = ts;
+    flowUpdate(dt);
+    flowDraw();
+    flowLastAdvance = Date.now();
+    if(ts - flowHudTs > 500){ flowHudTs = ts; flowSyncHud(); }
+  }catch(e){
+    /* One bad frame must never kill the engine. */
+  }finally{
+    try{ flowRAF = requestAnimationFrame(flowTick); }
+    catch(e){ flowRAF = null; }
+  }
 }
 function startFlow(){
-  if(flowRunning) return;
+  if(flowRunning && (flowRAF || flowStepMode)) return;
   var shield = $("heroShield");
   /* Report which renderer drives the hero — the static SVG diagram is
      always present, so this line says whether the packet engine is
@@ -4015,17 +4122,50 @@ function startFlow(){
   }
   try{
     flowLens = {};
-    flowRunning = true;
     flowLastTs = 0;
+    flowLastAdvance = Date.now();
+    if(reducedMotion){
+      /* Reduced motion: no smooth rAF loop — the engine stays alive
+         and advances one discrete step per 3s poll tick (flowPollStep),
+         so the flow still visibly moves without smooth animation. */
+      flowRunning = true;
+      flowStepMode = true;
+      flowRAF = null;
+      note("svg-live-step", "reduced-motion");
+      flowPollStep();
+      return;
+    }
+    flowStepMode = false;
+    flowRunning = true;
     flowRAF = requestAnimationFrame(flowTick);
     note("svg-live");
   }catch(e){
     flowRunning = false;
+    flowStepMode = false;
+    flowRAF = null;
     note("svg-static", (e && e.message) ? String(e.message) : "flow init failed");
+  }
+}
+/* Poll-tick driver + watchdog: called after every successful poll
+   (loadOverview). Under reduced-motion it steps the packets one
+   discrete jump; in smooth mode it restarts the loop if it ever died
+   or stalled (no advance for 10s while visible). */
+function flowPollStep(){
+  if(reducedMotion){
+    if(!flowRunning){ startFlow(); return; }
+    try{ flowUpdate(0.35); flowDraw(); flowSyncHud(); flowLastAdvance = Date.now(); }
+    catch(e){ /* a bad step never kills the engine */ }
+    return;
+  }
+  if(!flowRunning || !flowRAF || (!document.hidden && Date.now() - flowLastAdvance > 10000)){
+    flowStepMode = false;
+    stopFlow();
+    startFlow();
   }
 }
 function stopFlow(){
   flowRunning = false;
+  flowStepMode = false;
   if(flowRAF){ cancelAnimationFrame(flowRAF); flowRAF = null; }
 }
 
@@ -4104,7 +4244,7 @@ function loadDomains(){
     var h = '<table><thead><tr><th>' + t("colDomain") + '</th><th>' + t("colTenant") + '</th><th>' + t("colBackend") + '</th><th>' + t("stageTitle") + '</th><th>' + t("colLocked") + '</th><th>' + t("stageCardAttack") + '</th><th>' + t("colTotalRps") + '</th><th>' + t("colBypassedRps") + '</th><th>' + t("colRules") + '</th></tr></thead><tbody>';
     list.forEach(function(d){
       var sel = (d.NAME === currentDomain) ? ' class="clickable selected"' : ' class="clickable"';
-      h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td>" + esc(d.TENANT || "default") + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? t("yes") : t("no")) + "</td><td>" + (d.UNDER_ATTACK ? t("yes") : t("no")) + "</td><td>" + num(d.TOTAL_RPS) + "</td><td>" + num(d.BYPASSED_RPS) + "</td><td>" + num(d.RULE_COUNT) + "</td></tr>";
+      h += "<tr" + sel + ' data-domain="' + esc(d.NAME) + '"><td class="mono">' + esc(d.NAME) + "</td><td>" + esc(d.TENANT || "default") + "</td><td class='mono'>" + esc(d.BACKEND || "—") + "</td><td>" + stageBadge(String(d.STAGE)) + "</td><td>" + (d.STAGE_LOCKED ? t("yes") : t("no")) + "</td><td>" + (d.UNDER_ATTACK ? t("yes") : t("no")) + "</td><td class='num'>" + num(d.TOTAL_RPS) + "</td><td class='num'>" + num(d.BYPASSED_RPS) + "</td><td class='num'>" + num(d.RULE_COUNT) + "</td></tr>";
     });
     /* Requests-per-second bars across domains, from the same list.
        Only with 2+ domains: a single bar at 100% says nothing. */
@@ -4142,7 +4282,7 @@ function loadTenants(){
     var h = '<table><thead><tr><th>' + t("colTenant") + '</th><th>' + t("domTitle") + '</th><th>' + t("colRequests") + '</th><th>' + t("colBlockedApprox") + '</th><th>' + t("colBwIn") + '</th><th>' + t("colBwOut") + '</th><th>' + t("colBwTotal") + '</th></tr></thead><tbody>';
     rows.forEach(function(u){
       var names = (u.DOMAINS || []).map(function(d){ return esc(d); }).join(", ");
-      h += "<tr><td>" + esc(u.TENANT) + "</td><td class='mono'>" + names + "</td><td>" + num(u.REQUESTS) + "</td><td>" + num(u.BLOCKED) + "</td><td>" + fmtBytes(u.BYTES_IN) + "</td><td>" + fmtBytes(u.BYTES_OUT) + "</td><td>" + fmtBytes(u.BYTES_TOTAL) + "</td></tr>";
+      h += "<tr><td>" + esc(u.TENANT) + "</td><td class='mono'>" + names + "</td><td class='num'>" + num(u.REQUESTS) + "</td><td class='num'>" + num(u.BLOCKED) + "</td><td class='num'>" + fmtBytes(u.BYTES_IN) + "</td><td class='num'>" + fmtBytes(u.BYTES_OUT) + "</td><td class='num'>" + fmtBytes(u.BYTES_TOTAL) + "</td></tr>";
     });
     /* Requests bars across tenants, from the same rows. */
     var tenBars = "";
@@ -4315,25 +4455,25 @@ function loadDomainPanel(){
       return;
     }
     var h = '<table><tbody>'
-      + "<tr><td>" + t("domRowTotalRps") + "</td><td>" + num(r[1] && r[1].TOTAL_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
-      + "<tr><td>" + t("domRowBypassRps") + "</td><td>" + num(r[2] && r[2].BYPASSED_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
-      + "<tr><td>" + t("domRowTotal") + "</td><td>" + num(r[3] && r[3].TOTAL_REQUESTS) + "</td></tr>"
-      + "<tr><td>" + t("domRowBypassed") + "</td><td>" + num(r[4] && r[4].BYPASSED_REQUESTS) + "</td></tr>";
+      + "<tr><td>" + t("domRowTotalRps") + "</td><td class='num'>" + num(r[1] && r[1].TOTAL_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>" + t("domRowBypassRps") + "</td><td class='num'>" + num(r[2] && r[2].BYPASSED_REQUESTS_REQUESTS_PER_SECOND) + "</td></tr>"
+      + "<tr><td>" + t("domRowTotal") + "</td><td class='num'>" + num(r[3] && r[3].TOTAL_REQUESTS) + "</td></tr>"
+      + "<tr><td>" + t("domRowBypassed") + "</td><td class='num'>" + num(r[4] && r[4].BYPASSED_REQUESTS) + "</td></tr>";
     if(cfg){
       h += "<tr><td>" + t("colBackend") + "</td><td class='mono'>" + esc(cfg.BACKEND || "—") + "</td></tr>"
         + "<tr><td>" + t("domRowScheme") + "</td><td class='mono'>" + esc(cfg.SCHEME || "—") + "</td></tr>"
         + "<tr><td>" + t("domRowCert") + "</td><td class='mono'>" + esc(cfg.CERTIFICATE || t("certAuto")) + "</td></tr>"
-        + "<tr><td>" + t("navRules") + "</td><td>" + num(cfg.RULE_COUNT) + "</td></tr>"
+        + "<tr><td>" + t("navRules") + "</td><td class='num'>" + num(cfg.RULE_COUNT) + "</td></tr>"
         + "<tr><td>" + t("domRowProvider") + "</td><td>" + esc(cfg.CHALLENGE_PROVIDER || t("providerNone")) + "</td></tr>"
         + "<tr><td>" + t("setWafModeLabel") + "</td><td>" + esc(cfg.WAF_MODE_EFFECTIVE || cfg.WAF_MODE || "—") + "</td></tr>"
         + "<tr><td>" + t("domRowAlerts") + "</td><td>Webhook: " + (cfg.WEBHOOK_CONFIGURED ? t("yes") : t("no")) + " · Telegram: " + (cfg.TELEGRAM_CONFIGURED ? t("yes") : t("no")) + " · Email: " + (cfg.EMAIL_CONFIGURED ? t("yes") : t("no")) + " · Twilio: " + (cfg.TWILIO_CONFIGURED ? t("yes") : t("no")) + "</td></tr>";
     }
     var cache = r[5];
     if(cache && cache.CACHE_ENABLED){
-      h += "<tr><td>" + t("cacheRowHits") + "</td><td>" + num(cache.HITS) + " / " + t("cacheRowMisses") + " " + num(cache.MISSES) + "</td></tr>"
-        + "<tr><td>" + t("cacheRowBytes") + "</td><td>" + num(cache.BYTES_SERVED) + "</td></tr>"
-        + "<tr><td>" + t("cacheRowStores") + "</td><td>" + num(cache.STORES) + " · " + t("cacheRowEvictions") + " " + num(cache.EVICTIONS) + " · " + t("cacheRowPurges") + " " + num(cache.PURGES) + " · " + t("cacheRowStale") + " " + num(cache.STALE_SERVES) + "</td></tr>"
-        + "<tr><td>" + t("cacheRowEntries") + "</td><td>" + num(cache.ENTRIES) + " · " + num(cache.BYTES) + " " + t("cacheRowBytesUnit") + "</td></tr>";
+      h += "<tr><td>" + t("cacheRowHits") + "</td><td class='num'>" + num(cache.HITS) + " / " + t("cacheRowMisses") + " " + num(cache.MISSES) + "</td></tr>"
+        + "<tr><td>" + t("cacheRowBytes") + "</td><td class='num'>" + num(cache.BYTES_SERVED) + "</td></tr>"
+        + "<tr><td>" + t("cacheRowStores") + "</td><td class='num'>" + num(cache.STORES) + " · " + t("cacheRowEvictions") + " " + num(cache.EVICTIONS) + " · " + t("cacheRowPurges") + " " + num(cache.PURGES) + " · " + t("cacheRowStale") + " " + num(cache.STALE_SERVES) + "</td></tr>"
+        + "<tr><td>" + t("cacheRowEntries") + "</td><td class='num'>" + num(cache.ENTRIES) + " · " + num(cache.BYTES) + " " + t("cacheRowBytesUnit") + "</td></tr>";
     } else {
       h += "<tr><td>" + t("cacheRowTitle") + "</td><td>" + t("cacheDisabled") + "</td></tr>";
     }
@@ -4480,7 +4620,7 @@ function gradeRingClass(grade){
 /* p50/p95/p99 pills for the latency cards: badge spans carrying the
    same values as the table below the cards. */
 function latPills(pairs){
-  return pairs.map(function(p){ return '<span class="badge">' + p[0] + ' ' + fmtMs(p[1]) + '</span>'; }).join(" ");
+  return pairs.map(function(p){ return '<span class="badge num">' + p[0] + ' ' + fmtMs(p[1]) + '</span>'; }).join(" ");
 }
 /* Status badge for proxy-feature rows: ok state glows, off state is
    a plain neutral badge. */
@@ -4607,7 +4747,7 @@ function submitRuleForm(ev){
   call.then(function(){
     var wasEdit = editingIndex !== null;
     resetRuleForm();
-    showInline("rulesError", "rulesOk", "", wasEdit ? t("ruleSaved") : t("ruleAdded"));
+    showInline("rulesError", "rulesOk", "", ""); showToast(wasEdit ? t("ruleSaved") : t("ruleAdded"), "ok");
     closeRuleModal();
     return loadRules(true);
   }).catch(function(err){
@@ -5077,7 +5217,7 @@ function runLogSearch(){
     }
     var h = '<table><thead><tr><th>' + t("colTime") + '</th><th>' + t("lsEventLabel") + '</th><th>' + t("lsIpLabel") + '</th><th>' + t("ruleActionLabel") + '</th><th>' + t("colRule") + '</th><th>' + t("colRisk") + '</th><th>' + t("colPath") + '</th></tr></thead><tbody>';
     entries.forEach(function(e){
-      h += "<tr><td class='mono'>" + esc(e.ts || "") + "</td><td>" + esc(e.event || "") + "</td><td class='mono'>" + esc(e.ip || "") + "</td><td>" + esc(e.action || "") + "</td><td class='mono'>" + esc(e.rule || "") + "</td><td>" + (e.risk_score != null ? num(e.risk_score) : "—") + "</td><td class='mono'>" + esc(e.path || "") + "</td></tr>";
+      h += "<tr><td class='mono'>" + esc(e.ts || "") + "</td><td>" + esc(e.event || "") + "</td><td class='mono'>" + esc(e.ip || "") + "</td><td>" + esc(e.action || "") + "</td><td class='mono'>" + esc(e.rule || "") + "</td><td class='num'>" + (e.risk_score != null ? num(e.risk_score) : "—") + "</td><td class='mono'>" + esc(e.path || "") + "</td></tr>";
     });
     setHTML("logSearchBody", h + "</tbody></table>");
   }).catch(function(err){
@@ -5271,7 +5411,7 @@ function submitSettings(ev){
   };
   showInline("settingsError", "settingsOk", "", "");
   domainWrite(currentDomain, "SET_DOMAIN_CONFIG", params).then(function(){
-    showInline("settingsError", "settingsOk", "", t("settingsSaved"));
+    showInline("settingsError", "settingsOk", "", ""); showToast(t("settingsSaved"), "ok");
     return loadSettings();
   }).catch(function(err){
     showInline("settingsError", "settingsOk", t("errSaveSettings", err.message), "");
@@ -5286,7 +5426,7 @@ function loadProxyFeatures(){
       + "<tr><td>" + t("pfGeoCountry") + "</td><td>" + pfBadge(r.GEO_COUNTRY_LOADED, t("loadedWord"), t("notLoadedWord")) + "</td></tr>"
       + "<tr><td>" + t("pfGeoAsn") + "</td><td>" + pfBadge(r.GEO_ASN_LOADED, t("loadedWord"), t("notLoadedWord")) + "</td></tr>"
       + "<tr><td>" + t("pfRepFeed") + "</td><td>" + pfBadge(r.REPUTATION_FEED_CONFIGURED, t("configuredWord"), t("notConfiguredWord")) + "</td></tr>"
-      + "<tr><td>" + t("pfRepSize") + "</td><td>" + t("repListSize", num(r.REPUTATION_LOCAL_IPS), num(r.REPUTATION_LOCAL_NETWORKS), num(r.REPUTATION_FEED_IPS), num(r.REPUTATION_FEED_NETWORKS)) + "</td></tr>"
+      + "<tr><td>" + t("pfRepSize") + "</td><td class='num'>" + t("repListSize", num(r.REPUTATION_LOCAL_IPS), num(r.REPUTATION_LOCAL_NETWORKS), num(r.REPUTATION_FEED_IPS), num(r.REPUTATION_FEED_NETWORKS)) + "</td></tr>"
       + "</tbody></table>";
     setHTML("proxyFeatures", h);
   }).catch(function(){
@@ -5303,7 +5443,7 @@ function loadBackups(){
     }
     var h = '<table><thead><tr><th>' + t("colBackup") + '</th><th>' + t("colSize") + '</th><th>' + t("colModified") + '</th><th>' + t("colActions") + '</th></tr></thead><tbody>';
     backups.forEach(function(b){
-      h += "<tr><td class='mono'>" + esc(b.NAME) + "</td><td>" + t("sizeBytes", num(b.SIZE)) + "</td><td>" + esc(b.MODIFIED) + "</td>"
+      h += "<tr><td class='mono'>" + esc(b.NAME) + "</td><td class='num'>" + t("sizeBytes", num(b.SIZE)) + "</td><td>" + esc(b.MODIFIED) + "</td>"
         + '<td style="white-space:nowrap"><button type="button" class="small" data-backup-restore="' + esc(b.NAME) + '">' + t("restoreBtn") + '</button></td></tr>';
     });
     setHTML("backupList", h + "</tbody></table>");
@@ -5332,7 +5472,7 @@ function countTable(mapObj, keyLabel){
   rows.sort(function(a,b){ return b[1]-a[1]; });
   if(!rows.length) return '<p class="small muted">' + t("noneRecorded") + '</p>';
   var h = '<table><thead><tr><th>' + esc(keyLabel) + '</th><th>' + t("colCount") + '</th></tr></thead><tbody>';
-  rows.forEach(function(r){ h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td>" + num(r[1]) + "</td></tr>"; });
+  rows.forEach(function(r){ h += "<tr><td class='mono'>" + esc(r[0]) + "</td><td class='num'>" + num(r[1]) + "</td></tr>"; });
   return h + "</tbody></table>";
 }
 /* countPanel: the count table with a bar chart above it, from the same
@@ -5362,15 +5502,15 @@ function renderReport(rep){
   setHTML("reportBody", h);
   var side = '<div class="panel"><h2>' + t("repChallenges") + '</h2>' + countPanel(rep.challenges_by_stage, t("stageTitle")) + '</div>'
     + '<div class="panel"><h2>' + t("colBackend") + '</h2><table><tbody>'
-    + "<tr><td>" + t("repReqOk") + "</td><td>" + num(rep.backend_requests_ok) + "</td></tr>"
-    + "<tr><td>" + t("repReqFailed") + "</td><td>" + num(rep.backend_requests_failed) + "</td></tr>"
-    + "<tr><td>" + t("repLatency") + "</td><td>" + (rep.backend_latency_avg_seconds != null ? t("repLatencySec", rep.backend_latency_avg_seconds.toFixed(3)) : "—") + "</td></tr>"
+    + "<tr><td>" + t("repReqOk") + "</td><td class='num'>" + num(rep.backend_requests_ok) + "</td></tr>"
+    + "<tr><td>" + t("repReqFailed") + "</td><td class='num'>" + num(rep.backend_requests_failed) + "</td></tr>"
+    + "<tr><td>" + t("repLatency") + "</td><td class='num'>" + (rep.backend_latency_avg_seconds != null ? t("repLatencySec", rep.backend_latency_avg_seconds.toFixed(3)) : "—") + "</td></tr>"
     + "</tbody></table></div>";
   setHTML("reportSide", side);
   var ipRows = function(list){
     if(!list || !list.length) return '<p class="small muted">' + t("noneInWindow") + '</p>';
     var tbl = '<table><thead><tr><th>' + t("lsIpLabel") + '</th><th>' + t("colRequests") + '</th><th>' + t("colCountry") + '</th><th>' + t("colAsn") + '</th></tr></thead><tbody>';
-    list.forEach(function(e){ tbl += "<tr><td class='mono'>" + esc(e.ip) + "</td><td>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
+    list.forEach(function(e){ tbl += "<tr><td class='mono'>" + esc(e.ip) + "</td><td class='num'>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td class='num'>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
     return tbl + "</tbody></table>";
   };
   setHTML("repPanelVerified", ipRows(rep.top_verified_ips_proxy_wide));
@@ -5456,6 +5596,7 @@ function reloadConfig(){
   showBanner("");
   proxyWrite("RELOAD", {}).then(function(){
     showBanner("");
+    showToast(t("configReloaded"), "ok");
     return refreshAll();
   }).catch(function(err){
     showBanner(t("errReload", err.message));
@@ -5502,7 +5643,7 @@ function setConnected(on){
   pill.classList.toggle("bad", false);
   setText("connText", on ? (ssoMode ? t("connectedSso") : t("connected")) : t("notConnected"));
   updateHeroState();
-  if(on){ startPolling(); } else { stopPolling(); }
+  if(on){ startPolling(); startFlow(); } else { stopPolling(); }
 }
 function connect(secret){
   apiSecret = secret;
@@ -5576,14 +5717,14 @@ function loadRUM(){
       + '<table><thead><tr><th>' + t("rumMetric") + '</th><th>' + t("rumSamples") + '</th><th>' + t("rumAvg") + '</th><th>' + t("rumP50") + '</th><th>' + t("rumP95") + '</th></tr></thead><tbody>';
     order.forEach(function(name){
       var m = (r.METRICS && r.METRICS[name]) || {};
-      h += "<tr><td class='mono'>" + esc(name) + "</td><td>" + num(m.SAMPLES || 0) + "</td><td>" + fmtMs(m.AVERAGE || 0) + "</td><td>" + fmtMs(m.P50 || 0) + "</td><td>" + fmtMs(m.P95 || 0) + "</td></tr>";
+      h += "<tr><td class='mono'>" + esc(name) + "</td><td class='num'>" + num(m.SAMPLES || 0) + "</td><td class='num'>" + fmtMs(m.AVERAGE || 0) + "</td><td class='num'>" + fmtMs(m.P50 || 0) + "</td><td class='num'>" + fmtMs(m.P95 || 0) + "</td></tr>";
     });
     h += "</tbody></table>";
     h += "<p class='small muted'>" + t("rumBeacons", num(r.COUNT)) + "</p>";
     if(r.PATHS && r.PATHS.length){
       h += '<table><thead><tr><th>' + t("colPath") + '</th><th>' + t("rumSamples") + '</th><th>' + t("rumAvgTtfb") + '</th><th>' + t("rumAvgLoad") + '</th></tr></thead><tbody>';
       r.PATHS.forEach(function(p){
-        h += "<tr><td class='mono small'>" + esc(p.PATH) + "</td><td>" + num(p.COUNT) + "</td><td>" + fmtMs(p.AVG_TTFB) + "</td><td>" + fmtMs(p.AVG_LOAD) + "</td></tr>";
+        h += "<tr><td class='mono small'>" + esc(p.PATH) + "</td><td class='num'>" + num(p.COUNT) + "</td><td class='num'>" + fmtMs(p.AVG_TTFB) + "</td><td class='num'>" + fmtMs(p.AVG_LOAD) + "</td></tr>";
       });
       h += "</tbody></table>";
     }
@@ -5596,9 +5737,9 @@ function loadRUM(){
 function loadLatency(){
   return domainAction(currentDomain, "GET_LATENCY").then(function(r){
     var h = '<div class="cards">'
-      + '<div class="card"><div class="label">' + t("latCardTtfb") + '</div><div class="value">' + fmtMs(r.TTFB_P95_MS) + '</div><div class="foot">' + latPills([["p50", r.TTFB_P50_MS], ["p95", r.TTFB_P95_MS], ["p99", r.TTFB_P99_MS]]) + '</div></div>'
-      + '<div class="card"><div class="label">' + t("latCardTotal") + '</div><div class="value">' + fmtMs(r.TOTAL_P95_MS) + '</div><div class="foot">' + latPills([["p50", r.TOTAL_P50_MS], ["p95", r.TOTAL_P95_MS], ["p99", r.TOTAL_P99_MS]]) + '</div></div>'
-      + '<div class="card"><div class="label">' + t("latCardProxy") + '</div><div class="value">' + fmtMs(r.PROXY_MEAN_MS) + '</div><div class="foot">' + t("latMean") + ' · ' + t("latBudget") + ' ' + fmtPct(r.ERROR_BUDGET_REMAINING_PCT) + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardTtfb") + '</div><div class="value num">' + fmtMs(r.TTFB_P95_MS) + '</div><div class="foot">' + latPills([["p50", r.TTFB_P50_MS], ["p95", r.TTFB_P95_MS], ["p99", r.TTFB_P99_MS]]) + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardTotal") + '</div><div class="value num">' + fmtMs(r.TOTAL_P95_MS) + '</div><div class="foot">' + latPills([["p50", r.TOTAL_P50_MS], ["p95", r.TOTAL_P95_MS], ["p99", r.TOTAL_P99_MS]]) + '</div></div>'
+      + '<div class="card"><div class="label">' + t("latCardProxy") + '</div><div class="value num">' + fmtMs(r.PROXY_MEAN_MS) + '</div><div class="foot">' + t("latMean") + ' · ' + t("latBudget") + ' ' + fmtPct(r.ERROR_BUDGET_REMAINING_PCT) + '</div></div>'
       + '<div class="card"><div class="label">' + t("latCardUptime") + '</div><div class="value">' + fmtPct(r.UPTIME_PCT) + '</div><div class="foot">' + t("latSlaTarget", fmtPct(r.SLA_TARGET_PCT)) + '</div></div>'
       + '</div>';
     var latRows = [
@@ -5612,11 +5753,11 @@ function loadLatency(){
     var latBars = hBars(latRows, {fmt: fmtMs, limit: 6});
     if(latBars) h += '<div class="chart-block"><p class="chart-caption">' + t("chartLatPct") + '</p>' + latBars + '</div>';
     h += '<table><tbody>'
-      + "<tr><td>" + t("latTtfbRow") + "</td><td>" + fmtMs(r.TTFB_P50_MS) + " / " + fmtMs(r.TTFB_P95_MS) + " / " + fmtMs(r.TTFB_P99_MS) + "</td></tr>"
-      + "<tr><td>" + t("latTotalRow") + "</td><td>" + fmtMs(r.TOTAL_P50_MS) + " / " + fmtMs(r.TOTAL_P95_MS) + " / " + fmtMs(r.TOTAL_P99_MS) + "</td></tr>"
-      + "<tr><td>" + t("latSamples") + "</td><td>" + num(r.SAMPLES) + "</td></tr>"
-      + "<tr><td>" + t("latErrors") + "</td><td>" + num(r.ERRORS) + " · " + t("lat5xx", num(r.STATUS_5XX)) + "</td></tr>"
-      + "<tr><td>" + t("latBudget") + "</td><td>" + fmtPct(r.ERROR_BUDGET_REMAINING_PCT) + "</td></tr>"
+      + "<tr><td>" + t("latTtfbRow") + "</td><td class='num'>" + fmtMs(r.TTFB_P50_MS) + " / " + fmtMs(r.TTFB_P95_MS) + " / " + fmtMs(r.TTFB_P99_MS) + "</td></tr>"
+      + "<tr><td>" + t("latTotalRow") + "</td><td class='num'>" + fmtMs(r.TOTAL_P50_MS) + " / " + fmtMs(r.TOTAL_P95_MS) + " / " + fmtMs(r.TOTAL_P99_MS) + "</td></tr>"
+      + "<tr><td>" + t("latSamples") + "</td><td class='num'>" + num(r.SAMPLES) + "</td></tr>"
+      + "<tr><td>" + t("latErrors") + "</td><td class='num'>" + num(r.ERRORS) + " · " + t("lat5xx", num(r.STATUS_5XX)) + "</td></tr>"
+      + "<tr><td>" + t("latBudget") + "</td><td class='num'>" + fmtPct(r.ERROR_BUDGET_REMAINING_PCT) + "</td></tr>"
       + "<tr><td>" + t("latWindow") + "</td><td>" + esc(fmtWhen(r.WINDOW_START)) + " — " + esc(fmtWhen(r.WINDOW_END)) + "</td></tr>"
       + "</tbody></table>";
     setHTML("latBody", h);
@@ -5675,14 +5816,14 @@ function renderPostmortem(r){
   if(events.length){
     h += '<table><thead><tr><th>' + t("pmTime") + '</th><th>' + t("pmKind") + '</th><th>' + t("pmDetail") + '</th><th>' + t("pmStageCol") + '</th><th>' + t("pmRps") + '</th><th>' + t("pmRpsAllowed") + '</th></tr></thead><tbody>';
     events.forEach(function(e){
-      h += "<tr><td class='mono'>" + esc(fmtWhen(e.TIME)) + "</td><td>" + esc(e.KIND) + "</td><td>" + esc(e.DETAIL || "") + "</td><td>" + esc(String(e.STAGE)) + "</td><td>" + num(e.RPS) + "</td><td>" + num(e.RPS_ALLOWED) + "</td></tr>";
+      h += "<tr><td class='mono'>" + esc(fmtWhen(e.TIME)) + "</td><td>" + esc(e.KIND) + "</td><td>" + esc(e.DETAIL || "") + "</td><td class='num'>" + esc(String(e.STAGE)) + "</td><td class='num'>" + num(e.RPS) + "</td><td class='num'>" + num(e.RPS_ALLOWED) + "</td></tr>";
     });
     h += "</tbody></table>";
   }
   var ipRows = function(list){
     if(!list || !list.length) return '<p class="small muted">' + t("noneInWindow") + '</p>';
     var tbl = '<table><thead><tr><th>' + t("lsIpLabel") + '</th><th>' + t("colRequests") + '</th><th>' + t("colCountry") + '</th><th>' + t("colAsn") + '</th></tr></thead><tbody>';
-    list.forEach(function(e){ tbl += "<tr><td class='mono'>" + esc(e.ip) + "</td><td>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
+    list.forEach(function(e){ tbl += "<tr><td class='mono'>" + esc(e.ip) + "</td><td class='num'>" + num(e.requests) + "</td><td>" + esc(e.country || "—") + "</td><td class='num'>" + (e.asn ? num(e.asn) : "—") + "</td></tr>"; });
     return tbl + "</tbody></table>";
   };
   h += '<div class="panel"><h2>' + t("repTopVerified") + '</h2>' + ipRows(r.TOP_VERIFIED_IPS_PROXY_WIDE) + '</div>';
@@ -5743,10 +5884,10 @@ function loadShadow(){
   return domainAction(currentDomain, "GET_SHADOW_REPORT").then(function(r){
     var h = '<table><tbody>'
       + "<tr><td>" + t("shadowEnabled") + "</td><td>" + (r.SHADOW_ENABLED ? t("yes") : t("no")) + "</td></tr>"
-      + "<tr><td>" + t("shadowRules") + "</td><td>" + num(r.SHADOW_RULES) + " · " + t("shadowWaf") + ": " + (r.SHADOW_WAF ? t("yes") : t("no")) + "</td></tr>"
-      + "<tr><td>" + t("shadowEvaluated") + "</td><td>" + num(r.EVALUATED) + "</td></tr>"
-      + "<tr><td>" + t("shadowOutcomes") + "</td><td>" + t("shadowOutcomeCounts", num(r.WOULD_BLOCK), num(r.WOULD_CHALLENGE), num(r.WOULD_ALLOW)) + "</td></tr>"
-      + "<tr><td>" + t("shadowDisagree") + "</td><td>" + num(r.DISAGREEMENTS) + "</td></tr>"
+      + "<tr><td>" + t("shadowRules") + "</td><td class='num'>" + num(r.SHADOW_RULES) + " · " + t("shadowWaf") + ": " + (r.SHADOW_WAF ? t("yes") : t("no")) + "</td></tr>"
+      + "<tr><td>" + t("shadowEvaluated") + "</td><td class='num'>" + num(r.EVALUATED) + "</td></tr>"
+      + "<tr><td>" + t("shadowOutcomes") + "</td><td class='num'>" + t("shadowOutcomeCounts", num(r.WOULD_BLOCK), num(r.WOULD_CHALLENGE), num(r.WOULD_ALLOW)) + "</td></tr>"
+      + "<tr><td>" + t("shadowDisagree") + "</td><td class='num'>" + num(r.DISAGREEMENTS) + "</td></tr>"
       + "</tbody></table>";
     var shBars = hBars([
       [t("chartWouldBlock"), Number(r.WOULD_BLOCK) || 0, "bad"],
@@ -5791,7 +5932,7 @@ function loadCerts(){
             : e.STATUS === "expiring" ? '<span class="badge stage2">' + esc(e.STATUS) + '</span>'
             : e.STATUS === "expired" || e.STATUS === "unreadable" ? '<span class="badge stage3">' + esc(e.STATUS) + '</span>'
             : '<span class="badge">' + esc(e.STATUS) + '</span>';
-          h += "<tr><td class='mono'>" + esc(e.DOMAIN) + "</td><td>" + badge + "</td><td>" + esc(fmtWhen(e.EXPIRES)) + "</td><td>" + (e.DAYS_REMAINING != null ? num(e.DAYS_REMAINING) : "—") + "</td><td>" + esc(fmtWhen(e.LAST_ALERT)) + "</td></tr>";
+          h += "<tr><td class='mono'>" + esc(e.DOMAIN) + "</td><td>" + badge + "</td><td>" + esc(fmtWhen(e.EXPIRES)) + "</td><td class='num'>" + (e.DAYS_REMAINING != null ? num(e.DAYS_REMAINING) : "—") + "</td><td>" + esc(fmtWhen(e.LAST_ALERT)) + "</td></tr>";
         });
         h += "</tbody></table>";
       }
@@ -5807,7 +5948,7 @@ function loadCerts(){
       } else {
         h += '<table><thead><tr><th>' + t("subName") + '</th><th>' + t("subBaseline") + '</th><th>' + t("subAddresses") + '</th><th>' + t("subFailures") + '</th><th>' + t("subLastChecked") + '</th><th>' + t("subLastError") + '</th></tr></thead><tbody>';
         domains.forEach(function(e){
-          h += "<tr><td class='mono'>" + esc(e.NAME) + "</td><td>" + (e.BASELINE_SET ? t("yes") : t("no")) + "</td><td class='mono'>" + esc((e.ADDRESSES || []).join(", ")) + "</td><td>" + num(e.CONSECUTIVE_FAILURES) + "</td><td>" + esc(fmtWhen(e.LAST_CHECKED)) + "</td><td>" + esc(e.LAST_ERROR || e.NOTE || "") + "</td></tr>";
+          h += "<tr><td class='mono'>" + esc(e.NAME) + "</td><td>" + (e.BASELINE_SET ? t("yes") : t("no")) + "</td><td class='mono'>" + esc((e.ADDRESSES || []).join(", ")) + "</td><td class='num'>" + num(e.CONSECUTIVE_FAILURES) + "</td><td>" + esc(fmtWhen(e.LAST_CHECKED)) + "</td><td>" + esc(e.LAST_ERROR || e.NOTE || "") + "</td></tr>";
         });
         h += "</tbody></table>";
       }
@@ -5904,7 +6045,7 @@ function loadPackList(){
     }
     var h = '<table><thead><tr><th>' + t("colPackName") + '</th><th>' + t("colVersion") + '</th><th>' + t("colSource") + '</th><th>' + t("colDomain") + '</th><th>' + t("colRuleCount") + '</th><th>' + t("colMode") + '</th><th>' + t("colImportedAt") + '</th></tr></thead><tbody>';
     packs.forEach(function(p){
-      h += "<tr><td>" + esc(p.name) + "</td><td>" + esc(p.version) + "</td><td class='mono'>" + esc(p.source) + "</td><td class='mono'>" + esc(p.domain) + "</td><td>" + num(p.ruleCount) + "</td><td>" + esc(p.mode) + "</td><td>" + esc(fmtWhen(p.importedAt)) + "</td></tr>";
+      h += "<tr><td>" + esc(p.name) + "</td><td>" + esc(p.version) + "</td><td class='mono'>" + esc(p.source) + "</td><td class='mono'>" + esc(p.domain) + "</td><td class='num'>" + num(p.ruleCount) + "</td><td>" + esc(p.mode) + "</td><td>" + esc(fmtWhen(p.importedAt)) + "</td></tr>";
     });
     setHTML("packList", h + "</tbody></table>");
   }).catch(function(err){
@@ -6002,6 +6143,7 @@ function showView(name){
     activeView.classList.add("active");
   }
   if(!connected) return;
+  if(name === "overview"){ startFlow(); }
   if(name === "settings"){ loadSettings(); loadProxyFeatures(); loadBackups(); }
   else if(name === "reports"){ loadReport(); loadAttackMap(); }
   else if(name === "domains"){ loadDomains(); loadDomainPanel(); loadTenants(); loadTemplates(); }

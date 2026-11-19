@@ -6,7 +6,7 @@ see [LICENSE](LICENSE) and the credits endpoint. This changelog covers the
 SonuShield work only; upstream history before the fork point is in the git
 log.
 
-## Unreleased — Overview Live Request Flow (SW v16)
+## Unreleased — Overview Live Request Flow (SW v17)
 
 - The Overview hero is now a full-width (320px) LIVE request-flow
   diagram (inline SVG, modelled 1:1 on `docs/assets/request-flow.svg`,
@@ -23,9 +23,9 @@ log.
   backend at a rate proportional to bypassed rps, red packets flow
   bot → shield → Blocked box at a rate proportional to (total −
   bypassed) rps (each capped at 20/s, max 44 live packets). Packets
-  ride the SVG lane paths (`getPointAtLength`), with a 3px glowing
-  trail + halo + bright core, so a still frame always shows streaks,
-  not dots. Red packets flash the shield on impact and pulse the
+  ride the SVG lane paths (`getPointAtLength`), with a 5px glowing
+  trail + halo (r=12) + bright core (r=6), so a still frame always shows
+  streaks, not dots. Red packets flash the shield on impact and pulse the
   Blocked box; each green arrival pulses a "passed" label at the
   backend. At 0 rps the diagram idles honestly ("Awaiting live
   traffic") — no fake packets are ever shown.
@@ -41,13 +41,75 @@ log.
   blocked-box pulse, while a small green trickle (1.5/s) still passes.
   OFF returns to live-driven flow.
 - The hero keeps the same renderer reporting, now for the flow:
-  `console.info("[SonuShield] flow renderer: svg-live | svg-static
-  (reason)")` + `data-flow-renderer` on `#heroShield`. If the packet
-  engine fails, the static diagram + CSS shine still show — never a
-  blank box. All motion is transform/opacity only and pauses when the
-  tab is hidden or under prefers-reduced-motion.
+  `console.info("[SonuShield] flow renderer: svg-live | svg-live-step
+  (reduced-motion) | svg-static (reason)")` + `data-flow-renderer` on
+  `#heroShield`. If the packet engine fails, the static diagram + CSS
+  shine still show — never a blank box. All motion is transform/opacity
+  only and pauses when the tab is hidden; under prefers-reduced-motion
+  the packets step once per poll tick instead of animating smoothly.
 - KPI counter tweens (exact landing), the neon Requests chart +
   scanline, card hover shimmer, and drawer slide-ins are unchanged.
+
+### Live request-flow engine fix (SW v17)
+
+- Bug: zero packets moved on any lane even at 7,245 rps / 0 bypassed.
+  Root cause: `flowTick` stopped the rAF loop permanently whenever
+  `document.hidden || reducedMotion` was true, with no restart path —
+  and `reducedMotion` is a one-time `matchMedia` flag that is on for
+  many phones/desktops, so the engine died on its very first frame. A
+  second kill path: any exception inside the tick body happened before
+  the `requestAnimationFrame` line, so one bad frame killed the loop
+  forever.
+- Fix: the loop is now exception-proof (tick body in try/catch, rAF
+  always rescheduled in a finally); reduced-motion never kills the
+  engine — it switches to step mode, where `flowPollStep()` advances
+  packets one discrete jump per 3s poll tick; `startFlow()` is called
+  defensively when Overview becomes visible, on connect, and after
+  every successful poll, and a stall watchdog restarts the loop if no
+  frame advances for 10s while visible. Packets are also bigger and
+  brighter (5px trail, r=12 halo, r=6 core) so a still frame at high
+  rps shows a dense stream. Spawn math, lanes, caps, badges, sim, and
+  the idle state are unchanged.
+
+### Final UI/UX polish pass (SW v17)
+
+- Number stability: a shared `.num` class (`font-variant-numeric:
+  tabular-nums`, plus the same rule on chart SVG text and all table
+  cells) is applied to every live metric, KPI counter, CPU/RAM number,
+  latency/TTFB number, bar value, and numeric table cell, so digits no
+  longer jitter or shift horizontally during the 3s live updates.
+  Counting logic is untouched — CSS only.
+- Glass tooltips: a subtle `(?)` info icon now sits next to Bypassed
+  requests (Overview), Stage 1/2/3 (Stage view), Adaptive proof-of-work
+  and Rules dry-run mode (Settings). Hover, keyboard focus, or tap
+  shows a floating dark-glass tooltip with a plain-language explanation
+  (verified against the code: bypassed = passed without a challenge;
+  stages = cookie / JS proof-of-work / captcha, escalating; Adaptive PoW
+  scales puzzle difficulty with bypassed requests per second between the
+  configured bounds; dry-run only logs matches, never blocks). New i18n
+  keys `tipBypassed`, `tipStage`, `tipAdaptivePow`, `tipDryRun`,
+  `infoAria` (en+hi).
+- Glass toast notifications: a bottom-right toast system (dark glass,
+  green check / red alert SVG icons, auto-dismiss in 4s with a progress
+  bar, hover pauses the timer, close button, `aria-live="polite"`) now
+  confirms settings saved, rules created/updated, and config reloaded.
+  The inline status lines and the error banner are unchanged — errors
+  still persist inline; toasts are for success confirmations only.
+  There were no `alert(` calls in the dashboard to replace. New i18n
+  keys `configReloaded`, `toastDismiss` (en+hi).
+- Better empty states: the traffic/CPU/RAM chart empty states and the
+  top-IPs/tables "No data in this window yet" box are now a centered
+  minimal indicator — a pulsing emerald radar dot + "Sensor active —
+  awaiting traffic" (new i18n key `sensorActive`, en+hi). Same element
+  IDs and show/hide logic; zero traffic still shows zero, nothing is
+  faked. Other "nothing configured yet" states (no rules, no domains,
+  no backups…) keep their specific messages.
+- Refined spacing & contrast: `.card` and `.panel` padding is now a
+  consistent 20px everywhere; dark-mode borders were already exactly
+  `1px solid rgba(255,255,255,0.08)` via `--border` (verified, kept),
+  light mode keeps its own crisp `#e2e8f0` border; hover transitions on
+  buttons, table rows, and sidebar links are now a uniform 150ms
+  (`--dur-fast`), inside the design system's 150–300ms range.
 
 ## Baseline — balooProxy v1.5 (upstream)
 
