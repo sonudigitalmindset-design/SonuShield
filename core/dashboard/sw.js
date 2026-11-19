@@ -15,7 +15,7 @@
  */
 "use strict";
 
-var SHELL_VERSION = "sonushield-shell-v12";
+var SHELL_VERSION = "sonushield-shell-v13";
 var SHELL_URLS = [
   "./dashboard",
   "./manifest.webmanifest",
@@ -23,6 +23,7 @@ var SHELL_URLS = [
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
   "./icons/icon-180.png",
+  "./vendor/three-r128.min.js",
   "./fonts/Inter-Regular.woff2",
   "./fonts/Inter-Medium.woff2",
   "./fonts/Inter-SemiBold.woff2",
@@ -67,6 +68,7 @@ function isShellRequest(request) {
   if (path === self.location.pathname.replace(/sw\.js$/, "dashboard")) return true;
   if (path === self.location.pathname.replace(/sw\.js$/, "manifest.webmanifest")) return true;
   if (/\/icons\/icon-(192|512|180|maskable-512)\.png$/.test(path)) return true;
+  if (/\/vendor\/three-r128\.min\.js$/.test(path)) return true;
   if (/\/fonts\/[A-Za-z0-9._-]+\.woff2$/.test(path)) return true;
   return false;
 }

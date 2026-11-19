@@ -1,0 +1,15 @@
+Three.js r128 — vendored, not CDN
+=================================
+Source: official three.js GitHub release r128
+(https://github.com/mrdoob/three.js/releases/tag/r128,
+ build/three.min.js as published in that release).
+Verified: THREE.REVISION === "128" (loaded in Node),
+WebGLRenderer / IcosahedronGeometry / TorusGeometry /
+Points / PointsMaterial all present.
+SHA-256: 9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2
+Size: 603,445 bytes.
+
+License: MIT (see the header inside three-r128.min.js):
+Copyright (c) 2010-2021 Three.js Authors. SPDX-License-Identifier: MIT.
+The full MIT license text is in the three.js repository
+(https://github.com/mrdoob/three.js/blob/r128/LICENSE).

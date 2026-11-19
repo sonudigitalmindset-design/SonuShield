@@ -486,6 +486,50 @@ names, or challenge flow semantics.
   Search Structured Logs sits above it in a collapsible filter
   bar. Service-worker shell bumped to v12.
 
+### Dashboard: forced obsidian default + real WebGL 3D core (19 Nov)
+
+- Theme-default fix: the page was still opening Light for
+  returning browsers because a saved `"light"` choice already
+  existed with migration version `"3"`, so the one-time reset
+  never fired again — and `applyTheme` fell back to `"light"`
+  on any invalid value while `<body>` never received
+  `data-theme` at all. Fixed by bumping the migration `"3"`→
+  `"4"` (every returning browser resets to dark exactly once),
+  making the invalid-value fallback `"dark"`, and setting
+  `data-theme` on both `<html>` and `<body>` in the bootstrap,
+  in `applyTheme`, and as markup defaults. An explicit Sun/Moon
+  toggle afterwards is still respected and persisted.
+- Real WebGL 3D core: the Overview hero is now a rotating
+  wireframe icosahedron (Three.js) with two counter-rotating
+  tilted orbital rings and glowing node particles on a 260x180
+  transparent canvas, mouse-parallax tilt, emerald `#10b981`
+  when safe/Stage 1 and crimson `#ef4444` under attack. Three.js
+  r128 is VENDORED (`core/dashboard/vendor/three-r128.min.js`,
+  MIT, REVISION verified as `"128"`), embedded via `go:embed`
+  and served as a protected shell asset — the requested CDN
+  script tag was deliberately not used (supply-chain risk, and
+  it would break the dashboard's offline property). If THREE is
+  missing or WebGL fails, the existing 2D canvas globe draws
+  instead — never a blank box.
+- Forced obsidian: canvas `#04070f` with an animated mesh
+  aurora (emerald `#10b981`, cyan `#06b6d4`, indigo `#3b82f6`
+  orbs); every card is a frosted glass slab exactly per spec
+  (`rgba(13,19,34,.72)`, `blur(20px)`, `1px rgba(255,255,255,.08)`
+  border, `1px rgba(255,255,255,.18)` top border, deep drop +
+  inner top highlight). Light mode stays fully functional.
+- Tilt reconciled to `perspective(900px) ... translateZ(8px)`
+  and extended to the domain inspector and the Allow/Block IP
+  panels (re-bound after the IP lists render); `transform-style:
+  preserve-3d` on tilt elements. View/sub-tab switches now
+  replay the staggered `fadeSlideUp` entrance (18px rise +
+  `.98` scale, 0.4s, `cubic-bezier(.16,1,.3,1)`). Toggle
+  switches get spring transitions
+  (`cubic-bezier(.34,1.56,.64,1)`) with a breathing neon glow
+  when active; the active sidebar item carries a glowing
+  vertical neon bar (`box-shadow: 0 0 12px #3b82f6`).
+  Service-worker shell bumped to v13 (+603,445 bytes of
+  vendored Three.js in the binary).
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without

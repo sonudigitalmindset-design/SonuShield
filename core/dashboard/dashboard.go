@@ -29,6 +29,9 @@ var icon180 []byte
 //go:embed icons/icon-maskable-512.png
 var iconMaskable512 []byte
 
+//go:embed vendor/three-r128.min.js
+var threeJS []byte
+
 //go:embed fonts/Inter-Regular.woff2
 var fontInterRegular []byte
 
@@ -142,6 +145,7 @@ var shellAssets = map[string]shellAsset{
 	"icons/icon-maskable-512.png": {iconMaskable512, "image/png", "public, max-age=86400"},
 	// Self-hosted UI fonts (OFL, latin subset; see fonts/ for the
 	// license texts). Immutable versioned content like the icons.
+	"vendor/three-r128.min.js":          {threeJS, "text/javascript; charset=utf-8", "public, max-age=86400"},
 	"fonts/Inter-Regular.woff2":         {fontInterRegular, "font/woff2", "public, max-age=86400"},
 	"fonts/Inter-Medium.woff2":          {fontInterMedium, "font/woff2", "public, max-age=86400"},
 	"fonts/Inter-SemiBold.woff2":        {fontInterSemiBold, "font/woff2", "public, max-age=86400"},
