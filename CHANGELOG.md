@@ -530,6 +530,49 @@ names, or challenge flow semantics.
   Service-worker shell bumped to v13 (+603,445 bytes of
   vendored Three.js in the binary).
 
+### Dashboard: colourful 3D + animation everywhere (19 Nov)
+
+- Globe diagnosis: the user's screenshot showed the hero globe as
+  clean lat/long ellipses with two rings — that is the 2D canvas
+  fallback drawing, not the WebGL icosahedron (80 triangular
+  faces) plus dense halo mesh. The fallback was completely silent:
+  any failure (THREE not loaded, no WebGL context, renderer
+  exception, reduced-motion) fell back with no log and no visible
+  marker. `startGlobe()` now logs
+  `console.info("[SonuShield] globe renderer: three-webgl")` or
+  `canvas-2d-fallback (reason)` and sets
+  `data-globe-renderer` on `#heroShield`, so a running browser
+  inspection can confirm which renderer is active. The 2D fallback
+  is also upgraded (pulsing glow disc, brighter lines, cyan second
+  ring, glowing 5px satellite dots, faster rotation) so it never
+  reads as a dead static drawing.
+- WebGL core upgraded: canvas 260x180 → 320x220, brighter core
+  (opacity 1), second counter-rotating inner icosahedron, glow
+  sprite behind the core (canvas-generated radial texture, no
+  external asset), thicker orbital rings (tube 0.02), 90 + 30 node
+  particles at two depths, faster rotation — the core now reads as
+  layered 3D depth in a still screenshot. A breathing glow disc
+  sits behind the hero shield in CSS too.
+- Aurora fixed: the old orbs (0.12–0.22 opacity, blur 90px) were
+  invisible in screenshots, and the opaque top bar/sidebar hid
+  them. Orbs are now 0.30–0.38 opacity with a fourth violet orb,
+  blur 60px, 36s drift; the top bar and sidebar are translucent
+  frosted glass in dark mode so the glow shows through on every
+  view. Light mode stays fully functional.
+- Colourful 3D glass everywhere: every card family carries its own
+  accent — emerald for requests/traffic, cyan for CPU/RAM/server,
+  amber for Stage, violet/indigo for security/grade, red only for
+  attack/block — as a gradient top edge plus a soft outer glow.
+  Sidebar icons are coloured per section with a glowing active
+  item; the 900px tilt/spotlight now covers KPI, Domain,
+  Allow/Block IP, Stage, Reports KPI, Insights grade/telemetry,
+  Settings and About panels. Charts get glowing gradient lines
+  (emerald traffic, cyan CPU/RAM), a visible grid, and breathing
+  empty states — zero traffic still shows zero, nothing is
+  invented. The Connected dot pulses harder; count-up and
+  staggered entrances are unchanged. Service-worker shell bumped
+  to v14.
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without

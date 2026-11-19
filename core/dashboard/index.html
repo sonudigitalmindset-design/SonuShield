@@ -129,8 +129,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 .pill .dot{transition:background-color var(--dur-med) var(--ease-out)}
 /* Connected-status dot breathes with a soft ring pulse. */
-.pill.ok .dot{animation:dotGlow 2.4s var(--ease-in-out) infinite}
-@keyframes dotGlow{50%{box-shadow:0 0 0 5px rgba(34,197,94,.14)}}
+.pill.ok .dot{animation:dotGlow 1.8s var(--ease-in-out) infinite}
+@keyframes dotGlow{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5);transform:scale(1)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0);transform:scale(1.3)}}
+/* Chart/grade empty states breathe instead of sitting dead: the text
+   stays honest ("No data yet") — only the frame pulses. No data is
+   ever invented. */
+.chart-wrap .state,#gradeHero .state{animation:emptyShimmer 2.2s var(--ease-in-out) infinite}
+@keyframes emptyShimmer{0%,100%{opacity:1;border-color:var(--border-strong)}50%{opacity:.6;border-color:rgba(56,189,248,.55)}}
 /* View entrances are choreographed: the view fades, the heading rises,
    stat cards stagger in, then panels rise. Transform/opacity only —
    no layout shift. Every sidebar link or sub-tab click replays the
@@ -154,7 +159,7 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 @keyframes fadeSlideUp{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .view.active .panel{animation:fadeSlideUp .4s cubic-bezier(.16,1,.3,1) .1s backwards}
 /* Metric cards lift on hover (transform only, no layout shift). */
-.cards .card:hover,.ov-grid .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.cards .card:hover,.ov-grid .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md),0 0 26px -4px var(--acc,#38bdf8)}
 /* Stat values pop subtly when a poll updates them (JS adds .tick on change). */
 .card .value.tick{animation:valueTick .3s var(--ease-out)}
 @keyframes valueTick{0%{transform:scale(1)}30%{transform:scale(1.05)}100%{transform:scale(1)}}
@@ -209,6 +214,22 @@ input,select,textarea{color:var(--text);background:var(--input-bg);border:1px so
 .navbtn svg{flex:none}
 .navbtn:hover{background:var(--panel-2);color:var(--text)}
 .navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
+.navbtn svg{color:var(--nav-acc,#94a3b8)}
+.navbtn[data-view="overview"]{--nav-acc:#10b981}
+.navbtn[data-view="domains"]{--nav-acc:#06b6d4}
+.navbtn[data-view="rules"]{--nav-acc:#f87171}
+.navbtn[data-view="iplists"]{--nav-acc:#a78bfa}
+.navbtn[data-view="stage"]{--nav-acc:#f59e0b}
+.navbtn[data-view="logs"]{--nav-acc:#38bdf8}
+.navbtn[data-view="settings"]{--nav-acc:#94a3b8}
+.navbtn[data-view="reports"]{--nav-acc:#818cf8}
+.navbtn[data-view="insights"]{--nav-acc:#a78bfa}
+.navbtn[data-view="approvals"]{--nav-acc:#fbbf24}
+.navbtn[data-view="accounts"]{--nav-acc:#22d3ee}
+.navbtn[data-view="about"]{--nav-acc:#94a3b8}
+.navbtn.active{background:linear-gradient(90deg,rgba(59,130,246,.20),rgba(59,130,246,.05) 70%,transparent)}
+.navbtn.active svg{filter:drop-shadow(0 0 6px currentColor)}
+.navbtn.active::before{width:4px}
 .navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
 .main{flex:1;padding:20px 24px 48px;min-width:0}
 .main > section, .main > .banner{max-width:1680px;margin:0 auto}
@@ -230,7 +251,31 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 /* 3D Frosted Glass Slab (dark default): exact slab spec — blur 20px
    plus the deep drop + inner top highlight. The tokens above already
    carry the slab background and borders in dark mode. */
-:root[data-theme="dark"] .card,:root[data-theme="dark"] .panel{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 20px 40px -15px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.1)}
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .panel{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 20px 40px -15px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.1),0 0 28px -14px var(--acc,#38bdf8)}
+/* Colourful 3D glass: every card family carries its own accent —
+   emerald for requests/traffic, cyan for CPU/RAM/server, amber for
+   Stage, violet/indigo for security/grade, red only for attack/block.
+   The accent shows as a gradient top edge + soft outer glow; the
+   value text stays white for contrast. */
+.card,.panel{position:relative;--acc:#38bdf8}
+.card::after,.panel::after{content:"";position:absolute;top:-1px;left:16px;right:16px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.85;box-shadow:0 0 10px var(--acc);pointer-events:none}
+.ov-grid .card:nth-child(1),.ov-grid .card:nth-child(2),.ov-grid .card:nth-child(6){--acc:#10b981}
+.ov-grid .card.kpi{--acc:#06b6d4}
+.ov-grid .card:nth-child(5){--acc:#f59e0b}
+.ov-grid .card:nth-child(7){--acc:#06b6d4}
+.ov-grid .card:nth-child(8){--acc:#8b5cf6}
+#view-reports .cards .card:nth-child(1){--acc:#10b981}
+#view-reports .cards .card:nth-child(2){--acc:#06b6d4}
+#view-reports .cards .card:nth-child(3){--acc:#f59e0b}
+#view-reports .cards .card:nth-child(4){--acc:#8b5cf6}
+#view-insights .ins-hero .panel:nth-child(1){--acc:#8b5cf6}
+#view-insights .ins-hero .panel:nth-child(2){--acc:#06b6d4}
+#view-domains .card,#view-domains .panel{--acc:#10b981}
+#view-stage .cards .card:nth-child(1){--acc:#f59e0b}
+#view-stage .cards .card:nth-child(2){--acc:#10b981}
+#view-stage .cards .card:nth-child(3){--acc:#ef4444}
+.ip-allow{--acc:#10b981}
+.ip-block{--acc:#ef4444}
 /* Frosted glass specular left edge (dark only; light keeps flat borders). */
 :root[data-theme="dark"] .card,:root[data-theme="dark"] .panel{border-left:1px solid rgba(255,255,255,.08)}
 .panel > h2:first-child{margin-top:0}
@@ -265,23 +310,24 @@ tbody tr:hover td{background:var(--panel-2)}
 .chart-legend{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted)}
 .legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .legend-dot{width:10px;height:10px;border-radius:2px;flex:none}
-.legend-total{background:var(--accent)}
+.legend-total{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,.7)}
 .legend-bypass{background:var(--bypass)}
 .chart-wrap{position:relative}
 .chart-svg{width:100%;height:auto;display:block}
-.chart-area{fill:var(--accent);fill-opacity:.08}
-:root[data-theme="dark"] .chart-area{fill-opacity:.18}
-.chart-area-ram{fill:var(--info);fill-opacity:.08}
-:root[data-theme="dark"] .chart-area-ram{fill-opacity:.18}
-.chart-line-total{stroke:var(--accent)}
+.chart-area{fill:#10b981;fill-opacity:.10}
+:root[data-theme="dark"] .chart-area{fill-opacity:.28}
+.chart-area-ram{fill:var(--info);fill-opacity:.10}
+:root[data-theme="dark"] .chart-area-ram{fill-opacity:.28}
+.chart-line-total{stroke:#10b981;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(16,185,129,.55))}
 /* The bypassed series is dashed as well as grey, so the two series stay
    distinguishable without relying on color alone. */
-.chart-line-bypass{stroke:var(--bypass);stroke-dasharray:5 3}
-.chart-line-cpu{stroke:var(--accent)}
-.chart-line-ram{stroke:var(--info)}
+.chart-line-bypass{stroke:#94a3b8;stroke-dasharray:5 3;stroke-width:2;filter:drop-shadow(0 0 4px rgba(148,163,184,.4))}
+.chart-line-cpu{stroke:#06b6d4;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(6,182,212,.55))}
+.chart-line-ram{stroke:#38bdf8;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(56,189,248,.55))}
 /* Chart furniture: axis + gridlines always render, so a zero-traffic
    chart reads as a working chart at zero rather than a broken one. */
-.chart-grid,.chart-axis{stroke:var(--border);stroke-width:1;vector-effect:non-scaling-stroke}
+.chart-grid{stroke:rgba(148,163,184,.28);stroke-width:1;vector-effect:non-scaling-stroke}
+.chart-axis{stroke:rgba(148,163,184,.5);stroke-width:1;vector-effect:non-scaling-stroke}
 .chart-label{font-size:12px;fill:var(--faint);font-family:var(--font)}
 .chart-sm .chart-label{font-size:11px}
 .chart-ylabel{text-anchor:end}
@@ -307,9 +353,9 @@ tbody tr:hover td{background:var(--panel-2)}
 
 /* Firewall expressions and rule JSON are mono (JetBrains Mono). */
 #ruleExpr,#simExpr,#importJson,#ruleSchedule{font-family:var(--mono)}
-.chart-grad-a{stop-color:var(--accent);stop-opacity:.28}
-.chart-grad-b{stop-color:var(--accent);stop-opacity:0}
-.chart-grad-a-info{stop-color:var(--info);stop-opacity:.28}
+.chart-grad-a{stop-color:#10b981;stop-opacity:.32}
+.chart-grad-b{stop-color:#10b981;stop-opacity:0}
+.chart-grad-a-info{stop-color:var(--info);stop-opacity:.32}
 .chart-grad-b-info{stop-color:var(--info);stop-opacity:0}
 .note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
 .note strong{color:var(--text)}
@@ -373,8 +419,8 @@ tr.selected td{background:var(--nav-active-bg)}
 .kpi-main .value{font-size:22px}
 .gauge{width:46px;height:46px;flex:none;transform:rotate(-90deg)}
 .gauge-bg{fill:none;stroke:var(--panel-2);stroke-width:3.5}
-.gauge-fg{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .5s var(--ease-out)}
-.gauge-fg.ram{stroke:var(--info)}
+.gauge-fg{fill:none;stroke:#06b6d4;stroke-width:3.5;stroke-linecap:round;stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .5s var(--ease-out);filter:drop-shadow(0 0 3px rgba(6,182,212,.5))}
+.gauge-fg.ram{stroke:var(--info);filter:drop-shadow(0 0 3px rgba(56,189,248,.5))}
 /* Overview hero: title + live stage badge on the left, a custom
    isometric shield/node graphic on the right. The graphic glows
    emerald while connected and calm, amber while under attack or at
@@ -383,8 +429,12 @@ tr.selected td{background:var(--nav-active-bg)}
 .hero h1{margin:0 0 4px}
 .hero .sub{margin:0}
 .hero-status{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-.hero-shield{--hero-glow:rgba(100,116,139,.35);filter:drop-shadow(0 0 14px var(--hero-glow));animation:heroPulse 3.2s var(--ease-in-out) infinite}
-.hero-shield canvas{display:block;width:260px;height:180px;animation:heroFloat 5s var(--ease-in-out) infinite}
+.hero-shield{position:relative;--hero-glow:rgba(100,116,139,.35);filter:drop-shadow(0 0 14px var(--hero-glow));animation:heroPulse 3.2s var(--ease-in-out) infinite}
+.hero-shield::before{content:"";position:absolute;inset:-34px -24px;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,rgba(16,185,129,.30),rgba(6,182,212,.13) 55%,transparent 75%);animation:heroGlowBreathe 3.2s var(--ease-in-out) infinite;pointer-events:none}
+@keyframes heroGlowBreathe{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+.hero-shield.ok::before{background:radial-gradient(closest-side,rgba(16,185,129,.34),rgba(6,182,212,.15) 55%,transparent 75%)}
+.hero-shield.warn::before,.hero-shield.bad::before{background:radial-gradient(closest-side,rgba(239,68,68,.34),rgba(245,158,11,.15) 55%,transparent 75%)}
+.hero-shield canvas{display:block;width:320px;height:220px;animation:heroFloat 5s var(--ease-in-out) infinite}
 .hero-shield svg{width:0;height:0}
 .hero-shield.ok{--hero-glow:rgba(16,185,129,.45)}
 .hero-shield.warn{--hero-glow:rgba(245,158,11,.5)}
@@ -472,24 +522,30 @@ tr.selected td{background:var(--nav-active-bg)}
   .ov-split{grid-template-columns:1fr}
   .dom-inspector,.import-grid,.rep-mid,.ins-hero{grid-template-columns:1fr}
   .hero{grid-template-columns:1fr}
-  .hero-shield canvas{width:130px;height:90px}
+  .hero-shield canvas{width:160px;height:110px}
 }
 /* ===== Visual engine overhaul: luxury obsidian command center =====
    Animated mesh glow, frosted glass, 3D tilt + spotlight, pill
    toggles, segmented controls, terminal console, stage rings.
    All motion is transform/opacity only and lives inside the
    prefers-reduced-motion guard below. */
-/* Ambient mesh aurora: three slow-drifting radial glows behind the
-   content — emerald #10b981, cyan #06b6d4, deep indigo #3b82f6.
-   Fixed layer, pointer-transparent, paused when the tab is hidden
-   (JS toggles .anim-paused on <html>). */
-.mesh{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(640px 420px at 72% 18%,rgba(16,185,129,.12),transparent 70%)}
-.mesh::before,.mesh::after{content:"";position:absolute;border-radius:50%;filter:blur(90px);animation:meshDrift 26s ease-in-out infinite alternate}
-.mesh::before{width:560px;height:560px;left:-120px;top:-160px;background:radial-gradient(circle,rgba(6,182,212,.22),transparent 65%)}
-.mesh::after{width:640px;height:640px;right:-160px;bottom:-220px;background:radial-gradient(circle,rgba(59,130,246,.20),transparent 65%);animation-delay:-13s}
-@keyframes meshDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(60px,40px,0) scale(1.12)}}
+/* Ambient mesh aurora: four slow-drifting radial glows behind the
+   content — emerald #10b981, cyan #06b6d4, deep indigo #3b82f6, violet
+   #8b5cf6. Fixed layer, pointer-transparent, paused when the tab is
+   hidden (JS toggles .anim-paused on <html>). Opacities are deliberately
+   strong in dark mode: the previous 0.12–0.22 orbs were invisible in
+   screenshots. The top bar and sidebar are translucent in dark mode
+   so the glow shows through instead of hiding behind solid panels. */
+.mesh{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(720px 460px at 76% 12%,rgba(16,185,129,.30),transparent 70%),radial-gradient(560px 380px at 22% 8%,rgba(139,92,246,.20),transparent 70%)}
+.mesh::before,.mesh::after{content:"";position:absolute;border-radius:50%;filter:blur(60px);animation:meshDrift 36s ease-in-out infinite alternate}
+.mesh::before{width:720px;height:720px;left:-140px;top:-180px;background:radial-gradient(circle,rgba(6,182,212,.38),transparent 62%)}
+.mesh::after{width:780px;height:780px;right:-180px;bottom:-260px;background:radial-gradient(circle,rgba(59,130,246,.36),transparent 62%);animation-delay:-18s}
+@keyframes meshDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(90px,60px,0) scale(1.14)}}
 :root.anim-paused .mesh::before,:root.anim-paused .mesh::after{animation-play-state:paused}
-:root[data-theme="light"] .mesh{opacity:.35}
+:root[data-theme="light"] .mesh{opacity:.5}
+:root[data-theme="dark"] .topbar{background:rgba(4,7,15,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+:root[data-theme="dark"] .sidebar{background:rgba(11,18,32,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+html{background:var(--bg)}
 .layout,.topbar{position:relative;z-index:1}
 /* 3D tilt + cursor spotlight (JS adds .tilt to KPI cards and heroes;
    pointer devices only, disabled under reduced-motion). */
@@ -585,7 +641,7 @@ tr.selected td{background:var(--nav-active-bg)}
 .terminal-head-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 /* Reduced motion: everything new goes still too. */
 @media (prefers-reduced-motion:reduce){
-  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.hero-shield canvas,.switch[aria-checked="true"]{animation:none}
+  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.hero-shield canvas,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"]{animation:none}
   .switch,.switch .switch-thumb,.seg-indicator,.stage-matrix,.ls-collapsible,#maintForm .maint-extra{transition:none}
   .tilt{transform:none}
 }
@@ -665,7 +721,7 @@ tr.selected td{background:var(--nav-active-bg)}
           <div class="hero-status"><span id="heroStage">—</span><span class="muted small" data-i18n="fromStageApiShort">from the stage API</span></div>
         </div>
         <div class="hero-shield off" id="heroShield" role="img" data-i18n-aria="heroShieldLabel" aria-label="Protection status">
-          <canvas id="heroGlobe" width="260" height="180" aria-hidden="true"></canvas>
+          <canvas id="heroGlobe" width="320" height="220" aria-hidden="true"></canvas>
           <svg width="0" height="0" aria-hidden="true"><defs><linearGradient id="heroShieldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
         </div>
       </div>
@@ -3660,10 +3716,10 @@ function updateHeroState(){
 var globeState = "off";
 var globeAngle = 0, globeRAF = null, globeRunning = false;
 function globeColors(){
-  if(globeState === "ok") return {main: "#10b981", soft: "rgba(16,185,129,.4)"};
-  if(globeState === "warn") return {main: "#ef4444", soft: "rgba(239,68,68,.4)"};
-  if(globeState === "bad") return {main: "#ef4444", soft: "rgba(239,68,68,.55)"};
-  return {main: "#64748b", soft: "rgba(100,116,139,.35)"};
+  if(globeState === "ok") return {main: "#10b981", soft: "rgba(16,185,129,.4)", accent: "#06b6d4"};
+  if(globeState === "warn") return {main: "#ef4444", soft: "rgba(239,68,68,.4)", accent: "#f59e0b"};
+  if(globeState === "bad") return {main: "#ef4444", soft: "rgba(239,68,68,.55)", accent: "#f59e0b"};
+  return {main: "#64748b", soft: "rgba(100,116,139,.35)", accent: "#38bdf8"};
 }
 /* WebGL core color, in Three.js hex form (same states as globeColors:
    emerald #10b981 when safe/Stage 1, crimson #ef4444 under attack). */
@@ -3682,12 +3738,23 @@ function drawGlobe(){
   var c = globeColors();
   var t = Date.now() / 1000;
   var pulse = globeState === "off" ? 0 : (globeState === "bad" ? 0.5 + 0.5 * Math.sin(t * 6) : 0.5 + 0.5 * Math.sin(t * 2.2));
+  /* Soft pulsing glow disc behind the sphere so the fallback reads as
+     a lit 3D core, not a flat line drawing. */
+  var glowR = R * 1.5;
+  var grad = ctx.createRadialGradient(cx, cy, R * 0.35, cx, cy, glowR);
+  grad.addColorStop(0, c.soft);
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.globalAlpha = 0.45 + pulse * 0.3;
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+  ctx.fill();
   ctx.save();
   ctx.shadowColor = c.main;
   ctx.shadowBlur = 10 + pulse * 20;
   ctx.strokeStyle = c.main;
-  ctx.globalAlpha = 0.9;
-  ctx.lineWidth = 1.6;
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = 2.2;
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.stroke();
@@ -3697,42 +3764,50 @@ function drawGlobe(){
     a = globeAngle + i * Math.PI / 5;
     rx = Math.abs(Math.cos(a)) * R;
     if(rx < 1.5) rx = 1.5;
-    ctx.globalAlpha = 0.45;
+    ctx.globalAlpha = 0.62;
     ctx.strokeStyle = c.main;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, R, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
   [-0.55, -0.28, 0, 0.28, 0.55].forEach(function(f){
     var y = cy + f * R, w = Math.sqrt(Math.max(0, 1 - f * f)) * R;
-    ctx.globalAlpha = 0.3;
+    ctx.globalAlpha = 0.45;
+    ctx.strokeStyle = c.main;
+    ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.ellipse(cx, y, w, R * 0.16, 0, 0, Math.PI * 2);
     ctx.stroke();
   });
-  /* Two tilted orbital rings with a satellite dot each. */
-  [[-0.5, 1.35, globeAngle * 1.6], [0.42, 1.5, -globeAngle * 1.2]].forEach(function(rg){
-    ctx.globalAlpha = 0.55;
-    ctx.strokeStyle = c.soft;
-    ctx.lineWidth = 1.2;
+  /* Two tilted orbital rings with a glowing satellite dot each — the
+     first ring in the state colour, the second in the accent colour
+     (cyan when safe), so the two orbits stay distinguishable. */
+  [[-0.5, 1.35, globeAngle * 1.6], [0.42, 1.5, -globeAngle * 1.2]].forEach(function(rg, rgi){
+    ctx.globalAlpha = 0.75;
+    ctx.strokeStyle = rgi === 0 ? c.main : c.accent;
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.ellipse(cx, cy, R * rg[1], R * 0.42, rg[0], 0, Math.PI * 2);
     ctx.stroke();
     var da = rg[2] % (Math.PI * 2);
     var dx = cx + Math.cos(da) * R * rg[1] * Math.cos(rg[0]) - Math.sin(da) * R * 0.42 * Math.sin(rg[0]);
     var dy = cy + Math.cos(da) * R * rg[1] * Math.sin(rg[0]) + Math.sin(da) * R * 0.42 * Math.cos(rg[0]);
+    ctx.save();
     ctx.globalAlpha = 0.95;
-    ctx.fillStyle = c.main;
+    ctx.fillStyle = rgi === 0 ? c.main : c.accent;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 12;
     ctx.beginPath();
-    ctx.arc(dx, dy, 3.5, 0, Math.PI * 2);
+    ctx.arc(dx, dy, 5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   });
   ctx.globalAlpha = 1;
 }
 function globeTick(){
   if(document.hidden || reducedMotion){ globeRunning = false; drawGlobe(); return; }
-  globeAngle += 0.008;
+  globeAngle += 0.014;
   drawGlobe();
   globeRAF = requestAnimationFrame(globeTick);
 }
@@ -3742,33 +3817,50 @@ function globeTick(){
    particles, mouse parallax, emerald/crimson color from the live
    state. If THREE is missing or WebGL fails, startGlobe falls back
    to the 2D canvas drawing above — never a blank box. */
-var globe3D = null, globe3DRAF = null;
+var globe3D = null, globe3DRAF = null, globe3DError = "";
 var globeMouseX = 0, globeMouseY = 0, globeTiltX = 0, globeTiltY = 0;
 function initWebGLGlobe(){
   if(globe3D) return true;
-  if(typeof THREE === "undefined" || !window.WebGLRenderingContext) return false;
+  if(typeof THREE === "undefined"){ globe3DError = "three.js not loaded"; return false; }
+  if(!window.WebGLRenderingContext){ globe3DError = "no WebGLRenderingContext"; return false; }
   var cv = $("heroGlobe");
-  if(!cv) return false;
+  if(!cv){ globe3DError = "canvas missing"; return false; }
   try {
     var renderer = new THREE.WebGLRenderer({canvas: cv, alpha: true, antialias: true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(260, 180, false);
+    renderer.setSize(320, 220, false);
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(45, 260 / 180, 0.1, 100);
+    var camera = new THREE.PerspectiveCamera(45, 320 / 220, 0.1, 100);
     camera.position.z = 3.4;
-    var coreMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 0.92});
+    var coreMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 1});
     var core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.85, 1), coreMat);
     scene.add(core);
-    var haloMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 0.16});
+    /* Second inner core, smaller and counter-rotating, so the wireframe
+       reads as layered 3D depth in a still screenshot, not one flat mesh. */
+    var innerMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 0.5});
+    var inner = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), innerMat);
+    scene.add(inner);
+    var haloMat = new THREE.MeshBasicMaterial({color: globeColorHex(), wireframe: true, transparent: true, opacity: 0.28});
     var halo = new THREE.Mesh(new THREE.SphereGeometry(1.06, 18, 12), haloMat);
     scene.add(halo);
-    function ringMat(){ return new THREE.MeshBasicMaterial({color: globeColorHex(), transparent: true, opacity: 0.75}); }
-    var ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.008, 8, 120), ringMat());
+    /* Soft glow sprite behind the core (canvas-generated radial texture,
+       no external asset): the core sits in a lit halo in stills too. */
+    var glowCv = document.createElement("canvas"); glowCv.width = 128; glowCv.height = 128;
+    var gctx = glowCv.getContext("2d");
+    var ggrad = gctx.createRadialGradient(64, 64, 4, 64, 64, 64);
+    ggrad.addColorStop(0, "rgba(255,255,255,.9)");
+    ggrad.addColorStop(0.35, "rgba(255,255,255,.28)");
+    ggrad.addColorStop(1, "rgba(255,255,255,0)");
+    gctx.fillStyle = ggrad; gctx.fillRect(0, 0, 128, 128);
+    var glowMat = new THREE.SpriteMaterial({map: new THREE.CanvasTexture(glowCv), color: globeColorHex(), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false});
+    var glow = new THREE.Sprite(glowMat); glow.scale.set(4.6, 4.6, 1); scene.add(glow);
+    function ringMat(){ return new THREE.MeshBasicMaterial({color: globeColorHex(), transparent: true, opacity: 0.9}); }
+    var ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.02, 8, 120), ringMat());
     ring1.rotation.x = Math.PI / 2.6; ring1.rotation.y = 0.35;
-    var ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.68, 0.008, 8, 120), ringMat());
+    var ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.68, 0.02, 8, 120), ringMat());
     ring2.rotation.x = Math.PI / 1.8; ring2.rotation.y = -0.5;
     scene.add(ring1); scene.add(ring2);
-    function nodePoints(n, r){
+    function nodePoints(n, r, size){
       var pos = new Float32Array(n * 3), i, a, b;
       for(i = 0; i < n; i++){
         a = Math.random() * Math.PI * 2; b = Math.acos(2 * Math.random() - 1);
@@ -3778,13 +3870,14 @@ function initWebGLGlobe(){
       }
       var g = new THREE.BufferGeometry();
       g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-      var pts = new THREE.Points(g, new THREE.PointsMaterial({color: globeColorHex(), size: 0.045, transparent: true, opacity: 0.95}));
+      var pts = new THREE.Points(g, new THREE.PointsMaterial({color: globeColorHex(), size: size, transparent: true, opacity: 0.95}));
       scene.add(pts);
       return pts;
     }
-    var nodes = nodePoints(42, 1.5);
-    globe3D = {renderer: renderer, scene: scene, camera: camera, core: core, halo: halo, ring1: ring1, ring2: ring2, nodes: nodes,
-      mats: [coreMat, haloMat, ring1.material, ring2.material, nodes.material], angle: 0, col: new THREE.Color(globeColorHex())};
+    var nodes = nodePoints(90, 1.5, 0.06);
+    var nodes2 = nodePoints(30, 1.95, 0.085);
+    globe3D = {renderer: renderer, scene: scene, camera: camera, core: core, inner: inner, halo: halo, glow: glow, ring1: ring1, ring2: ring2, nodes: nodes, nodes2: nodes2,
+      mats: [coreMat, innerMat, haloMat, glowMat, ring1.material, ring2.material, nodes.material, nodes2.material], angle: 0, col: new THREE.Color(globeColorHex())};
     var shield = $("heroShield");
     if(shield){
       shield.addEventListener("pointermove", function(ev){
@@ -3796,24 +3889,28 @@ function initWebGLGlobe(){
       shield.addEventListener("pointerleave", function(){ globeMouseX = 0; globeMouseY = 0; });
     }
     return true;
-  } catch(e){ globe3D = null; return false; }
+  } catch(e){ globe3D = null; globe3DError = (e && e.message) ? String(e.message) : "webgl context failed"; return false; }
 }
 function globe3DTick(){
   if(!globe3D) return;
   if(document.hidden || reducedMotion){ globe3DRAF = null; return; }
   var g = globe3D;
-  g.angle += 0.008;
+  g.angle += 0.011;
   var target = new THREE.Color(globeColorHex());
   g.col.lerp(target, 0.06);
   g.mats.forEach(function(m){ m.color.copy(g.col); });
   var pulse = globeState === "bad" ? 0.5 + 0.5 * Math.sin(Date.now() / 1000 * 6) : (globeState === "off" ? 0 : 0.5 + 0.5 * Math.sin(Date.now() / 1000 * 2.2));
   var s = 1 + pulse * 0.05;
   g.core.scale.set(s, s, s);
+  var gs = 4.6 * (1 + pulse * 0.06);
+  g.glow.scale.set(gs, gs, 1);
   g.core.rotation.x = g.angle * 0.7; g.core.rotation.y = g.angle;
+  g.inner.rotation.x = -g.angle * 0.9; g.inner.rotation.y = -g.angle * 0.6;
   g.halo.rotation.y = -g.angle * 0.4;
-  g.ring1.rotation.z = g.angle * 0.9;
-  g.ring2.rotation.z = -g.angle * 0.7;
-  g.nodes.rotation.y = g.angle * 0.3;
+  g.ring1.rotation.z = g.angle * 1.15;
+  g.ring2.rotation.z = -g.angle * 0.95;
+  g.nodes.rotation.y = g.angle * 0.45;
+  g.nodes2.rotation.y = -g.angle * 0.5; g.nodes2.rotation.x = g.angle * 0.2;
   globeTiltX += ((globeMouseY * 0.5) - globeTiltX) * 0.06;
   globeTiltY += ((globeMouseX * 0.6) - globeTiltY) * 0.06;
   g.scene.rotation.x = globeTiltX;
@@ -3823,14 +3920,25 @@ function globe3DTick(){
 }
 function startGlobe(){
   if(globeRunning) return;
-  if(reducedMotion){ drawGlobe(); return; }
+  var shield = $("heroShield");
+  /* Report which renderer is actually driving the hero core — the
+     previous silent fallback made a dead 2D drawing indistinguishable
+     from a working WebGL core in screenshots. The running browser
+     inspection reads this line (and data-globe-renderer) to confirm. */
+  function note(renderer, reason){
+    try{ console.info("[SonuShield] globe renderer: " + renderer + (reason ? " (" + reason + ")" : "")); }catch(e){}
+    if(shield) shield.setAttribute("data-globe-renderer", renderer);
+  }
+  if(reducedMotion){ drawGlobe(); note("canvas-2d-fallback", "prefers-reduced-motion"); return; }
   if(initWebGLGlobe()){
     globeRunning = true;
     globe3DRAF = requestAnimationFrame(globe3DTick);
+    note("three-webgl");
     return;
   }
   globeRunning = true;
   globeRAF = requestAnimationFrame(globeTick);
+  note("canvas-2d-fallback", globe3DError || "webgl init failed");
 }
 function stopGlobe(){
   globeRunning = false;
@@ -3847,7 +3955,7 @@ function tiltTransform(px, py){
 }
 function bindTilt(){
   if(!tiltOK) return;
-  document.querySelectorAll(".ov-grid .card, .hero, #view-stage .cards .card, #view-reports .cards .card, #domInspector, #view-iplists .ip-grid .panel").forEach(function(el){
+  document.querySelectorAll(".ov-grid .card, .hero, #view-stage .cards .card, #view-stage .panel, #view-reports .cards .card, #view-reports .panel, #domInspector, #view-domains .card, #view-domains .panel, #view-insights .card, #view-insights .panel, #view-settings .panel, #view-iplists .ip-grid .panel, #view-about .panel").forEach(function(el){
     if(el.getAttribute("data-tilt-bound")) return;
     el.setAttribute("data-tilt-bound", "1");
     el.classList.add("tilt");
