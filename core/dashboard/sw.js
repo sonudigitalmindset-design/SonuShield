@@ -15,14 +15,21 @@
  */
 "use strict";
 
-var SHELL_VERSION = "sonushield-shell-v8";
+var SHELL_VERSION = "sonushield-shell-v9";
 var SHELL_URLS = [
   "./dashboard",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
-  "./icons/icon-180.png"
+  "./icons/icon-180.png",
+  "./fonts/Inter-Regular.woff2",
+  "./fonts/Inter-Medium.woff2",
+  "./fonts/Inter-SemiBold.woff2",
+  "./fonts/Inter-Bold.woff2",
+  "./fonts/JetBrainsMono-Regular.woff2",
+  "./fonts/JetBrainsMono-Medium.woff2",
+  "./fonts/JetBrainsMono-Bold.woff2"
 ];
 
 self.addEventListener("install", function (event) {
@@ -60,6 +67,7 @@ function isShellRequest(request) {
   if (path === self.location.pathname.replace(/sw\.js$/, "dashboard")) return true;
   if (path === self.location.pathname.replace(/sw\.js$/, "manifest.webmanifest")) return true;
   if (/\/icons\/icon-(192|512|180|maskable-512)\.png$/.test(path)) return true;
+  if (/\/fonts\/[A-Za-z0-9._-]+\.woff2$/.test(path)) return true;
   return false;
 }
 

@@ -372,6 +372,40 @@ names, or challenge flow semantics.
   at real widths is unverified by eye (no browser on the build VM).
   Service-worker shell bumped to v8.
 
+### Dashboard Cyber-Dark redesign (UI/UX Pro Max dark-dashboard guidance)
+
+- Theme: Cyber-Dark is now the default (`#090D16` canvas, `#111827`
+  elevated cards; one-time migration v3 so returning users see it
+  once, an explicit toggle afterwards is still respected). Light
+  mode stays fully functional. Cards and panels get a glass top
+  highlight, multi-layered soft shadows, and a `translateY(-2px)`
+  hover-lift on metric cards; status pills and stage badges glow
+  subtly. Content width is now 1600px, so wide monitors keep no
+  empty right margin.
+- Overview: 12-column grid — KPI row (requests, bypassed, CPU/RAM
+  with radial mini-gauges, stage badge), full-width requests area
+  chart (now with a gradient fill under the line), server-load
+  charts, then Top IPs and Unknown Fingerprints split 50/50. A new
+  hero banner carries a custom isometric shield/node graphic that
+  pulses emerald while connected and calm, amber under attack or at
+  Stage 2, red at Stage 3+, grey while disconnected — driven only
+  by the connection/stage state the page already tracks.
+- Firewall page: Active Rules table is the main view with a primary
+  "+ Create Firewall Rule" button; Add-a-Rule and the Visual Rule
+  Builder now live in a slide-over drawer (Visual Builder / Raw
+  Expression toggle inside; Escape, backdrop click, and the close
+  button all close it; editing a rule opens the drawer on Raw).
+  Simulator, Rule Packs, and Import & Export are sub-tabs at the
+  top of the page. All forms, IDs, and JS logic are unchanged; tab
+  switching is show/hide only.
+- Typography: Inter for UI labels and JetBrains Mono for IPs,
+  firewall expressions, hostnames, and live counters — both
+  self-hosted as OFL latin-subset woff2 files embedded in the
+  binary and served as protected shell assets (no CDN, no new
+  public routes; +80,908 bytes of fonts). Lucide-style icons are
+  hand-inlined SVG paths; no icon library. Service-worker shell
+  bumped to v9.
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without

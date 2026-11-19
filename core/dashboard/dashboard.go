@@ -29,6 +29,27 @@ var icon180 []byte
 //go:embed icons/icon-maskable-512.png
 var iconMaskable512 []byte
 
+//go:embed fonts/Inter-Regular.woff2
+var fontInterRegular []byte
+
+//go:embed fonts/Inter-Medium.woff2
+var fontInterMedium []byte
+
+//go:embed fonts/Inter-SemiBold.woff2
+var fontInterSemiBold []byte
+
+//go:embed fonts/Inter-Bold.woff2
+var fontInterBold []byte
+
+//go:embed fonts/JetBrainsMono-Regular.woff2
+var fontJetBrainsMonoRegular []byte
+
+//go:embed fonts/JetBrainsMono-Medium.woff2
+var fontJetBrainsMonoMedium []byte
+
+//go:embed fonts/JetBrainsMono-Bold.woff2
+var fontJetBrainsMonoBold []byte
+
 // Serve writes the embedded dashboard page. The caller is responsible for
 // gating this route: it must only be reachable on the admin-secret path
 // (/_bProxy/<adminsecret>/dashboard), following the v1 API mounting pattern.
@@ -119,6 +140,15 @@ var shellAssets = map[string]shellAsset{
 	"icons/icon-512.png":          {icon512, "image/png", "public, max-age=86400"},
 	"icons/icon-180.png":          {icon180, "image/png", "public, max-age=86400"},
 	"icons/icon-maskable-512.png": {iconMaskable512, "image/png", "public, max-age=86400"},
+	// Self-hosted UI fonts (OFL, latin subset; see fonts/ for the
+	// license texts). Immutable versioned content like the icons.
+	"fonts/Inter-Regular.woff2":         {fontInterRegular, "font/woff2", "public, max-age=86400"},
+	"fonts/Inter-Medium.woff2":          {fontInterMedium, "font/woff2", "public, max-age=86400"},
+	"fonts/Inter-SemiBold.woff2":        {fontInterSemiBold, "font/woff2", "public, max-age=86400"},
+	"fonts/Inter-Bold.woff2":            {fontInterBold, "font/woff2", "public, max-age=86400"},
+	"fonts/JetBrainsMono-Regular.woff2": {fontJetBrainsMonoRegular, "font/woff2", "public, max-age=86400"},
+	"fonts/JetBrainsMono-Medium.woff2":  {fontJetBrainsMonoMedium, "font/woff2", "public, max-age=86400"},
+	"fonts/JetBrainsMono-Bold.woff2":    {fontJetBrainsMonoBold, "font/woff2", "public, max-age=86400"},
 }
 
 // ServeAsset serves a PWA shell asset when path is one of the

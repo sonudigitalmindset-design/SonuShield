@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,18 +8,29 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#090D16">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>(function(){try{if(localStorage.getItem("sonushield_theme_v")!=="2"){localStorage.removeItem("sonushield_theme");localStorage.setItem("sonushield_theme_v","2");}var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="light";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<script>(function(){try{if(localStorage.getItem("sonushield_theme_v")!=="3"){localStorage.removeItem("sonushield_theme");localStorage.setItem("sonushield_theme_v","3");}var t=localStorage.getItem("sonushield_theme");if(t!=="light"&&t!=="dark"){t="dark";}document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sonushield_lang");if(l==="hi"||l==="en"){document.documentElement.setAttribute("lang",l);}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 __CP_BOOTSTRAP__
 <style>
+/* Self-hosted fonts (OFL, latin subset, embedded via go:embed and
+   served as protected shell assets — no CDN, dashboard stays
+   offline-capable): Inter for UI text, JetBrains Mono for IPs,
+   expressions, hostnames, and live counters. */
+@font-face{font-family:"Inter";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/Inter-Regular.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/Inter-Medium.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:600;font-display:swap;src:url("./fonts/Inter-SemiBold.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/Inter-Bold.woff2") format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/JetBrainsMono-Regular.woff2") format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/JetBrainsMono-Medium.woff2") format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/JetBrainsMono-Bold.woff2") format("woff2")}
 
 /* SonuShield Dashboard — enterprise console layout (original design).
    Tokens follow the UI/UX Pro Max skill ("Accessible & Ethical"):
    navy primary, blue CTA, slate neutrals; dark is the same family
-   in lighter tonal variants. Light theme is the default; Dark stays
+   in lighter tonal variants. Cyber-Dark is the default; Light stays
    available via the toggle. Only color tokens change between themes;
    spacing, type, and components are shared. No external resources:
    system fonts only. */
@@ -30,18 +41,23 @@ __CP_BOOTSTRAP__
   --text:#020617; --muted:#475569; --faint:#64748b;
   --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#0369a1;
   --amber:#b45309; --info:#0284c7; --bypass:#64748b;
+  --ok:#059669;
   --ring:rgba(3,105,161,.18);
   --code-bg:#f1f5f9; --input-bg:#ffffff; --nav-active-bg:#e8ecf1;
   --ok-bg:#ecfdf5; --ok-text:#047857; --ok-border:#a7f3d0;
   --warn-bg:#fffbeb; --warn-text:#92400e; --warn-border:#fde68a;
   --bad-bg:#fef2f2; --bad-text:#b91c1c; --bad-border:#fecaca;
   --banner-bg:#ffffff; --banner-text:#991b1b; --banner-border:#fecaca;
-  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
-  --shadow-md:0 4px 6px rgba(0,0,0,.1);
+  --card-hi:rgba(255,255,255,.8);
+  --glow-ok:rgba(5,150,105,.16); --glow-warn:rgba(245,158,11,.16); --glow-bad:rgba(220,38,38,.16);
+  --hero-1:#ffffff; --hero-2:#f1f5f9;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.05);
+  --shadow-md:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.08);
+  --shadow-lg:0 2px 4px rgba(15,23,42,.08),0 24px 48px rgba(15,23,42,.16);
   --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
   --radius:4px; --radius-lg:4px;
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
   /* Motion language (skill "Stagger List" preset, Subtle tier, translated
      from GSAP to CSS): 250-300ms entrances, ease-out, 30ms stagger. */
   --ease-out:cubic-bezier(.22,1,.36,1);
@@ -50,21 +66,27 @@ __CP_BOOTSTRAP__
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  /* Dark adaptation of the same navy/blue family: lighter tonal variants
-     (never inverted colors). Every text pair clears 4.5:1 on its surface. */
-  --bg:#0f172a; --surface:#1e293b; --panel:#1e293b; --panel-2:#273449;
-  --border:#334155; --border-strong:#475569;
+  /* Cyber-Dark default: deep slate canvas #090D16, elevated cards
+     #111827, glass top highlight + multi-layered soft shadows.
+     Every text pair clears 4.5:1 on its surface. */
+  --bg:#090d16; --surface:#111827; --panel:#111827; --panel-2:#1a2233;
+  --border:#1e293b; --border-strong:#334155;
   --text:#f1f5f9; --muted:#cbd5e1; --faint:#94a3b8;
   --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#7dd3fc;
   --amber:#fbbf24; --info:#38bdf8; --bypass:#94a3b8;
+  --ok:#10b981;
   --ring:rgba(125,211,252,.25);
-  --code-bg:#0f172a; --input-bg:#0f172a; --nav-active-bg:#334155;
+  --code-bg:#0b1120; --input-bg:#0b1120; --nav-active-bg:#1e293b;
   --ok-bg:rgba(16,185,129,.14); --ok-text:#6ee7b7; --ok-border:#065f46;
   --warn-bg:rgba(245,158,11,.14); --warn-text:#fcd34d; --warn-border:#92400e;
   --bad-bg:rgba(239,68,68,.14); --bad-text:#fca5a5; --bad-border:#991b1b;
-  --banner-bg:#1e293b; --banner-text:#fecaca; --banner-border:#991b1b;
-  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
-  --shadow-md:0 8px 24px rgba(0,0,0,.35);
+  --banner-bg:#111827; --banner-text:#fecaca; --banner-border:#991b1b;
+  --card-hi:rgba(255,255,255,.10);
+  --glow-ok:rgba(16,185,129,.30); --glow-warn:rgba(245,158,11,.32); --glow-bad:rgba(239,68,68,.32);
+  --hero-1:#101a2e; --hero-2:#111827;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
+  --shadow-md:0 1px 2px rgba(0,0,0,.45),0 8px 24px rgba(0,0,0,.4);
+  --shadow-lg:0 2px 4px rgba(0,0,0,.5),0 24px 64px rgba(0,0,0,.55);
 }
 *{box-sizing:border-box}
 /* The hidden attribute must win over author display rules (flex pills,
@@ -89,17 +111,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 .wordmark small{display:block;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
 .topbar .spacer{flex:1}
 .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:12.5px;color:var(--muted);background:var(--panel);white-space:nowrap}
-#hostPill{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#hostPill{min-width:0;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:12px}
 #nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:12px;max-width:140px}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
-.pill.ok{color:var(--ok-text);border-color:var(--ok-border)}
+.pill.ok{color:var(--ok-text);border-color:var(--ok-border);box-shadow:0 0 0 1px var(--glow-ok),0 0 14px var(--glow-ok)}
 .pill.ok .dot{background:var(--ok-text)}
-.pill.bad{color:var(--bad-text);border-color:var(--bad-border)}
+.pill.bad{color:var(--bad-text);border-color:var(--bad-border);box-shadow:0 0 0 1px var(--glow-bad),0 0 14px var(--glow-bad)}
 .pill.bad .dot{background:var(--bad-text)}
 .spinner{width:12px;height:12px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);animation:spin .7s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* Theme switching + hover states ease through color tokens only — never layout. */
-body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out)}
+body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-slow) var(--ease-out),border-color var(--dur-slow) var(--ease-out),color var(--dur-slow) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 .pill .dot{transition:background-color var(--dur-med) var(--ease-out)}
 /* Connected-status dot breathes with a soft ring pulse. */
 .pill.ok .dot{animation:dotGlow 2.4s var(--ease-in-out) infinite}
@@ -112,7 +134,9 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 @keyframes viewIn{from{opacity:0}to{opacity:1}}
 .view.active h1{animation:headIn .3s var(--ease-out) both}
 @keyframes headIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.view.active .cards .card{animation:cardIn .3s var(--ease-out) both}
+/* The entrance uses fill backwards (not both) so the animation's
+   final transform does not override the hover-lift afterwards. */
+.view.active .cards .card{animation:cardIn .3s var(--ease-out) backwards}
 .view.active .cards .card:nth-child(1){animation-delay:.03s}
 .view.active .cards .card:nth-child(2){animation-delay:.06s}
 .view.active .cards .card:nth-child(3){animation-delay:.09s}
@@ -122,7 +146,9 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 .view.active .cards .card:nth-child(7){animation-delay:.21s}
 .view.active .cards .card:nth-child(8){animation-delay:.24s}
 @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.view.active .panel{animation:panelIn .3s var(--ease-out) .1s both}
+.view.active .panel{animation:panelIn .3s var(--ease-out) .1s backwards}
+/* Metric cards lift on hover (transform only, no layout shift). */
+.cards .card:hover,.ov-grid .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
 @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 /* Stat values pop subtly when a poll updates them (JS adds .tick on change). */
 .card .value.tick{animation:valueTick .3s var(--ease-out)}
@@ -149,12 +175,15 @@ button:hover:not(:disabled),.btn:hover{transform:translateY(-1px);box-shadow:var
 button:active:not(:disabled),.btn:active{transform:translateY(0)}
 td{transition:background-color var(--dur-fast) var(--ease-out)}
 @media (prefers-reduced-motion:reduce){
-  .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .cards .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading{animation:none}
+  .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .cards .card,.view.active .ov-grid .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading{animation:none}
   .state.loading::before{animation:none}
   .state.loading::after{display:none}
   .navbtn::before{transition:none}
   body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot,td{transition:none}
   button:hover:not(:disabled),.btn:hover{transform:none}
+  .cards .card:hover,.ov-grid .card:hover{transform:none}
+  .hero-shield,.hero-shield svg{animation:none}
+  .drawer{animation:none}
 }
 .themeseg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);padding:2px;background:var(--panel);gap:2px}
 .themeseg button{border:none;background:transparent;color:var(--muted);border-radius:4px;padding:3px 8px;font-size:12.5px;font-weight:600;cursor:pointer}
@@ -177,7 +206,7 @@ input,select,textarea{color:var(--text);background:var(--input-bg);border:1px so
 .navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
 .navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
 .main{flex:1;padding:20px 24px 48px;min-width:0}
-.main > section, .main > .banner{max-width:1280px}
+.main > section, .main > .banner{max-width:1600px}
 .view{display:none}
 .view.active{display:block}
 h1{font-size:20px;line-height:1.3;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
@@ -187,12 +216,12 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 
 /* Cards, panels, tables */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:12px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
+.card{background:var(--panel);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
 .card .label{font-size:12.5px;font-weight:500;color:var(--muted)}
-.card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums}
+.card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums;font-family:var(--mono)}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
 .card .foot{font-size:12px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
+.panel{background:var(--panel);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
 .panel > h2:first-child{margin-top:0}
 .panel p:last-child, .panel ul:last-child{margin-bottom:0}
 .panel ul{margin:8px 0;padding-left:20px}
@@ -210,9 +239,9 @@ tbody tr:hover td{background:var(--panel-2)}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
 .badge{display:inline-block;border-radius:3px;padding:1px 8px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
-.badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg)}
-.badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg)}
-.badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg)}
+.badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg);box-shadow:0 0 10px var(--glow-ok)}
+.badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg);box-shadow:0 0 10px var(--glow-warn)}
+.badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg);box-shadow:0 0 10px var(--glow-bad)}
 .bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
 .bar-row .lbl{width:44px;flex:none;font-family:var(--mono);font-size:12.5px}
 .bar-row .track{flex:1;height:8px;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
@@ -265,7 +294,12 @@ tbody tr:hover td{background:var(--panel-2)}
 .chart-legend-gap{margin-bottom:8px}
 .chart-block{margin:4px 0 16px}
 
-/* Notes, states, banner */
+/* Firewall expressions and rule JSON are mono (JetBrains Mono). */
+#ruleExpr,#simExpr,#importJson,#ruleSchedule{font-family:var(--mono)}
+.chart-grad-a{stop-color:var(--accent);stop-opacity:.28}
+.chart-grad-b{stop-color:var(--accent);stop-opacity:0}
+.chart-grad-a-info{stop-color:var(--info);stop-opacity:.28}
+.chart-grad-b-info{stop-color:var(--info);stop-opacity:0}
 .note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
 .note strong{color:var(--text)}
 .note.info{border-left-color:var(--info)}
@@ -302,6 +336,74 @@ button.small{padding:4px 10px;font-size:12.5px}
 .inline-ok.show{display:block}
 tr.clickable{cursor:pointer}
 tr.selected td{background:var(--nav-active-bg)}
+/* Overview 12-column grid: KPI row (3+3+2+2+2), totals row (4+4+4),
+   full-width chart rows, then a 50/50 split. Stagger matches the
+   card entrance; spans collapse to 6/12 under 880px. */
+.ov-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin-bottom:12px}
+.ov-grid .card{grid-column:span 3}
+.span-2{grid-column:span 2!important}
+.span-3{grid-column:span 3!important}
+.span-4{grid-column:span 4!important}
+.span-6{grid-column:span 6!important}
+.span-12{grid-column:span 12!important}
+.view.active .ov-grid .card{animation:cardIn .3s var(--ease-out) backwards}
+.view.active .ov-grid .card:nth-child(1){animation-delay:.03s}
+.view.active .ov-grid .card:nth-child(2){animation-delay:.06s}
+.view.active .ov-grid .card:nth-child(3){animation-delay:.09s}
+.view.active .ov-grid .card:nth-child(4){animation-delay:.12s}
+.view.active .ov-grid .card:nth-child(5){animation-delay:.15s}
+.view.active .ov-grid .card:nth-child(6){animation-delay:.18s}
+.view.active .ov-grid .card:nth-child(7){animation-delay:.21s}
+.view.active .ov-grid .card:nth-child(8){animation-delay:.24s}
+/* KPI mini-gauges: radial rings for CPU/RAM, driven by the same
+   poll values as the card numbers (JS sets stroke-dashoffset). */
+.kpi{display:flex;align-items:center;gap:10px}
+.kpi-main{flex:1;min-width:0}
+.kpi-main .value{font-size:22px}
+.gauge{width:46px;height:46px;flex:none;transform:rotate(-90deg)}
+.gauge-bg{fill:none;stroke:var(--panel-2);stroke-width:3.5}
+.gauge-fg{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .5s var(--ease-out)}
+.gauge-fg.ram{stroke:var(--info)}
+/* Overview hero: title + live stage badge on the left, a custom
+   isometric shield/node graphic on the right. The graphic glows
+   emerald while connected and calm, amber while under attack or at
+   Stage 2, red at Stage 3+; grey while disconnected. */
+.hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:linear-gradient(135deg,var(--hero-1),var(--hero-2));margin-top:0}
+.hero h1{margin:0 0 4px}
+.hero .sub{margin:0}
+.hero-status{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.hero-shield{--hero-glow:rgba(100,116,139,.35);filter:drop-shadow(0 0 14px var(--hero-glow));animation:heroPulse 3.2s var(--ease-in-out) infinite}
+.hero-shield svg{display:block;animation:heroFloat 5s var(--ease-in-out) infinite}
+.hero-shield.ok{--hero-glow:rgba(16,185,129,.45)}
+.hero-shield.warn{--hero-glow:rgba(245,158,11,.5)}
+.hero-shield.bad{--hero-glow:rgba(239,68,68,.55)}
+.hero-shield.off{--hero-glow:rgba(100,116,139,.3);animation:none}
+@keyframes heroPulse{50%{filter:drop-shadow(0 0 26px var(--hero-glow))}}
+@keyframes heroFloat{50%{transform:translateY(-3px)}}
+/* Bottom split row: Top IPs | Unknown Fingerprints, 50/50. */
+.ov-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.ov-split .panel{margin-top:0}
+/* Firewall sub-tabs: show/hide only, no form is rebuilt. */
+.fwtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin:4px 0 12px;flex-wrap:wrap}
+.fwtab-btn{border:none;background:transparent;padding:8px 12px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0}
+.fwtab-btn:hover{color:var(--text);background:var(--panel-2)}
+.fwtab-btn[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
+.fwtab-panel{margin-top:0}
+.fwtab-panel .panel:first-child{margin-top:0}
+.fw-toolbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:0 0 12px}
+.fw-toolbar .spacer{flex:1}
+/* Rule drawer: slide-over from the right, full-width on mobile.
+   Backdrop click and Escape close it; focus moves to the first
+   field on open and returns to the opener on close. */
+.drawer-overlay{position:fixed;inset:0;background:rgba(2,6,23,.62);backdrop-filter:blur(4px);z-index:60;display:flex;justify-content:flex-end}
+.drawer{background:var(--panel);width:min(600px,100%);height:100%;overflow-y:auto;padding:20px 24px 32px;box-shadow:var(--shadow-lg);border-left:1px solid var(--border);animation:drawerIn .25s var(--ease-out)}
+@keyframes drawerIn{from{transform:translateX(32px);opacity:0}to{transform:none;opacity:1}}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.drawer-head .iconbtn{flex:none}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:4px}
+.iconbtn svg{display:block}
+.drawer .panel{margin-top:12px}
+.drawer .panel:first-of-type{margin-top:0}
 @media (max-width:880px){
   .layout{flex-direction:column}
   .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);padding:8px;overflow-x:auto;white-space:nowrap}
@@ -314,6 +416,11 @@ tr.selected td{background:var(--nav-active-bg)}
   .server-grid{grid-template-columns:1fr}
   .bar-row.wide .lbl{width:120px}
   .bar-row.wide .val{width:76px}
+  .ov-grid .card{grid-column:span 6}
+  .ov-grid .span-2,.ov-grid .span-4{grid-column:span 6!important}
+  .ov-split{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr}
+  .hero-shield svg{width:76px;height:auto}
 }
 </style>__BRAND_STYLE__
 </head>
@@ -382,17 +489,43 @@ tr.selected td{background:var(--nav-active-bg)}
     </section>
 
     <section id="view-overview" class="view">
-      <h1 data-i18n="ovTitle">Overview</h1>
-      <p class="sub"><span data-i18n="ovSubPre">Live traffic for </span><strong id="ovDomain">—</strong><span data-i18n="ovSubPost">. Updates every 3 seconds while connected.</span></p>
-      <div class="cards">
-        <div class="card"><div class="label" data-i18n="cardTotalRps">Total requests</div><div class="value" id="cTotalRps">—</div><div class="foot" data-i18n="cardTotalRpsFoot">per second, all requests</div></div>
-        <div class="card"><div class="label" data-i18n="cardBypassRps">Bypassed requests</div><div class="value" id="cBypassRps">—</div><div class="foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div></div>
-        <div class="card"><div class="label" data-i18n="cardTotal">Total (all time)</div><div class="value" id="cTotal">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
-        <div class="card"><div class="label" data-i18n="cardBypassed">Bypassed (all time)</div><div class="value" id="cBypassed">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
-        <div class="card"><div class="label" data-i18n="cardCpu">CPU usage</div><div class="value" id="cCpu">—</div><div class="foot" data-i18n="cardCpuFoot">server CPU, percent</div></div>
-        <div class="card"><div class="label" data-i18n="cardRam">RAM usage</div><div class="value" id="cRam">—</div><div class="foot" data-i18n="cardRamFoot">proxy memory, percent</div></div>
-        <div class="card"><div class="label" data-i18n="cardStage">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
-        <div class="card"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
+      <div class="panel hero">
+        <div class="hero-text">
+          <h1 data-i18n="ovTitle">Overview</h1>
+          <p class="sub"><span data-i18n="ovSubPre">Live traffic for </span><strong id="ovDomain">—</strong><span data-i18n="ovSubPost">. Updates every 3 seconds while connected.</span></p>
+          <div class="hero-status"><span id="heroStage">—</span><span class="muted small" data-i18n="fromStageApiShort">from the stage API</span></div>
+        </div>
+        <div class="hero-shield off" id="heroShield" role="img" data-i18n-aria="heroShieldLabel" aria-label="Protection status">
+          <svg width="120" height="90" viewBox="0 0 160 120" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="heroShieldGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#0ea5e9"/>
+                <stop offset="1" stop-color="#0369a1"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="80" cy="112" rx="36" ry="5" fill="rgba(2,6,23,.35)"/>
+            <path d="M24 34 L44 46 M136 34 L116 46 M140 92 L114 86" stroke="#38bdf8" stroke-opacity=".45" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <path d="M88 14 L132 32 V66 C132 94 112 110 88 118 C64 110 44 94 44 66 V32 Z" fill="#0b1526" opacity=".55"/>
+            <path d="M80 8 L124 26 V60 C124 88 104 104 80 112 C56 104 36 88 36 60 V26 Z" fill="url(#heroShieldGrad)"/>
+            <path d="M80 8 L36 26 V60 C36 88 56 104 80 112 V8 Z" fill="#020617" opacity=".22"/>
+            <path d="M80 8 L124 26 V60 C124 88 104 104 80 112 V8 Z" fill="#ffffff" opacity=".07"/>
+            <path d="M80 8 L124 26" stroke="#ffffff" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M64 60 l10 10 18-20" stroke="#34d399" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="20" cy="32" r="5" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+            <circle cx="140" cy="32" r="5" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+            <circle cx="142" cy="94" r="5" fill="#111827" stroke="#10b981" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ov-grid">
+        <div class="card span-3"><div class="label" data-i18n="cardTotalRps">Total requests</div><div class="value" id="cTotalRps">—</div><div class="foot" data-i18n="cardTotalRpsFoot">per second, all requests</div></div>
+        <div class="card span-3"><div class="label" data-i18n="cardBypassRps">Bypassed requests</div><div class="value" id="cBypassRps">—</div><div class="foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div></div>
+        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardCpu">CPU usage</div><div class="value" id="cCpu">—</div><div class="foot" data-i18n="cardCpuFoot">server CPU, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg" id="cCpuGauge" cx="18" cy="18" r="15.5"/></svg></div>
+        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardRam">RAM usage</div><div class="value" id="cRam">—</div><div class="foot" data-i18n="cardRamFoot">proxy memory, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg ram" id="cRamGauge" cx="18" cy="18" r="15.5"/></svg></div>
+        <div class="card span-2"><div class="label" data-i18n="cardStage">Stage</div><div class="value" id="cStage">—</div><div class="foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
+        <div class="card span-4"><div class="label" data-i18n="cardTotal">Total (all time)</div><div class="value" id="cTotal">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
+        <div class="card span-4"><div class="label" data-i18n="cardBypassed">Bypassed (all time)</div><div class="value" id="cBypassed">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
+        <div class="card span-4"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="cLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
       </div>
       <div class="panel chart-panel">
         <div class="panel-head">
@@ -428,6 +561,7 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </div>
       </div>
+      <div class="ov-split">
       <div class="panel">
         <h2 data-i18n="topIpsTitle">Top IPs by requests (current rate-limit window)</h2>
         <div id="topIps"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
@@ -436,6 +570,7 @@ tr.selected td{background:var(--nav-active-bg)}
         <h2 data-i18n="topFpsTitle">Top unknown fingerprints (current rate-limit window)</h2>
         <p class="small muted" data-i18n="topFpsNote">Fingerprints the proxy could not match to a known browser. A small number of distinct fingerprints with very high counts usually means bots.</p>
         <div id="topFps"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+      </div>
       </div>
     </section>
 
@@ -551,10 +686,125 @@ tr.selected td{background:var(--nav-active-bg)}
       <p class="sub"><span data-i18n="rulesSubPre">Rules for </span><strong id="rulesDomain">—</strong><span data-i18n="rulesSubPost">, in evaluation order (top rule first). Changes are saved to <code>config.json</code> on the server immediately, take effect without a reload, and keep a backup of the previous config as <code>config.json.bak</code>.</span></p>
       <div class="inline-err" id="rulesError" role="alert"></div>
       <div class="inline-ok" id="rulesOk" role="status"></div>
-      <div id="rulesBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+      <div class="fwtabs" role="tablist" data-i18n-aria="fwTabsAria" aria-label="Firewall sections">
+        <button type="button" class="fwtab-btn" id="fwTabActive" role="tab" aria-selected="true" data-i18n="fwTabActive">Active Rules</button>
+        <button type="button" class="fwtab-btn" id="fwTabSim" role="tab" aria-selected="false" data-i18n="fwTabSim">Rule Simulator</button>
+        <button type="button" class="fwtab-btn" id="fwTabPacks" role="tab" aria-selected="false" data-i18n="fwTabPacks">Rule Packs</button>
+        <button type="button" class="fwtab-btn" id="fwTabImport" role="tab" aria-selected="false" data-i18n="fwTabImport">Import &amp; Export</button>
+      </div>
+      <div class="fwtab-panel" id="fwPanelActive" role="tabpanel">
+        <div class="fw-toolbar"><span class="spacer"></span><button type="button" class="primary" id="ruleCreateBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="createRuleBtn">Create Firewall Rule</span></button></div>
+      <div id="rulesBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div>
+      <div class="panel">
+        <h2 data-i18n="actionsTitle">What the actions mean</h2>
+        <table>
+          <thead><tr><th data-i18n="ruleActionLabel">Action</th><th data-i18n="colMeaning">Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">0</td><td data-i18n="actionMean0">Allow — request is whitelisted, never challenged.</td></tr>
+            <tr><td class="mono">1</td><td data-i18n="actionMean1">Cookie challenge — invisible, passed automatically by most good bots.</td></tr>
+            <tr><td class="mono">2</td><td data-i18n="actionMean2">JavaScript proof-of-work challenge — stops most bots, including good ones.</td></tr>
+            <tr><td class="mono">3</td><td data-i18n="actionMean3">Captcha — visitor must solve a visual captcha.</td></tr>
+            <tr><td class="mono">4 or higher</td><td data-i18n="actionMean4">Block — request is blocked outright.</td></tr>
+            <tr><td class="mono">+N / -N</td><td data-i18n="actionMeanAdj">Raise or lower the current suspicion level by N, then keep checking further rules.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      <div class="fwtab-panel" id="fwPanelSim" role="tabpanel" hidden>
+      <div class="panel">
+        <h2 data-i18n="simTitle">Rule simulator</h2>
+        <p class="small muted" data-i18n="simNote">Evaluate an expression against sample request fields, without enforcing anything. Leave the sample empty to test against zero values.</p>
+        <form id="simForm">
+          <div class="formgrid">
+            <div class="field" style="grid-column:1/-1">
+              <label for="simExpr" data-i18n="ruleExprLabel">Expression</label>
+              <input id="simExpr" type="text" spellcheck="false" autocomplete="off" placeholder='(http.path eq "/wp-login.php")' required>
+            </div>
+            <div class="field" style="grid-column:1/-1">
+              <label for="simSample" data-i18n="simSampleLabel">Sample request fields (JSON object)</label>
+              <textarea id="simSample" rows="4" spellcheck="false" autocomplete="off" placeholder='{"http.path": "/wp-login.php", "http.method": "POST", "ip.country": "US"}'></textarea>
+              <div class="hint" data-i18n="simHint">Field names are the same as in rules. Unknown fields are rejected. Values use the request types: <code>ip.src</code> an IP string, counters and <code>proxy.stage</code> integers, <code>proxy.*</code> flags booleans, the rest strings.</div>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" data-i18n="simBtn">Simulate</button>
+          </div>
+        </form>
+        <div id="simResult" style="margin-top:12px"></div>
+      </div>
+      </div>
+      <div class="fwtab-panel" id="fwPanelPacks" role="tabpanel" hidden>
+      <div class="panel">
+        <h2 data-i18n="packTitle">Rule packs</h2>
+        <p class="small muted" data-i18n="packNote">Import a rule pack — a JSON document with pack metadata plus a rules array — from a file path on the server or a URL. Every rule is validated first and the import is all-or-nothing. Packs are operator-chosen: SonuShield ships no bundled packs and endorses none.</p>
+        <form id="packForm">
+          <div class="formgrid">
+            <div class="field" style="grid-column:1/-1">
+              <label for="packSource" data-i18n="packSourceLabel">Pack source (file path or URL)</label>
+              <input id="packSource" type="text" spellcheck="false" autocomplete="off" placeholder="/etc/sonushield/packs/bots.json or https://example.com/pack.json" required>
+            </div>
+            <div class="field">
+              <label for="packMode" data-i18n="importModeLabel">Mode</label>
+              <select id="packMode"><option value="replace" data-i18n="importModeReplace">Replace all rules</option><option value="append" data-i18n="importModeAppend">Append to existing rules</option></select>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" data-i18n="packImportBtn">Import rule pack</button>
+            <button type="button" id="packListBtn" data-i18n="packListBtn">Reload imported packs</button>
+          </div>
+        </form>
+        <div id="packList" style="margin-top:12px"><div class="state" data-i18n="packNoList">No pack list loaded yet.</div></div>
+      </div>
+      </div>
+      <div class="fwtab-panel" id="fwPanelImport" role="tabpanel" hidden>
+      <div class="panel">
+        <h2 data-i18n="expTitle">Export / import rules</h2>
+        <p class="small muted" data-i18n="expNote">Export downloads the rule set as JSON. Import validates every rule first — an invalid import is rejected and nothing changes. Replace mode overwrites the whole rule set; append mode adds to it.</p>
+        <div class="btnrow">
+          <button type="button" id="rulesExportBtn" data-i18n="expBtn">Export rules (JSON)</button>
+        </div>
+        <form id="importForm" style="margin-top:12px">
+          <div class="formgrid">
+            <div class="field" style="grid-column:1/-1">
+              <label for="importJson" data-i18n="importJsonLabel">Rules JSON</label>
+              <textarea id="importJson" rows="5" spellcheck="false" autocomplete="off" placeholder='[{"expression": "(http.path eq \"/wp-login.php\")", "action": "4"}]'></textarea>
+            </div>
+            <div class="field">
+              <label for="importMode" data-i18n="importModeLabel">Mode</label>
+              <select id="importMode"><option value="replace" data-i18n="importModeReplace">Replace all rules</option><option value="append" data-i18n="importModeAppend">Append to existing rules</option></select>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" type="submit" data-i18n="importBtn2">Import rules</button>
+          </div>
+        </form>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="cfTitle">Cloudflare import</h2>
+        <p class="small muted" data-i18n="cfNote">Import firewall rules from the Cloudflare API using the token and zone ID configured for this domain in <code>config.json</code> (config-only — the token is never shown or sent from this page). Preview first: it shows exactly what would change before anything is applied. Only the documented expression subset is translated; the rest is listed as skipped with a reason.</p>
+        <div class="btnrow">
+          <button type="button" id="cfPreviewBtn" class="primary" data-i18n="cfPreviewBtn">Preview Cloudflare import</button>
+          <label for="cfMode" class="muted" data-i18n="importModeLabel">Mode</label>
+          <select id="cfMode"><option value="append" data-i18n="importModeAppend">Append to existing rules</option><option value="replace" data-i18n="importModeReplace">Replace all rules</option></select>
+          <button type="button" id="cfApplyBtn" data-i18n="cfApplyBtn">Apply Cloudflare import</button>
+        </div>
+        <div id="cfPlan" style="margin-top:12px"><div class="state" data-i18n="cfNoPlan">No preview loaded yet.</div></div>
+      </div>
+      </div>
+    </section>
+    <div class="drawer-overlay" id="ruleModal" hidden>
+      <div class="drawer" role="dialog" aria-modal="true" data-i18n-aria="ruleModalAria" aria-label="Create or edit a firewall rule">
+        <div class="drawer-head">
+          <div class="themeseg" role="group" data-i18n-aria="ruleModeAria" aria-label="Rule editor mode">
+            <button type="button" id="ruleModeVisual" aria-pressed="true" data-i18n="ruleModeVisual">Visual Builder</button>
+            <button type="button" id="ruleModeRaw" aria-pressed="false" data-i18n="ruleModeRaw">Raw Expression</button>
+          </div>
+          <button type="button" class="iconbtn" id="ruleModalClose" data-i18n-aria="ruleModalClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div id="ruleModalVisual">
       <div class="panel">
         <h2 data-i18n="builderTitle">Visual rule builder</h2>
-        <p class="small muted" data-i18n="builderNote">Build an expression from field, operator, and value pickers. Conditions combine with AND. Boolean fields and ip.quic are not offered: the engine cannot compare booleans, and ip.quic is reserved and inactive (see the firewall-rules docs). The generated expression goes into the form below and is validated server-side on save, exactly like a typed rule.</p>
+        <p class="small muted" data-i18n="builderNote">Build an expression from field, operator, and value pickers. Conditions combine with AND. Boolean fields and ip.quic are not offered: the engine cannot compare booleans, and ip.quic is reserved and inactive (see the firewall-rules docs). The generated expression goes into the Raw Expression tab and is validated server-side on save, exactly like a typed rule.</p>
         <div id="builderRows"></div>
         <div class="formgrid" style="margin-top:12px">
           <div class="field">
@@ -580,6 +830,8 @@ tr.selected td{background:var(--nav-active-bg)}
         </div>
         <div id="builderResult" style="margin-top:12px"></div>
       </div>
+        </div>
+        <div id="ruleModalRaw" hidden>
       <div class="panel">
         <h2 id="ruleFormTitle" data-i18n="ruleFormAdd">Add a rule</h2>
         <form id="ruleForm">
@@ -606,96 +858,10 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </form>
       </div>
-      <div class="panel">
-        <h2 data-i18n="simTitle">Rule simulator</h2>
-        <p class="small muted" data-i18n="simNote">Evaluate an expression against sample request fields, without enforcing anything. Leave the sample empty to test against zero values.</p>
-        <form id="simForm">
-          <div class="formgrid">
-            <div class="field" style="grid-column:1/-1">
-              <label for="simExpr" data-i18n="ruleExprLabel">Expression</label>
-              <input id="simExpr" type="text" spellcheck="false" autocomplete="off" placeholder='(http.path eq "/wp-login.php")' required>
-            </div>
-            <div class="field" style="grid-column:1/-1">
-              <label for="simSample" data-i18n="simSampleLabel">Sample request fields (JSON object)</label>
-              <textarea id="simSample" rows="4" spellcheck="false" autocomplete="off" placeholder='{"http.path": "/wp-login.php", "http.method": "POST", "ip.country": "US"}'></textarea>
-              <div class="hint" data-i18n="simHint">Field names are the same as in rules. Unknown fields are rejected. Values use the request types: <code>ip.src</code> an IP string, counters and <code>proxy.stage</code> integers, <code>proxy.*</code> flags booleans, the rest strings.</div>
-            </div>
-          </div>
-          <div class="btnrow">
-            <button class="primary" type="submit" data-i18n="simBtn">Simulate</button>
-          </div>
-        </form>
-        <div id="simResult" style="margin-top:12px"></div>
-      </div>
-      <div class="panel">
-        <h2 data-i18n="expTitle">Export / import rules</h2>
-        <p class="small muted" data-i18n="expNote">Export downloads the rule set as JSON. Import validates every rule first — an invalid import is rejected and nothing changes. Replace mode overwrites the whole rule set; append mode adds to it.</p>
-        <div class="btnrow">
-          <button type="button" id="rulesExportBtn" data-i18n="expBtn">Export rules (JSON)</button>
         </div>
-        <form id="importForm" style="margin-top:12px">
-          <div class="formgrid">
-            <div class="field" style="grid-column:1/-1">
-              <label for="importJson" data-i18n="importJsonLabel">Rules JSON</label>
-              <textarea id="importJson" rows="5" spellcheck="false" autocomplete="off" placeholder='[{"expression": "(http.path eq \"/wp-login.php\")", "action": "4"}]'></textarea>
-            </div>
-            <div class="field">
-              <label for="importMode" data-i18n="importModeLabel">Mode</label>
-              <select id="importMode"><option value="replace" data-i18n="importModeReplace">Replace all rules</option><option value="append" data-i18n="importModeAppend">Append to existing rules</option></select>
-            </div>
-          </div>
-          <div class="btnrow">
-            <button class="primary" type="submit" data-i18n="importBtn2">Import rules</button>
-          </div>
-        </form>
       </div>
-      <div class="panel">
-        <h2 data-i18n="packTitle">Rule packs</h2>
-        <p class="small muted" data-i18n="packNote">Import a rule pack — a JSON document with pack metadata plus a rules array — from a file path on the server or a URL. Every rule is validated first and the import is all-or-nothing. Packs are operator-chosen: SonuShield ships no bundled packs and endorses none.</p>
-        <form id="packForm">
-          <div class="formgrid">
-            <div class="field" style="grid-column:1/-1">
-              <label for="packSource" data-i18n="packSourceLabel">Pack source (file path or URL)</label>
-              <input id="packSource" type="text" spellcheck="false" autocomplete="off" placeholder="/etc/sonushield/packs/bots.json or https://example.com/pack.json" required>
-            </div>
-            <div class="field">
-              <label for="packMode" data-i18n="importModeLabel">Mode</label>
-              <select id="packMode"><option value="replace" data-i18n="importModeReplace">Replace all rules</option><option value="append" data-i18n="importModeAppend">Append to existing rules</option></select>
-            </div>
-          </div>
-          <div class="btnrow">
-            <button class="primary" type="submit" data-i18n="packImportBtn">Import rule pack</button>
-            <button type="button" id="packListBtn" data-i18n="packListBtn">Reload imported packs</button>
-          </div>
-        </form>
-        <div id="packList" style="margin-top:12px"><div class="state" data-i18n="packNoList">No pack list loaded yet.</div></div>
-      </div>
-      <div class="panel">
-        <h2 data-i18n="cfTitle">Cloudflare import</h2>
-        <p class="small muted" data-i18n="cfNote">Import firewall rules from the Cloudflare API using the token and zone ID configured for this domain in <code>config.json</code> (config-only — the token is never shown or sent from this page). Preview first: it shows exactly what would change before anything is applied. Only the documented expression subset is translated; the rest is listed as skipped with a reason.</p>
-        <div class="btnrow">
-          <button type="button" id="cfPreviewBtn" class="primary" data-i18n="cfPreviewBtn">Preview Cloudflare import</button>
-          <label for="cfMode" class="muted" data-i18n="importModeLabel">Mode</label>
-          <select id="cfMode"><option value="append" data-i18n="importModeAppend">Append to existing rules</option><option value="replace" data-i18n="importModeReplace">Replace all rules</option></select>
-          <button type="button" id="cfApplyBtn" data-i18n="cfApplyBtn">Apply Cloudflare import</button>
-        </div>
-        <div id="cfPlan" style="margin-top:12px"><div class="state" data-i18n="cfNoPlan">No preview loaded yet.</div></div>
-      </div>
-      <div class="panel">
-        <h2 data-i18n="actionsTitle">What the actions mean</h2>
-        <table>
-          <thead><tr><th data-i18n="ruleActionLabel">Action</th><th data-i18n="colMeaning">Meaning</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">0</td><td data-i18n="actionMean0">Allow — request is whitelisted, never challenged.</td></tr>
-            <tr><td class="mono">1</td><td data-i18n="actionMean1">Cookie challenge — invisible, passed automatically by most good bots.</td></tr>
-            <tr><td class="mono">2</td><td data-i18n="actionMean2">JavaScript proof-of-work challenge — stops most bots, including good ones.</td></tr>
-            <tr><td class="mono">3</td><td data-i18n="actionMean3">Captcha — visitor must solve a visual captcha.</td></tr>
-            <tr><td class="mono">4 or higher</td><td data-i18n="actionMean4">Block — request is blocked outright.</td></tr>
-            <tr><td class="mono">+N / -N</td><td data-i18n="actionMeanAdj">Raise or lower the current suspicion level by N, then keep checking further rules.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    </div>
+
 
     <section id="view-iplists" class="view">
       <h1 data-i18n="ipTitle">IP lists</h1>
@@ -1858,7 +2024,7 @@ rumAvgTtfb: "Avg TTFB",
 rumAvgLoad: "Avg load",
 errLoadRum: "Could not load RUM stats.",
 builderTitle: "Visual rule builder",
-builderNote: "Build an expression from field, operator, and value pickers. Conditions combine with AND. Boolean fields and ip.quic are not offered: the engine cannot compare booleans, and ip.quic is reserved and inactive (see the firewall-rules docs). The generated expression goes into the form below and is validated server-side on save, exactly like a typed rule.",
+builderNote: "Build an expression from field, operator, and value pickers. Conditions combine with AND. Boolean fields and ip.quic are not offered: the engine cannot compare booleans, and ip.quic is reserved and inactive (see the firewall-rules docs). The generated expression goes into the Raw Expression tab and is validated server-side on save, exactly like a typed rule.",
 builderActionLabel: "Action for the generated rule",
 builderAddCond: "Add condition",
 builderGenerate: "Generate into form",
@@ -1913,7 +2079,19 @@ chartPmRps: "Requests per second during the attack",
 chartShadowOutcomes: "Shadow outcomes",
 chartWouldBlock: "Would block",
 chartWouldChallenge: "Would challenge",
-chartWouldAllow: "Would allow"
+chartWouldAllow: "Would allow",
+fwTabActive: "Active Rules",
+fwTabSim: "Rule Simulator",
+fwTabPacks: "Rule Packs",
+fwTabImport: "Import & Export",
+fwTabsAria: "Firewall sections",
+createRuleBtn: "Create Firewall Rule",
+ruleModeVisual: "Visual Builder",
+ruleModeRaw: "Raw Expression",
+ruleModeAria: "Rule editor mode",
+ruleModalClose: "Close",
+ruleModalAria: "Create or edit a firewall rule",
+heroShieldLabel: "Protection status"
 },
 hi: {
 brandSub: "डैशबोर्ड",
@@ -2620,7 +2798,7 @@ rumAvgTtfb: "औसत TTFB",
 rumAvgLoad: "औसत load",
 errLoadRum: "RUM stats load नहीं हो पाए।",
 builderTitle: "विज़ुअल रूल बिल्डर",
-builderNote: "Field, operator और value picker से expression बनाएँ। Conditions AND से जुड़ती हैं। Boolean field और ip.quic नहीं दिए गए हैं: engine boolean की तुलना नहीं कर सकता, और ip.quic reserved व inactive है (firewall-rules docs देखें)। Generated expression नीचे वाले form में जाता है और save पर server-side validate होता है, बिल्कुल typed rule की तरह।",
+builderNote: "Field, operator और value picker से expression बनाएँ। Conditions AND से जुड़ती हैं। Boolean field और ip.quic नहीं दिए गए हैं: engine boolean की तुलना नहीं कर सकता, और ip.quic reserved व inactive है (firewall-rules docs देखें)। Generated expression Raw Expression टैब में जाता है और save पर server-side validate होता है, बिल्कुल typed rule की तरह।",
 builderActionLabel: "Generated rule के लिए action",
 builderAddCond: "Condition जोड़ें",
 builderGenerate: "Form में generate करें",
@@ -2675,7 +2853,19 @@ chartPmRps: "हमले के दौरान requests per second",
 chartShadowOutcomes: "Shadow outcomes",
 chartWouldBlock: "ब्लॉक होता",
 chartWouldChallenge: "चैलेंज होता",
-chartWouldAllow: "अलाउ होता"
+chartWouldAllow: "अलाउ होता",
+fwTabActive: "सक्रिय नियम",
+fwTabSim: "नियम सिम्युलेटर",
+fwTabPacks: "नियम पैक",
+fwTabImport: "इम्पोर्ट और एक्सपोर्ट",
+fwTabsAria: "फ़ायरवॉल अनुभाग",
+createRuleBtn: "फ़ायरवॉल नियम बनाएँ",
+ruleModeVisual: "विज़ुअल बिल्डर",
+ruleModeRaw: "रॉ एक्सप्रेशन",
+ruleModeAria: "नियम एडिटर मोड",
+ruleModalClose: "बंद करें",
+ruleModalAria: "फ़ायरवॉल नियम बनाएँ या बदलें",
+heroShieldLabel: "सुरक्षा स्थिति"
 }
 };
 function t(key){
@@ -2890,12 +3080,27 @@ function buildLineChart(cfg){
     var cls = "chart-label chart-xlabel" + (lb.anchor ? " " + lb.anchor : "");
     out.push('<text class="' + cls + '" x="' + (cfg.padL + plotW * lb.frac).toFixed(1) + '" y="' + (cfg.h - 5) + '">' + lb.text + '</text>');
   }
+  /* Gradient fill (cfg.gradientId): one vertical gradient per area
+     series, stops from the series' gradStops classes (theme-aware
+     via CSS). Without it the flat .chart-area fill is used. */
+  if(cfg.gradientId){
+    for(s = 0; s < cfg.series.length; s++){
+      var gs = cfg.series[s];
+      if(!gs.areaClass) continue;
+      var stops = gs.gradStops || ["chart-grad-a", "chart-grad-b"];
+      out.push('<defs><linearGradient id="' + cfg.gradientId + "-" + s + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="' + stops[0] + '"/><stop offset="1" class="' + stops[1] + '"/></linearGradient></defs>');
+    }
+  }
   for(s = 0; s < cfg.series.length; s++){
     var ser = cfg.series[s], pts = [], j;
     for(j = 0; j < ser.values.length; j++) pts.push(X(j).toFixed(1) + "," + Y(ser.values[j]).toFixed(1));
     if(!pts.length) continue;
     if(ser.areaClass){
-      out.push('<path class="' + ser.areaClass + '" d="M' + X(0).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' L' + pts.join(' L') + ' L' + X(ser.values.length - 1).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' Z"/>');
+      if(cfg.gradientId){
+        out.push('<path fill="url(#' + cfg.gradientId + "-" + s + ')" d="M' + X(0).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' L' + pts.join(' L') + ' L' + X(ser.values.length - 1).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' Z"/>');
+      } else {
+        out.push('<path class="' + ser.areaClass + '" d="M' + X(0).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' L' + pts.join(' L') + ' L' + X(ser.values.length - 1).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' Z"/>');
+      }
     }
     out.push('<polyline class="' + ser.lineClass + '" points="' + pts.join(" ") + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>');
   }
@@ -2970,7 +3175,7 @@ function drawTraffic(){
   }
   var yMax = niceCeil(max);
   svg.innerHTML = buildLineChart({
-    w: 1200, h: 200, padL: 64, padR: 16, padT: 28, padB: 26,
+    w: 1200, h: 200, padL: 64, padR: 16, padT: 28, padB: 26, gradientId: "trafficGrad",
     yMax: yMax, yTicks: [0, yMax / 2, yMax], yFmt: fmtAxisNum,
     yUnit: esc(t("chartReqAxis")),
     xLabels: timeXLabels(trafficHist.length, 3),
@@ -3002,7 +3207,7 @@ function pushServer(dom, cpu, ram){
   capPush(serverHist, [Math.min(100, Math.max(0, cpu)), Math.min(100, Math.max(0, ram))], CHART_MAX_SAMPLES);
   drawServer();
 }
-function drawServerChart(svgId, emptyId, summaryId, idx, lineClass, areaClass){
+function drawServerChart(svgId, emptyId, summaryId, idx, lineClass, areaClass, gradStops){
   var svg = $(svgId), empty = $(emptyId);
   if(!svg || !empty) return;
   if(serverHist.length < 2){ svg.hidden = true; empty.hidden = false; setText(summaryId, ""); return; }
@@ -3012,16 +3217,16 @@ function drawServerChart(svgId, emptyId, summaryId, idx, lineClass, areaClass){
   for(i = 1; i < values.length; i++){ if(values[i] < min) min = values[i]; if(values[i] > max) max = values[i]; }
   setText(summaryId, t("chartNowMinMax", values[values.length - 1].toFixed(1) + "%", min.toFixed(1) + "%", max.toFixed(1) + "%"));
   svg.innerHTML = buildLineChart({
-    w: 600, h: 170, padL: 46, padR: 10, padT: 14, padB: 24,
+    w: 600, h: 170, padL: 46, padR: 10, padT: 14, padB: 24, gradientId: svgId + "Grad",
     yMax: 100, yTicks: [0, 50, 100], yFmt: function(v){ return fmtAxisNum(v) + "%"; },
     yUnit: null,
     xLabels: timeXLabels(serverHist.length, 3),
-    series: [{values: values, lineClass: lineClass, areaClass: areaClass}]
+    series: [{values: values, lineClass: lineClass, areaClass: areaClass, gradStops: gradStops}]
   });
 }
 function drawServer(){
-  drawServerChart("cpuChart", "cpuEmpty", "cpuSummary", 0, "chart-line-cpu", "chart-area");
-  drawServerChart("ramChart", "ramEmpty", "ramSummary", 1, "chart-line-ram", "chart-area-ram");
+  drawServerChart("cpuChart", "cpuEmpty", "cpuSummary", 0, "chart-line-cpu", "chart-area", ["chart-grad-a", "chart-grad-b"]);
+  drawServerChart("ramChart", "ramEmpty", "ramSummary", 1, "chart-line-ram", "chart-area-ram", ["chart-grad-a-info", "chart-grad-b-info"]);
   if(!serverDrawn && !reducedMotion && serverHist.length >= 2){
     serverDrawn = true;
     animateDrawIn($("cpuChart"));
@@ -3040,7 +3245,7 @@ function loadOverview(){
   var pFps = proxyAction("GET_FINGERPRINT_REQUESTS").catch(function(){ return null; });
   return Promise.all([pStats, pRps, pBrps, pTot, pByp, pIps, pFps]).then(function(r){
     var stats = r[0], rps = r[1], brps = r[2], tot = r[3], byp = r[4], ips = r[5], fps = r[6];
-    if(stats){ setStat("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setStat("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); pushServer(dom, parseFloat(stats.CPU_USAGE), parseFloat(stats.RAM_USAGE)); }
+    if(stats){ setStat("cCpu", stats.CPU_USAGE != null ? stats.CPU_USAGE + "%" : "—"); setStat("cRam", stats.RAM_USAGE != null ? stats.RAM_USAGE + "%" : "—"); setGauge("cCpuGauge", parseFloat(stats.CPU_USAGE)); setGauge("cRamGauge", parseFloat(stats.RAM_USAGE)); pushServer(dom, parseFloat(stats.CPU_USAGE), parseFloat(stats.RAM_USAGE)); }
     if(rps) setStat("cTotalRps", num(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND));
     if(brps) setStat("cBypassRps", num(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     if(tot) setStat("cTotal", num(tot.TOTAL_REQUESTS));
@@ -3055,6 +3260,33 @@ function loadOverview(){
   });
 }
 
+/* Hero shield state: driven by the connection + stage state the
+   page already tracks. ok = connected and calm (Stage 0/1, no
+   attack); warn = Stage 2 or under attack; bad = Stage 3+;
+   off = disconnected or stage unknown. */
+var heroStage = null;
+var heroAttack = false;
+function updateHeroState(){
+  var el = $("heroShield");
+  if(!el) return;
+  var cls = "off";
+  if(connected){
+    if(heroStage === "3" || (heroStage && Number(heroStage) > 3)) cls = "bad";
+    else if(heroAttack || heroStage === "2") cls = "warn";
+    else cls = "ok";
+  }
+  el.classList.remove("ok", "warn", "bad", "off");
+  el.classList.add(cls);
+}
+/* KPI mini-gauge: ring circumference for r=15.5 is 97.4. */
+function setGauge(id, pct){
+  var el = $(id);
+  if(!el) return;
+  if(!isFinite(pct)){ el.style.strokeDashoffset = "97.4"; return; }
+  var p = Math.min(100, Math.max(0, pct));
+  el.style.strokeDashoffset = (97.4 * (1 - p / 100)).toFixed(1);
+}
+
 function loadStageState(){
   return domainAction(currentDomain, "GET_STAGE").then(function(r){
     var stage = (r.STAGE == null ? null : String(r.STAGE));
@@ -3065,6 +3297,9 @@ function loadStageState(){
     setText("cLocked", r.STAGE_LOCKED ? t("yes") : t("no"));
     setText("stageLocked", r.STAGE_LOCKED ? t("yes") : t("no"));
     setText("stageAttack", r.UNDER_ATTACK ? t("yes") : t("no"));
+    heroStage = stage; heroAttack = !!r.UNDER_ATTACK;
+    setHTML("heroStage", stageBadge(stage));
+    updateHeroState();
     return r;
   }).catch(function(){
     setHTML("cStage", "—");
@@ -3072,6 +3307,9 @@ function loadStageState(){
     setHTML("stageBig", "—");
     setText("stageLocked", "—");
     setText("stageAttack", "—");
+    heroStage = null; heroAttack = false;
+    setHTML("heroStage", "—");
+    updateHeroState();
     return null;
   });
 }
@@ -3355,6 +3593,40 @@ function loadDomainPanel(){
 
 var editingIndex = null;
 
+/* Firewall sub-tabs: show/hide only; every form keeps its IDs and
+   handlers, and polling keeps calling loadRules on this view. */
+var FW_TABS = ["Active", "Sim", "Packs", "Import"];
+function showFwTab(name){
+  FW_TABS.forEach(function(n){
+    var btn = $("fwTab" + n), panel = $("fwPanel" + n);
+    if(btn) btn.setAttribute("aria-selected", n === name ? "true" : "false");
+    if(panel) panel.hidden = n !== name;
+  });
+}
+/* Rule drawer (slide-over): the Visual Builder and the Raw
+   Expression form live inside it. Opening for an edit shows Raw;
+   creating shows Visual. Closing discards the draft edit state
+   (resetRuleForm) but never clears the page-level status lines. */
+var ruleModalLastFocus = null;
+function setRuleMode(mode){
+  $("ruleModalVisual").hidden = mode !== "visual";
+  $("ruleModalRaw").hidden = mode !== "raw";
+  $("ruleModeVisual").setAttribute("aria-pressed", mode === "visual" ? "true" : "false");
+  $("ruleModeRaw").setAttribute("aria-pressed", mode === "raw" ? "true" : "false");
+}
+function openRuleModal(mode){
+  ruleModalLastFocus = document.activeElement;
+  $("ruleModal").hidden = false;
+  setRuleMode(mode || "visual");
+  var target = (mode === "raw") ? $("ruleExpr") : document.querySelector("#builderRows select, #builderRows input");
+  if(target) target.focus();
+}
+function closeRuleModal(){
+  $("ruleModal").hidden = true;
+  resetRuleForm();
+  if(ruleModalLastFocus && ruleModalLastFocus.focus) ruleModalLastFocus.focus();
+}
+
 function loadRules(force){
   if(editingIndex !== null && !force) return Promise.resolve();
   setText("rulesDomain", currentDomain);
@@ -3402,6 +3674,7 @@ function startRuleEdit(index){
     $("ruleSubmit").textContent = t("ruleSave");
     $("ruleCancel").hidden = false;
     showInline("rulesError", "rulesOk", "", "");
+    openRuleModal("raw");
     $("ruleExpr").focus();
   }).catch(function(err){
     showInline("rulesError", "rulesOk", t("errLoadRule", err.message), "");
@@ -3436,6 +3709,7 @@ function submitRuleForm(ev){
     var wasEdit = editingIndex !== null;
     resetRuleForm();
     showInline("rulesError", "rulesOk", "", wasEdit ? t("ruleSaved") : t("ruleAdded"));
+    closeRuleModal();
     return loadRules(true);
   }).catch(function(err){
     showInline("rulesError", "rulesOk", t("errSaveRule", err.message), "");
@@ -3654,6 +3928,9 @@ function builderGenerate(){
   $("simExpr").value = built.expr;
   $("ruleAction").value = $("builderAction").value;
   setHTML("builderResult", '<div class="state">' + t("builderGenerated") + ' <span class="mono">' + esc(built.expr) + '</span></div>');
+  /* The generated expression lands in the form: switch the drawer
+     to Raw so the user sees it immediately. */
+  setRuleMode("raw");
 }
 function builderValidate(){
   var built = builderExpression();
@@ -4218,6 +4495,7 @@ function setConnected(on){
   pill.classList.toggle("ok", on);
   pill.classList.toggle("bad", false);
   setText("connText", on ? (ssoMode ? t("connectedSso") : t("connected")) : t("notConnected"));
+  updateHeroState();
   if(on){ startPolling(); } else { stopPolling(); }
 }
 function connect(secret){
@@ -4735,6 +5013,13 @@ $("domainInput").addEventListener("keydown", function(ev){
   if(ev.key === "Enter"){ ev.preventDefault(); $("domainBtn").click(); }
 });
 $("ruleForm").addEventListener("submit", submitRuleForm);
+FW_TABS.forEach(function(n){ var b = $("fwTab" + n); if(b) b.addEventListener("click", function(){ showFwTab(n); }); });
+$("ruleCreateBtn").addEventListener("click", function(){ resetRuleForm(); showInline("rulesError", "rulesOk", "", ""); openRuleModal("visual"); });
+$("ruleModalClose").addEventListener("click", closeRuleModal);
+$("ruleModal").addEventListener("click", function(ev){ if(ev.target === $("ruleModal")) closeRuleModal(); });
+document.addEventListener("keydown", function(ev){ if(ev.key === "Escape" && !$("ruleModal").hidden) closeRuleModal(); });
+$("ruleModeVisual").addEventListener("click", function(){ setRuleMode("visual"); });
+$("ruleModeRaw").addEventListener("click", function(){ setRuleMode("raw"); });
 $("ipEntryForm").addEventListener("submit", submitIPEntryForm);
 $("simForm").addEventListener("submit", function(ev){
   ev.preventDefault();
@@ -4754,6 +5039,7 @@ $("tplTemplate").addEventListener("change", updateTplDesc);
 $("ruleCancel").addEventListener("click", function(){
   resetRuleForm();
   showInline("rulesError", "rulesOk", "", "");
+  closeRuleModal();
 });
 document.querySelectorAll("[data-stage]").forEach(function(btn){
   btn.addEventListener("click", function(){
