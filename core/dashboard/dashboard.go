@@ -32,17 +32,17 @@ var iconMaskable512 []byte
 //go:embed vendor/three-r128.min.js
 var threeJS []byte
 
-//go:embed fonts/Inter-Regular.woff2
-var fontInterRegular []byte
+//go:embed fonts/PlusJakartaSans-Regular.woff2
+var fontPlusJakartaSansRegular []byte
 
-//go:embed fonts/Inter-Medium.woff2
-var fontInterMedium []byte
+//go:embed fonts/PlusJakartaSans-Medium.woff2
+var fontPlusJakartaSansMedium []byte
 
-//go:embed fonts/Inter-SemiBold.woff2
-var fontInterSemiBold []byte
+//go:embed fonts/PlusJakartaSans-SemiBold.woff2
+var fontPlusJakartaSansSemiBold []byte
 
-//go:embed fonts/Inter-Bold.woff2
-var fontInterBold []byte
+//go:embed fonts/PlusJakartaSans-Bold.woff2
+var fontPlusJakartaSansBold []byte
 
 //go:embed fonts/JetBrainsMono-Regular.woff2
 var fontJetBrainsMonoRegular []byte
@@ -146,10 +146,10 @@ var shellAssets = map[string]shellAsset{
 	// Self-hosted UI fonts (OFL, latin subset; see fonts/ for the
 	// license texts). Immutable versioned content like the icons.
 	"vendor/three-r128.min.js":          {threeJS, "text/javascript; charset=utf-8", "public, max-age=86400"},
-	"fonts/Inter-Regular.woff2":         {fontInterRegular, "font/woff2", "public, max-age=86400"},
-	"fonts/Inter-Medium.woff2":          {fontInterMedium, "font/woff2", "public, max-age=86400"},
-	"fonts/Inter-SemiBold.woff2":        {fontInterSemiBold, "font/woff2", "public, max-age=86400"},
-	"fonts/Inter-Bold.woff2":            {fontInterBold, "font/woff2", "public, max-age=86400"},
+	"fonts/PlusJakartaSans-Regular.woff2":   {fontPlusJakartaSansRegular, "font/woff2", "public, max-age=86400"},
+	"fonts/PlusJakartaSans-Medium.woff2":    {fontPlusJakartaSansMedium, "font/woff2", "public, max-age=86400"},
+	"fonts/PlusJakartaSans-SemiBold.woff2":  {fontPlusJakartaSansSemiBold, "font/woff2", "public, max-age=86400"},
+	"fonts/PlusJakartaSans-Bold.woff2":      {fontPlusJakartaSansBold, "font/woff2", "public, max-age=86400"},
 	"fonts/JetBrainsMono-Regular.woff2": {fontJetBrainsMonoRegular, "font/woff2", "public, max-age=86400"},
 	"fonts/JetBrainsMono-Medium.woff2":  {fontJetBrainsMonoMedium, "font/woff2", "public, max-age=86400"},
 	"fonts/JetBrainsMono-Bold.woff2":    {fontJetBrainsMonoBold, "font/woff2", "public, max-age=86400"},

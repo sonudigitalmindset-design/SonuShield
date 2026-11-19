@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<meta name="theme-color" content="#050811">
+<meta name="theme-color" content="#05070E">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,12 +17,12 @@ __CP_BOOTSTRAP__
 <style>
 /* Self-hosted fonts (OFL, latin subset, embedded via go:embed and
    served as protected shell assets — fully offline, no remote host):
-   Inter for UI text, JetBrains Mono for IPs,
+   Plus Jakarta Sans for UI text, JetBrains Mono for IPs,
    expressions, hostnames, and live counters. */
-@font-face{font-family:"Inter";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/Inter-Regular.woff2") format("woff2")}
-@font-face{font-family:"Inter";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/Inter-Medium.woff2") format("woff2")}
-@font-face{font-family:"Inter";font-style:normal;font-weight:600;font-display:swap;src:url("./fonts/Inter-SemiBold.woff2") format("woff2")}
-@font-face{font-family:"Inter";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/Inter-Bold.woff2") format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/PlusJakartaSans-Regular.woff2") format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/PlusJakartaSans-Medium.woff2") format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:600;font-display:swap;src:url("./fonts/PlusJakartaSans-SemiBold.woff2") format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/PlusJakartaSans-Bold.woff2") format("woff2")}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/JetBrainsMono-Regular.woff2") format("woff2")}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/JetBrainsMono-Medium.woff2") format("woff2")}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/JetBrainsMono-Bold.woff2") format("woff2")}
@@ -37,6 +37,7 @@ __CP_BOOTSTRAP__
 :root{
   color-scheme:light;
   --bg:#f8fafc; --surface:#ffffff; --panel:#ffffff; --panel-2:#f1f5f9;
+  --bg-card:rgba(255,255,255,.90); --border-subtle:rgba(2,6,23,.08);
   --panel-glass:rgba(255,255,255,.90);
   --border:#e2e8f0; --border-strong:#cbd5e1;
   --text:#020617; --muted:#475569; --faint:#64748b;
@@ -56,8 +57,8 @@ __CP_BOOTSTRAP__
   --shadow-md:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.08);
   --shadow-lg:0 2px 4px rgba(15,23,42,.08),0 24px 48px rgba(15,23,42,.16);
   --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
-  --radius:4px; --radius-lg:4px;
-  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --radius:8px; --radius-lg:14px;
+  --font:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
   /* Motion language (skill "Stagger List" preset, Subtle tier, translated
      from GSAP to CSS): 250-300ms entrances, ease-out, 30ms stagger. */
@@ -68,38 +69,48 @@ __CP_BOOTSTRAP__
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  /* Forced Cyber-Dark 3D Obsidian default: deep space canvas #04070f,
-     frosted glass slabs rgba(13,19,34,.72) at blur 20px, top/left
-     specular borders. Every text pair clears 4.5:1 on its surface. */
-  --bg:#04070f; --surface:#0b1220; --panel:#0f172a; --panel-2:#1a2233;
-  --panel-glass:rgba(13,19,34,.72);
-  --term-bg:#030508;
-  --border:rgba(255,255,255,.08); --border-strong:#334155;
-  --text:#f1f5f9; --muted:#cbd5e1; --faint:#94a3b8;
-  --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#7dd3fc;
-  --amber:#fbbf24; --info:#38bdf8; --bypass:#94a3b8;
-  --ok:#10b981;
-  --ring:rgba(125,211,252,.25);
-  --code-bg:#0b1120; --input-bg:#0b1120; --nav-active-bg:#1e293b;
+  /* Next-Gen Cyber-Obsidian design system (dark defaults). Frosted
+     glass cards at blur 20px with a top specular edge. Every text
+     pair clears 4.5:1 on its surface. Light mode keeps its own
+     tokens in the :root block above. */
+  --bg-canvas:#05070E; --bg-sidebar:#080B14;
+  --bg-card:rgba(13,18,30,0.78); --bg-card-hover:rgba(19,26,43,0.90);
+  --bg-input:#090D18;
+  --border-subtle:rgba(255,255,255,0.07); --border-highlight:rgba(255,255,255,0.15);
+  --accent-primary:#38BDF8; --accent-safe:#10B981; --accent-warn:#F59E0B; --accent-danger:#EF4444;
+  --text-primary:#F8FAFC; --text-secondary:#94A3B8; --text-muted:#64748B;
+  --bg:var(--bg-canvas); --surface:var(--bg-sidebar); --panel:var(--bg-card); --panel-2:#141B2E;
+  --panel-glass:var(--bg-card);
+  --term-bg:#05070E;
+  --border:var(--border-subtle); --border-strong:rgba(255,255,255,0.10);
+  --text:var(--text-primary); --muted:var(--text-secondary); --faint:var(--text-muted);
+  --accent:var(--accent-primary); --accent-hover:#0284C7; --accent-ink:#ffffff; --accent-text:var(--accent-primary);
+  --amber:var(--accent-warn); --info:var(--accent-primary); --bypass:var(--text-secondary);
+  --ok:var(--accent-safe);
+  --ring:rgba(56,189,248,0.15);
+  --code-bg:#090D18; --input-bg:var(--bg-input); --nav-active-bg:rgba(56,189,248,0.12);
   --ok-bg:rgba(16,185,129,.14); --ok-text:#6ee7b7; --ok-border:#065f46;
   --warn-bg:rgba(245,158,11,.14); --warn-text:#fcd34d; --warn-border:#92400e;
   --bad-bg:rgba(239,68,68,.14); --bad-text:#fca5a5; --bad-border:#991b1b;
-  --banner-bg:#111827; --banner-text:#fecaca; --banner-border:#991b1b;
-  --card-hi:rgba(255,255,255,.18);
+  --banner-bg:rgba(239,68,68,.12); --banner-text:#fecaca; --banner-border:#991b1b;
+  --card-hi:var(--border-highlight);
   --glow-ok:rgba(16,185,129,.30); --glow-warn:rgba(245,158,11,.32); --glow-bad:rgba(239,68,68,.32);
-  --hero-1:#101a2e; --hero-2:#111827;
+  --hero-1:#0A0F1E; --hero-2:#080B14;
   --shadow-sm:0 1px 2px rgba(0,0,0,.5);
   --shadow-md:0 1px 2px rgba(0,0,0,.45),0 8px 24px rgba(0,0,0,.4);
   --shadow-lg:0 2px 4px rgba(0,0,0,.5),0 24px 64px rgba(0,0,0,.55);
   --shadow-slab:0 20px 40px -15px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.1);
 }
+/* Body copy in dark mode is #CBD5E1 (headings/buttons/inputs keep
+   --text = #F8FAFC through their own rules). */
+:root[data-theme="dark"] body{color:#CBD5E1}
 *{box-sizing:border-box}
 /* The hidden attribute must win over author display rules (flex pills,
    nav buttons): without this, CP-only controls leak into the local
    dashboard. JS unhides by clearing the property, which this respects. */
 [hidden]{display:none!important}
 html,body{margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:var(--accent-text)}
 code{font-family:var(--mono);font-size:.92em;background:var(--code-bg);padding:1px 6px;border-radius:3px;word-break:break-all}
 button,input{font:inherit}
@@ -109,15 +120,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 /* Top bar: single row at desktop widths. The host pill shrinks with an
    ellipsis so the bar never wraps or overflows at >=1280px; below the
    880px breakpoint the bar wraps again (see the media query). */
-.topbar{display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:nowrap;min-height:52px}
+.topbar{display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:nowrap;height:64px;min-height:64px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
 .brand svg{flex:none}
-.wordmark{font-size:16px;font-weight:700;letter-spacing:.1px;line-height:1.15}
-.wordmark small{display:block;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.wordmark{font-size:14px;font-weight:700;letter-spacing:.1px;line-height:1.15}
+.wordmark small{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .topbar .spacer{flex:1}
-.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:12.5px;color:var(--muted);background:var(--panel);white-space:nowrap}
-#hostPill{min-width:0;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:12px}
-#nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:12px;max-width:140px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;height:34px;padding:0 10px;font-size:13px;color:var(--muted);background:var(--panel);white-space:nowrap}
+#hostPill{min-width:0;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:13px}
+#nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;height:34px;padding:0 8px;font-size:13px;max-width:140px}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
 .pill.ok{color:var(--ok-text);border-color:var(--ok-border);box-shadow:0 0 0 1px var(--glow-ok),0 0 14px var(--glow-ok)}
 .pill.ok .dot{background:var(--ok-text)}
@@ -130,38 +141,29 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 .pill .dot{transition:background-color var(--dur-med) var(--ease-out)}
 /* Connected-status dot breathes with a soft ring pulse. */
 .pill.ok .dot{animation:dotGlow 1.8s var(--ease-in-out) infinite}
-@keyframes dotGlow{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5);transform:scale(1)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0);transform:scale(1.3)}}
+@keyframes dotGlow{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5);transform:scale(1)}50%{box-shadow:0 0 0 6px rgba(16,185,129,0);transform:scale(1.3)}}
 /* Chart/grade empty states breathe instead of sitting dead: the text
    stays honest ("No data yet") — only the frame pulses. No data is
    ever invented. */
 .chart-wrap .state,#gradeHero .state{animation:emptyShimmer 2.2s var(--ease-in-out) infinite}
 @keyframes emptyShimmer{0%,100%{opacity:1;border-color:var(--border-strong)}50%{opacity:.6;border-color:rgba(56,189,248,.55)}}
-/* View entrances are choreographed: the view fades, the heading rises,
-   stat cards stagger in, then panels rise. Transform/opacity only —
-   no layout shift. Every sidebar link or sub-tab click replays the
-   staggered fadeSlideUp (18px rise + .98 scale, 0.4s, the
-   cubic-bezier(.16,1,.3,1) ease) via replayEntrance(). */
+/* View entrances are choreographed (Cyber-Obsidian): the view fades,
+   the heading rises, cards and panels reveal in sequence with a 45ms
+   stagger set per card by assignCardStagger() (--i). Transform/opacity
+   only — no layout shift. Every sidebar link or sub-tab click replays
+   cardReveal via replayEntrance(). */
 .view.active{animation:viewIn var(--dur-med) var(--ease-enter)}
 @keyframes viewIn{from{opacity:0}to{opacity:1}}
 .view.active h1{animation:headIn .45s var(--ease-enter) both}
 @keyframes headIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 /* The entrance uses fill backwards (not both) so the animation's
    final transform does not override the hover-lift afterwards. */
-.view.active .cards .card{animation:fadeSlideUp .4s cubic-bezier(.16,1,.3,1) backwards}
-.view.active .cards .card:nth-child(1){animation-delay:.03s}
-.view.active .cards .card:nth-child(2){animation-delay:.06s}
-.view.active .cards .card:nth-child(3){animation-delay:.09s}
-.view.active .cards .card:nth-child(4){animation-delay:.12s}
-.view.active .cards .card:nth-child(5){animation-delay:.15s}
-.view.active .cards .card:nth-child(6){animation-delay:.18s}
-.view.active .cards .card:nth-child(7){animation-delay:.21s}
-.view.active .cards .card:nth-child(8){animation-delay:.24s}
-@keyframes fadeSlideUp{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.view.active .panel{animation:fadeSlideUp .4s cubic-bezier(.16,1,.3,1) .1s backwards}
+.view.active .card,.view.active .panel{animation:cardReveal 380ms cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--i,0)*45ms)}
+@keyframes cardReveal{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 /* Metric cards lift on hover (transform only, no layout shift). */
-.cards .card:hover,.ov-grid .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md),0 0 26px -4px var(--acc,#38bdf8)}
-.card:hover::after,.panel:hover::after{background-size:200% 100%;animation:edgeShimmer 1.4s linear infinite}
-@keyframes edgeShimmer{from{background-position:0 0}to{background-position:-200% 0}}
+.card:hover,.panel:hover{transform:translateY(-3px);border-top-color:rgba(56,189,248,.35);box-shadow:0 16px 32px -12px rgba(0,0,0,.65)}
+.card:hover::after,.panel:hover::after{opacity:1}
+/* edgeShimmer retired with the old hover lift; the top edge now brightens statically on hover. */
 /* Stat values pop subtly when a poll updates them (JS adds .tick on change). */
 .card .value.tick{animation:valueTick .3s var(--ease-out)}
 @keyframes valueTick{0%{transform:scale(1)}30%{transform:scale(1.05)}100%{transform:scale(1)}}
@@ -180,7 +182,7 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 /* Nav active indicator: an accent bar that grows vertically into place. */
 .navbtn{position:relative}
 .navbtn::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--accent);transform:scaleY(0);transform-origin:center;transition:transform var(--dur-fast) var(--ease-out)}
-.navbtn.active::before{transform:scaleY(1);background:#3b82f6;box-shadow:0 0 12px #3b82f6}
+.navbtn.active::before{transform:scaleY(1);background:#38BDF8;box-shadow:0 0 10px #38BDF8}
 /* Buttons lift on hover and settle on press; table rows cross-fade on hover. */
 button,.btn{transition:background-color var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 button:hover:not(:disabled),.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
@@ -195,16 +197,16 @@ td{font-variant-numeric:tabular-nums}
 .info-wrap{position:relative;display:inline-flex;vertical-align:middle;flex:none}
 .info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--border-strong,#94a3b8);background:transparent;color:var(--muted);font-size:11px;font-weight:600;line-height:1;cursor:pointer;padding:0}
 .info:hover,.info:focus-visible{color:var(--text);border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
-.tip{position:absolute;top:calc(100% + 8px);left:0;width:240px;max-width:70vw;padding:10px 12px;border-radius:10px;background:rgba(13,19,34,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);color:#e2e8f0;font-size:12.5px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:normal;box-shadow:0 16px 40px -12px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity 150ms var(--ease-out),transform 150ms var(--ease-out),visibility 150ms;z-index:80;pointer-events:none;white-space:normal;text-align:left}
+.tip{position:absolute;top:calc(100% + 8px);left:0;width:240px;max-width:70vw;padding:10px 12px;border-radius:10px;background:rgba(13,19,34,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);color:#e2e8f0;font-size:13px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:normal;box-shadow:0 16px 40px -12px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity 150ms var(--ease-out),transform 150ms var(--ease-out),visibility 150ms;z-index:80;pointer-events:none;white-space:normal;text-align:left}
 .info:hover + .tip,.info:focus-visible + .tip,.info-wrap:focus-within .tip,.info.open + .tip{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
 .toasts{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:min(360px,calc(100vw - 40px))}
-.toast{position:relative;display:flex;align-items:flex-start;gap:10px;padding:12px 34px 14px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(13,19,34,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#f1f5f9;box-shadow:0 16px 40px -12px rgba(0,0,0,.6);overflow:hidden;animation:toastIn 200ms var(--ease-out)}
+.toast{position:relative;display:flex;align-items:flex-start;gap:10px;padding:12px 34px 14px 12px;border-radius:10px;border:1px solid var(--border-subtle);background:var(--bg-card);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);box-shadow:0 16px 40px -12px rgba(0,0,0,.6);overflow:hidden;animation:toastIn 200ms var(--ease-out)}
 .toast.out{animation:toastOut 180ms var(--ease-out) forwards}
 .toast-icon{flex:none;width:18px;height:18px;margin-top:1px}
 .toast-ok .toast-icon{color:#10b981}
 .toast-err .toast-icon{color:#ef4444}
-.toast-msg{font-size:13.5px;line-height:1.45}
-.toast-close{position:absolute;top:6px;right:6px;width:22px;height:22px;border:0;background:transparent;color:#94a3b8;font-size:15px;line-height:1;cursor:pointer;padding:0}
+.toast-msg{font-size:13px;line-height:1.45}
+.toast-close{position:absolute;top:6px;right:6px;width:22px;height:22px;border:0;background:transparent;color:#94a3b8;font-size:14px;line-height:1;cursor:pointer;padding:0}
 .toast-close:hover{color:#f1f5f9}
 .toast-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:currentColor;opacity:.55;animation:toastBar 4s linear forwards}
 .toast-ok .toast-bar{color:#10b981}
@@ -217,7 +219,7 @@ td{font-variant-numeric:tabular-nums}
 .radar-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid #10b981;animation:radarPing 2s var(--ease-out) infinite}
 @keyframes radarPing{0%{transform:scale(.6);opacity:.9}80%{transform:scale(1.8);opacity:0}100%{transform:scale(1.8);opacity:0}}
 @media (prefers-reduced-motion:reduce){
-  .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .cards .card,.view.active .ov-grid .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading,.tip,.toast,.toast-bar,.radar-dot::after{animation:none}
+  .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading,.tip,.toast,.toast-bar,.radar-dot::after,.tab-ind{animation:none}
   .state.loading::before{animation:none}
   .state.loading::after{display:none}
   .navbtn::before{transition:none}
@@ -227,22 +229,23 @@ td{font-variant-numeric:tabular-nums}
   .hero-shield,.hero-shield svg{animation:none}
   .drawer{animation:none}
 }
-.themeseg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);padding:2px;background:var(--panel);gap:2px}
-.themeseg button{border:none;background:transparent;color:var(--muted);border-radius:4px;padding:3px 8px;font-size:12.5px;font-weight:600;cursor:pointer}
+.themeseg{display:inline-flex;align-items:center;height:34px;border:1px solid var(--border);border-radius:var(--radius);padding:2px;background:var(--panel);gap:2px}
+.themeseg button{border:none;background:transparent;color:var(--muted);border-radius:4px;height:28px;padding:0 8px;font-size:13px;font-weight:600;cursor:pointer}
 .themeseg button[aria-pressed="true"]{background:var(--nav-active-bg);color:var(--text);box-shadow:var(--shadow-sm)}
-button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:var(--radius);padding:6px 12px;font-size:13.5px;font-weight:500;line-height:1.3;cursor:pointer}
+button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:8px;height:38px;padding:0 14px;font-size:13px;font-weight:500;line-height:1;cursor:pointer}
 button:hover,.btn:hover{border-color:var(--faint)}
-button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
-button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+button.primary{background:linear-gradient(135deg,#0284C7,#2563EB);border-color:#0284C7;color:var(--accent-ink);font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 1px 2px rgba(0,0,0,.3)}
+button.primary:hover{filter:brightness(1.12);border-color:#0284C7}
 button:disabled{opacity:.5;cursor:default}
-input,select,textarea{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:var(--radius);padding:7px 10px;font-size:13.5px;line-height:1.3}
+input,select,textarea{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:8px;height:38px;padding:0 12px;font-size:13px;line-height:1.2}
+textarea{height:auto;min-height:38px;padding:10px 12px;line-height:1.5}
 
 /* Layout */
-.layout{display:flex;min-height:calc(100vh - 53px)}
-.sidebar{width:232px;flex:none;border-right:1px solid var(--border);background:var(--surface);padding:12px 8px}
-.sidebar h3{margin:16px 12px 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)}
+.layout{display:flex;min-height:calc(100vh - 64px)}
+.sidebar{width:240px;flex:none;border-right:1px solid var(--border);background:var(--surface);padding:12px 8px}
+.sidebar h3{margin:16px 12px 6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
 .sidebar h3:first-of-type{margin-top:2px}
-.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:2px 0;padding:6px 12px;border:1px solid transparent;background:transparent;border-radius:var(--radius);color:var(--muted);font-size:13.5px;cursor:pointer}
+.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:2px 0;padding:6px 12px;border:1px solid transparent;background:transparent;border-radius:10px;color:var(--muted);font-size:13px;cursor:pointer}
 .navbtn svg{flex:none}
 .navbtn:hover{background:var(--panel-2);color:var(--text)}
 .navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
@@ -259,27 +262,28 @@ input,select,textarea{color:var(--text);background:var(--input-bg);border:1px so
 .navbtn[data-view="approvals"]{--nav-acc:#fbbf24}
 .navbtn[data-view="accounts"]{--nav-acc:#22d3ee}
 .navbtn[data-view="about"]{--nav-acc:#94a3b8}
-.navbtn.active{background:linear-gradient(90deg,rgba(59,130,246,.20),rgba(59,130,246,.05) 70%,transparent)}
+.navbtn.active{background:linear-gradient(90deg,rgba(56,189,248,.20),rgba(56,189,248,.05) 70%,transparent)}
 .navbtn.active svg{filter:drop-shadow(0 0 6px currentColor)}
-.navbtn.active::before{width:4px}
-.navbtn .tag{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
-.main{flex:1;padding:20px 24px 48px;min-width:0}
+.navbtn.active::before{width:3px}
+.navbtn .tag{margin-left:auto;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+.main{flex:1;padding:24px;min-width:0}
 .main > section, .main > .banner{max-width:1680px;margin:0 auto}
 .view{display:none}
 .view.active{display:block}
-h1{font-size:20px;line-height:1.3;font-weight:650;margin:0 0 6px;letter-spacing:-.01em}
-h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
-.sub{color:var(--muted);font-size:13.5px;margin:0 0 var(--space-2)}
+h1{font-size:22px;line-height:1.3;font-weight:700;margin:0 0 6px;letter-spacing:-.02em;color:var(--text)}
+h2{font-size:14px;line-height:1.35;font-weight:600;margin:0 0 6px;letter-spacing:-.01em;color:var(--text)}
+:root[data-theme="dark"] h2{color:#E2E8F0}
+.sub{color:var(--muted);font-size:13px;margin:0 0 var(--space-2)}
 .sub strong{color:var(--text);font-weight:600}
 
 /* Cards, panels, tables */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:12px}
-.card{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm)}
-.card .label{font-size:12.5px;font-weight:500;color:var(--muted)}
-.card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px;margin-bottom:20px}
+.card{background:var(--panel-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm)}
+.card .label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+.card .value{font-size:28px;font-weight:700;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums;font-family:var(--mono);color:var(--text)}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
-.card .foot{font-size:12px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);margin-top:12px}
+.card .foot{font-size:11px;color:var(--faint);margin-top:4px}
+.panel{background:var(--panel-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);margin-top:20px}
 /* 3D Frosted Glass Slab (dark default): exact slab spec — blur 20px
    plus the deep drop + inner top highlight. The tokens above already
    carry the slab background and borders in dark mode. */
@@ -289,7 +293,7 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
    Stage, violet/indigo for security/grade, red only for attack/block.
    The accent shows as a gradient top edge + soft outer glow; the
    value text stays white for contrast. */
-.card,.panel{position:relative;--acc:#38bdf8}
+.card,.panel{position:relative;--acc:#38bdf8;transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease,background-color 220ms ease}
 .card::after,.panel::after{content:"";position:absolute;top:-1px;left:16px;right:16px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.85;box-shadow:0 0 10px var(--acc);pointer-events:none}
 .ov-grid .card:nth-child(1),.ov-grid .card:nth-child(2),.ov-grid .card:nth-child(6){--acc:#10b981}
 .ov-grid .card.kpi{--acc:#06b6d4}
@@ -317,21 +321,21 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
 .panel-head h2{margin:0}
 #topIps,#topFps,#rulesBody,#logsBody,#domBody,#ipListsBody{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
+table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{background:var(--panel-2)}
-th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:6px 10px;white-space:nowrap}
+th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border-strong);padding:6px 10px;white-space:nowrap}
 td{border-bottom:1px solid var(--border);padding:6px 10px;vertical-align:top;word-break:break-word}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--panel-2)}
-.mono{font-family:var(--mono);font-size:12.5px}
+.mono{font-family:var(--mono);font-size:13px}
 .muted{color:var(--muted)}
-.small{font-size:12.5px}
-.badge{display:inline-block;border-radius:3px;padding:1px 8px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
+.small{font-size:13px}
+.badge{display:inline-block;border-radius:3px;padding:1px 8px;font-size:11px;font-weight:600;letter-spacing:.06em;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
 .badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg);box-shadow:0 0 10px var(--glow-ok)}
 .badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg);box-shadow:0 0 10px var(--glow-warn)}
 .badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg);box-shadow:0 0 10px var(--glow-bad)}
 .bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
-.bar-row .lbl{width:44px;flex:none;font-family:var(--mono);font-size:12.5px}
+.bar-row .lbl{width:44px;flex:none;font-family:var(--mono);font-size:13px}
 .bar-row .track{flex:1;height:8px;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
 .bar-row .fill{height:100%;background:var(--accent)}
 .bar-row .val{width:150px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -339,7 +343,7 @@ tbody tr:hover td{background:var(--panel-2)}
 /* Traffic chart (Overview): SVG line chart drawn from the 3s poll totals.
    Charts scale to the card width through the viewBox (uniform scaling,
    so axis text never stretches); heights come from the aspect ratio. */
-.chart-legend{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted)}
+.chart-legend{display:flex;gap:16px;align-items:center;font-size:13px;color:var(--muted)}
 .legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .legend-dot{width:10px;height:10px;border-radius:2px;flex:none}
 .legend-total{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,.7)}
@@ -364,7 +368,7 @@ tbody tr:hover td{background:var(--panel-2)}
    chart reads as a working chart at zero rather than a broken one. */
 .chart-grid{stroke:rgba(148,163,184,.28);stroke-width:1;vector-effect:non-scaling-stroke}
 .chart-axis{stroke:rgba(148,163,184,.5);stroke-width:1;vector-effect:non-scaling-stroke}
-.chart-label{font-size:12px;fill:var(--faint);font-family:var(--font)}
+.chart-label{font-size:11px;fill:var(--faint);font-family:var(--font)}
 .chart-sm .chart-label{font-size:11px}
 .chart-ylabel{text-anchor:end}
 .chart-xlabel{text-anchor:middle}
@@ -374,7 +378,7 @@ tbody tr:hover td{background:var(--panel-2)}
 .server-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px}
 .chart-subhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:4px 0 6px}
 .chart-subhead .chart-title{font-size:13px;font-weight:600}
-.chart-summary{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chart-summary{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Bar charts: the attack-map .bar-row pattern with wider labels for
    domain names, reasons, and metric names. Values stay visible as text. */
 .bar-row.wide .lbl{width:180px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -383,7 +387,7 @@ tbody tr:hover td{background:var(--panel-2)}
 .bar-row .fill.bad{background:var(--bad-text)}
 .bar-row .fill.warn{background:var(--amber)}
 .bar-row .fill.ok{background:var(--ok-text)}
-.chart-caption{font-size:12.5px;font-weight:600;color:var(--muted);margin:2px 0 8px}
+.chart-caption{font-size:13px;font-weight:600;color:var(--muted);margin:2px 0 8px}
 .chart-legend-gap{margin-bottom:8px}
 .chart-block{margin:4px 0 16px}
 
@@ -397,7 +401,7 @@ tbody tr:hover td{background:var(--panel-2)}
 .note strong{color:var(--text)}
 .note.info{border-left-color:var(--info)}
 .state{border:1px dashed var(--border-strong);border-radius:var(--radius);padding:var(--space-3) var(--space-2);text-align:center;color:var(--muted);margin:8px 0}
-.tailbox{font-family:var(--mono);font-size:12.5px;max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface-muted);white-space:pre-wrap;word-break:break-word}
+.tailbox{font-family:var(--mono);font-size:13px;max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface-muted);white-space:pre-wrap;word-break:break-word}
 .tailbox .tl-warn{color:var(--bad-text)}
 .state strong{color:var(--text)}
 .state-error{border-style:solid;border-color:var(--bad-border);border-left:3px solid var(--bad-text);background:var(--panel);color:var(--bad-text)}
@@ -412,16 +416,16 @@ tbody tr:hover td{background:var(--panel-2)}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .row .grow{flex:1;min-width:180px}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 16px}
-.footer{margin-top:var(--space-4);color:var(--faint);font-size:12px}
-.kbd{font-family:var(--mono);background:var(--code-bg);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:1px 6px;font-size:12px;white-space:nowrap}
+.footer{margin-top:var(--space-4);color:var(--faint);font-size:11px}
+.kbd{font-family:var(--mono);background:var(--code-bg);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:3px;padding:1px 6px;font-size:11px;white-space:nowrap}
 /* Forms and controls */
 .formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px;margin:8px 0}
 .field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 6px}
 .field input,.field select,.field textarea{width:100%}
-.field .hint{font-size:12px;color:var(--faint);margin-top:4px}
+.field .hint{font-size:11px;color:var(--faint);margin-top:4px}
 button.danger{border-color:var(--bad-border);color:var(--bad-text)}
 button.danger:hover{border-color:var(--bad-text)}
-button.small{padding:4px 10px;font-size:12.5px}
+button.small{padding:0 10px;font-size:13px}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .inline-err{display:none;border:1px solid var(--bad-border);border-left:3px solid var(--bad-text);background:var(--panel);color:var(--bad-text);border-radius:var(--radius);padding:10px 14px;margin:12px 0}
 .inline-err.show{display:block}
@@ -439,7 +443,7 @@ tr.selected td{background:var(--nav-active-bg)}
 .span-4{grid-column:span 4!important}
 .span-6{grid-column:span 6!important}
 .span-12{grid-column:span 12!important}
-.view.active .ov-grid .card{animation:fadeSlideUp .4s cubic-bezier(.16,1,.3,1) backwards}
+/* .ov-grid cards use the generic .view.active .card cardReveal rule above. */
 .view.active .ov-grid .card:nth-child(1){animation-delay:.03s}
 .view.active .ov-grid .card:nth-child(2){animation-delay:.06s}
 .view.active .ov-grid .card:nth-child(3){animation-delay:.09s}
@@ -452,7 +456,7 @@ tr.selected td{background:var(--nav-active-bg)}
    poll values as the card numbers (JS sets stroke-dashoffset). */
 .kpi{display:flex;align-items:center;gap:10px}
 .kpi-main{flex:1;min-width:0}
-.kpi-main .value{font-size:22px}
+.kpi-main .value{font-size:28px}
 .gauge{width:46px;height:46px;flex:none;transform:rotate(-90deg)}
 .gauge-bg{fill:none;stroke:var(--panel-2);stroke-width:3.5}
 .gauge-fg{fill:none;stroke:#06b6d4;stroke-width:3.5;stroke-linecap:round;stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .5s var(--ease-out);filter:drop-shadow(0 0 3px rgba(6,182,212,.5))}
@@ -484,10 +488,10 @@ tr.selected td{background:var(--nav-active-bg)}
 .stage-hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;pointer-events:none;z-index:2}
 .stage-hud-top{display:flex;gap:8px;flex-wrap:wrap}
 .stage-hud-bottom{display:flex;justify-content:center}
-.stage-badge-alert{background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.6);color:#fca5a5;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;animation:alertPulse 1.6s var(--ease-in-out) infinite}
+.stage-badge-alert{background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.6);color:#fca5a5;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em;animation:alertPulse 1.6s var(--ease-in-out) infinite}
 @keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}50%{box-shadow:0 0 18px 2px rgba(239,68,68,.5)}}
-.stage-badge-sim{background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.6);color:#fcd34d;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em}
-.stage-idle{color:var(--muted);font-size:12px;background:rgba(2,6,23,.45);border:1px solid var(--border);padding:4px 10px;border-radius:999px}
+.stage-badge-sim{background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.6);color:#fcd34d;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em}
+.stage-idle{color:var(--muted);font-size:11px;background:rgba(2,6,23,.45);border:1px solid var(--border);padding:4px 10px;border-radius:999px}
 .sim-switch[aria-checked="true"]{background:#dc2626;border-color:#ef4444;box-shadow:0 0 0 1px var(--ring),0 0 18px rgba(239,68,68,.65)}
 @media (max-width:640px){.hero-shield{height:260px}}
 .hero-shield.ok{--hero-glow:rgba(16,185,129,.45)}
@@ -502,8 +506,13 @@ tr.selected td{background:var(--nav-active-bg)}
 /* Sub-tabs (firewall + domains + settings + reports + insights):
    show/hide only, no form is rebuilt. .fwtabs keeps the firewall's
    existing class; .subtabs is the generic alias for the other pages. */
-.fwtabs,.subtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin:4px 0 12px;flex-wrap:wrap}
-.fwtab-btn,.subtab-btn{border:none;background:transparent;padding:8px 12px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0}
+.fwtabs,.subtabs{position:relative;display:flex;gap:2px;border-bottom:1px solid var(--border);margin:4px 0 12px;flex-wrap:wrap}
+/* Sliding tab indicator: one neon underline per tab family, gliding
+   250ms cubic-bezier(.25,1,.5,1) to the selected tab (JS positions
+   it in moveTabInd; the selected tab's own border-bottom stays as
+   the no-JS fallback underneath it). */
+.tab-ind{position:absolute;bottom:-1px;left:0;height:2px;width:0;background:var(--accent-primary,#38BDF8);border-radius:2px;box-shadow:0 0 8px rgba(56,189,248,.7);transition:left 250ms cubic-bezier(.25,1,.5,1),width 250ms cubic-bezier(.25,1,.5,1),opacity 250ms cubic-bezier(.25,1,.5,1);pointer-events:none;opacity:0;z-index:1}
+.fwtab-btn,.subtab-btn{border:none;background:transparent;height:38px;padding:0 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0}
 .fwtab-btn:hover,.subtab-btn:hover{color:var(--text);background:var(--panel-2)}
 .fwtab-btn[aria-selected="true"],.subtab-btn[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
 .fwtab-panel,.subtab-panel{margin-top:0}
@@ -543,8 +552,8 @@ tr.selected td{background:var(--nav-active-bg)}
 .grade-ring-fg.warn{stroke:var(--amber);filter:drop-shadow(0 0 10px var(--glow-warn))}
 .grade-ring-fg.bad{stroke:var(--bad-text);filter:drop-shadow(0 0 10px var(--glow-bad))}
 .grade-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-.grade-letter{font-size:44px;font-weight:700;line-height:1}
-.grade-score{font-size:12.5px;color:var(--muted);margin-top:4px}
+.grade-letter{font-size:28px;font-weight:700;line-height:1}
+.grade-score{font-size:13px;color:var(--muted);margin-top:4px}
 .fw-toolbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:0 0 12px}
 .fw-toolbar .spacer{flex:1}
 /* Rule drawer: slide-over from the right, full-width on mobile.
@@ -598,8 +607,8 @@ tr.selected td{background:var(--nav-active-bg)}
 @keyframes meshDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(90px,60px,0) scale(1.14)}}
 :root.anim-paused .mesh::before,:root.anim-paused .mesh::after{animation-play-state:paused}
 :root[data-theme="light"] .mesh{opacity:.5}
-:root[data-theme="dark"] .topbar{background:rgba(4,7,15,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-:root[data-theme="dark"] .sidebar{background:rgba(11,18,32,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+:root[data-theme="dark"] .topbar{background:rgba(5,7,14,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+:root[data-theme="dark"] .sidebar{background:var(--bg-sidebar);border-right:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 html{background:var(--bg)}
 .layout,.topbar{position:relative;z-index:1}
 /* 3D tilt + cursor spotlight (JS adds .tilt to KPI cards and heroes;
@@ -618,9 +627,9 @@ html{background:var(--bg)}
 .switch[aria-checked="true"] .switch-thumb{transform:translateX(22px);background:#fff}
 .switch-underlying{position:absolute!important;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;opacity:0}
 /* Sun/Moon theme switch: wider pill, icons at both ends, thumb slides. */
-.theme-switch{width:60px;height:28px;background:var(--panel-2)}
-.theme-switch .switch-thumb{width:22px;height:22px}
-.theme-switch[aria-checked="true"] .switch-thumb{transform:translateX(32px)}
+.theme-switch{width:60px;height:34px;background:var(--panel-2)}
+.theme-switch .switch-thumb{width:26px;height:26px;top:3px}
+.theme-switch[aria-checked="true"] .switch-thumb{transform:translateX(30px)}
 .theme-switch .theme-icon{position:absolute;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint);pointer-events:none}
 .theme-switch .theme-icon.sun{left:7px}
 .theme-switch .theme-icon.moon{right:7px}
@@ -635,7 +644,7 @@ html{background:var(--bg)}
 .seg-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:80px;border-radius:999px;background:var(--nav-active-bg);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.12);transition:left .3s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.34,1.4,.64,1)}
 /* Under-attack master switch: high-contrast red, glowing thumb,
    confirmation pulse on toggle (class .pulse-on, removed by JS). */
-.attack-switch{position:relative;display:inline-flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid var(--bad-border);border-radius:999px;background:var(--bad-bg);color:var(--bad-text);font-weight:700;font-size:13.5px;letter-spacing:.4px;cursor:pointer;transition:background-color .28s cubic-bezier(.34,1.56,.64,1),border-color .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s cubic-bezier(.34,1.56,.64,1)}
+.attack-switch{position:relative;display:inline-flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid var(--bad-border);border-radius:999px;background:var(--bad-bg);color:var(--bad-text);font-weight:700;font-size:13px;letter-spacing:.4px;cursor:pointer;transition:background-color .28s cubic-bezier(.34,1.56,.64,1),border-color .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s cubic-bezier(.34,1.56,.64,1)}
 .attack-switch:hover{transform:none}
 .attack-switch .switch-thumb{position:static;flex:none;width:22px;height:22px;border-radius:50%;background:#fca5a5;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .28s cubic-bezier(.34,1.56,.64,1),background-color .25s}
 .attack-switch[aria-checked="true"]{background:#dc2626;border-color:#dc2626;color:#fff;box-shadow:0 0 0 1px rgba(220,38,38,.5),0 0 22px rgba(220,38,38,.55)}
@@ -673,7 +682,7 @@ html{background:var(--bg)}
 /* Real-time terminal console: obsidian bg, mono, syntax highlights,
    blinking live cursor. Passed requests + live tail share one console. */
 .terminal-panel{background:var(--panel-glass)}
-.terminal{background:var(--term-bg,#030508);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#cbd5e1;overflow-x:auto}
+.terminal{background:var(--term-bg,#05070E);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;font-family:var(--mono);font-size:13px;line-height:1.65;color:#cbd5e1;overflow-x:auto}
 .terminal .state{background:transparent;border-color:rgba(148,163,184,.25);color:#94a3b8}
 .terminal table{width:100%;border-collapse:collapse}
 .terminal th{color:#7dd3fc;text-align:left;font-weight:600;border-bottom:1px solid rgba(125,211,252,.25);padding:4px 8px 6px 0}
@@ -690,13 +699,13 @@ html{background:var(--bg)}
 .tl-action{color:#fbbf24}
 .tl-method{color:#34d399;font-weight:700}
 .tl-path{color:#a5b4fc}
-.term-stream-label{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(148,163,184,.2);color:#7dd3fc;font-weight:600;font-size:12px;letter-spacing:.6px;text-transform:uppercase}
+.term-stream-label{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(148,163,184,.2);color:#7dd3fc;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .term-cursor{display:inline-block;width:8px;height:14px;background:#34d399;vertical-align:-2px;animation:cursorBlink 1s steps(1) infinite}
 @keyframes cursorBlink{50%{opacity:0}}
 .terminal-head-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 /* Reduced motion: everything new goes still too. */
 @media (prefers-reduced-motion:reduce){
-  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.flow-enter,.flow-shine,.flow-blocked-dash,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"],.stage-badge-alert,.chart-scanline,.card:hover::after,.panel:hover::after,.drawer,.drawer-overlay{animation:none}
+  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.flow-enter,.flow-shine,.flow-blocked-dash,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"],.stage-badge-alert,.chart-scanline,.drawer,.drawer-overlay{animation:none}
   .switch,.switch .switch-thumb,.seg-indicator,.stage-matrix,.ls-collapsible,#maintForm .maint-extra{transition:none}
   .tilt{transform:none}
 }
@@ -789,7 +798,7 @@ html{background:var(--bg)}
               <marker id="flowArrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#dc2626"/></marker>
               <clipPath id="flowShieldClip"><rect x="600" y="50" width="240" height="190" rx="10"/></clipPath>
             </defs>
-            <g font-family="Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
+            <g font-family="Plus Jakarta Sans,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
               <g fill="none" stroke-width="2">
                 <path id="flowLaneIn" d="M 210 90 H 592" stroke="#64748b" marker-end="url(#flowArrow)"/>
                 <path id="flowLaneOut" d="M 840 90 H 1222" stroke="#22c55e" marker-end="url(#flowArrowGreen)"/>
@@ -909,7 +918,7 @@ html{background:var(--bg)}
       <h1 data-i18n="domTitle">Domains</h1>
       <p class="sub" data-i18n="domSub">Configured domains from the API. Select a domain to inspect and manage it everywhere in this dashboard.</p>
       <div class="fw-toolbar"><span class="spacer"></span><button type="button" class="primary" id="domAddBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="domAddBtn">Add domain</span></button></div>
-      <div class="subtabs" role="tablist" data-i18n-aria="domTabsAria" aria-label="Domain sections">
+      <div class="subtabs" role="tablist" data-i18n-aria="domTabsAria" aria-label="Domain sections"><span class="tab-ind" aria-hidden="true"></span>
         <button type="button" class="subtab-btn" id="domTabConfig" role="tab" aria-selected="true" data-i18n="domTabConfig">Configured domains &amp; inspector</button>
         <button type="button" class="subtab-btn" id="domTabTenants" role="tab" aria-selected="false" data-i18n="domTabTenants">Tenants &amp; usage</button>
         <button type="button" class="subtab-btn" id="domTabImport" role="tab" aria-selected="false" data-i18n="domTabImport">Bulk import (JSON / Nginx / Apache)</button>
@@ -1044,7 +1053,7 @@ html{background:var(--bg)}
       <p class="sub"><span data-i18n="rulesSubPre">Rules for </span><strong id="rulesDomain">—</strong><span data-i18n="rulesSubPost">, in evaluation order (top rule first). Changes are saved to <code>config.json</code> on the server immediately, take effect without a reload, and keep a backup of the previous config as <code>config.json.bak</code>.</span></p>
       <div class="inline-err" id="rulesError" role="alert"></div>
       <div class="inline-ok" id="rulesOk" role="status"></div>
-      <div class="fwtabs" role="tablist" data-i18n-aria="fwTabsAria" aria-label="Firewall sections">
+      <div class="fwtabs" role="tablist" data-i18n-aria="fwTabsAria" aria-label="Firewall sections"><span class="tab-ind" aria-hidden="true"></span>
         <button type="button" class="fwtab-btn" id="fwTabActive" role="tab" aria-selected="true" data-i18n="fwTabActive">Active Rules</button>
         <button type="button" class="fwtab-btn" id="fwTabSim" role="tab" aria-selected="false" data-i18n="fwTabSim">Rule Simulator</button>
         <button type="button" class="fwtab-btn" id="fwTabPacks" role="tab" aria-selected="false" data-i18n="fwTabPacks">Rule Packs</button>
@@ -1397,7 +1406,7 @@ html{background:var(--bg)}
       <p class="sub"><span data-i18n="setSubPre">Configuration for </span><strong id="settingsDomain">—</strong><span data-i18n="setSubPost">. Saved changes are written to <code>config.json</code> on the server immediately and survive restarts. Secrets, backends, schemes, and certificate paths can only be changed in <code>config.json</code> on the server, followed by Reload config.</span></p>
       <div class="inline-err" id="settingsError" role="alert"></div>
       <div class="inline-ok" id="settingsOk" role="status"></div>
-      <div class="subtabs" role="tablist" data-i18n-aria="setTabsAria" aria-label="Settings sections">
+      <div class="subtabs" role="tablist" data-i18n-aria="setTabsAria" aria-label="Settings sections"><span class="tab-ind" aria-hidden="true"></span>
         <button type="button" class="subtab-btn" id="setTabThresh" role="tab" aria-selected="true" data-i18n="setTabThresh">Traffic &amp; attack thresholds</button>
         <button type="button" class="subtab-btn" id="setTabPow" role="tab" aria-selected="false" data-i18n="setTabPow">WAF &amp; proof-of-work</button>
         <button type="button" class="subtab-btn" id="setTabFeatures" role="tab" aria-selected="false" data-i18n="setTabFeatures">System &amp; proxy features</button>
@@ -1494,7 +1503,7 @@ html{background:var(--bg)}
       <div id="reportSide"><div class="state" data-i18n="repNoReport">No report loaded yet.</div></div>
       </div>
       <div class="panel">
-        <div class="subtabs" role="tablist" data-i18n-aria="repTabsAria" aria-label="Report sections">
+        <div class="subtabs" role="tablist" data-i18n-aria="repTabsAria" aria-label="Report sections"><span class="tab-ind" aria-hidden="true"></span>
           <button type="button" class="subtab-btn" id="repTabVerified" role="tab" aria-selected="true" data-i18n="repTopVerified">Top verified IPs</button>
           <button type="button" class="subtab-btn" id="repTabUnverified" role="tab" aria-selected="false" data-i18n="repTopUnverified">Top unverified IPs</button>
           <button type="button" class="subtab-btn" id="repTabFps" role="tab" aria-selected="false" data-i18n="repTopFps">Unknown fingerprints</button>
@@ -1528,7 +1537,7 @@ html{background:var(--bg)}
         <div class="btnrow"><button type="button" id="latReloadBtn" data-i18n="latReloadBtn">Reload latency</button></div>
       </div>
       </div>
-      <div class="subtabs" role="tablist" data-i18n-aria="insTabsAria" aria-label="Insights sections">
+      <div class="subtabs" role="tablist" data-i18n-aria="insTabsAria" aria-label="Insights sections"><span class="tab-ind" aria-hidden="true"></span>
         <button type="button" class="subtab-btn" id="insTabAudit" role="tab" aria-selected="true" data-i18n="insTabAudit">Audit checklist</button>
         <button type="button" class="subtab-btn" id="insTabPm" role="tab" aria-selected="false" data-i18n="pmTitle">Attack timeline &amp; postmortem</button>
         <button type="button" class="subtab-btn" id="insTabShadow" role="tab" aria-selected="false" data-i18n="insTabShadowRum">Shadow &amp; RUM</button>
@@ -4521,15 +4530,40 @@ var editingIndex = null;
 /* Firewall sub-tabs: show/hide only; every form keeps its IDs and
    handlers, and polling keeps calling loadRules on this view. */
 var FW_TABS = ["Active", "Sim", "Packs", "Import"];
-/* Replays the staggered fadeSlideUp entrance on the active view.
-   Called on every sub-tab click (sidebar clicks already replay via
-   showView's own remove/re-add of .active). */
+/* Staggered cardReveal entrance: assigns --i (45ms steps) to every
+   card/panel in the active view in DOM order, then replays the
+   animation. Called on every sub-tab click (sidebar clicks replay
+   via showView, which also calls assignCardStagger). */
+function assignCardStagger(){
+  var v = document.querySelector(".view.active");
+  if(!v) return;
+  var els = v.querySelectorAll(".card,.panel"), i;
+  for(i = 0; i < els.length; i++) els[i].style.setProperty("--i", String(i));
+}
 function replayEntrance(){
   var v = document.querySelector(".view.active");
   if(!v) return;
+  assignCardStagger();
   v.classList.remove("active");
   void v.offsetWidth;
   v.classList.add("active");
+  moveAllTabInds();
+}
+/* Sliding tab indicator: one neon underline per tab family (.fwtabs /
+   .subtabs), gliding 250ms to the aria-selected tab. Positions from
+   offsetLeft/offsetWidth so it follows the real layout (and the font
+   swap); re-run on resize and when the webfonts finish loading. */
+function moveTabInd(bar){
+  if(!bar) return;
+  var ind = bar.querySelector(":scope > .tab-ind");
+  var sel = bar.querySelector('[aria-selected="true"]');
+  if(!ind || !sel){ if(ind) ind.style.opacity = "0"; return; }
+  ind.style.opacity = "1";
+  ind.style.left = sel.offsetLeft + "px";
+  ind.style.width = sel.offsetWidth + "px";
+}
+function moveAllTabInds(){
+  document.querySelectorAll(".fwtabs,.subtabs").forEach(moveTabInd);
 }
 function showFwTab(name){
   FW_TABS.forEach(function(n){
@@ -6138,9 +6172,11 @@ function showView(name){
   if(activeView){
     /* Restart the entrance choreography on every switch, including
        re-clicking the same nav item. */
+    assignCardStagger();
     activeView.classList.remove("active");
     void activeView.offsetWidth;
     activeView.classList.add("active");
+    moveAllTabInds();
   }
   if(!connected) return;
   if(name === "overview"){ startFlow(); }
@@ -6289,6 +6325,13 @@ document.addEventListener("keydown", function(ev){
 bindTilt();
 /* Hero live flow + mesh pause on hidden tab. */
 startFlow();
+/* Cyber-Obsidian entrance + tab indicators: stagger the first view's
+   cards, place the sliding underlines, and re-place them when the
+   layout moves (resize) or the webfonts swap in (widths change). */
+assignCardStagger();
+moveAllTabInds();
+window.addEventListener("resize", moveAllTabInds);
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(moveAllTabInds);
 document.addEventListener("visibilitychange", function(){
   document.documentElement.classList.toggle("anim-paused", document.hidden);
   if(document.hidden){ stopFlow(); }

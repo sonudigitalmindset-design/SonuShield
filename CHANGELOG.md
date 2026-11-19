@@ -6,6 +6,43 @@ see [LICENSE](LICENSE) and the credits endpoint. This changelog covers the
 SonuShield work only; upstream history before the fork point is in the git
 log.
 
+## Unreleased — Next-Gen Cyber-Obsidian Design System (SW v18)
+
+- The whole dashboard UI is rebuilt on one strict Cyber-Obsidian
+  design system: `--bg-canvas #05070E`, `--bg-sidebar #080B14`,
+  `--bg-card rgba(13,18,30,0.78)` + blur 20px, `--bg-input #090D18`,
+  `--border-subtle rgba(255,255,255,0.07)`,
+  `--border-highlight rgba(255,255,255,0.15)`,
+  `--accent-primary #38BDF8`, `--accent-safe #10B981`,
+  `--accent-warn #F59E0B`, `--accent-danger #EF4444`,
+  `--text-primary #F8FAFC`, `--text-secondary #94A3B8`,
+  `--text-muted #64748B` (dark defaults; light mode keeps its own
+  tokens and the toggle still works — no theme reset was needed).
+- Typography is now one scale everywhere: Plus Jakarta Sans for
+  headings/UI (self-hosted, see below), JetBrains Mono for IPs,
+  metrics, expressions and logs; H1 22px/700, card titles 14px/600,
+  KPI numbers 28px JetBrains Mono tabular-nums, body/table 13px/1.5,
+  micro labels 11px/600 uppercase. No stray font sizes remain.
+- Layout: sidebar 240px with a glowing cyan 3px active pill, 64px
+  glass top bar with 34px header controls, 1680px content width,
+  24px outer padding, 20px gaps, 14px card radius, 20px card
+  padding; all buttons/inputs 38px high, 8px radius, 13px; primary
+  buttons use a blue gradient with a top inner highlight.
+- Motion: cards reveal with a 45ms stagger (`cardReveal`, 380ms);
+  card hover lifts 3px in 220ms with a cyan top edge and deep
+  shadow; every sub-tab family (Firewall, Domains, Settings,
+  Reports, Insights) has a sliding neon underline that glides
+  250ms to the selected tab; the Connected dot and the active
+  Stage badge pulse; toasts and tooltips were re-tokened to the
+  new variables (behaviour unchanged).
+- Fonts are self-hosted, never a CDN: Plus Jakarta Sans
+  Regular/Medium/SemiBold/Bold woff2 (latin subset, OFL) vendored
+  under `core/dashboard/fonts/` and served as protected shell
+  assets, exactly like the existing JetBrains Mono files; the old
+  Inter embeds were removed. The dashboard stays fully
+  offline-capable. No API endpoint, element ID, or JS logic
+  changed.
+
 ## Unreleased — Overview Live Request Flow (SW v17)
 
 - The Overview hero is now a full-width (320px) LIVE request-flow
