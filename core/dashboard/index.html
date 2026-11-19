@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<meta name="theme-color" content="#05070E">
+<meta name="theme-color" content="#090A0D">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,12 +17,12 @@ __CP_BOOTSTRAP__
 <style>
 /* Self-hosted fonts (OFL, latin subset, embedded via go:embed and
    served as protected shell assets — fully offline, no remote host):
-   Plus Jakarta Sans for UI text, JetBrains Mono for IPs,
+   Inter for UI text, JetBrains Mono for IPs,
    expressions, hostnames, and live counters. */
-@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/PlusJakartaSans-Regular.woff2") format("woff2")}
-@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/PlusJakartaSans-Medium.woff2") format("woff2")}
-@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:600;font-display:swap;src:url("./fonts/PlusJakartaSans-SemiBold.woff2") format("woff2")}
-@font-face{font-family:"Plus Jakarta Sans";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/PlusJakartaSans-Bold.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/Inter-Regular.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/Inter-Medium.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:600;font-display:swap;src:url("./fonts/Inter-SemiBold.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/Inter-Bold.woff2") format("woff2")}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url("./fonts/JetBrainsMono-Regular.woff2") format("woff2")}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;src:url("./fonts/JetBrainsMono-Medium.woff2") format("woff2")}
 @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:700;font-display:swap;src:url("./fonts/JetBrainsMono-Bold.woff2") format("woff2")}
@@ -36,29 +36,31 @@ __CP_BOOTSTRAP__
    system fonts only. */
 :root{
   color-scheme:light;
-  --bg:#f8fafc; --surface:#ffffff; --panel:#ffffff; --panel-2:#f1f5f9;
-  --bg-card:rgba(255,255,255,.90); --border-subtle:rgba(2,6,23,.08);
-  --panel-glass:rgba(255,255,255,.90);
-  --border:#e2e8f0; --border-strong:#cbd5e1;
-  --text:#020617; --muted:#475569; --faint:#64748b;
-  --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#0369a1;
-  --amber:#b45309; --info:#0284c7; --bypass:#64748b;
+  /* Matte Minimal (light): flat #FAFAFA canvas, white cards, 1px
+     #E4E4E7 hairlines, 8px radius. No glow, no gradients, no glass. */
+  --bg:#FAFAFA; --surface:#FFFFFF; --panel:#FFFFFF; --panel-2:#F4F4F5;
+  --bg-card:#FFFFFF; --border-subtle:#E4E4E7;
+  --panel-glass:#FFFFFF;
+  --border:#E4E4E7; --border-strong:#D4D4D8;
+  --text:#090A0D; --muted:#52525B; --faint:#71717A;
+  --accent:#090A0D; --accent-primary:#090A0D; --accent-hover:#1E2028; --accent-ink:#FFFFFF; --accent-text:#52525B;
+  --amber:#B45309; --info:#52525B; --bypass:#71717A;
   --ok:#059669;
-  --ring:rgba(3,105,161,.18);
-  --code-bg:#f1f5f9; --input-bg:#ffffff; --nav-active-bg:#e8ecf1;
-  --ok-bg:#ecfdf5; --ok-text:#047857; --ok-border:#a7f3d0;
-  --warn-bg:#fffbeb; --warn-text:#92400e; --warn-border:#fde68a;
-  --bad-bg:#fef2f2; --bad-text:#b91c1c; --bad-border:#fecaca;
-  --banner-bg:#ffffff; --banner-text:#991b1b; --banner-border:#fecaca;
-  --card-hi:rgba(255,255,255,.8);
-  --glow-ok:rgba(5,150,105,.16); --glow-warn:rgba(245,158,11,.16); --glow-bad:rgba(220,38,38,.16);
-  --hero-1:#ffffff; --hero-2:#f1f5f9;
-  --shadow-sm:0 1px 2px rgba(15,23,42,.05);
-  --shadow-md:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.08);
-  --shadow-lg:0 2px 4px rgba(15,23,42,.08),0 24px 48px rgba(15,23,42,.16);
+  --ring:rgba(9,10,13,.15);
+  --code-bg:#F4F4F5; --input-bg:#FFFFFF; --nav-active-bg:#F4F4F5;
+  --ok-bg:#ECFDF5; --ok-text:#047857; --ok-border:#A7F3D0;
+  --warn-bg:#FFFBEB; --warn-text:#92400E; --warn-border:#FDE68A;
+  --bad-bg:#FEF2F2; --bad-text:#B91C1C; --bad-border:#FECACA;
+  --banner-bg:#FFFFFF; --banner-text:#991B1B; --banner-border:#FECACA;
+  --card-hi:#FFFFFF;
+  --glow-ok:rgba(5,150,105,0); --glow-warn:rgba(245,158,11,0); --glow-bad:rgba(220,38,38,0);
+  --hero-1:#FFFFFF; --hero-2:#FFFFFF;
+  --shadow-sm:none;
+  --shadow-md:0 4px 12px rgba(9,10,13,.08);
+  --shadow-lg:0 8px 24px rgba(9,10,13,.12);
   --space-1:8px; --space-2:16px; --space-3:24px; --space-4:32px;
-  --radius:8px; --radius-lg:14px;
-  --font:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --radius:8px; --radius-lg:8px;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
   /* Motion language (skill "Stagger List" preset, Subtle tier, translated
      from GSAP to CSS): 250-300ms entrances, ease-out, 30ms stagger. */
@@ -69,41 +71,41 @@ __CP_BOOTSTRAP__
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  /* Next-Gen Cyber-Obsidian design system (dark defaults). Frosted
-     glass cards at blur 20px with a top specular edge. Every text
-     pair clears 4.5:1 on its surface. Light mode keeps its own
-     tokens in the :root block above. */
-  --bg-canvas:#05070E; --bg-sidebar:#080B14;
-  --bg-card:rgba(13,18,30,0.78); --bg-card-hover:rgba(19,26,43,0.90);
-  --bg-input:#090D18;
-  --border-subtle:rgba(255,255,255,0.07); --border-highlight:rgba(255,255,255,0.15);
-  --accent-primary:#38BDF8; --accent-safe:#10B981; --accent-warn:#F59E0B; --accent-danger:#EF4444;
-  --text-primary:#F8FAFC; --text-secondary:#94A3B8; --text-muted:#64748B;
-  --bg:var(--bg-canvas); --surface:var(--bg-sidebar); --panel:var(--bg-card); --panel-2:#141B2E;
+  /* Matte Obsidian: flat #090A0D canvas, #111216 surfaces, 1px #1E2028
+     hairlines, 8px radius. No glow, no gradients, no glass blur.
+     Color only as small functional semantic indicators (#10B981
+     connected/clean, #EF4444 blocked/attack, amber stage). */
+  --bg-canvas:#090A0D; --bg-sidebar:#111216;
+  --bg-card:#111216; --bg-card-hover:#16171C;
+  --bg-input:#090A0D;
+  --border-subtle:#1E2028; --border-highlight:#2A2D38;
+  --accent-primary:#F4F4F5; --accent-safe:#10B981; --accent-warn:#F59E0B; --accent-danger:#EF4444;
+  --text-primary:#F4F4F5; --text-secondary:#A1A1AA; --text-muted:#71717A;
+  --bg:var(--bg-canvas); --surface:var(--bg-sidebar); --panel:var(--bg-card); --panel-2:#16171C;
   --panel-glass:var(--bg-card);
-  --term-bg:#05070E;
-  --border:var(--border-subtle); --border-strong:rgba(255,255,255,0.10);
+  --term-bg:#090A0D;
+  --border:var(--border-subtle); --border-strong:#2A2D38;
   --text:var(--text-primary); --muted:var(--text-secondary); --faint:var(--text-muted);
-  --accent:var(--accent-primary); --accent-hover:#0284C7; --accent-ink:#ffffff; --accent-text:var(--accent-primary);
-  --amber:var(--accent-warn); --info:var(--accent-primary); --bypass:var(--text-secondary);
+  --accent:var(--accent-primary); --accent-hover:#FFFFFF; --accent-ink:#090A0D; --accent-text:#A1A1AA;
+  --amber:var(--accent-warn); --info:var(--text-secondary); --bypass:var(--text-secondary);
   --ok:var(--accent-safe);
-  --ring:rgba(56,189,248,0.15);
-  --code-bg:#090D18; --input-bg:var(--bg-input); --nav-active-bg:rgba(56,189,248,0.12);
-  --ok-bg:rgba(16,185,129,.14); --ok-text:#6ee7b7; --ok-border:#065f46;
-  --warn-bg:rgba(245,158,11,.14); --warn-text:#fcd34d; --warn-border:#92400e;
-  --bad-bg:rgba(239,68,68,.14); --bad-text:#fca5a5; --bad-border:#991b1b;
-  --banner-bg:rgba(239,68,68,.12); --banner-text:#fecaca; --banner-border:#991b1b;
+  --ring:rgba(244,244,245,0.15);
+  --code-bg:#090A0D; --input-bg:var(--bg-input); --nav-active-bg:#1A1B21;
+  --ok-bg:rgba(16,185,129,.10); --ok-text:#34D399; --ok-border:#14532D;
+  --warn-bg:rgba(245,158,11,.10); --warn-text:#FBBF24; --warn-border:#78350F;
+  --bad-bg:rgba(239,68,68,.10); --bad-text:#F87171; --bad-border:#7F1D1D;
+  --banner-bg:rgba(239,68,68,.10); --banner-text:#FCA5A5; --banner-border:#7F1D1D;
   --card-hi:var(--border-highlight);
-  --glow-ok:rgba(16,185,129,.30); --glow-warn:rgba(245,158,11,.32); --glow-bad:rgba(239,68,68,.32);
-  --hero-1:#0A0F1E; --hero-2:#080B14;
-  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
-  --shadow-md:0 1px 2px rgba(0,0,0,.45),0 8px 24px rgba(0,0,0,.4);
-  --shadow-lg:0 2px 4px rgba(0,0,0,.5),0 24px 64px rgba(0,0,0,.55);
-  --shadow-slab:0 20px 40px -15px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.1);
+  --glow-ok:rgba(16,185,129,0); --glow-warn:rgba(245,158,11,0); --glow-bad:rgba(239,68,68,0);
+  --hero-1:#111216; --hero-2:#111216;
+  --shadow-sm:none;
+  --shadow-md:0 4px 12px rgba(0,0,0,.35);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.45);
+  --shadow-slab:none;
 }
-/* Body copy in dark mode is #CBD5E1 (headings/buttons/inputs keep
-   --text = #F8FAFC through their own rules). */
-:root[data-theme="dark"] body{color:#CBD5E1}
+/* Body copy in dark mode is #A1A1AA (headings/buttons/inputs keep
+   --text = #F4F4F5 through their own rules). */
+:root[data-theme="dark"] body{color:#A1A1AA}
 *{box-sizing:border-box}
 /* The hidden attribute must win over author display rules (flex pills,
    nav buttons): without this, CP-only controls leak into the local
@@ -120,19 +122,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 /* Top bar: single row at desktop widths. The host pill shrinks with an
    ellipsis so the bar never wraps or overflows at >=1280px; below the
    880px breakpoint the bar wraps again (see the media query). */
-.topbar{display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:nowrap;height:64px;min-height:64px}
+.topbar{display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:nowrap;height:52px;min-height:52px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
 .brand svg{flex:none}
 .wordmark{font-size:14px;font-weight:700;letter-spacing:.1px;line-height:1.15}
 .wordmark small{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .topbar .spacer{flex:1}
 .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;height:34px;padding:0 10px;font-size:13px;color:var(--muted);background:var(--panel);white-space:nowrap}
-#hostPill{min-width:0;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:13px}
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;min-width:0}
+.crumb>span[aria-hidden="true"]{color:var(--text-muted)}
+.crumb #hostPill{color:var(--text-primary);font-weight:600;font-family:var(--mono);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-sim{display:flex;align-items:center;gap:8px;flex:none}
+.topbar-sim-label{font-size:12px;font-weight:600;color:var(--text-secondary);white-space:nowrap}
 #nodeSelect{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;height:34px;padding:0 8px;font-size:13px;max-width:140px}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
-.pill.ok{color:var(--ok-text);border-color:var(--ok-border);box-shadow:0 0 0 1px var(--glow-ok),0 0 14px var(--glow-ok)}
+.pill.ok{color:var(--ok-text);border-color:var(--ok-border)}
 .pill.ok .dot{background:var(--ok-text)}
-.pill.bad{color:var(--bad-text);border-color:var(--bad-border);box-shadow:0 0 0 1px var(--glow-bad),0 0 14px var(--glow-bad)}
+.pill.bad{color:var(--bad-text);border-color:var(--bad-border)}
 .pill.bad .dot{background:var(--bad-text)}
 .spinner{width:12px;height:12px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--accent);animation:spin .7s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -140,13 +146,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd{transition:background-color var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 .pill .dot{transition:background-color var(--dur-med) var(--ease-out)}
 /* Connected-status dot breathes with a soft ring pulse. */
-.pill.ok .dot{animation:dotGlow 1.8s var(--ease-in-out) infinite}
-@keyframes dotGlow{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5);transform:scale(1)}50%{box-shadow:0 0 0 6px rgba(16,185,129,0);transform:scale(1.3)}}
 /* Chart/grade empty states breathe instead of sitting dead: the text
    stays honest ("No data yet") — only the frame pulses. No data is
    ever invented. */
 .chart-wrap .state,#gradeHero .state{animation:emptyShimmer 2.2s var(--ease-in-out) infinite}
-@keyframes emptyShimmer{0%,100%{opacity:1;border-color:var(--border-strong)}50%{opacity:.6;border-color:rgba(56,189,248,.55)}}
+@keyframes emptyShimmer{0%,100%{opacity:1;border-color:var(--border-strong)}50%{opacity:.6;border-color:var(--border)}}
 /* View entrances are choreographed (Cyber-Obsidian): the view fades,
    the heading rises, cards and panels reveal in sequence with a 45ms
    stagger set per card by assignCardStagger() (--i). Transform/opacity
@@ -161,8 +165,7 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 .view.active .card,.view.active .panel{animation:cardReveal 380ms cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--i,0)*45ms)}
 @keyframes cardReveal{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 /* Metric cards lift on hover (transform only, no layout shift). */
-.card:hover,.panel:hover{transform:translateY(-3px);border-top-color:rgba(56,189,248,.35);box-shadow:0 16px 32px -12px rgba(0,0,0,.65)}
-.card:hover::after,.panel:hover::after{opacity:1}
+.card:hover,.panel:hover{border-color:var(--border-strong)}
 /* edgeShimmer retired with the old hover lift; the top edge now brightens statically on hover. */
 /* Stat values pop subtly when a poll updates them (JS adds .tick on change). */
 .card .value.tick{animation:valueTick .3s var(--ease-out)}
@@ -182,7 +185,7 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 /* Nav active indicator: an accent bar that grows vertically into place. */
 .navbtn{position:relative}
 .navbtn::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--accent);transform:scaleY(0);transform-origin:center;transition:transform var(--dur-fast) var(--ease-out)}
-.navbtn.active::before{transform:scaleY(1);background:#38BDF8;box-shadow:0 0 10px #38BDF8}
+.navbtn.active::before{transform:scaleY(1);background:var(--accent)}
 /* Buttons lift on hover and settle on press; table rows cross-fade on hover. */
 button,.btn{transition:background-color var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 button:hover:not(:disabled),.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
@@ -197,10 +200,10 @@ td{font-variant-numeric:tabular-nums}
 .info-wrap{position:relative;display:inline-flex;vertical-align:middle;flex:none}
 .info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--border-strong,#94a3b8);background:transparent;color:var(--muted);font-size:11px;font-weight:600;line-height:1;cursor:pointer;padding:0}
 .info:hover,.info:focus-visible{color:var(--text);border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
-.tip{position:absolute;top:calc(100% + 8px);left:0;width:240px;max-width:70vw;padding:10px 12px;border-radius:10px;background:rgba(13,19,34,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);color:#e2e8f0;font-size:13px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:normal;box-shadow:0 16px 40px -12px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity 150ms var(--ease-out),transform 150ms var(--ease-out),visibility 150ms;z-index:80;pointer-events:none;white-space:normal;text-align:left}
+.tip{position:absolute;top:calc(100% + 8px);left:0;width:240px;max-width:70vw;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--border);color:var(--text-primary);font-size:13px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:normal;box-shadow:0 16px 40px -12px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity 150ms var(--ease-out),transform 150ms var(--ease-out),visibility 150ms;z-index:80;pointer-events:none;white-space:normal;text-align:left}
 .info:hover + .tip,.info:focus-visible + .tip,.info-wrap:focus-within .tip,.info.open + .tip{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
 .toasts{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:min(360px,calc(100vw - 40px))}
-.toast{position:relative;display:flex;align-items:flex-start;gap:10px;padding:12px 34px 14px 12px;border-radius:10px;border:1px solid var(--border-subtle);background:var(--bg-card);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);box-shadow:0 16px 40px -12px rgba(0,0,0,.6);overflow:hidden;animation:toastIn 200ms var(--ease-out)}
+.toast{position:relative;display:flex;align-items:flex-start;gap:10px;padding:12px 34px 14px 12px;border-radius:10px;border:1px solid var(--border-subtle);background:var(--bg-card);color:var(--text);box-shadow:var(--shadow-md);overflow:hidden;animation:toastIn 200ms var(--ease-out)}
 .toast.out{animation:toastOut 180ms var(--ease-out) forwards}
 .toast-icon{flex:none;width:18px;height:18px;margin-top:1px}
 .toast-ok .toast-icon{color:#10b981}
@@ -215,9 +218,7 @@ td{font-variant-numeric:tabular-nums}
 @keyframes toastOut{to{opacity:0;transform:translateX(24px)}}
 @keyframes toastBar{from{width:100%}to{width:0}}
 .empty-state{display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 12px;color:var(--muted);font-size:13px;text-align:center}
-.radar-dot{position:relative;flex:none;width:10px;height:10px;border-radius:50%;background:#10b981}
-.radar-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid #10b981;animation:radarPing 2s var(--ease-out) infinite}
-@keyframes radarPing{0%{transform:scale(.6);opacity:.9}80%{transform:scale(1.8);opacity:0}100%{transform:scale(1.8);opacity:0}}
+.radar-dot{position:relative;flex:none;width:8px;height:8px;border-radius:50%;background:var(--ok)}
 @media (prefers-reduced-motion:reduce){
   .spinner,.pill.ok .dot,.view.active,.view.active h1,.view.active .card,.view.active .panel,.card .value.tick,.banner.show,.inline-err.show,.inline-ok.show,.bar-row .fill,.state.loading,.tip,.toast,.toast-bar,.radar-dot::after,.tab-ind{animation:none}
   .state.loading::before{animation:none}
@@ -225,7 +226,7 @@ td{font-variant-numeric:tabular-nums}
   .navbtn::before{transition:none}
   body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pill,.badge,.themeseg,.themeseg button,.state,.note,.banner,.bar-row .track,code,.kbd,.pill .dot,td,.tip{transition:none}
   button:hover:not(:disabled),.btn:hover{transform:none}
-  .cards .card:hover,.ov-grid .card:hover{transform:none}
+  .cards .card:hover,.ov-grid > .card:hover{transform:none}
   .hero-shield,.hero-shield svg{animation:none}
   .drawer{animation:none}
 }
@@ -234,8 +235,8 @@ td{font-variant-numeric:tabular-nums}
 .themeseg button[aria-pressed="true"]{background:var(--nav-active-bg);color:var(--text);box-shadow:var(--shadow-sm)}
 button,.btn{border:1px solid var(--border-strong);background:var(--panel);color:var(--text);border-radius:8px;height:38px;padding:0 14px;font-size:13px;font-weight:500;line-height:1;cursor:pointer}
 button:hover,.btn:hover{border-color:var(--faint)}
-button.primary{background:linear-gradient(135deg,#0284C7,#2563EB);border-color:#0284C7;color:var(--accent-ink);font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 1px 2px rgba(0,0,0,.3)}
-button.primary:hover{filter:brightness(1.12);border-color:#0284C7}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600;box-shadow:none}
+button.primary:hover{border-color:var(--accent-hover)}
 button:disabled{opacity:.5;cursor:default}
 input,select,textarea{color:var(--text);background:var(--input-bg);border:1px solid var(--border-strong);border-radius:8px;height:38px;padding:0 12px;font-size:13px;line-height:1.2}
 textarea{height:auto;min-height:38px;padding:10px 12px;line-height:1.5}
@@ -249,21 +250,7 @@ textarea{height:auto;min-height:38px;padding:10px 12px;line-height:1.5}
 .navbtn svg{flex:none}
 .navbtn:hover{background:var(--panel-2);color:var(--text)}
 .navbtn.active{background:var(--nav-active-bg);color:var(--text);font-weight:600}
-.navbtn svg{color:var(--nav-acc,#94a3b8)}
-.navbtn[data-view="overview"]{--nav-acc:#10b981}
-.navbtn[data-view="domains"]{--nav-acc:#06b6d4}
-.navbtn[data-view="rules"]{--nav-acc:#f87171}
-.navbtn[data-view="iplists"]{--nav-acc:#a78bfa}
-.navbtn[data-view="stage"]{--nav-acc:#f59e0b}
-.navbtn[data-view="logs"]{--nav-acc:#38bdf8}
-.navbtn[data-view="settings"]{--nav-acc:#94a3b8}
-.navbtn[data-view="reports"]{--nav-acc:#818cf8}
-.navbtn[data-view="insights"]{--nav-acc:#a78bfa}
-.navbtn[data-view="approvals"]{--nav-acc:#fbbf24}
-.navbtn[data-view="accounts"]{--nav-acc:#22d3ee}
-.navbtn[data-view="about"]{--nav-acc:#94a3b8}
-.navbtn.active{background:linear-gradient(90deg,rgba(56,189,248,.20),rgba(56,189,248,.05) 70%,transparent)}
-.navbtn.active svg{filter:drop-shadow(0 0 6px currentColor)}
+.navbtn svg{color:var(--text-secondary)}
 .navbtn.active::before{width:3px}
 .navbtn .tag{margin-left:auto;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
 .main{flex:1;padding:24px;min-width:0}
@@ -278,38 +265,21 @@ h2{font-size:14px;line-height:1.35;font-weight:600;margin:0 0 6px;letter-spacing
 
 /* Cards, panels, tables */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px;margin-bottom:20px}
-.card{background:var(--panel-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:none}
 .card .label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
 .card .value{font-size:28px;font-weight:700;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums;font-family:var(--mono);color:var(--text)}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
 .card .foot{font-size:11px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);margin-top:20px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:none;margin-top:20px}
 /* 3D Frosted Glass Slab (dark default): exact slab spec — blur 20px
    plus the deep drop + inner top highlight. The tokens above already
    carry the slab background and borders in dark mode. */
-:root[data-theme="dark"] .card,:root[data-theme="dark"] .panel{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 20px 40px -15px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.1),0 0 28px -14px var(--acc,#38bdf8)}
 /* Colourful 3D glass: every card family carries its own accent —
    emerald for requests/traffic, cyan for CPU/RAM/server, amber for
    Stage, violet/indigo for security/grade, red only for attack/block.
    The accent shows as a gradient top edge + soft outer glow; the
    value text stays white for contrast. */
-.card,.panel{position:relative;--acc:#38bdf8;transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease,background-color 220ms ease}
-.card::after,.panel::after{content:"";position:absolute;top:-1px;left:16px;right:16px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.85;box-shadow:0 0 10px var(--acc);pointer-events:none}
-.ov-grid .card:nth-child(1){--acc:#10b981}
-.ov-grid .card:nth-child(2){--acc:#06b6d4}
-.ov-grid .card:nth-child(3){--acc:#8b5cf6}
-#view-reports .cards .card:nth-child(1){--acc:#10b981}
-#view-reports .cards .card:nth-child(2){--acc:#06b6d4}
-#view-reports .cards .card:nth-child(3){--acc:#f59e0b}
-#view-reports .cards .card:nth-child(4){--acc:#8b5cf6}
-#view-insights .ins-hero .panel:nth-child(1){--acc:#8b5cf6}
-#view-insights .ins-hero .panel:nth-child(2){--acc:#06b6d4}
-#view-domains .card,#view-domains .panel{--acc:#10b981}
-#view-stage .cards .card:nth-child(1){--acc:#f59e0b}
-#view-stage .cards .card:nth-child(2){--acc:#10b981}
-#view-stage .cards .card:nth-child(3){--acc:#ef4444}
-.ip-allow{--acc:#10b981}
-.ip-block{--acc:#ef4444}
+.card,.panel{position:relative;transition:border-color 220ms ease,background-color 220ms ease}
 /* Frosted glass specular left edge (dark only; light keeps flat borders). */
 :root[data-theme="dark"] .card,:root[data-theme="dark"] .panel{border-left:1px solid rgba(255,255,255,.08)}
 .panel > h2:first-child{margin-top:0}
@@ -329,9 +299,9 @@ tbody tr:hover td{background:var(--panel-2)}
 .muted{color:var(--muted)}
 .small{font-size:13px}
 .badge{display:inline-block;border-radius:3px;padding:1px 8px;font-size:11px;font-weight:600;letter-spacing:.06em;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
-.badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg);box-shadow:0 0 10px var(--glow-ok)}
-.badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg);box-shadow:0 0 10px var(--glow-warn)}
-.badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg);box-shadow:0 0 10px var(--glow-bad)}
+.badge.stage1{color:var(--ok-text);border-color:var(--ok-border);background:var(--ok-bg)}
+.badge.stage2{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg)}
+.badge.stage3,.badge.block{color:var(--bad-text);border-color:var(--bad-border);background:var(--bad-bg)}
 .bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
 .bar-row .lbl{width:44px;flex:none;font-family:var(--mono);font-size:13px}
 .bar-row .track{flex:1;height:8px;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
@@ -344,28 +314,22 @@ tbody tr:hover td{background:var(--panel-2)}
 .chart-legend{display:flex;gap:16px;align-items:center;font-size:13px;color:var(--muted)}
 .legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .legend-dot{width:10px;height:10px;border-radius:2px;flex:none}
-.legend-total{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,.7)}
+.legend-total{background:var(--text-primary)}
 .legend-bypass{background:var(--bypass)}
 .chart-wrap{position:relative}
 .chart-svg{width:100%;height:auto;display:block}
-.chart-area{fill:#10b981;fill-opacity:.10}
-:root[data-theme="dark"] .chart-area{fill-opacity:.28}
-.chart-area-ram{fill:var(--info);fill-opacity:.10}
-:root[data-theme="dark"] .chart-area-ram{fill-opacity:.28}
-.chart-line-total{stroke:#10b981;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(16,185,129,.55))}
+.chart-line-total{stroke:var(--text-primary);stroke-width:1.5}
 /* The bypassed series is dashed as well as grey, so the two series stay
    distinguishable without relying on color alone. */
-.chart-line-bypass{stroke:#94a3b8;stroke-dasharray:5 3;stroke-width:2;filter:drop-shadow(0 0 4px rgba(148,163,184,.4))}
-.chart-line-bypass-blue{stroke:#3b82f6;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(59,130,246,.6))}
-.chart-scanline{stroke:#10b981;stroke-width:1.5;opacity:.75;filter:drop-shadow(0 0 6px rgba(16,185,129,.8));animation:scanSweep 3s linear infinite}
-@keyframes scanSweep{from{transform:translateX(0)}to{transform:translateX(1120px)}}
-.legend-bypass-blue{background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.7)}
-.chart-line-cpu{stroke:#06b6d4;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(6,182,212,.55))}
-.chart-line-ram{stroke:#38bdf8;stroke-width:2.5;filter:drop-shadow(0 0 5px rgba(56,189,248,.55))}
+.chart-line-bypass{stroke:var(--text-secondary);stroke-dasharray:5 3;stroke-width:1.5}
+.chart-line-bypass-blue{stroke:var(--ok);stroke-width:1.5}
+.legend-bypass-blue{background:var(--ok)}
+.chart-line-cpu{stroke:var(--text-primary);stroke-width:1.5}
+.chart-line-ram{stroke:var(--text-secondary);stroke-width:1.5}
 /* Chart furniture: axis + gridlines always render, so a zero-traffic
    chart reads as a working chart at zero rather than a broken one. */
-.chart-grid{stroke:rgba(148,163,184,.28);stroke-width:1;vector-effect:non-scaling-stroke}
-.chart-axis{stroke:rgba(148,163,184,.5);stroke-width:1;vector-effect:non-scaling-stroke}
+.chart-grid{stroke:var(--border);stroke-width:1;vector-effect:non-scaling-stroke}
+.chart-axis{stroke:var(--border-strong);stroke-width:1;vector-effect:non-scaling-stroke}
 .chart-label{font-size:11px;fill:var(--faint);font-family:var(--font)}
 .chart-sm .chart-label{font-size:11px}
 .chart-ylabel{text-anchor:end}
@@ -391,10 +355,6 @@ tbody tr:hover td{background:var(--panel-2)}
 
 /* Firewall expressions and rule JSON are mono (JetBrains Mono). */
 #ruleExpr,#simExpr,#importJson,#ruleSchedule{font-family:var(--mono)}
-.chart-grad-a{stop-color:#10b981;stop-opacity:.32}
-.chart-grad-b{stop-color:#10b981;stop-opacity:0}
-.chart-grad-a-info{stop-color:var(--info);stop-opacity:.32}
-.chart-grad-b-info{stop-color:var(--info);stop-opacity:0}
 .note{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel-2);border-radius:var(--radius);padding:12px 16px;margin:16px 0;color:var(--muted)}
 .note strong{color:var(--text)}
 .note.info{border-left-color:var(--info)}
@@ -431,95 +391,112 @@ button.small{padding:0 10px;font-size:13px}
 .inline-ok.show{display:block}
 tr.clickable{cursor:pointer}
 tr.selected td{background:var(--nav-active-bg)}
-/* Overview 12-column grid: KPI row (3+3+2+2+2), totals row (4+4+4),
-   full-width chart rows, then a 50/50 split. Stagger matches the
-   card entrance; spans collapse to 6/12 under 880px. */
+/* Overview 12-column grid: .kpi-row spans all 12 columns (its own
+   4-col inner grid), totals row (4+4+4), full-width chart rows, then
+   a 50/50 split. Stagger matches the card entrance; spans collapse
+   to 6/12 under 880px. NOTE: .ov-grid rules MUST use the direct-child
+   combinator (>) — descendant selectors leak into the nested .kpi-row
+   cards and collapse the whole row into one narrow column. */
 .ov-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin-bottom:12px}
-.ov-grid .card{grid-column:span 3}
+.ov-grid > .card{grid-column:span 3}
 .span-2{grid-column:span 2!important}
 .span-3{grid-column:span 3!important}
 .span-4{grid-column:span 4!important}
 .span-6{grid-column:span 6!important}
 .span-12{grid-column:span 12!important}
 /* .ov-grid cards use the generic .view.active .card cardReveal rule above. */
-.view.active .ov-grid .card:nth-child(1){animation-delay:.03s}
-.view.active .ov-grid .card:nth-child(2){animation-delay:.06s}
-.view.active .ov-grid .card:nth-child(3){animation-delay:.09s}
-.view.active .ov-grid .card:nth-child(4){animation-delay:.12s}
-.view.active .ov-grid .card:nth-child(5){animation-delay:.15s}
-.view.active .ov-grid .card:nth-child(6){animation-delay:.18s}
-.view.active .ov-grid .card:nth-child(7){animation-delay:.21s}
-.view.active .ov-grid .card:nth-child(8){animation-delay:.24s}
+.view.active .ov-grid > .card:nth-child(1){animation-delay:.03s}
+.view.active .ov-grid > .card:nth-child(2){animation-delay:.06s}
+.view.active .ov-grid > .card:nth-child(3){animation-delay:.09s}
+.view.active .ov-grid > .card:nth-child(4){animation-delay:.12s}
+.view.active .ov-grid > .card:nth-child(5){animation-delay:.15s}
+.view.active .ov-grid > .card:nth-child(6){animation-delay:.18s}
+.view.active .ov-grid > .card:nth-child(7){animation-delay:.21s}
+.view.active .ov-grid > .card:nth-child(8){animation-delay:.24s}
 /* Overview KPI row (reference design): 4 equal cards, 16px gap, teal
    top glow. The 26px numbers / 16px gap are the user's latest explicit
    spec and win over the design-system 28px / 20px FOR THIS ROW ONLY. */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+.kpi-row{display:grid;grid-column:1 / -1;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 @media (max-width:1100px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.kpi-row{grid-template-columns:1fr}}
-.kpi-row .card{--acc:#2DD4BF;background:radial-gradient(120% 90% at 50% 0%,rgba(45,212,191,.10),transparent 55%),rgba(13,19,31,.85);border:1px solid rgba(255,255,255,.08);border-radius:14px;box-shadow:inset 0 1px 1px rgba(45,212,191,.35),0 10px 25px -5px rgba(0,0,0,.6)}
-.kpi-row .card:hover{box-shadow:inset 0 1px 1px rgba(45,212,191,.35),0 16px 32px -12px rgba(0,0,0,.65)}
-.kpi-label{font-size:13px;font-weight:600;color:#94A3B8}
-.kpi-value{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:26px;font-weight:700;line-height:1.2;color:#fff;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi-row .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:none}
+.kpi-row .card:hover{border-color:var(--border-strong)}
+.kpi-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+.kpi-value{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:26px;font-weight:700;line-height:1.2;color:var(--text-primary);font-variant-numeric:tabular-nums;margin-top:2px}
 .kpi-row .kpi-value.tick{animation:valueTick .3s var(--ease-out)}
-.kpi-foot{font-size:11px;color:#64748B;margin-top:2px}
+.kpi-foot{font-size:11px;color:var(--text-muted);margin-top:2px}
 .kpi-spark{display:block;width:100%;height:48px;margin-top:10px}
-.kpi-spark .kpi-line{fill:none;stroke-width:2;stroke-linecap:round}
-.kpi-spark-total .kpi-line{filter:drop-shadow(0 0 4px rgba(45,212,191,.55))}
-.kpi-spark-bypass .kpi-line{filter:drop-shadow(0 0 4px rgba(16,185,129,.55))}
-.kpi-spark .kpi-area{stroke:none}
-.kpi-sysline{font-size:16px;font-weight:700;color:#fff;margin-top:2px;white-space:nowrap}
+.kpi-spark .kpi-line{fill:none;stroke-width:1.5;stroke-linecap:round}
+.kpi-spark-total .kpi-line{stroke:var(--text-secondary)}
+.kpi-spark-bypass .kpi-line{stroke:var(--ok)}
+.kpi-sysline{font-size:16px;font-weight:700;color:var(--text-primary);margin-top:2px;white-space:nowrap}
 .kpi-sysline .kpi-sep{color:#64748B;margin:0 8px;font-weight:400}
 .kpi-widgets{display:flex;gap:12px;margin-top:10px}
 .kpi-widget{flex:1;min-width:0;display:flex;align-items:center;gap:6px}
 .kpi-dial{width:76px;height:41px;flex:none}
-.kpi-dial .kpi-arc-bg{fill:none;stroke:rgba(255,255,255,.12);stroke-width:7;stroke-linecap:round}
-.kpi-dial .kpi-arc{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .5s var(--ease-out)}
-.kpi-dial .kpi-needle{stroke:#E2E8F0;stroke-width:2.5;stroke-linecap:round;transform-box:view-box;transform-origin:60px 58px;transition:transform .5s var(--ease-out)}
+.kpi-dial .kpi-arc-bg{fill:none;stroke:var(--border);stroke-width:5;stroke-linecap:round}
+.kpi-dial .kpi-arc{fill:none;stroke:var(--text-secondary);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .5s var(--ease-out)}
+.kpi-dial .kpi-needle{stroke:var(--text-primary);stroke-width:2;stroke-linecap:round;transform-box:view-box;transform-origin:60px 58px;transition:transform .5s var(--ease-out)}
+.kpi-dial circle{fill:var(--text-primary)}
 .kpi-mini{display:block;flex:1;min-width:0;height:40px}
 .kpi-mini .kpi-line{fill:none;stroke-width:2;stroke-linecap:round}
-.kpi-mini-cpu .kpi-line{filter:drop-shadow(0 0 3px rgba(16,185,129,.5))}
-.kpi-mini-ram .kpi-line{filter:drop-shadow(0 0 3px rgba(56,189,248,.5))}
+.kpi-mini-cpu .kpi-line{stroke:var(--text-secondary)}
+.kpi-mini-ram .kpi-line{stroke:var(--text-secondary)}
 .kpi-stage{margin-top:6px}
 .kpi-stage .badge{font-size:13px;padding:5px 12px;border-radius:999px;letter-spacing:0}
 /* Overview hero: title + live stage badge on the left, a custom
    isometric shield/node graphic on the right. The graphic glows
    emerald while connected and calm, amber while under attack or at
    Stage 2, red at Stage 3+; grey while disconnected. */
-.hero{display:block;background:linear-gradient(135deg,var(--hero-1),var(--hero-2));margin-top:0}
+.hero{display:block;background:var(--panel);margin-top:0}
 .hero-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-.hero-sim{display:flex;align-items:center;gap:10px;flex:none;padding-top:6px}
-.hero-sim-label{font-size:13px;color:var(--muted);font-weight:600}
 .hero h1{margin:0 0 4px}
 .hero .sub{margin:0}
 .hero-status{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-.hero-shield{position:relative;--hero-glow:rgba(100,116,139,.35);filter:drop-shadow(0 0 14px var(--hero-glow));animation:heroPulse 3.2s var(--ease-in-out) infinite}
-.hero-shield::before{content:"";position:absolute;inset:-34px -24px;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,rgba(16,185,129,.30),rgba(6,182,212,.13) 55%,transparent 75%);animation:heroGlowBreathe 3.2s var(--ease-in-out) infinite;pointer-events:none}
-@keyframes heroGlowBreathe{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
-.hero-shield.ok::before{background:radial-gradient(closest-side,rgba(16,185,129,.34),rgba(6,182,212,.15) 55%,transparent 75%)}
-.hero-shield.warn::before,.hero-shield.bad::before{background:radial-gradient(closest-side,rgba(239,68,68,.34),rgba(245,158,11,.15) 55%,transparent 75%)}
-.hero-shield{margin-top:14px;height:320px;overflow:hidden}
+.hero-shield{position:relative}
+.hero-shield{margin-top:14px;height:220px;overflow:hidden}
 .flow-svg{display:block;width:100%;height:100%}
+/* Refined Architectural Request Pipeline (matte schematic, 220px).
+   Thin 1px dashed paths, 4px dots, flat #111216 nodes, 1px hairlines.
+   All fills/strokes read the theme vars so the diagram follows the
+   light theme too; SVG presentation attributes below are fallbacks. */
+#flowSvg .sch-box{fill:var(--panel);stroke:var(--border)}
+#flowSvg .sch-title{fill:var(--text-primary)}
+#flowSvg .sch-label{fill:var(--text-secondary)}
+#flowSvg .sch-sub{fill:var(--text-muted)}
+#flowSvg .sch-row{fill:var(--panel-2)}
+#flowSvg .sch-row-text{fill:var(--text-secondary)}
+#flowSvg .sch-stage{fill:var(--accent-warn)}
+#flowSvg .sch-stage-text{fill:#090A0D}
+#flowSvg .sch-dot-ok{fill:var(--accent-safe)}
+#flowSvg .sch-dot-bad{fill:var(--accent-danger)}
+#flowSvg .sch-bar{fill:var(--text-muted);opacity:.5}
+#flowSvg .sch-lane{fill:none;stroke-width:1;stroke-dasharray:4 4}
+#flowSvg #flowLaneIn{stroke:var(--text-muted)}
+#flowSvg #flowLaneBot{stroke:var(--text-muted)}
+#flowSvg #flowLaneOut{stroke:var(--accent-safe)}
+#flowSvg #flowLaneBlocked{stroke:var(--accent-danger)}
+#flowSvg #flowArrow path{fill:var(--text-muted)}
+#flowSvg #flowArrowGreen path{fill:var(--accent-safe)}
+#flowSvg #flowArrowRed path{fill:var(--accent-danger)}
+#flowSvg #flowShieldFlash{fill:var(--accent-danger)}
+#flowSvg #flowBlockedBox{stroke:var(--accent-danger)}
+#flowSvg .flow-blocked-dash{stroke:var(--accent-danger)}
+#flowSvg .flow-blocked-text{fill:var(--accent-danger)}
+#flowSvg .flow-blocked-sub{fill:var(--text-muted)}
+#flowSvg #flowPassed{fill:var(--accent-safe)}
+#flowSvg g{font-family:var(--font)}
+#flowSvg .sch-div{stroke:var(--border)}
+
 .flow-enter{animation:flowEnter .7s cubic-bezier(.22,1,.36,1) backwards}
 @keyframes flowEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.flow-shine{animation:flowShine 4.8s ease-in-out 1.2s infinite}
-@keyframes flowShine{0%{transform:translateY(0);opacity:0}10%{opacity:.14}30%{transform:translateY(40px);opacity:.14}60%{transform:translateY(40px);opacity:.14}75%{transform:translateY(80px);opacity:.14}90%{transform:translateY(80px);opacity:.14}100%{transform:translateY(0);opacity:0}}
-.flow-blocked-dash{animation:flowBlockedPulse 4.8s ease-in-out 2.4s infinite}
-@keyframes flowBlockedPulse{0%,55%{opacity:1}62%{opacity:.35}75%{opacity:1}100%{opacity:1}}
 .stage-hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;pointer-events:none;z-index:2}
 .stage-hud-top{display:flex;gap:8px;flex-wrap:wrap}
 .stage-hud-bottom{display:flex;justify-content:center}
-.stage-badge-alert{background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.6);color:#fca5a5;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em;animation:alertPulse 1.6s var(--ease-in-out) infinite}
-@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}50%{box-shadow:0 0 18px 2px rgba(239,68,68,.5)}}
-.stage-badge-sim{background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.6);color:#fcd34d;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em}
+.stage-badge-alert{background:var(--bad-bg);border:1px solid var(--bad-border);color:var(--bad-text);padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em}
+.stage-badge-sim{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-text);padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em}
 .stage-idle{color:var(--muted);font-size:11px;background:rgba(2,6,23,.45);border:1px solid var(--border);padding:4px 10px;border-radius:999px}
-.sim-switch[aria-checked="true"]{background:#dc2626;border-color:#ef4444;box-shadow:0 0 0 1px var(--ring),0 0 18px rgba(239,68,68,.65)}
-@media (max-width:640px){.hero-shield{height:260px}}
-.hero-shield.ok{--hero-glow:rgba(16,185,129,.45)}
-.hero-shield.warn{--hero-glow:rgba(245,158,11,.5)}
-.hero-shield.bad{--hero-glow:rgba(239,68,68,.55)}
-.hero-shield.off{--hero-glow:rgba(100,116,139,.3);animation:none}
-@keyframes heroPulse{50%{filter:drop-shadow(0 0 26px var(--hero-glow))}}
-@keyframes heroFloat{50%{transform:translateY(-3px)}}
+.sim-switch[aria-checked="true"]{background:var(--accent-danger);border-color:var(--accent-danger);box-shadow:0 0 0 1px var(--ring)}
 /* Bottom split row: Top IPs | Unknown Fingerprints, 50/50. */
 .ov-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .ov-split .panel{margin-top:0}
@@ -531,7 +508,7 @@ tr.selected td{background:var(--nav-active-bg)}
    250ms cubic-bezier(.25,1,.5,1) to the selected tab (JS positions
    it in moveTabInd; the selected tab's own border-bottom stays as
    the no-JS fallback underneath it). */
-.tab-ind{position:absolute;bottom:-1px;left:0;height:2px;width:0;background:var(--accent-primary,#38BDF8);border-radius:2px;box-shadow:0 0 8px rgba(56,189,248,.7);transition:left 250ms cubic-bezier(.25,1,.5,1),width 250ms cubic-bezier(.25,1,.5,1),opacity 250ms cubic-bezier(.25,1,.5,1);pointer-events:none;opacity:0;z-index:1}
+.tab-ind{position:absolute;bottom:-1px;left:0;height:2px;width:0;background:var(--accent-primary);border-radius:2px;transition:left 250ms cubic-bezier(.25,1,.5,1),width 250ms cubic-bezier(.25,1,.5,1),opacity 250ms cubic-bezier(.25,1,.5,1);pointer-events:none;opacity:0;z-index:1}
 .fwtab-btn,.subtab-btn{border:none;background:transparent;height:38px;padding:0 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0}
 .fwtab-btn:hover,.subtab-btn:hover{color:var(--text);background:var(--panel-2)}
 .fwtab-btn[aria-selected="true"],.subtab-btn[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
@@ -555,10 +532,10 @@ tr.selected td{background:var(--nav-active-bg)}
 .qa-col input{max-width:100%}
 /* Sticky settings bar: floats at the viewport bottom while the form
    scrolls, hidden until a change is made. */
-.stickybar{position:sticky;bottom:12px;z-index:20;background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:10px 14px;margin-top:16px}
+.stickybar{position:sticky;bottom:12px;z-index:20;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:10px 14px;margin-top:16px}
 /* Report KPI icons: small Lucide-style glyphs with a soft accent glow. */
 .rep-kpis .card{position:relative}
-.rep-kpi-ico{position:absolute;top:12px;right:14px;color:var(--accent-text);filter:drop-shadow(0 0 6px var(--ring));opacity:.9}
+.rep-kpi-ico{position:absolute;top:12px;right:14px;color:var(--accent-text);opacity:.9}
 .rep-kpis .card .label{padding-right:28px}
 .card .foot .badge{margin:2px 4px 0 0}
 /* Security-grade radial gauge: live score drives the ring; the ring
@@ -568,9 +545,9 @@ tr.selected td{background:var(--nav-active-bg)}
 .grade-ring{width:148px;height:148px;display:block}
 .grade-ring-bg{fill:none;stroke:var(--panel-2);stroke-width:9}
 .grade-ring-fg{fill:none;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .6s var(--ease-out)}
-.grade-ring-fg.ok{stroke:var(--ok-text);filter:drop-shadow(0 0 10px var(--glow-ok))}
-.grade-ring-fg.warn{stroke:var(--amber);filter:drop-shadow(0 0 10px var(--glow-warn))}
-.grade-ring-fg.bad{stroke:var(--bad-text);filter:drop-shadow(0 0 10px var(--glow-bad))}
+.grade-ring-fg.ok{stroke:var(--ok-text)}
+.grade-ring-fg.warn{stroke:var(--amber)}
+.grade-ring-fg.bad{stroke:var(--bad-text)}
 .grade-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
 .grade-letter{font-size:28px;font-weight:700;line-height:1}
 .grade-score{font-size:13px;color:var(--muted);margin-top:4px}
@@ -579,7 +556,7 @@ tr.selected td{background:var(--nav-active-bg)}
 /* Rule drawer: slide-over from the right, full-width on mobile.
    Backdrop click and Escape close it; focus moves to the first
    field on open and returns to the opener on close. */
-.drawer-overlay{position:fixed;inset:0;background:rgba(2,6,23,.62);backdrop-filter:blur(4px);z-index:60;display:flex;justify-content:flex-end}
+.drawer-overlay{position:fixed;inset:0;background:rgba(2,6,23,.62);z-index:60;display:flex;justify-content:flex-end}
 .drawer{background:var(--panel);width:min(600px,100%);height:100%;overflow-y:auto;padding:20px 24px 32px;box-shadow:var(--shadow-lg);border-left:1px solid var(--border);animation:drawerIn .3s var(--ease-out)}
 @keyframes drawerIn{from{transform:translateX(48px);opacity:0}to{transform:translateX(0);opacity:1}}
 .drawer-overlay{animation:overlayIn .25s var(--ease-out)}
@@ -602,48 +579,28 @@ tr.selected td{background:var(--nav-active-bg)}
   .server-grid{grid-template-columns:1fr}
   .bar-row.wide .lbl{width:120px}
   .bar-row.wide .val{width:76px}
-  .ov-grid .card{grid-column:span 6}
-  .ov-grid .span-2,.ov-grid .span-4{grid-column:span 6!important}
+  .ov-grid > .card{grid-column:span 6}
+  .ov-grid > .span-2,.ov-grid > .span-4{grid-column:span 6!important}
   .ov-split{grid-template-columns:1fr}
   .dom-inspector,.import-grid,.rep-mid,.ins-hero{grid-template-columns:1fr}
   .hero{grid-template-columns:1fr}
 }
-/* ===== Visual engine overhaul: luxury obsidian command center =====
-   Animated mesh glow, frosted glass, 3D tilt + spotlight, pill
-   toggles, segmented controls, terminal console, stage rings.
-   All motion is transform/opacity only and lives inside the
-   prefers-reduced-motion guard below. */
-/* Ambient mesh aurora: four slow-drifting radial glows behind the
-   content — emerald #10b981, cyan #06b6d4, deep indigo #3b82f6, violet
-   #8b5cf6. Fixed layer, pointer-transparent, paused when the tab is
-   hidden (JS toggles .anim-paused on <html>). Opacities are deliberately
-   strong in dark mode: the previous 0.12–0.22 orbs were invisible in
-   screenshots. The top bar and sidebar are translucent in dark mode
-   so the glow shows through instead of hiding behind solid panels. */
-.mesh{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(720px 460px at 76% 12%,rgba(16,185,129,.30),transparent 70%),radial-gradient(560px 380px at 22% 8%,rgba(139,92,246,.20),transparent 70%)}
-.mesh::before,.mesh::after{content:"";position:absolute;border-radius:50%;filter:blur(60px);animation:meshDrift 36s ease-in-out infinite alternate}
-.mesh::before{width:720px;height:720px;left:-140px;top:-180px;background:radial-gradient(circle,rgba(6,182,212,.38),transparent 62%)}
-.mesh::after{width:780px;height:780px;right:-180px;bottom:-260px;background:radial-gradient(circle,rgba(59,130,246,.36),transparent 62%);animation-delay:-18s}
-@keyframes meshDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(90px,60px,0) scale(1.14)}}
-:root.anim-paused .mesh::before,:root.anim-paused .mesh::after{animation-play-state:paused}
-:root[data-theme="light"] .mesh{opacity:.5}
-:root[data-theme="dark"] .topbar{background:rgba(5,7,14,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-:root[data-theme="dark"] .sidebar{background:var(--bg-sidebar);border-right:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+/* ===== Matte Minimal system: flat #090A0D canvas, #111216 cards,
+   1px #1E2028 hairlines, 8px radius. No glow, no gradients, no
+   glass blur. Pill toggles, segmented controls, terminal console,
+   stage rings. All motion is transform/opacity only and lives
+   inside the prefers-reduced-motion guard below. */
+:root[data-theme="dark"] .topbar{background:var(--surface)}
+:root[data-theme="dark"] .sidebar{background:var(--bg-sidebar);border-right:1px solid var(--border)}
 html{background:var(--bg)}
 .layout,.topbar{position:relative;z-index:1}
-/* 3D tilt + cursor spotlight (JS adds .tilt to KPI cards and heroes;
-   pointer devices only, disabled under reduced-motion). */
-.tilt{position:relative;overflow:hidden;will-change:transform;transform-style:preserve-3d}
-.tilt::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgba(125,211,252,.14),transparent 70%);opacity:0;transition:opacity var(--dur-med) var(--ease-out);pointer-events:none}
-.tilt:hover::before{opacity:1}
 /* Pill toggle switch: tactile, spring thumb, glowing on-state.
    The underlying <select> stays in the DOM (visually hidden) and
    keeps its id/value/handlers; the switch syncs both ways. */
 .switch{position:relative;display:inline-flex;align-items:center;flex:none;width:48px;height:26px;padding:0;border:1px solid var(--border-strong);border-radius:999px;background:var(--panel-2);cursor:pointer;transition:background-color .28s cubic-bezier(.34,1.56,.64,1),border-color .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s cubic-bezier(.34,1.56,.64,1)}
 .switch:hover{transform:none;box-shadow:none}
 .switch .switch-thumb{position:absolute;left:2px;top:2px;width:20px;height:20px;border-radius:50%;background:#e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.45);transition:transform .28s cubic-bezier(.34,1.56,.64,1),background-color .25s}
-.switch[aria-checked="true"]{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 1px var(--ring),0 0 18px rgba(56,189,248,.65),0 0 4px rgba(56,189,248,.5);animation:switchPulse 2.4s var(--ease-in-out) infinite}
-@keyframes switchPulse{50%{box-shadow:0 0 0 1px var(--ring),0 0 26px rgba(56,189,248,.8),0 0 6px rgba(56,189,248,.6)}}
+.switch[aria-checked="true"]{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 1px var(--ring)}
 .switch[aria-checked="true"] .switch-thumb{transform:translateX(22px);background:#fff}
 .switch-underlying{position:absolute!important;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;opacity:0}
 /* Sun/Moon theme switch: wider pill, icons at both ends, thumb slides. */
@@ -653,8 +610,8 @@ html{background:var(--bg)}
 .theme-switch .theme-icon{position:absolute;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint);pointer-events:none}
 .theme-switch .theme-icon.sun{left:7px}
 .theme-switch .theme-icon.moon{right:7px}
-.theme-switch[aria-checked="true"] .theme-icon.moon{color:#fde68a}
-.theme-switch[aria-checked="false"] .theme-icon.sun{color:#fbbf24}
+.theme-switch[aria-checked="true"] .theme-icon.moon{color:var(--muted)}
+.theme-switch[aria-checked="false"] .theme-icon.sun{color:var(--muted)}
 /* Segmented 3D pill control (stage selector): sliding indicator
    behind the active button; JS positions it, never transitionend. */
 .segcontrol{position:relative;display:inline-flex;gap:2px;padding:3px;border:1px solid var(--border);border-radius:999px;background:var(--panel-2)}
@@ -674,8 +631,7 @@ html{background:var(--bg)}
 /* Stage 3D status rings: conic ring around a soft disc, slow spin;
    state classes come from the live stage values (JS). */
 .stage-ring-card{position:relative}
-.stage-ring-card .ring{position:absolute;top:12px;right:14px;width:44px;height:44px;border-radius:50%;background:conic-gradient(from 0deg,var(--ring-c,#64748b),transparent 70%,var(--ring-c,#64748b));-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%);mask:radial-gradient(circle,transparent 58%,#000 60%);animation:ringSpin 6s linear infinite;opacity:.9}
-@keyframes ringSpin{to{transform:rotate(360deg)}}
+.stage-ring-card .ring{position:absolute;top:12px;right:14px;width:44px;height:44px;border-radius:50%;background:conic-gradient(from 0deg,var(--ring-c,#64748b),transparent 70%,var(--ring-c,#64748b));-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%);mask:radial-gradient(circle,transparent 58%,#000 60%);opacity:.9}
 .stage-ring-card.ring-ok{--ring-c:#10b981}
 .stage-ring-card.ring-warn{--ring-c:#f59e0b}
 .stage-ring-card.ring-bad{--ring-c:#ef4444}
@@ -725,20 +681,18 @@ html{background:var(--bg)}
 .terminal-head-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 /* Reduced motion: everything new goes still too. */
 @media (prefers-reduced-motion:reduce){
-  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.flow-enter,.flow-shine,.flow-blocked-dash,.hero-shield::before,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"],.stage-badge-alert,.chart-scanline,.drawer,.drawer-overlay{animation:none}
+  .stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.flow-enter,.chart-wrap .state,#gradeHero .state,.pill.ok .dot,.switch[aria-checked="true"],.stage-badge-alert,.drawer,.drawer-overlay{animation:none}
   .switch,.switch .switch-thumb,.seg-indicator,.stage-matrix,.ls-collapsible,#maintForm .maint-extra{transition:none}
-  .tilt{transform:none}
 }
 </style>__BRAND_STYLE__
 </head>
 <body data-theme="dark">
-<div class="mesh" aria-hidden="true"></div>
 <header class="topbar">
   <span class="brand">
     __BRAND_MARK__
     <span class="wordmark">__BRAND_NAME__<small data-i18n="brandSub">Dashboard</small></span>
   </span>
-  <span class="pill" id="hostPill" data-i18n-title="hostPillTitle" title="Domain in the address bar">host: —</span>
+  <nav class="crumb" aria-label="Breadcrumb"><span>SonuShield</span><span aria-hidden="true">/</span><span>Production</span><span aria-hidden="true">/</span><span id="hostPill" data-i18n-title="hostPillTitle" title="Domain in the address bar">—</span></nav>
   <span class="pill" id="nodeWrap" hidden><span data-i18n="cpNodeLabel">Node</span><select id="nodeSelect" data-i18n-aria="cpNodeAria" aria-label="Proxy node"></select></span>
   <span class="pill" id="cpUserPill" data-i18n-title="cpUserTitle" title="Signed-in account" hidden></span>
   <div class="spacer"></div>
@@ -753,6 +707,7 @@ html{background:var(--bg)}
     <button type="button" data-lang-choice="hi" aria-pressed="false">हिन्दी</button>
   </span>
   <span class="pill" id="connPill"><span class="dot"></span><span id="connText" data-i18n="notConnected">Not connected</span></span>
+  <span class="topbar-sim"><span class="topbar-sim-label" data-i18n="simAttackLabel">Test Attack Simulation</span><button type="button" class="switch sim-switch" id="simAttackSwitch" role="switch" aria-checked="false" data-i18n-aria="simAttackAria" aria-label="Toggle test attack simulation"><span class="switch-thumb"></span></button></span>
   <button id="refreshBtn" type="button" disabled data-i18n="refreshBtn">Refresh</button>
   <button id="reloadBtn" type="button" disabled data-i18n="reloadBtn">Reload config</button>
   <button id="disconnectBtn" type="button" disabled data-i18n="disconnectBtn">Forget secret</button>
@@ -805,67 +760,58 @@ html{background:var(--bg)}
             <p class="sub"><span data-i18n="ovSubPre">Live traffic for </span><strong id="ovDomain">—</strong><span data-i18n="ovSubPost">. Updates every 3 seconds while connected.</span></p>
             <div class="hero-status"><span id="heroStage">—</span><span class="muted small" data-i18n="fromStageApiShort">from the stage API</span></div>
           </div>
-          <div class="hero-sim">
-            <span class="hero-sim-label" data-i18n="simAttackLabel">Test Attack Simulation</span>
-            <button type="button" class="switch sim-switch" id="simAttackSwitch" role="switch" aria-checked="false" data-i18n-aria="simAttackAria" aria-label="Toggle test attack simulation"><span class="switch-thumb"></span></button>
-          </div>
         </div>
         <div class="hero-shield off" id="heroShield" role="img" data-i18n-aria="heroShieldLabel" aria-label="Protection status">
-          <svg id="flowSvg" class="flow-svg" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <svg id="flowSvg" class="flow-svg" viewBox="0 0 1440 220" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
             <defs>
-              <marker id="flowArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker>
-              <marker id="flowArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#22c55e"/></marker>
-              <marker id="flowArrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#dc2626"/></marker>
-              <clipPath id="flowShieldClip"><rect x="600" y="50" width="240" height="190" rx="10"/></clipPath>
+              <marker id="flowArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#71717A"/></marker>
+              <marker id="flowArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#10B981"/></marker>
+              <marker id="flowArrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#EF4444"/></marker>
             </defs>
-            <g font-family="Plus Jakarta Sans,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
-              <g fill="none" stroke-width="2">
-                <path id="flowLaneIn" d="M 210 90 H 592" stroke="#64748b" marker-end="url(#flowArrow)"/>
-                <path id="flowLaneOut" d="M 840 90 H 1222" stroke="#22c55e" marker-end="url(#flowArrowGreen)"/>
-                <path id="flowLaneBot" d="M 210 242 H 592" stroke="#64748b" marker-end="url(#flowArrow)"/>
-                <path id="flowLaneBlocked" d="M 720 240 V 260 H 940" stroke="#dc2626" marker-end="url(#flowArrowRed)"/>
+            <g font-family="Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
+              <g fill="none">
+                <path id="flowLaneIn" class="sch-lane" d="M 270 76 H 592" stroke="#71717A" marker-end="url(#flowArrow)"/>
+                <path id="flowLaneOut" class="sch-lane" d="M 848 76 H 1162" stroke="#10B981" marker-end="url(#flowArrowGreen)"/>
+                <path id="flowLaneBot" class="sch-lane" d="M 270 122 H 592" stroke="#71717A" marker-end="url(#flowArrow)"/>
+                <path id="flowLaneBlocked" class="sch-lane" d="M 720 148 V 168" stroke="#EF4444" marker-end="url(#flowArrowRed)"/>
               </g>
               <g id="flowPackets"></g>
               <g class="flow-enter" style="animation-delay:.1s">
-                <rect x="40" y="48" width="170" height="84" rx="10" fill="#111827" stroke="rgba(148,163,184,.3)"/>
-                <circle cx="125" cy="76" r="12" fill="#164e63"/>
-                <path d="M107 106 Q125 88 143 106" fill="#164e63"/>
-                <text x="125" y="158" text-anchor="middle" font-size="13" font-weight="600" fill="#94a3b8" data-i18n="flowVisitor">Real visitor</text>
-              </g>
-              <g class="flow-enter" style="animation-delay:.22s">
-                <rect x="40" y="200" width="170" height="84" rx="10" fill="#1c1214" stroke="rgba(239,68,68,.35)"/>
-                <rect x="103" y="217" width="44" height="30" rx="6" fill="rgba(239,68,68,.14)"/>
-                <circle cx="115" cy="232" r="3" fill="#ef4444"/><circle cx="135" cy="232" r="3" fill="#ef4444"/>
-                <text x="125" y="310" text-anchor="middle" font-size="13" font-weight="600" fill="#94a3b8" data-i18n="flowBot">Bot / attacker</text>
+                <rect class="sch-box" x="60" y="12" width="210" height="136" rx="8" fill="#111216" stroke="#1E2028"/>
+                <text class="sch-title" x="165" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="#F4F4F5" data-i18n="flowIncoming">Incoming Traffic</text>
+                <line class="sch-div" x1="72" y1="48" x2="258" y2="48" stroke="#1E2028" stroke-width="1"/>
+                <circle class="sch-dot-ok" cx="85" cy="76" r="3" fill="#10B981"/>
+                <text class="sch-label" x="98" y="80" font-size="12" fill="#A1A1AA" data-i18n="flowVisitor">Visitors</text>
+                <line class="sch-div" x1="72" y1="98" x2="258" y2="98" stroke="#1E2028" stroke-width="1"/>
+                <circle class="sch-dot-bad" cx="85" cy="122" r="3" fill="#EF4444"/>
+                <text class="sch-label" x="98" y="126" font-size="12" fill="#A1A1AA" data-i18n="flowBot">Bots</text>
               </g>
               <g class="flow-enter" style="animation-delay:.34s">
-                <rect id="flowShieldBox" x="600" y="50" width="240" height="190" rx="10" fill="#0f172a" stroke="rgba(148,163,184,.4)"/>
-                <text x="720" y="86" text-anchor="middle" font-size="16" font-weight="700" fill="#ffffff">SonuShield</text>
-                <rect x="616" y="100" width="208" height="30" rx="6" fill="#1e293b"/>
-                <text x="720" y="119" text-anchor="middle" font-size="12" fill="#e0f2fe" data-i18n="flowTls">TLS fingerprint</text>
-                <rect x="616" y="140" width="208" height="30" rx="6" fill="#1e293b"/>
-                <text x="720" y="159" text-anchor="middle" font-size="12" fill="#e0f2fe" data-i18n="flowWaf">Firewall rules</text>
-                <rect id="flowStageRow" x="616" y="180" width="208" height="30" rx="6" fill="#f59e0b"/>
-                <text id="flowStageRowText" x="720" y="199" text-anchor="middle" font-size="12" font-weight="700" fill="#020617" data-i18n="flowChallenge">Challenge (stage 1–3)</text>
-                <g clip-path="url(#flowShieldClip)">
-                  <rect class="flow-shine" x="600" y="100" width="240" height="30" fill="#ffffff" opacity="0"/>
-                </g>
-                <rect id="flowShieldFlash" x="600" y="50" width="240" height="190" rx="10" fill="#fca5a5" opacity="0"/>
+                <rect id="flowShieldBox" class="sch-box" x="600" y="12" width="240" height="136" rx="8" fill="#111216" stroke="#1E2028"/>
+                <text class="sch-title" x="720" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="#F4F4F5">SonuShield Edge WAF</text>
+                <rect class="sch-row" x="616" y="48" width="208" height="24" rx="6" fill="#16171C"/>
+                <text class="sch-row-text" x="720" y="64" text-anchor="middle" font-size="12" fill="#A1A1AA" data-i18n="flowTls">TLS fingerprint</text>
+                <rect class="sch-row" x="616" y="78" width="208" height="24" rx="6" fill="#16171C"/>
+                <text class="sch-row-text" x="720" y="94" text-anchor="middle" font-size="12" fill="#A1A1AA" data-i18n="flowWaf">Firewall rules</text>
+                <rect id="flowStageRow" class="sch-stage" x="616" y="108" width="208" height="24" rx="6" fill="#F59E0B"/>
+                <text id="flowStageRowText" class="sch-stage-text" x="720" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#090A0D" data-i18n="flowChallenge">Challenge (stage 1–3)</text>
+                <rect id="flowShieldFlash" x="600" y="12" width="240" height="136" rx="8" fill="#FCA5A5" opacity="0"/>
               </g>
               <g class="flow-enter" style="animation-delay:.46s">
-                <rect x="1230" y="48" width="170" height="84" rx="10" fill="#111827" stroke="rgba(148,163,184,.3)"/>
-                <rect x="1252" y="61" width="76" height="14" rx="4" fill="rgba(16,185,129,.28)"/>
-                <rect x="1252" y="81" width="76" height="14" rx="4" fill="rgba(16,185,129,.28)"/>
-                <text x="1315" y="158" text-anchor="middle" font-size="13" font-weight="600" fill="#94a3b8" data-i18n="flowBackend">Your backend</text>
+                <rect class="sch-box" x="1170" y="12" width="210" height="136" rx="8" fill="#111216" stroke="#1E2028"/>
+                <text class="sch-title" x="1275" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="#F4F4F5" data-i18n="flowBackend">Origin Backend</text>
+                <rect class="sch-bar" x="1192" y="58" width="76" height="10" rx="2" fill="#71717A"/>
+                <rect class="sch-bar" x="1192" y="76" width="76" height="10" rx="2" fill="#71717A"/>
+                <rect class="sch-bar" x="1192" y="94" width="76" height="10" rx="2" fill="#71717A"/>
               </g>
-              <g class="flow-enter" id="flowBlockedBox" style="animation-delay:.58s">
-                <rect id="flowBlockedRect" x="940" y="200" width="210" height="84" rx="10" fill="#111827" stroke="#dc2626" stroke-width="1.5"/>
-                <rect class="flow-blocked-dash" x="940" y="200" width="210" height="84" rx="10" fill="none" stroke="#dc2626" stroke-dasharray="5 4"/>
-                <text x="1045" y="236" text-anchor="middle" font-size="15" font-weight="700" fill="#f87171" data-i18n="flowBlocked">✕ Blocked</text>
-                <text x="1045" y="258" text-anchor="middle" font-size="12" fill="#94a3b8" data-i18n="flowBlockedSub">rate-limited / susLv ≥ 4</text>
-                <text id="flowBlockedCount" class="num" x="1045" y="278" text-anchor="middle" font-size="12" fill="#f87171">Blocked: 0</text>
+              <g class="flow-enter" style="animation-delay:.58s">
+                <rect id="flowBlockedBox" class="sch-box" x="600" y="168" width="240" height="44" rx="8" fill="#111216" stroke="#EF4444" stroke-width="1.5"/>
+                <rect class="flow-blocked-dash" x="600" y="168" width="240" height="44" rx="8" fill="none" stroke="#EF4444" stroke-dasharray="5 4"/>
+                <text class="flow-blocked-text" x="720" y="187" text-anchor="middle" font-size="13" font-weight="700" fill="#EF4444" data-i18n="flowBlocked">✕ Blocked</text>
+                <text id="flowBlockedCount" class="flow-blocked-text num" x="720" y="205" text-anchor="middle" font-size="11" fill="#EF4444">Blocked: 0</text>
               </g>
-              <text id="flowPassed" x="1080" y="112" font-size="12" font-weight="600" fill="#22c55e" opacity="0" data-i18n="flowPassed">passed</text>
+              <text id="flowBlockedSub" class="flow-blocked-sub" x="730" y="162" font-size="10" fill="#71717A" data-i18n="flowBlockedSub">rate-limited / susLv ≥ 4</text>
+              <text id="flowPassed" x="1000" y="58" font-size="12" font-weight="600" fill="#10B981" opacity="0" data-i18n="flowPassed">passed</text>
             </g>
           </svg>
           <div class="stage-hud">
@@ -883,25 +829,25 @@ html{background:var(--bg)}
           <div class="kpi-label" data-i18n="cardTotalRps">Total Requests</div>
           <div class="kpi-value num" id="cTotalRps">—</div>
           <div class="kpi-foot" data-i18n="cardTotalRpsFoot">per second, all requests</div>
-          <svg id="kpiSparkTotal" class="kpi-spark kpi-spark-total" viewBox="0 0 220 48" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="kpiGradTotal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2DD4BF" stop-opacity="0.25"/><stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/></linearGradient></defs><path class="kpi-area" fill="url(#kpiGradTotal)" d="M 0 45 L 220 45 L 220 48 L 0 48 Z"/><path class="kpi-line" stroke="#2DD4BF" vector-effect="non-scaling-stroke" d="M 0 45 L 220 45"/></svg>
+          <svg id="kpiSparkTotal" class="kpi-spark kpi-spark-total" viewBox="0 0 220 48" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" vector-effect="non-scaling-stroke" d="M 0 45 L 220 45"/></svg>
         </div>
         <div class="card kpi-card">
           <div class="kpi-label"><span data-i18n="cardBypassRps">Bypassed Requests</span> <span class="info-wrap"><button type="button" class="info" aria-expanded="false" data-i18n-aria="infoAria" aria-label="More information" aria-describedby="ttBypassed">?</button><span class="tip" role="tooltip" id="ttBypassed" data-i18n="tipBypassed">Requests that passed every check without a challenge and went straight to your backend.</span></span></div>
           <div class="kpi-value num" id="cBypassRps">—</div>
           <div class="kpi-foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div>
-          <svg id="kpiSparkBypass" class="kpi-spark kpi-spark-bypass" viewBox="0 0 220 48" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="kpiGradBypass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10B981" stop-opacity="0.25"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path class="kpi-area" fill="url(#kpiGradBypass)" d="M 0 45 L 220 45 L 220 48 L 0 48 Z"/><path class="kpi-line" stroke="#10B981" vector-effect="non-scaling-stroke" d="M 0 45 L 220 45"/></svg>
+          <svg id="kpiSparkBypass" class="kpi-spark kpi-spark-bypass" viewBox="0 0 220 48" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" vector-effect="non-scaling-stroke" d="M 0 45 L 220 45"/></svg>
         </div>
         <div class="card kpi-card">
           <div class="kpi-label" data-i18n="kpiSystemLoad">System Load</div>
           <div class="kpi-sysline">CPU <span class="num" id="cCpu">—</span><span class="kpi-sep" aria-hidden="true">|</span>RAM <span class="num" id="cRam">—</span></div>
           <div class="kpi-widgets">
             <div class="kpi-widget">
-              <svg class="kpi-dial" viewBox="0 0 120 64" aria-hidden="true"><path class="kpi-arc-bg" d="M 14 58 A 46 46 0 0 1 106 58"/><path id="cCpuGauge" class="kpi-arc" data-needle="cCpuNeedle" data-len="144.5" stroke="#10B981" d="M 14 58 A 46 46 0 0 1 106 58" stroke-dasharray="144.5" stroke-dashoffset="144.5"/><line id="cCpuNeedle" class="kpi-needle" x1="60" y1="58" x2="60" y2="24" transform="rotate(-90 60 58)"/><circle cx="60" cy="58" r="4" fill="#E2E8F0"/></svg>
-              <svg id="kpiSparkCpu" class="kpi-mini kpi-mini-cpu" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" stroke="#10B981" vector-effect="non-scaling-stroke" d=""/></svg>
+              <svg class="kpi-dial" viewBox="0 0 120 64" aria-hidden="true"><path class="kpi-arc-bg" d="M 14 58 A 46 46 0 0 1 106 58"/><path id="cCpuGauge" class="kpi-arc" data-needle="cCpuNeedle" data-len="144.5" d="M 14 58 A 46 46 0 0 1 106 58" stroke-dasharray="144.5" stroke-dashoffset="144.5"/><line id="cCpuNeedle" class="kpi-needle" x1="60" y1="58" x2="60" y2="24" transform="rotate(-90 60 58)"/><circle cx="60" cy="58" r="4" fill="#E2E8F0"/></svg>
+              <svg id="kpiSparkCpu" class="kpi-mini kpi-mini-cpu" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" vector-effect="non-scaling-stroke" d=""/></svg>
             </div>
             <div class="kpi-widget">
-              <svg class="kpi-dial" viewBox="0 0 120 64" aria-hidden="true"><path class="kpi-arc-bg" d="M 14 58 A 46 46 0 0 1 106 58"/><path id="cRamGauge" class="kpi-arc" data-needle="cRamNeedle" data-len="144.5" stroke="#38BDF8" d="M 14 58 A 46 46 0 0 1 106 58" stroke-dasharray="144.5" stroke-dashoffset="144.5"/><line id="cRamNeedle" class="kpi-needle" x1="60" y1="58" x2="60" y2="24" transform="rotate(-90 60 58)"/><circle cx="60" cy="58" r="4" fill="#E2E8F0"/></svg>
-              <svg id="kpiSparkRam" class="kpi-mini kpi-mini-ram" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" stroke="#38BDF8" vector-effect="non-scaling-stroke" d=""/></svg>
+              <svg class="kpi-dial" viewBox="0 0 120 64" aria-hidden="true"><path class="kpi-arc-bg" d="M 14 58 A 46 46 0 0 1 106 58"/><path id="cRamGauge" class="kpi-arc" data-needle="cRamNeedle" data-len="144.5" d="M 14 58 A 46 46 0 0 1 106 58" stroke-dasharray="144.5" stroke-dashoffset="144.5"/><line id="cRamNeedle" class="kpi-needle" x1="60" y1="58" x2="60" y2="24" transform="rotate(-90 60 58)"/><circle cx="60" cy="58" r="4" fill="#E2E8F0"/></svg>
+              <svg id="kpiSparkRam" class="kpi-mini kpi-mini-ram" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" vector-effect="non-scaling-stroke" d=""/></svg>
             </div>
           </div>
         </div>
@@ -1749,9 +1695,9 @@ html{background:var(--bg)}
   </main>
 </div>
 <div id="toastRegion" class="toasts" aria-live="polite"></div>
+<script>
 /* The hero is a live SVG flow diagram now; Three.js is no longer
    loaded by the page. The vendored file stays in the repo (unused). */
-<script>
 (function(){
 "use strict";
 var SECRET_KEY = "sonushield_api_secret";
@@ -1908,7 +1854,7 @@ accountsLocalNotice: "Accounts are managed on the control-plane host. This dashb
 roleTenant: "Tenant",
 roleReseller: "Reseller",
 roleOwner: "Owner",
-hostPill: "host: {0}",
+hostPill: "{0}",
 hostPillTitle: "Domain in the address bar",
 updating: "Updating",
 themeDark: "Dark",
@@ -2680,13 +2626,14 @@ stageHudIdle: "Awaiting live traffic — the scene idles until packets arrive.",
 simAttackLabel: "Test Attack Simulation",
 simAttackAria: "Toggle test attack simulation",
 simAttackOn: "SIMULATION ON — test attack in progress",
-flowVisitor: "Real visitor",
-flowBot: "Bot / attacker",
+flowVisitor: "Visitors",
+flowIncoming: "Incoming Traffic",
+flowBot: "Bots",
 flowTls: "TLS fingerprint",
 flowWaf: "Firewall rules",
 flowChallenge: "Challenge (stage 1–3)",
 flowChallengeStage: "Challenge · Stage {0}",
-flowBackend: "Your backend",
+flowBackend: "Origin Backend",
 flowBlocked: "✕ Blocked",
 flowBlockedSub: "rate-limited / susLv ≥ 4",
 flowBlockedCount: "Blocked: {0}",
@@ -2740,7 +2687,7 @@ accountsLocalNotice: "Accounts control-plane host par manage hote hain. Ye dashb
 roleTenant: "Tenant",
 roleReseller: "Reseller",
 roleOwner: "Owner",
-hostPill: "host: {0}",
+hostPill: "{0}",
 hostPillTitle: "Address bar में domain",
 updating: "Update हो रहा है",
 themeDark: "Dark",
@@ -3512,13 +3459,14 @@ stageHudIdle: "लाइव ट्रैफ़िक की प्रतीक�
 simAttackLabel: "टेस्ट अटैक सिम्युलेशन",
 simAttackAria: "टेस्ट अटैक सिम्युलेशन चालू/बंद करें",
 simAttackOn: "सिम्युलेशन चालू — टेस्ट अटैक जारी है",
-flowVisitor: "असली विज़िटर",
-flowBot: "बॉट / हमलावर",
+flowVisitor: "विज़िटर",
+flowIncoming: "इनकमिंग ट्रैफ़िक",
+flowBot: "बॉट्स",
 flowTls: "TLS फ़िंगरप्रिंट",
 flowWaf: "फ़ायरवॉल नियम",
 flowChallenge: "चैलेंज (स्टेज 1–3)",
 flowChallengeStage: "चैलेंज · स्टेज {0}",
-flowBackend: "आपका बैकएंड",
+flowBackend: "ऑरिजिन बैकएंड",
 flowBlocked: "✕ ब्लॉक किया गया",
 flowBlockedSub: "rate-limited / susLv ≥ 4",
 flowBlockedCount: "ब्लॉक: {0}",
@@ -3777,29 +3725,14 @@ function buildLineChart(cfg){
     var cls = "chart-label chart-xlabel" + (lb.anchor ? " " + lb.anchor : "");
     out.push('<text class="' + cls + '" x="' + (cfg.padL + plotW * lb.frac).toFixed(1) + '" y="' + (cfg.h - 5) + '">' + lb.text + '</text>');
   }
-  /* Gradient fill (cfg.gradientId): one vertical gradient per area
-     series, stops from the series' gradStops classes (theme-aware
-     via CSS). Without it the flat .chart-area fill is used. */
-  if(cfg.gradientId){
-    for(s = 0; s < cfg.series.length; s++){
-      var gs = cfg.series[s];
-      if(!gs.areaClass) continue;
-      var stops = gs.gradStops || ["chart-grad-a", "chart-grad-b"];
-      out.push('<defs><linearGradient id="' + cfg.gradientId + "-" + s + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="' + stops[0] + '"/><stop offset="1" class="' + stops[1] + '"/></linearGradient></defs>');
-    }
-  }
+  /* Matte Minimal: no gradient fills, no area paths — thin 1.5px
+     lines only. cfg.gradientId / series areaClass are ignored
+     (kept in call sites so the API is unchanged). */
   for(s = 0; s < cfg.series.length; s++){
     var ser = cfg.series[s], pts = [], j;
     for(j = 0; j < ser.values.length; j++) pts.push(X(j).toFixed(1) + "," + Y(ser.values[j]).toFixed(1));
     if(!pts.length) continue;
-    if(ser.areaClass){
-      if(cfg.gradientId){
-        out.push('<path fill="url(#' + cfg.gradientId + "-" + s + ')" d="M' + X(0).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' L' + pts.join(' L') + ' L' + X(ser.values.length - 1).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' Z"/>');
-      } else {
-        out.push('<path class="' + ser.areaClass + '" d="M' + X(0).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' L' + pts.join(' L') + ' L' + X(ser.values.length - 1).toFixed(1) + ',' + (cfg.padT + plotH).toFixed(1) + ' Z"/>');
-      }
-    }
-    out.push('<polyline class="' + ser.lineClass + '" points="' + pts.join(" ") + '" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>');
+    out.push('<polyline class="' + ser.lineClass + '" points="' + pts.join(" ") + '" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>');
   }
   return out.join("");
 }
@@ -3880,7 +3813,7 @@ function drawTraffic(){
       {values: trafficHist.map(function(p){ return p[0]; }), lineClass: "chart-line-total", areaClass: "chart-area"},
       {values: trafficHist.map(function(p){ return p[1]; }), lineClass: "chart-line-bypass-blue", areaClass: null}
     ]
-  }) + '<line class="chart-scanline" x1="64" y1="28" x2="64" y2="174"/>';
+  });
   // First render per domain: draw the lines in once. Later polls
   // rebuild the polylines without the inline dash styles, so the
   // draw-in never replays. Skipped entirely under
@@ -3891,7 +3824,7 @@ function drawTraffic(){
   }
 }
 
-/* KPI sparklines: smooth Catmull-Rom -> Bezier area/line paths over
+/* KPI sparklines: smooth Catmull-Rom -> Bezier line paths over
    the LAST 20 samples of the shared history buffers (trafficHist for
    the request cards, serverHist for the CPU/RAM minis) — no new API
    calls, no new buffers to drift. Zero traffic draws a flat baseline
@@ -3919,16 +3852,14 @@ function kpiSparkPaths(values, w, h){
   }
   if(n === 0){ pts = [{x: 0, y: h - 3}, {x: w, y: h - 3}]; }
   line = kpiSmoothLine(pts);
-  area = line + " L " + pts[pts.length - 1].x.toFixed(1) + " " + h.toFixed(1) + " L " + pts[0].x.toFixed(1) + " " + h.toFixed(1) + " Z";
-  return {line: line, area: area};
+  return {line: line};
 }
 function kpiSetSpark(svgId, values, w, h){
   var svg = $(svgId);
   if(!svg) return;
   var paths = kpiSparkPaths(values, w, h);
-  var line = svg.querySelector(".kpi-line"), area = svg.querySelector(".kpi-area");
+  var line = svg.querySelector(".kpi-line");
   if(line) line.setAttribute("d", paths.line);
-  if(area) area.setAttribute("d", paths.area);
 }
 function drawKpiRow(){
   var t = kpiLast20(trafficHist), s = kpiLast20(serverHist);
@@ -4032,8 +3963,8 @@ function updateHeroState(){
   syncStageHud();
 }
 
-/* Overview hero: live request flow (request-flow.svg, dark theme).
-   Inline SVG diagram + JS packet engine on requestAnimationFrame.
+/* Overview hero: refined architectural request pipeline — a matte
+   vector schematic (220px) + JS packet engine on requestAnimationFrame.
    Packets are driven ONLY by the 3s poll data the dashboard already
    fetches (liveTotalRps / liveBypassRps / heroStage / heroAttack);
    at 0 rps the scene idles honestly (no fake packets). The "Test
@@ -4084,25 +4015,16 @@ function flowSpawnPacket(kind, delay){
   var g = document.getElementById("flowPackets");
   if(!g) return;
   var NS = "http://www.w3.org/2000/svg";
-  var col = kind === "green" ? "#22c55e" : "#ef4444";
-  var grp = document.createElementNS(NS, "g");
-  var trail = document.createElementNS(NS, "line");
-  trail.setAttribute("stroke", col);
-  trail.setAttribute("stroke-width", "5");
-  trail.setAttribute("stroke-linecap", "round");
-  trail.setAttribute("opacity", "0.75");
-  var halo = document.createElementNS(NS, "circle");
-  halo.setAttribute("r", "12");
-  halo.setAttribute("fill", col);
-  halo.setAttribute("opacity", "0.35");
+  /* Matte schematic: one small smooth 4px dot per packet — emerald for
+     bypassed (clean) traffic, muted crimson for blocked. No trails,
+     no halos, no glow. */
+  var col = kind === "green" ? "#10B981" : "#EF4444";
   var head = document.createElementNS(NS, "circle");
-  head.setAttribute("r", "6");
+  head.setAttribute("class", "flow-packet");
+  head.setAttribute("r", "2");
   head.setAttribute("fill", col);
-  grp.appendChild(trail);
-  grp.appendChild(halo);
-  grp.appendChild(head);
-  g.appendChild(grp);
-  flowPackets.push({kind: kind, seg: 0, t: 0, delay: delay || 0, el: grp, trail: trail, halo: halo, head: head});
+  g.appendChild(head);
+  flowPackets.push({kind: kind, seg: 0, t: 0, delay: delay || 0, el: head, head: head});
 }
 function flowKillPacket(i){
   var p = flowPackets[i];
@@ -4139,30 +4061,22 @@ function flowUpdate(dt){
   if(flowPassedT > 0) flowPassedT = Math.max(0, flowPassedT - dt / 1.2);
 }
 /* Position packets + transient effects (impact flash, blocked pulse,
-   "passed" label). The trail is the path segment just travelled, so
-   a still frame always shows streaks, not dots. */
+   "passed" label). Dots only — no trails, no halos, no glow. */
 function flowDraw(){
-  var i, p, lane, L, pos, prev;
+  var i, p, lane, L, pos;
   for(i = 0; i < flowPackets.length; i++){
     p = flowPackets[i];
     if(p.delay > 0 || !p.el) continue;
     lane = flowSegLane(p); L = flowLaneLen(lane);
     pos = flowPointAt(lane, p.t * L);
-    prev = flowPointAt(lane, Math.max(0, p.t - 0.09) * L);
-    p.trail.setAttribute("x1", prev.x.toFixed(1)); p.trail.setAttribute("y1", prev.y.toFixed(1));
-    p.trail.setAttribute("x2", pos.x.toFixed(1)); p.trail.setAttribute("y2", pos.y.toFixed(1));
-    p.halo.setAttribute("cx", pos.x.toFixed(1)); p.halo.setAttribute("cy", pos.y.toFixed(1));
     p.head.setAttribute("cx", pos.x.toFixed(1)); p.head.setAttribute("cy", pos.y.toFixed(1));
   }
   var fl = document.getElementById("flowShieldFlash");
   if(fl) fl.setAttribute("opacity", (flowFlashT * 0.45).toFixed(2));
   var ps = document.getElementById("flowPassed");
   if(ps) ps.setAttribute("opacity", flowPassedT.toFixed(2));
-  var br = document.getElementById("flowBlockedRect");
-  if(br){
-    br.setAttribute("stroke-width", (1.5 + flowBlockedT * 1.5).toFixed(1));
-    br.setAttribute("stroke", flowBlockedT > 0.4 ? "#f87171" : "#dc2626");
-  }
+  var br = document.getElementById("flowBlockedBox");
+  if(br) br.setAttribute("stroke-width", (1.5 + flowBlockedT * 1).toFixed(1));
 }
 /* HUD badges + live flow readouts: the Challenge row follows the live
    Stage (1/2/3 from the API), the shield box glows amber/crimson at
@@ -4180,7 +4094,7 @@ function flowSyncHud(){
   var row = document.getElementById("flowStageRowText");
   if(row) row.textContent = stg ? t("flowChallengeStage", stg) : t("flowChallenge");
   var box = document.getElementById("flowShieldBox");
-  if(box) box.setAttribute("stroke", stageAlert ? (stg === "3" ? "#ef4444" : "#f59e0b") : "rgba(148,163,184,.4)");
+  if(box){ if(stageAlert) box.setAttribute("stroke", stg === "3" ? "#EF4444" : "#F59E0B"); else box.removeAttribute("stroke"); }
   var bc = document.getElementById("flowBlockedCount");
   if(bc) bc.textContent = t("flowBlockedCount", num(Math.max(0, Math.round(liveTotalAll - liveBypassAll))));
 }
@@ -4221,8 +4135,8 @@ function flowTick(ts){
 function startFlow(){
   if(flowRunning && (flowRAF || flowStepMode)) return;
   var shield = $("heroShield");
-  /* Report which renderer drives the hero — the static SVG diagram is
-     always present, so this line says whether the packet engine is
+  /* Report which renderer drives the hero — the static SVG schematic
+     is always present, so this line says whether the packet engine is
      live or the diagram is standing still. */
   function note(renderer, reason){
     try{ console.info("[SonuShield] flow renderer: " + renderer + (reason ? " (" + reason + ")" : "")); }catch(e){}
@@ -4240,14 +4154,14 @@ function startFlow(){
       flowRunning = true;
       flowStepMode = true;
       flowRAF = null;
-      note("svg-live-step", "reduced-motion");
+      note("svg-schematic-step", "reduced-motion");
       flowPollStep();
       return;
     }
     flowStepMode = false;
     flowRunning = true;
     flowRAF = requestAnimationFrame(flowTick);
-    note("svg-live");
+    note("svg-schematic-live");
   }catch(e){
     flowRunning = false;
     flowStepMode = false;
@@ -4278,33 +4192,6 @@ function stopFlow(){
   if(flowRAF){ cancelAnimationFrame(flowRAF); flowRAF = null; }
 }
 
-/* 3D tilt + cursor spotlight (pointer devices only, disabled under
-   reduced-motion). Inline transform includes the hover lift, so the
-   CSS hover rule is not fought; leaving clears the inline style. */
-var tiltOK = !reducedMotion && !!(window.matchMedia && window.matchMedia("(pointer:fine)").matches);
-function tiltTransform(px, py){
-  return "perspective(900px) rotateX(" + (-py * 6).toFixed(2) + "deg) rotateY(" + (px * 6).toFixed(2) + "deg) translateZ(8px)";
-}
-function bindTilt(){
-  if(!tiltOK) return;
-  document.querySelectorAll(".ov-grid .card, .hero, #view-stage .cards .card, #view-stage .panel, #view-reports .cards .card, #view-reports .panel, #domInspector, #view-domains .card, #view-domains .panel, #view-insights .card, #view-insights .panel, #view-settings .panel, #view-iplists .ip-grid .panel, #view-about .panel").forEach(function(el){
-    if(el.getAttribute("data-tilt-bound")) return;
-    el.setAttribute("data-tilt-bound", "1");
-    el.classList.add("tilt");
-    el.addEventListener("pointermove", function(ev){
-      var r = el.getBoundingClientRect();
-      if(!r.width || !r.height) return;
-      var px = (ev.clientX - r.left) / r.width - 0.5;
-      var py = (ev.clientY - r.top) / r.height - 0.5;
-      px = Math.max(-0.5, Math.min(0.5, px));
-      py = Math.max(-0.5, Math.min(0.5, py));
-      el.style.setProperty("--mx", ((px + 0.5) * 100).toFixed(1) + "%");
-      el.style.setProperty("--my", ((py + 0.5) * 100).toFixed(1) + "%");
-      el.style.transform = tiltTransform(px, py);
-    });
-    el.addEventListener("pointerleave", function(){ el.style.transform = ""; });
-  });
-}
 /* KPI dial gauge: the arc is a semicircle (r=46 -> length 144.5, kept
    on the element as data-len); the needle id comes from data-needle.
    Needle angle: -90deg at 0% -> +90deg at 100% (0deg = straight up).
@@ -4924,7 +4811,6 @@ function loadIPLists(){
         removeIPEntry(btn.getAttribute("data-ip-del-list"), btn.getAttribute("data-ip-del-target"));
       });
     });
-    bindTilt();
   }).catch(function(){
     setHTML("ipListsBody", '<div class="state state-error"><strong>' + t("errLoadIpLists") + '</strong><br>' + t("errDomainOrSecret") + '</div>');
   });
@@ -6390,7 +6276,7 @@ $("clearAllLogsBtn").addEventListener("click", function(){ clearLogs(true); });
 $("tailStartBtn").addEventListener("click", startTail);
 $("tailStopBtn").addEventListener("click", stopTail);
 
-/* ===== Visual engine init: toggles, globe, tilt, terminal, drawers ===== */
+/* ===== Visual init: toggles, terminal, drawers ===== */
 /* Theme Sun/Moon switch drives the same applyTheme logic. */
 var themeSwitchEl = $("themeSwitch");
 if(themeSwitchEl) themeSwitchEl.addEventListener("click", function(){
@@ -6434,9 +6320,7 @@ $("ipModal").addEventListener("click", function(ev){ if(ev.target === $("ipModal
 document.addEventListener("keydown", function(ev){
   if(ev.key === "Escape" && $("ipModal") && !$("ipModal").hidden) closeIpModal();
 });
-/* 3D tilt on KPI cards and hero panels (pointer devices only). */
-bindTilt();
-/* Hero live flow + mesh pause on hidden tab. */
+/* Hero live flow: pause on hidden tab. */
 startFlow();
 drawKpiRow();
 /* Cyber-Obsidian entrance + tab indicators: stagger the first view's
@@ -6447,7 +6331,6 @@ moveAllTabInds();
 window.addEventListener("resize", moveAllTabInds);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(moveAllTabInds);
 document.addEventListener("visibilitychange", function(){
-  document.documentElement.classList.toggle("anim-paused", document.hidden);
   if(document.hidden){ stopFlow(); }
   else startFlow();
 });

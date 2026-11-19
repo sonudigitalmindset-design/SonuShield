@@ -6,6 +6,47 @@ see [LICENSE](LICENSE) and the credits endpoint. This changelog covers the
 SonuShield work only; upstream history before the fork point is in the git
 log.
 
+## Matte Minimal redesign (2026-11-19)
+
+- Stripped all neon glow, aurora/mesh orbs, 3D tilt + spotlight, gradient
+  blobs, and gaming-style lasers. The dashboard is now a matte,
+  whisper-quiet Staff-Designer system (Google Cloud / Linear / Stripe):
+  flat #090A0D canvas, #111216 sidebar and cards, 1px #1E2028 hairlines,
+  8px radius, no heavy shadows. Text #F4F4F5 / #A1A1AA / #71717A; color
+  only as small functional semantic indicators (#10B981 connected/clean,
+  #EF4444 blocked/attack, amber stage). Light theme kept functional with
+  the same minimal tokens. No theme-migration bump (still v4).
+- Overview hero is now a Refined Architectural Request Pipeline: a crisp
+  220px vector schematic (Incoming Traffic / SonuShield Edge WAF /
+  Origin Backend / Blocked sink) with thin 1px dashed paths and small
+  smooth 4px dots (emerald bypassed, crimson blocked) driven by the
+  existing 3s poll. The Simulate Attack toggle moved to the top header
+  (same id `simAttackSwitch`, same visual-only behavior). Honest idle at
+  0 rps — no fake traffic. Renderer log is now `svg-schematic-live`.
+- Typography is now Inter (13px base, 11px uppercase tracked labels),
+  JetBrains Mono tabular-nums for counters/IPs/latency. Inter woff2
+  re-embedded via go:embed in dashboard.go (Plus Jakarta Sans embeds
+  removed; the files stay on disk unembedded). No CDN font links.
+- Top header is now 52px with a breadcrumb (SonuShield / Production /
+  live host), the restyled Connected pill, the Simulate Attack toggle,
+  and the existing utility buttons. Language switch, Forget secret, and
+  the theme toggle are kept, restyled minimal.
+- KPI cards: 4-column grid, 12px gap, flat cards, thin 1.5px sparklines
+  with no gradient fills (20-sample buffer + Bezier smoothing kept),
+  thin minimal dial gauges, no top-edge glow.
+- LAYOUT FIX (same publish): `.kpi-row` now spans the full Overview
+  width (`grid-column: 1 / -1`); all `.ov-grid .card` rules are scoped to
+  direct children (`.ov-grid > .card`) so the nested KPI cards no longer
+  collapse into a narrow stacked column; the stray `/* ... */` comment
+  that rendered as body text below the toast region is moved inside the
+  `<script>` block. A permanent harness assertion now fails on any `/*`
+  comment outside `<script>`/`<style>` blocks.
+- Retired IDs: `flowShieldClip`, `flowBlockedRect` (renamed to
+  `flowBlockedBox`), `kpiGradTotal`, `kpiGradBypass`. New ID:
+  `flowBlockedSub`. New i18n key: `flowIncoming` (both dicts).
+  `hostPill` now renders the bare host (breadcrumb). No IDs lost otherwise.
+- Service worker shell v19 -> v20.
+
 ## Unreleased — Overview KPI row redesign (SW v19)
 
 - The Overview KPI row is rebuilt to the reference design: 4 equal
