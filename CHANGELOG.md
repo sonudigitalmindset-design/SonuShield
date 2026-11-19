@@ -405,6 +405,11 @@ names, or challenge flow semantics.
   public routes; +80,908 bytes of fonts). Lucide-style icons are
   hand-inlined SVG paths; no icon library. Service-worker shell
   bumped to v9.
+- Fix (19 Nov): the Active Rules panel was missing its closing
+  `</div>`, so the Simulator, Packs, and Import & Export panels
+  were nested inside it — switching to any of them hid the whole
+  Firewall page. One closing tag added; the page is now
+  tag-balanced. Service-worker shell bumped to v10.
 
 ## Known limitations (carried forward)
 
