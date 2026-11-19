@@ -295,11 +295,9 @@ h2{font-size:14px;line-height:1.35;font-weight:600;margin:0 0 6px;letter-spacing
    value text stays white for contrast. */
 .card,.panel{position:relative;--acc:#38bdf8;transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease,background-color 220ms ease}
 .card::after,.panel::after{content:"";position:absolute;top:-1px;left:16px;right:16px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.85;box-shadow:0 0 10px var(--acc);pointer-events:none}
-.ov-grid .card:nth-child(1),.ov-grid .card:nth-child(2),.ov-grid .card:nth-child(6){--acc:#10b981}
-.ov-grid .card.kpi{--acc:#06b6d4}
-.ov-grid .card:nth-child(5){--acc:#f59e0b}
-.ov-grid .card:nth-child(7){--acc:#06b6d4}
-.ov-grid .card:nth-child(8){--acc:#8b5cf6}
+.ov-grid .card:nth-child(1){--acc:#10b981}
+.ov-grid .card:nth-child(2){--acc:#06b6d4}
+.ov-grid .card:nth-child(3){--acc:#8b5cf6}
 #view-reports .cards .card:nth-child(1){--acc:#10b981}
 #view-reports .cards .card:nth-child(2){--acc:#06b6d4}
 #view-reports .cards .card:nth-child(3){--acc:#f59e0b}
@@ -452,15 +450,37 @@ tr.selected td{background:var(--nav-active-bg)}
 .view.active .ov-grid .card:nth-child(6){animation-delay:.18s}
 .view.active .ov-grid .card:nth-child(7){animation-delay:.21s}
 .view.active .ov-grid .card:nth-child(8){animation-delay:.24s}
-/* KPI mini-gauges: radial rings for CPU/RAM, driven by the same
-   poll values as the card numbers (JS sets stroke-dashoffset). */
-.kpi{display:flex;align-items:center;gap:10px}
-.kpi-main{flex:1;min-width:0}
-.kpi-main .value{font-size:28px}
-.gauge{width:46px;height:46px;flex:none;transform:rotate(-90deg)}
-.gauge-bg{fill:none;stroke:var(--panel-2);stroke-width:3.5}
-.gauge-fg{fill:none;stroke:#06b6d4;stroke-width:3.5;stroke-linecap:round;stroke-dasharray:97.4;stroke-dashoffset:97.4;transition:stroke-dashoffset .5s var(--ease-out);filter:drop-shadow(0 0 3px rgba(6,182,212,.5))}
-.gauge-fg.ram{stroke:var(--info);filter:drop-shadow(0 0 3px rgba(56,189,248,.5))}
+/* Overview KPI row (reference design): 4 equal cards, 16px gap, teal
+   top glow. The 26px numbers / 16px gap are the user's latest explicit
+   spec and win over the design-system 28px / 20px FOR THIS ROW ONLY. */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+@media (max-width:1100px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.kpi-row{grid-template-columns:1fr}}
+.kpi-row .card{--acc:#2DD4BF;background:radial-gradient(120% 90% at 50% 0%,rgba(45,212,191,.10),transparent 55%),rgba(13,19,31,.85);border:1px solid rgba(255,255,255,.08);border-radius:14px;box-shadow:inset 0 1px 1px rgba(45,212,191,.35),0 10px 25px -5px rgba(0,0,0,.6)}
+.kpi-row .card:hover{box-shadow:inset 0 1px 1px rgba(45,212,191,.35),0 16px 32px -12px rgba(0,0,0,.65)}
+.kpi-label{font-size:13px;font-weight:600;color:#94A3B8}
+.kpi-value{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:26px;font-weight:700;line-height:1.2;color:#fff;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi-row .kpi-value.tick{animation:valueTick .3s var(--ease-out)}
+.kpi-foot{font-size:11px;color:#64748B;margin-top:2px}
+.kpi-spark{display:block;width:100%;height:48px;margin-top:10px}
+.kpi-spark .kpi-line{fill:none;stroke-width:2;stroke-linecap:round}
+.kpi-spark-total .kpi-line{filter:drop-shadow(0 0 4px rgba(45,212,191,.55))}
+.kpi-spark-bypass .kpi-line{filter:drop-shadow(0 0 4px rgba(16,185,129,.55))}
+.kpi-spark .kpi-area{stroke:none}
+.kpi-sysline{font-size:16px;font-weight:700;color:#fff;margin-top:2px;white-space:nowrap}
+.kpi-sysline .kpi-sep{color:#64748B;margin:0 8px;font-weight:400}
+.kpi-widgets{display:flex;gap:12px;margin-top:10px}
+.kpi-widget{flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.kpi-dial{width:76px;height:41px;flex:none}
+.kpi-dial .kpi-arc-bg{fill:none;stroke:rgba(255,255,255,.12);stroke-width:7;stroke-linecap:round}
+.kpi-dial .kpi-arc{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .5s var(--ease-out)}
+.kpi-dial .kpi-needle{stroke:#E2E8F0;stroke-width:2.5;stroke-linecap:round;transform-box:view-box;transform-origin:60px 58px;transition:transform .5s var(--ease-out)}
+.kpi-mini{display:block;flex:1;min-width:0;height:40px}
+.kpi-mini .kpi-line{fill:none;stroke-width:2;stroke-linecap:round}
+.kpi-mini-cpu .kpi-line{filter:drop-shadow(0 0 3px rgba(16,185,129,.5))}
+.kpi-mini-ram .kpi-line{filter:drop-shadow(0 0 3px rgba(56,189,248,.5))}
+.kpi-stage{margin-top:6px}
+.kpi-stage .badge{font-size:13px;padding:5px 12px;border-radius:999px;letter-spacing:0}
 /* Overview hero: title + live stage badge on the left, a custom
    isometric shield/node graphic on the right. The graphic glows
    emerald while connected and calm, amber while under attack or at
@@ -858,11 +878,39 @@ html{background:var(--bg)}
         </div>
       </div>
       <div class="ov-grid">
-        <div class="card span-3"><div class="label" data-i18n="cardTotalRps">Total requests</div><div class="value num" id="cTotalRps">—</div><div class="foot" data-i18n="cardTotalRpsFoot">per second, all requests</div></div>
-        <div class="card span-3"><div class="label"><span data-i18n="cardBypassRps">Bypassed requests</span> <span class="info-wrap"><button type="button" class="info" aria-expanded="false" data-i18n-aria="infoAria" aria-label="More information" aria-describedby="ttBypassed">?</button><span class="tip" role="tooltip" id="ttBypassed" data-i18n="tipBypassed">Requests that passed every check without a challenge and went straight to your backend.</span></span></div><div class="value num" id="cBypassRps">—</div><div class="foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div></div>
-        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardCpu">CPU usage</div><div class="value num" id="cCpu">—</div><div class="foot" data-i18n="cardCpuFoot">server CPU, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg" id="cCpuGauge" cx="18" cy="18" r="15.5"/></svg></div>
-        <div class="card span-2 kpi"><div class="kpi-main"><div class="label" data-i18n="cardRam">RAM usage</div><div class="value num" id="cRam">—</div><div class="foot" data-i18n="cardRamFoot">proxy memory, percent</div></div><svg class="gauge" viewBox="0 0 36 36" aria-hidden="true"><circle class="gauge-bg" cx="18" cy="18" r="15.5"/><circle class="gauge-fg ram" id="cRamGauge" cx="18" cy="18" r="15.5"/></svg></div>
-        <div class="card span-2"><div class="label" data-i18n="cardStage">Stage</div><div class="value num" id="cStage">—</div><div class="foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
+      <div class="kpi-row">
+        <div class="card kpi-card">
+          <div class="kpi-label" data-i18n="cardTotalRps">Total Requests</div>
+          <div class="kpi-value num" id="cTotalRps">—</div>
+          <div class="kpi-foot" data-i18n="cardTotalRpsFoot">per second, all requests</div>
+          <svg id="kpiSparkTotal" class="kpi-spark kpi-spark-total" viewBox="0 0 220 48" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="kpiGradTotal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2DD4BF" stop-opacity="0.25"/><stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/></linearGradient></defs><path class="kpi-area" fill="url(#kpiGradTotal)" d="M 0 45 L 220 45 L 220 48 L 0 48 Z"/><path class="kpi-line" stroke="#2DD4BF" vector-effect="non-scaling-stroke" d="M 0 45 L 220 45"/></svg>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label"><span data-i18n="cardBypassRps">Bypassed Requests</span> <span class="info-wrap"><button type="button" class="info" aria-expanded="false" data-i18n-aria="infoAria" aria-label="More information" aria-describedby="ttBypassed">?</button><span class="tip" role="tooltip" id="ttBypassed" data-i18n="tipBypassed">Requests that passed every check without a challenge and went straight to your backend.</span></span></div>
+          <div class="kpi-value num" id="cBypassRps">—</div>
+          <div class="kpi-foot" data-i18n="cardBypassRpsFoot">per second, passed to backend</div>
+          <svg id="kpiSparkBypass" class="kpi-spark kpi-spark-bypass" viewBox="0 0 220 48" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="kpiGradBypass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10B981" stop-opacity="0.25"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path class="kpi-area" fill="url(#kpiGradBypass)" d="M 0 45 L 220 45 L 220 48 L 0 48 Z"/><path class="kpi-line" stroke="#10B981" vector-effect="non-scaling-stroke" d="M 0 45 L 220 45"/></svg>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label" data-i18n="kpiSystemLoad">System Load</div>
+          <div class="kpi-sysline">CPU <span class="num" id="cCpu">—</span><span class="kpi-sep" aria-hidden="true">|</span>RAM <span class="num" id="cRam">—</span></div>
+          <div class="kpi-widgets">
+            <div class="kpi-widget">
+              <svg class="kpi-dial" viewBox="0 0 120 64" aria-hidden="true"><path class="kpi-arc-bg" d="M 14 58 A 46 46 0 0 1 106 58"/><path id="cCpuGauge" class="kpi-arc" data-needle="cCpuNeedle" data-len="144.5" stroke="#10B981" d="M 14 58 A 46 46 0 0 1 106 58" stroke-dasharray="144.5" stroke-dashoffset="144.5"/><line id="cCpuNeedle" class="kpi-needle" x1="60" y1="58" x2="60" y2="24" transform="rotate(-90 60 58)"/><circle cx="60" cy="58" r="4" fill="#E2E8F0"/></svg>
+              <svg id="kpiSparkCpu" class="kpi-mini kpi-mini-cpu" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" stroke="#10B981" vector-effect="non-scaling-stroke" d=""/></svg>
+            </div>
+            <div class="kpi-widget">
+              <svg class="kpi-dial" viewBox="0 0 120 64" aria-hidden="true"><path class="kpi-arc-bg" d="M 14 58 A 46 46 0 0 1 106 58"/><path id="cRamGauge" class="kpi-arc" data-needle="cRamNeedle" data-len="144.5" stroke="#38BDF8" d="M 14 58 A 46 46 0 0 1 106 58" stroke-dasharray="144.5" stroke-dashoffset="144.5"/><line id="cRamNeedle" class="kpi-needle" x1="60" y1="58" x2="60" y2="24" transform="rotate(-90 60 58)"/><circle cx="60" cy="58" r="4" fill="#E2E8F0"/></svg>
+              <svg id="kpiSparkRam" class="kpi-mini kpi-mini-ram" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true"><path class="kpi-line" stroke="#38BDF8" vector-effect="non-scaling-stroke" d=""/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label" data-i18n="kpiActiveStage">Active Stage</div>
+          <div class="kpi-stage" id="cStage">—</div>
+          <div class="kpi-foot" id="cStageFoot" data-i18n="fromStageApiShort">from the stage API</div>
+        </div>
+      </div>
         <div class="card span-4"><div class="label" data-i18n="cardTotal">Total (all time)</div><div class="value num" id="cTotal">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
         <div class="card span-4"><div class="label" data-i18n="cardBypassed">Bypassed (all time)</div><div class="value num" id="cBypassed">—</div><div class="foot" data-i18n="cardTotalFoot">since last reload</div></div>
         <div class="card span-4"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value num" id="cLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
@@ -1894,7 +1942,7 @@ authNote: "Wrong secret? The API will not answer and this page will stay disconn
 ovTitle: "Overview",
 ovSubPre: "Live traffic for ",
 ovSubPost: ". Updates every 3 seconds while connected.",
-cardTotalRps: "Total requests",
+cardTotalRps: "Total Requests",
 cardTotalRpsFoot: "per second, all requests",
 cardBypassRps: "Bypassed requests",
 cardBypassRpsFoot: "per second, passed to backend",
@@ -1906,6 +1954,8 @@ cardCpuFoot: "server CPU, percent",
 cardRam: "RAM usage",
 cardRamFoot: "proxy memory, percent",
 cardStage: "Stage",
+kpiSystemLoad: "System Load",
+kpiActiveStage: "Active Stage",
 fromStageApiShort: "from the stage API",
 cardLocked: "Stage locked",
 cardLockedFoot: "automatic switching when unlocked",
@@ -2736,6 +2786,8 @@ cardCpuFoot: "server CPU, percent में",
 cardRam: "RAM usage",
 cardRamFoot: "proxy memory, percent में",
 cardStage: "Stage",
+kpiSystemLoad: "सिस्टम लोड",
+kpiActiveStage: "सक्रिय स्टेज",
 fromStageApiShort: "stage API से",
 cardLocked: "Stage locked",
 cardLockedFoot: "unlock रहने पर automatic switching",
@@ -3839,6 +3891,53 @@ function drawTraffic(){
   }
 }
 
+/* KPI sparklines: smooth Catmull-Rom -> Bezier area/line paths over
+   the LAST 20 samples of the shared history buffers (trafficHist for
+   the request cards, serverHist for the CPU/RAM minis) — no new API
+   calls, no new buffers to drift. Zero traffic draws a flat baseline
+   at the bottom; no data is ever invented. */
+var KPI_SPARK_N = 20;
+function kpiLast20(arr){ return arr.slice(-KPI_SPARK_N); }
+function kpiSmoothLine(pts){
+  if(pts.length === 0) return "";
+  if(pts.length === 1) return "M " + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+  var d = "M " + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1), i, p0, p1, p2, p3, c1x, c1y, c2x, c2y;
+  for(i = 0; i < pts.length - 1; i++){
+    p0 = pts[Math.max(0, i - 1)]; p1 = pts[i]; p2 = pts[i + 1]; p3 = pts[Math.min(pts.length - 1, i + 2)];
+    c1x = p1.x + (p2.x - p0.x) / 6; c1y = p1.y + (p2.y - p0.y) / 6;
+    c2x = p2.x - (p3.x - p1.x) / 6; c2y = p2.y - (p3.y - p1.y) / 6;
+    d += " C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + " " + c2x.toFixed(1) + " " + c2y.toFixed(1) + " " + p2.x.toFixed(1) + " " + p2.y.toFixed(1);
+  }
+  return d;
+}
+function kpiSparkPaths(values, w, h){
+  var n = values.length, i, max = 0, pts = [], line, area;
+  for(i = 0; i < n; i++) if(values[i] > max) max = values[i];
+  if(max <= 0) max = 1;
+  for(i = 0; i < n; i++){
+    pts.push({x: n === 1 ? 0 : (i / (n - 1)) * w, y: h - 3 - (values[i] / max) * (h - 6)});
+  }
+  if(n === 0){ pts = [{x: 0, y: h - 3}, {x: w, y: h - 3}]; }
+  line = kpiSmoothLine(pts);
+  area = line + " L " + pts[pts.length - 1].x.toFixed(1) + " " + h.toFixed(1) + " L " + pts[0].x.toFixed(1) + " " + h.toFixed(1) + " Z";
+  return {line: line, area: area};
+}
+function kpiSetSpark(svgId, values, w, h){
+  var svg = $(svgId);
+  if(!svg) return;
+  var paths = kpiSparkPaths(values, w, h);
+  var line = svg.querySelector(".kpi-line"), area = svg.querySelector(".kpi-area");
+  if(line) line.setAttribute("d", paths.line);
+  if(area) area.setAttribute("d", paths.area);
+}
+function drawKpiRow(){
+  var t = kpiLast20(trafficHist), s = kpiLast20(serverHist);
+  kpiSetSpark("kpiSparkTotal", t.map(function(p){ return p[0]; }), 220, 48);
+  kpiSetSpark("kpiSparkBypass", t.map(function(p){ return p[1]; }), 220, 48);
+  kpiSetSpark("kpiSparkCpu", s.map(function(p){ return p[0]; }), 120, 40);
+  kpiSetSpark("kpiSparkRam", s.map(function(p){ return p[1]; }), 120, 40);
+}
+
 /* Server charts: CPU/RAM percent over time from the proxy stats the
    3s poll already fetches. Fixed 0-100% scale, same 60-sample bounded
    history, reset per domain like trafficHist. Values are clamped to
@@ -3902,6 +4001,7 @@ function loadOverview(){
     if(rps && brps) pushTraffic(dom, parseFloat(rps.TOTAL_REQUESTS_REQUESTS_PER_SECOND), parseFloat(brps.BYPASSED_REQUESTS_REQUESTS_PER_SECOND));
     syncStageHud();
     flowPollStep();
+    drawKpiRow();
     if(ips){
       setHTML("topIps", topTable(ips.TOTAL_IP_REQUESTS, t("colIp"), t("colRequests")));
     }
@@ -4205,13 +4305,26 @@ function bindTilt(){
     el.addEventListener("pointerleave", function(){ el.style.transform = ""; });
   });
 }
-/* KPI mini-gauge: ring circumference for r=15.5 is 97.4. */
+/* KPI dial gauge: the arc is a semicircle (r=46 -> length 144.5, kept
+   on the element as data-len); the needle id comes from data-needle.
+   Needle angle: -90deg at 0% -> +90deg at 100% (0deg = straight up).
+   Same function name and call sites as the old ring gauge. */
 function setGauge(id, pct){
   var el = $(id);
   if(!el) return;
-  if(!isFinite(pct)){ el.style.strokeDashoffset = "97.4"; return; }
+  var L = parseFloat(el.getAttribute("data-len")) || 97.4;
+  if(!isFinite(pct)){ el.style.strokeDashoffset = String(L); setNeedle(el, 0); return; }
   var p = Math.min(100, Math.max(0, pct));
-  el.style.strokeDashoffset = (97.4 * (1 - p / 100)).toFixed(1);
+  el.style.strokeDashoffset = (L * (1 - p / 100)).toFixed(1);
+  setNeedle(el, p);
+}
+function setNeedle(arcEl, p){
+  var nid = arcEl.getAttribute("data-needle");
+  var nd = nid ? $(nid) : null;
+  if(!nd) return;
+  var ang = (-90 + p * 1.8).toFixed(2);
+  nd.setAttribute("transform", "rotate(" + ang + " 60 58)");
+  if(nd.style) nd.style.transform = "rotate(" + ang + "deg)";
 }
 
 function loadStageState(){
@@ -6325,6 +6438,7 @@ document.addEventListener("keydown", function(ev){
 bindTilt();
 /* Hero live flow + mesh pause on hidden tab. */
 startFlow();
+drawKpiRow();
 /* Cyber-Obsidian entrance + tab indicators: stagger the first view's
    cards, place the sliding underlines, and re-place them when the
    layout moves (resize) or the webfonts swap in (widths change). */

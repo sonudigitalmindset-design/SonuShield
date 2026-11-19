@@ -6,6 +6,27 @@ see [LICENSE](LICENSE) and the credits endpoint. This changelog covers the
 SonuShield work only; upstream history before the fork point is in the git
 log.
 
+## Unreleased — Overview KPI row redesign (SW v19)
+
+- The Overview KPI row is rebuilt to the reference design: 4 equal
+  cards (`repeat(4,1fr)`, 16px gap; 2 cols <1100px, 1 col <640px),
+  deep dark glass `rgba(13,19,31,0.85)`, 14px radius, teal top-edge
+  glow (`inset 0 1px 1px rgba(45,212,191,0.35)`) + radial emerald/cyan
+  top highlight. 26px JetBrains Mono tabular-nums numbers and the 16px
+  gap are the latest explicit spec and win over the design-system
+  28px / 20px for this row only.
+- Total Requests (teal `#2DD4BF` area sparkline) and Bypassed Requests
+  (`#10B981` area sparkline) now carry live 48px Bezier sparklines
+  over the last 20 poll samples; System Load combines CPU + RAM in one
+  card (`CPU 2.50% | RAM 12.95%`) with two dial gauges (emerald CPU
+  arc, sky-blue RAM arc, needles rotating -90°→+90°) plus green/blue
+  mini sparklines; Active Stage shows the live stage pill with host
+  metadata. All live IDs kept (`cTotalRps`, `cBypassRps`, `cCpu`,
+  `cRam`, `cCpuGauge`, `cRamGauge`, `cStage`, `cStageFoot`); the old
+  radial ring gauges are retired, their IDs carried onto the dial
+  arcs. Zero traffic still draws a flat baseline. The second KPI row
+  (all-time totals, Stage locked) is unchanged.
+
 ## Unreleased — Next-Gen Cyber-Obsidian Design System (SW v18)
 
 - The whole dashboard UI is rebuilt on one strict Cyber-Obsidian
