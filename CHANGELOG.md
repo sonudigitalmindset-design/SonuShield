@@ -446,6 +446,46 @@ names, or challenge flow semantics.
   split across existing containers. Service-worker shell bumped to
   v11.
 
+### Dashboard visual-engine overhaul (command-center presentation)
+
+- Deep obsidian background (`#050811`) with an animated ambient
+  mesh (cyan/emerald/indigo radial glows, transform/opacity only,
+  paused when the tab is hidden); frosted glass panels
+  (`rgba(15,23,42,.65)`, `blur(16px)`, specular top/left borders).
+  Light mode is re-tokened, not removed; default stays dark (no
+  theme-migration bump). All new motion sits inside the existing
+  prefers-reduced-motion guard.
+- Overview hero: the static shield SVG is replaced by a vanilla
+  `<canvas>` wireframe globe with two orbital rings and satellite
+  dots — pulsing emerald while connected, crimson when under attack
+  or at Stage 2+, dim grey while disconnected; rAF pauses when
+  hidden or under reduced-motion. KPI cards and hero panels get a
+  pointer-only 3D tilt (max ~6deg) plus a cursor spotlight, and
+  numbers count up smoothly (380ms ease-out) instead of jumping.
+  Switching views replays a staggered fade-up entrance
+  (`cubic-bezier(0.16,1,0.3,1)`).
+- Toggle switches (visible pill controls syncing both ways with
+  the underlying `<select>`s, which are kept in the DOM): a
+  Sun/Moon theme switch in the top bar; an Under-Attack master
+  switch with a confirmation pulse; Maintenance Override expanding
+  its duration/message fields only when ON; the stage selector as
+  an animated segmented pill with a sliding indicator; and
+  Adaptive PoW, WAF inspect-body, and Dry-run switches in
+  Settings. No per-rule enabled toggle exists — firewall rules
+  carry expression/action/schedule only, so none was invented.
+- IP Lists: Allow and Block render side-by-side in a 2-column
+  glass grid (emerald border for Allow, crimson for Block); "Add
+  an Entry" now lives in an `+ Add IP / CIDR` drawer with the
+  existing form moved verbatim.
+- Stage: the three status cards carry animated 3D status rings
+  (ok/warn/bad/off) driven by the live stage API; the Stage
+  Reference Matrix is a collapsible drawer. Logs: Passed Requests
+  and Live Tail now share one real-time terminal console
+  (`#030508`, JetBrains Mono, syntax-highlighted fields, blinking
+  cursor) with a Live Stream toggle driving the existing SSE tail;
+  Search Structured Logs sits above it in a collapsible filter
+  bar. Service-worker shell bumped to v12.
+
 ## Known limitations (carried forward)
 
 - Live GeoIP, Turnstile/hCaptcha, and ACME flows are unverifiable without

@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5l8-3z' fill='%23f6821f'/%3E%3Cpath d='M8.5 12l2.4 2.4 4.7-4.7' stroke='%231a1206' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<meta name="theme-color" content="#090D16">
+<meta name="theme-color" content="#050811">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -62,16 +62,18 @@ __CP_BOOTSTRAP__
   /* Motion language (skill "Stagger List" preset, Subtle tier, translated
      from GSAP to CSS): 250-300ms entrances, ease-out, 30ms stagger. */
   --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-enter:cubic-bezier(.16,1,.3,1);
   --ease-in-out:cubic-bezier(.45,0,.55,1);
   --dur-fast:.15s; --dur-med:.25s; --dur-slow:.3s;
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  /* Cyber-Dark default: deep slate canvas #090D16, elevated cards
-     #111827, glass top highlight + multi-layered soft shadows.
-     Every text pair clears 4.5:1 on its surface. */
-  --bg:#090d16; --surface:#111827; --panel:#111827; --panel-2:#1a2233;
-  --panel-glass:rgba(17,24,39,.90);
+  /* Luxury Cyber-Dark default: deep obsidian canvas #050811, frosted
+     glass panels rgba(15,23,42,.65) at blur 16px, top/left specular
+     borders. Every text pair clears 4.5:1 on its surface. */
+  --bg:#050811; --surface:#0b1220; --panel:#0f172a; --panel-2:#1a2233;
+  --panel-glass:rgba(15,23,42,.65);
+  --term-bg:#030508;
   --border:#1e293b; --border-strong:#334155;
   --text:#f1f5f9; --muted:#cbd5e1; --faint:#94a3b8;
   --accent:#0369a1; --accent-hover:#0284c7; --accent-ink:#ffffff; --accent-text:#7dd3fc;
@@ -132,13 +134,13 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
    stat cards stagger in, then panels rise. Transform/opacity only —
    no layout shift. Timings follow the skill's "Stagger List" preset
    (Subtle tier): 250-300ms, ease-out, 30ms stagger, 8px rise. */
-.view.active{animation:viewIn var(--dur-med) var(--ease-out)}
+.view.active{animation:viewIn var(--dur-med) var(--ease-enter)}
 @keyframes viewIn{from{opacity:0}to{opacity:1}}
-.view.active h1{animation:headIn .3s var(--ease-out) both}
+.view.active h1{animation:headIn .45s var(--ease-enter) both}
 @keyframes headIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 /* The entrance uses fill backwards (not both) so the animation's
    final transform does not override the hover-lift afterwards. */
-.view.active .cards .card{animation:cardIn .3s var(--ease-out) backwards}
+.view.active .cards .card{animation:cardIn .45s var(--ease-enter) backwards}
 .view.active .cards .card:nth-child(1){animation-delay:.03s}
 .view.active .cards .card:nth-child(2){animation-delay:.06s}
 .view.active .cards .card:nth-child(3){animation-delay:.09s}
@@ -148,7 +150,7 @@ body,.topbar,.sidebar,.card,.panel,.navbtn,button,.btn,input,select,textarea,.pi
 .view.active .cards .card:nth-child(7){animation-delay:.21s}
 .view.active .cards .card:nth-child(8){animation-delay:.24s}
 @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.view.active .panel{animation:panelIn .3s var(--ease-out) .1s backwards}
+.view.active .panel{animation:panelIn .45s var(--ease-enter) .1s backwards}
 /* Metric cards lift on hover (transform only, no layout shift). */
 .cards .card:hover,.ov-grid .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
 @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -218,12 +220,14 @@ h2{font-size:14px;line-height:1.35;font-weight:650;margin:0 0 6px}
 
 /* Cards, panels, tables */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:12px}
-.card{background:var(--panel-glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
+.card{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:12px 16px;box-shadow:var(--shadow-sm)}
 .card .label{font-size:12.5px;font-weight:500;color:var(--muted)}
 .card .value{font-size:24px;font-weight:650;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums;font-family:var(--mono)}
 .card .value small{font-size:13px;color:var(--muted);font-weight:400}
 .card .foot{font-size:12px;color:var(--faint);margin-top:4px}
-.panel{background:var(--panel-glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
+.panel{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-sm);margin-top:12px}
+/* Frosted glass specular left edge (dark only; light keeps flat borders). */
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .panel{border-left:1px solid rgba(255,255,255,.08)}
 .panel > h2:first-child{margin-top:0}
 .panel p:last-child, .panel ul:last-child{margin-bottom:0}
 .panel ul{margin:8px 0;padding-left:20px}
@@ -348,7 +352,7 @@ tr.selected td{background:var(--nav-active-bg)}
 .span-4{grid-column:span 4!important}
 .span-6{grid-column:span 6!important}
 .span-12{grid-column:span 12!important}
-.view.active .ov-grid .card{animation:cardIn .3s var(--ease-out) backwards}
+.view.active .ov-grid .card{animation:cardIn .45s var(--ease-enter) backwards}
 .view.active .ov-grid .card:nth-child(1){animation-delay:.03s}
 .view.active .ov-grid .card:nth-child(2){animation-delay:.06s}
 .view.active .ov-grid .card:nth-child(3){animation-delay:.09s}
@@ -375,7 +379,8 @@ tr.selected td{background:var(--nav-active-bg)}
 .hero .sub{margin:0}
 .hero-status{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
 .hero-shield{--hero-glow:rgba(100,116,139,.35);filter:drop-shadow(0 0 14px var(--hero-glow));animation:heroPulse 3.2s var(--ease-in-out) infinite}
-.hero-shield svg{display:block;animation:heroFloat 5s var(--ease-in-out) infinite}
+.hero-shield canvas{display:block;width:160px;height:120px;animation:heroFloat 5s var(--ease-in-out) infinite}
+.hero-shield svg{width:0;height:0}
 .hero-shield.ok{--hero-glow:rgba(16,185,129,.45)}
 .hero-shield.warn{--hero-glow:rgba(245,158,11,.5)}
 .hero-shield.bad{--hero-glow:rgba(239,68,68,.55)}
@@ -412,7 +417,7 @@ tr.selected td{background:var(--nav-active-bg)}
 .qa-col input{max-width:100%}
 /* Sticky settings bar: floats at the viewport bottom while the form
    scrolls, hidden until a change is made. */
-.stickybar{position:sticky;bottom:12px;z-index:20;background:var(--panel-glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:10px 14px;margin-top:16px}
+.stickybar{position:sticky;bottom:12px;z-index:20;background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:1px solid var(--card-hi);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:10px 14px;margin-top:16px}
 /* Report KPI icons: small Lucide-style glyphs with a soft accent glow. */
 .rep-kpis .card{position:relative}
 .rep-kpi-ico{position:absolute;top:12px;right:14px;color:var(--accent-text);filter:drop-shadow(0 0 6px var(--ring));opacity:.9}
@@ -462,11 +467,125 @@ tr.selected td{background:var(--nav-active-bg)}
   .ov-split{grid-template-columns:1fr}
   .dom-inspector,.import-grid,.rep-mid,.ins-hero{grid-template-columns:1fr}
   .hero{grid-template-columns:1fr}
-  .hero-shield svg{width:76px;height:auto}
+  .hero-shield canvas{width:76px;height:57px}
+}
+/* ===== Visual engine overhaul: luxury obsidian command center =====
+   Animated mesh glow, frosted glass, 3D tilt + spotlight, pill
+   toggles, segmented controls, terminal console, stage rings.
+   All motion is transform/opacity only and lives inside the
+   prefers-reduced-motion guard below. */
+/* Ambient mesh: three slow-drifting radial glows behind the content.
+   Fixed layer, pointer-transparent, paused when the tab is hidden
+   (JS toggles .anim-paused on <html>). */
+.mesh{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(640px 420px at 72% 18%,rgba(16,185,129,.10),transparent 70%)}
+.mesh::before,.mesh::after{content:"";position:absolute;border-radius:50%;filter:blur(90px);animation:meshDrift 26s ease-in-out infinite alternate}
+.mesh::before{width:560px;height:560px;left:-120px;top:-160px;background:radial-gradient(circle,rgba(34,211,238,.20),transparent 65%)}
+.mesh::after{width:640px;height:640px;right:-160px;bottom:-220px;background:radial-gradient(circle,rgba(99,102,241,.18),transparent 65%);animation-delay:-13s}
+@keyframes meshDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(60px,40px,0) scale(1.12)}}
+:root.anim-paused .mesh::before,:root.anim-paused .mesh::after{animation-play-state:paused}
+:root[data-theme="light"] .mesh{opacity:.35}
+.layout,.topbar{position:relative;z-index:1}
+/* 3D tilt + cursor spotlight (JS adds .tilt to KPI cards and heroes;
+   pointer devices only, disabled under reduced-motion). */
+.tilt{position:relative;overflow:hidden;will-change:transform}
+.tilt::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgba(125,211,252,.14),transparent 70%);opacity:0;transition:opacity var(--dur-med) var(--ease-out);pointer-events:none}
+.tilt:hover::before{opacity:1}
+/* Pill toggle switch: tactile, spring thumb, glowing on-state.
+   The underlying <select> stays in the DOM (visually hidden) and
+   keeps its id/value/handlers; the switch syncs both ways. */
+.switch{position:relative;display:inline-flex;align-items:center;flex:none;width:48px;height:26px;padding:0;border:1px solid var(--border-strong);border-radius:999px;background:var(--panel-2);cursor:pointer;transition:background-color .25s var(--ease-enter),border-color .25s var(--ease-enter),box-shadow .25s var(--ease-enter)}
+.switch:hover{transform:none;box-shadow:none}
+.switch .switch-thumb{position:absolute;left:2px;top:2px;width:20px;height:20px;border-radius:50%;background:#e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.45);transition:transform .28s cubic-bezier(.34,1.56,.64,1),background-color .25s}
+.switch[aria-checked="true"]{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 1px var(--ring),0 0 14px rgba(3,105,161,.45)}
+.switch[aria-checked="true"] .switch-thumb{transform:translateX(22px);background:#fff}
+.switch-underlying{position:absolute!important;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;opacity:0}
+/* Sun/Moon theme switch: wider pill, icons at both ends, thumb slides. */
+.theme-switch{width:60px;height:28px;background:var(--panel-2)}
+.theme-switch .switch-thumb{width:22px;height:22px}
+.theme-switch[aria-checked="true"] .switch-thumb{transform:translateX(32px)}
+.theme-switch .theme-icon{position:absolute;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint);pointer-events:none}
+.theme-switch .theme-icon.sun{left:7px}
+.theme-switch .theme-icon.moon{right:7px}
+.theme-switch[aria-checked="true"] .theme-icon.moon{color:#fde68a}
+.theme-switch[aria-checked="false"] .theme-icon.sun{color:#fbbf24}
+/* Segmented 3D pill control (stage selector): sliding indicator
+   behind the active button; JS positions it, never transitionend. */
+.segcontrol{position:relative;display:inline-flex;gap:2px;padding:3px;border:1px solid var(--border);border-radius:999px;background:var(--panel-2)}
+.segcontrol button{position:relative;z-index:1;border:none;background:transparent;color:var(--muted);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:color .2s var(--ease-out)}
+.segcontrol button:hover{transform:none;box-shadow:none}
+.segcontrol button.seg-active{color:var(--text)}
+.seg-indicator{position:absolute;top:3px;bottom:3px;left:3px;width:80px;border-radius:999px;background:var(--nav-active-bg);box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(255,255,255,.12);transition:left .3s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.34,1.4,.64,1)}
+/* Under-attack master switch: high-contrast red, glowing thumb,
+   confirmation pulse on toggle (class .pulse-on, removed by JS). */
+.attack-switch{position:relative;display:inline-flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid var(--bad-border);border-radius:999px;background:var(--bad-bg);color:var(--bad-text);font-weight:700;font-size:13.5px;letter-spacing:.4px;cursor:pointer;transition:background-color .25s,border-color .25s,box-shadow .25s}
+.attack-switch:hover{transform:none}
+.attack-switch .switch-thumb{position:static;flex:none;width:22px;height:22px;border-radius:50%;background:#fca5a5;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .28s cubic-bezier(.34,1.56,.64,1),background-color .25s}
+.attack-switch[aria-checked="true"]{background:#dc2626;border-color:#dc2626;color:#fff;box-shadow:0 0 0 1px rgba(220,38,38,.5),0 0 22px rgba(220,38,38,.55)}
+.attack-switch[aria-checked="true"] .switch-thumb{transform:translateX(0);background:#fff}
+.attack-switch.pulse-on{animation:attackPulse .6s var(--ease-enter)}
+@keyframes attackPulse{0%{box-shadow:0 0 0 0 rgba(220,38,38,.6)}100%{box-shadow:0 0 0 18px rgba(220,38,38,0)}}
+/* Stage 3D status rings: conic ring around a soft disc, slow spin;
+   state classes come from the live stage values (JS). */
+.stage-ring-card{position:relative}
+.stage-ring-card .ring{position:absolute;top:12px;right:14px;width:44px;height:44px;border-radius:50%;background:conic-gradient(from 0deg,var(--ring-c,#64748b),transparent 70%,var(--ring-c,#64748b));-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%);mask:radial-gradient(circle,transparent 58%,#000 60%);animation:ringSpin 6s linear infinite;opacity:.9}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
+.stage-ring-card.ring-ok{--ring-c:#10b981}
+.stage-ring-card.ring-warn{--ring-c:#f59e0b}
+.stage-ring-card.ring-bad{--ring-c:#ef4444}
+.stage-ring-card.ring-off{--ring-c:#64748b}
+.stage-ring-card.ring-off .ring{animation:none}
+.stage-ring-card .value{padding-right:52px}
+/* Collapsible panels (stage matrix, log search filters): smooth
+   max-height collapse; state lives on the panel class + aria-expanded. */
+.stage-matrix,.ls-collapsible{overflow:hidden;transition:max-height .35s var(--ease-enter),opacity .3s var(--ease-enter),margin .35s var(--ease-enter),padding .35s var(--ease-enter)}
+.stage-matrix{max-height:640px}
+.stage-matrix.collapsed{max-height:0;opacity:0;margin-top:0;padding-top:0;padding-bottom:0;border-width:0}
+.ls-collapsible{max-height:4000px}
+.panel.collapsed .ls-collapsible{max-height:0;opacity:0}
+.collapse-toggle{margin-top:12px}
+/* Maintenance extra fields expand only when the override is ON. */
+#maintForm .maint-extra{overflow:hidden;max-height:120px;opacity:1;transition:max-height .3s var(--ease-enter),opacity .25s var(--ease-enter)}
+#maintForm:not(.maint-on) .maint-extra{max-height:0;opacity:0;margin:0}
+/* IP lists: two-column glass grid; emerald for Allow, crimson for Block. */
+.ip-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.ip-grid .panel{margin-top:0}
+.ip-allow{border-color:rgba(16,185,129,.45);box-shadow:0 0 0 1px rgba(16,185,129,.18),0 0 18px rgba(16,185,129,.12)}
+.ip-block{border-color:rgba(239,68,68,.45);box-shadow:0 0 0 1px rgba(239,68,68,.18),0 0 18px rgba(239,68,68,.12)}
+@media (max-width:880px){.ip-grid{grid-template-columns:1fr}}
+/* Real-time terminal console: obsidian bg, mono, syntax highlights,
+   blinking live cursor. Passed requests + live tail share one console. */
+.terminal-panel{background:var(--panel-glass)}
+.terminal{background:var(--term-bg,#030508);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#cbd5e1;overflow-x:auto}
+.terminal .state{background:transparent;border-color:rgba(148,163,184,.25);color:#94a3b8}
+.terminal table{width:100%;border-collapse:collapse}
+.terminal th{color:#7dd3fc;text-align:left;font-weight:600;border-bottom:1px solid rgba(125,211,252,.25);padding:4px 8px 6px 0}
+.terminal td{border-bottom:1px solid rgba(148,163,184,.14);padding:4px 8px 4px 0;vertical-align:top}
+.terminal .tailbox{border:none;background:transparent;padding:8px 0 0;margin-top:8px;max-height:320px}
+.terminal .tailbox .tl-warn{color:#fca5a5}
+.tl-ts{color:#64748b}
+.tl-level{font-weight:600}
+.tl-level.tl-info{color:#38bdf8}
+.tl-level.tl-warn{color:#fbbf24}
+.tl-event{color:#e2e8f0}
+.tl-domain{color:#94a3b8}
+.tl-ip{color:#38bdf8}
+.tl-action{color:#fbbf24}
+.tl-method{color:#34d399;font-weight:700}
+.tl-path{color:#a5b4fc}
+.term-stream-label{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(148,163,184,.2);color:#7dd3fc;font-weight:600;font-size:12px;letter-spacing:.6px;text-transform:uppercase}
+.term-cursor{display:inline-block;width:8px;height:14px;background:#34d399;vertical-align:-2px;animation:cursorBlink 1s steps(1) infinite}
+@keyframes cursorBlink{50%{opacity:0}}
+.terminal-head-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+/* Reduced motion: everything new goes still too. */
+@media (prefers-reduced-motion:reduce){
+  .mesh,.mesh::before,.mesh::after,.tilt::before,.stage-ring-card .ring,.term-cursor,.attack-switch.pulse-on,.hero-shield canvas{animation:none}
+  .switch,.switch .switch-thumb,.seg-indicator,.stage-matrix,.ls-collapsible,#maintForm .maint-extra{transition:none}
+  .tilt{transform:none}
 }
 </style>__BRAND_STYLE__
 </head>
 <body>
+<div class="mesh" aria-hidden="true"></div>
 <header class="topbar">
   <span class="brand">
     __BRAND_MARK__
@@ -478,8 +597,9 @@ tr.selected td{background:var(--nav-active-bg)}
   <div class="spacer"></div>
   <span class="pill" id="updatingPill" hidden><span class="spinner" aria-hidden="true"></span><span data-i18n="updating">Updating</span></span>
   <span class="themeseg" role="group" data-i18n-aria="themeAria" aria-label="Color theme">
-    <button type="button" data-theme-choice="dark" aria-pressed="false" data-i18n="themeDark">Dark</button>
-    <button type="button" data-theme-choice="light" aria-pressed="true" data-i18n="themeLight">Light</button>
+    <button type="button" data-theme-choice="dark" aria-pressed="false" data-i18n="themeDark" hidden>Dark</button>
+    <button type="button" data-theme-choice="light" aria-pressed="true" data-i18n="themeLight" hidden>Light</button>
+    <button type="button" class="switch theme-switch" id="themeSwitch" role="switch" aria-checked="false" data-i18n-aria="themeSwitchAria" aria-label="Toggle dark mode"><svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span class="switch-thumb"></span><svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
   </span>
   <span class="themeseg" role="group" data-i18n-aria="langAria" aria-label="Language">
     <button type="button" data-lang-choice="en" aria-pressed="true">English</button>
@@ -538,25 +658,8 @@ tr.selected td{background:var(--nav-active-bg)}
           <div class="hero-status"><span id="heroStage">—</span><span class="muted small" data-i18n="fromStageApiShort">from the stage API</span></div>
         </div>
         <div class="hero-shield off" id="heroShield" role="img" data-i18n-aria="heroShieldLabel" aria-label="Protection status">
-          <svg width="120" height="90" viewBox="0 0 160 120" fill="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="heroShieldGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#0ea5e9"/>
-                <stop offset="1" stop-color="#0369a1"/>
-              </linearGradient>
-            </defs>
-            <ellipse cx="80" cy="112" rx="36" ry="5" fill="rgba(2,6,23,.35)"/>
-            <path d="M24 34 L44 46 M136 34 L116 46 M140 92 L114 86" stroke="#38bdf8" stroke-opacity=".45" stroke-width="1.5" stroke-dasharray="3 3"/>
-            <path d="M88 14 L132 32 V66 C132 94 112 110 88 118 C64 110 44 94 44 66 V32 Z" fill="#0b1526" opacity=".55"/>
-            <path d="M80 8 L124 26 V60 C124 88 104 104 80 112 C56 104 36 88 36 60 V26 Z" fill="url(#heroShieldGrad)"/>
-            <path d="M80 8 L36 26 V60 C36 88 56 104 80 112 V8 Z" fill="#020617" opacity=".22"/>
-            <path d="M80 8 L124 26 V60 C124 88 104 104 80 112 V8 Z" fill="#ffffff" opacity=".07"/>
-            <path d="M80 8 L124 26" stroke="#ffffff" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M64 60 l10 10 18-20" stroke="#34d399" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="20" cy="32" r="5" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
-            <circle cx="140" cy="32" r="5" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
-            <circle cx="142" cy="94" r="5" fill="#111827" stroke="#10b981" stroke-width="2"/>
-          </svg>
+          <canvas id="heroGlobe" width="320" height="240" aria-hidden="true"></canvas>
+          <svg width="0" height="0" aria-hidden="true"><defs><linearGradient id="heroShieldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs></svg>
         </div>
       </div>
       <div class="ov-grid">
@@ -938,9 +1041,16 @@ tr.selected td{background:var(--nav-active-bg)}
       <p class="sub"><span data-i18n="ipSubPre">Allow and block lists for </span><strong id="ipListsDomain">—</strong><span data-i18n="ipSubPost">. A blocklisted IP is blocked before rate limiting runs; an allowlisted IP starts unchallenged and bypasses the early rate-limit and fingerprint blocks. The block list wins when an IP matches both. Expired entries drop automatically. Changes are saved to <code>config.json</code> on the server immediately and take effect without a reload.</span></p>
       <div class="inline-err" id="ipListsError" role="alert"></div>
       <div class="inline-ok" id="ipListsOk" role="status"></div>
+      <div class="toolbar">
+        <button type="button" class="primary" id="ipAddBtn" data-i18n="ipAddBtn2">+ Add IP / CIDR</button>
+      </div>
       <div id="ipListsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
-      <div class="panel">
-        <h2 data-i18n="addEntryTitle">Add an entry</h2>
+    <div class="drawer-overlay" id="ipModal" hidden>
+      <div class="drawer" role="dialog" aria-modal="true" data-i18n-aria="ipModalAria" aria-label="Add an IP list entry">
+        <div class="drawer-head">
+          <h2 data-i18n="addEntryTitle">Add an entry</h2>
+          <button type="button" class="iconbtn" id="ipModalClose" data-i18n-aria="ipModalClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
         <form id="ipEntryForm">
           <div class="formgrid">
             <div class="field">
@@ -966,26 +1076,30 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </form>
       </div>
+    </div>
     </section>
 
     <section id="view-stage" class="view">
       <h1 data-i18n="stageTitle">Stage</h1>
       <p class="sub"><span data-i18n="stageSubPre">The current challenge stage for </span><strong id="stageDomain">—</strong><span data-i18n="stageSubPost">.</span></p>
       <div class="cards">
-        <div class="card"><div class="label" data-i18n="stageCardCurrent">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
-        <div class="card"><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="stageLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
-        <div class="card"><div class="label" data-i18n="stageCardAttack">Under attack</div><div class="value" id="stageAttack">—</div><div class="foot" data-i18n="stageCardAttackFoot">raw or bypassing attack in progress</div></div>
+        <div class="card stage-ring-card ring-off" id="stageCardCurrent"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="stageCardCurrent">Current stage</div><div class="value" id="stageBig">—</div><div class="foot" id="stageBigFoot" data-i18n="fromStageApiShort">from the stage API</div></div>
+        <div class="card stage-ring-card ring-off" id="stageCardLocked"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="cardLocked">Stage locked</div><div class="value" id="stageLocked">—</div><div class="foot" data-i18n="cardLockedFoot">automatic switching when unlocked</div></div>
+        <div class="card stage-ring-card ring-off" id="stageCardAttack"><div class="ring" aria-hidden="true"></div><div class="label" data-i18n="stageCardAttack">Under attack</div><div class="value" id="stageAttack">—</div><div class="foot" data-i18n="stageCardAttackFoot">raw or bypassing attack in progress</div></div>
       </div>
       <div class="inline-err" id="stageError" role="alert"></div>
       <div class="inline-ok" id="stageOk" role="status"></div>
       <div class="panel">
         <h2 data-i18n="stageChangeTitle">Change the stage</h2>
-        <div class="btnrow">
+        <div class="segcontrol" id="stageSeg" role="group" data-i18n-aria="stageSegAria" aria-label="Stage selector">
+          <span class="seg-indicator" id="stageSegInd" aria-hidden="true"></span>
           <button type="button" data-stage="0" data-i18n="stageBtnAuto">Automatic (unlock)</button>
           <button type="button" data-stage="1" data-i18n="stageBtn1">Lock Stage 1</button>
           <button type="button" data-stage="2" data-i18n="stageBtn2">Lock Stage 2</button>
           <button type="button" data-stage="3" data-i18n="stageBtn3">Lock Stage 3</button>
-          <button type="button" data-underattack="true" class="danger" data-i18n="stageBtnAttack">Under-attack mode</button>
+        </div>
+        <div style="margin-top:16px">
+          <button type="button" class="attack-switch" id="attackSwitch" data-underattack="true" role="switch" aria-checked="false" data-i18n-aria="attackSwitchAria" aria-label="Under-attack mode"><span class="switch-thumb"></span><span data-i18n="stageBtnAttack">Under-attack mode</span></button>
         </div>
         <p class="small muted" data-i18n="stageChangeNote">Stage changes apply immediately and are <strong>runtime-only</strong>: a config reload or restart returns the domain to automatic switching. Under-attack mode locks Stage 3; Automatic turns it off.</p>
       </div>
@@ -997,13 +1111,14 @@ tr.selected td{background:var(--nav-active-bg)}
           <div class="formgrid">
             <div class="field">
               <label for="maintEnabled" data-i18n="maintEnabledLabel">Maintenance override</label>
-              <select id="maintEnabled"><option value="false" data-i18n="maintOff">Off</option><option value="true" data-i18n="maintOn">On — serve the maintenance page</option></select>
+              <select id="maintEnabled" class="switch-underlying"><option value="false" data-i18n="maintOff">Off</option><option value="true" data-i18n="maintOn">On — serve the maintenance page</option></select>
+              <button type="button" class="switch" id="swMaint" role="switch" aria-checked="false" data-i18n-aria="maintEnabledLabel" aria-label="Maintenance override"><span class="switch-thumb"></span></button>
             </div>
-            <div class="field">
+            <div class="field maint-extra">
               <label for="maintDuration" data-i18n="maintDurationLabel">Duration (minutes, 0 = until disabled)</label>
               <input id="maintDuration" type="number" min="0" step="1" value="0">
             </div>
-            <div class="field" style="grid-column:1/-1">
+            <div class="field maint-extra" style="grid-column:1/-1">
               <label for="maintMessage" data-i18n="maintMessageLabel">Message (optional)</label>
               <input id="maintMessage" type="text" autocomplete="off" maxlength="500" placeholder="This site is under maintenance. Please try again shortly.">
             </div>
@@ -1014,7 +1129,8 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </form>
       </div>
-      <div class="panel">
+      <button type="button" class="collapse-toggle" id="stageMatrixToggle" aria-expanded="false" data-i18n="stageMatrixToggle">Stage reference</button>
+      <div class="panel stage-matrix collapsed" id="stageMatrixPanel">
         <h2 data-i18n="stageWhatTitle">What each stage does</h2>
         <table>
           <thead><tr><th data-i18n="stageTitle">Stage</th><th data-i18n="stageThChallenge">Challenge</th><th data-i18n="stageThEffect">Effect</th></tr></thead>
@@ -1038,9 +1154,31 @@ tr.selected td{background:var(--nav-active-bg)}
         <span class="small muted" id="logsNote"></span>
       </div>
       <div class="inline-err" id="logsError" role="alert"></div>
-      <div id="logsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
-      <div class="panel">
-        <h2 data-i18n="lsTitle">Search structured logs</h2>
+      <div class="panel terminal-panel">
+        <div class="panel-head">
+          <h2 data-i18n="logsTerminalTitle">Real-time terminal</h2>
+          <span class="terminal-head-right">
+            <span class="small muted" data-i18n="tailLiveLabel">Live stream</span>
+            <button type="button" class="switch" id="tailSwitch" role="switch" aria-checked="false" data-i18n-aria="tailLiveLabel" aria-label="Live stream"><span class="switch-thumb"></span></button>
+            <span class="small muted" id="tailStatus"></span>
+          </span>
+        </div>
+        <p class="small muted" data-i18n="tailNote">Streams new log entries as they happen, for all domains. Same sanitized fields as the JSON log file — no bodies, cookies, or secrets. The stream stops when you leave this view.</p>
+        <div class="terminal" id="terminalBox">
+          <div id="logsBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
+          <div class="term-stream-label"><span data-i18n="tailTitle">Live log tail</span></div>
+          <div class="tailbox terminal-tail" id="tailBody"><span class="muted" data-i18n="tailEmpty">Tail is stopped. Press Start tail to stream new entries.</span></div>
+          <span class="term-cursor" aria-hidden="true"></span>
+        </div>
+        <button class="primary" type="button" id="tailStartBtn" data-i18n="tailStart" hidden>Start tail</button>
+        <button type="button" id="tailStopBtn" disabled data-i18n="tailStop" hidden>Stop</button>
+      </div>
+      <div class="panel" id="lsPanel">
+        <div class="panel-head">
+          <h2 data-i18n="lsTitle">Search structured logs</h2>
+          <button type="button" class="collapse-toggle" id="lsCollapseBtn" aria-expanded="true" data-i18n="lsCollapseLabel">Filters</button>
+        </div>
+        <div class="ls-collapsible" id="lsCollapsible">
         <p class="small muted" data-i18n="lsNote">Searches the JSON log files on the server (current + rotated, newest first) — including blocked and challenged requests, which the list above does not show. Requires <code>proxy.logFormat</code> set to <code>json</code> and <code>proxy.logFile</code> set in <code>config.json</code>. Filters match exactly.</p>
         <form id="logSearchForm">
           <div class="formgrid">
@@ -1059,21 +1197,12 @@ tr.selected td{background:var(--nav-active-bg)}
           </div>
         </form>
         <div id="logSearchBody" style="margin-top:12px"><div class="state" data-i18n="lsNoSearch">No search run yet.</div></div>
+        </div>
       </div>
       <div class="panel">
         <h2 data-i18n="cspTitle">CSP violation reports</h2>
         <p class="small muted" data-i18n="cspNote">Reports sent by browsers to /_bProxy/csp-report for this domain, newest first. Query strings are stripped from stored URLs. Reports never affect enforcement.</p>
         <div id="cspBody"><div class="state" data-i18n="noDataYet">No data yet. Connect to load live data.</div></div>
-      </div>
-      <div class="panel">
-        <h2 data-i18n="tailTitle">Live log tail</h2>
-        <p class="small muted" data-i18n="tailNote">Streams new log entries as they happen, for all domains. Same sanitized fields as the JSON log file — no bodies, cookies, or secrets. The stream stops when you leave this view.</p>
-        <div class="btnrow">
-          <button class="primary" type="button" id="tailStartBtn" data-i18n="tailStart">Start tail</button>
-          <button type="button" id="tailStopBtn" disabled data-i18n="tailStop">Stop</button>
-          <span class="small muted" id="tailStatus"></span>
-        </div>
-        <div class="tailbox" id="tailBody" style="margin-top:12px"><span class="muted" data-i18n="tailEmpty">Tail is stopped. Press Start tail to stream new entries.</span></div>
       </div>
     </section>
 
@@ -1107,7 +1236,7 @@ tr.selected td{background:var(--nav-active-bg)}
         <div class="panel">
           <h2 data-i18n="setPowTitle">Proof-of-work &amp; challenges</h2>
           <div class="formgrid">
-            <div class="field"><label for="setAdaptivePow" data-i18n="setAdaptiveLabel">Adaptive proof-of-work</label><select id="setAdaptivePow"><option value="true" data-i18n="setAdaptiveEnabled">Enabled</option><option value="false" data-i18n="setAdaptiveDisabled">Disabled</option></select><div class="hint" data-i18n="setAdaptiveHint">Difficulty scales with bypassed traffic between the bounds below.</div></div>
+            <div class="field"><label for="setAdaptivePow" data-i18n="setAdaptiveLabel">Adaptive proof-of-work</label><select id="setAdaptivePow" class="switch-underlying"><option value="true" data-i18n="setAdaptiveEnabled">Enabled</option><option value="false" data-i18n="setAdaptiveDisabled">Disabled</option></select><button type="button" class="switch" id="swAdaptivePow" role="switch" aria-checked="false" data-i18n-aria="setAdaptiveLabel" aria-label="Adaptive proof-of-work"><span class="switch-thumb"></span></button><div class="hint" data-i18n="setAdaptiveHint">Difficulty scales with bypassed traffic between the bounds below.</div></div>
             <div class="field"><label for="setPowMin" data-i18n="setPowMinLabel">PoW difficulty min (0 = default)</label><input id="setPowMin" type="number" min="0" max="16" step="1"></div>
             <div class="field"><label for="setPowMax" data-i18n="setPowMaxLabel">PoW difficulty max (0 = default)</label><input id="setPowMax" type="number" min="0" max="16" step="1"></div>
           </div>
@@ -1117,14 +1246,14 @@ tr.selected td{background:var(--nav-active-bg)}
           <h2 data-i18n="setWafTitle">WAF-lite</h2>
           <div class="formgrid">
             <div class="field"><label for="setWafMode" data-i18n="setWafModeLabel">WAF mode</label><select id="setWafMode"><option value="off" data-i18n="setWafOff">Off</option><option value="log" data-i18n="setWafLog">Log only</option><option value="block" data-i18n="setWafBlock">Block</option></select><div class="hint" data-i18n="setWafHint">Block mode answers matches with a generic 403.</div></div>
-            <div class="field"><label for="setWafInspectBody" data-i18n="setWafBodyLabel">Inspect request bodies</label><select id="setWafInspectBody"><option value="true" data-i18n="yes">Yes</option><option value="false" data-i18n="no">No</option></select></div>
+            <div class="field"><label for="setWafInspectBody" data-i18n="setWafBodyLabel">Inspect request bodies</label><select id="setWafInspectBody" class="switch-underlying"><option value="true" data-i18n="yes">Yes</option><option value="false" data-i18n="no">No</option></select><button type="button" class="switch" id="swWafInspectBody" role="switch" aria-checked="false" data-i18n-aria="setWafBodyLabel" aria-label="Inspect request bodies"><span class="switch-thumb"></span></button></div>
             <div class="field"><label for="setWafWpLimit" data-i18n="setWpLabel">WordPress login limit (per min/IP)</label><input id="setWafWpLimit" type="number" min="0" step="1"><div class="hint" data-i18n="setWpHint">0 uses the default of 20/minute.</div></div>
           </div>
         </div>
         <div class="panel">
           <h2 data-i18n="navRules">Firewall rules</h2>
           <div class="formgrid">
-            <div class="field"><label for="setRulesDryRun" data-i18n="setDryRunLabel">Rules dry-run mode</label><select id="setRulesDryRun"><option value="false" data-i18n="setDryRunOff">Off — rules enforced</option><option value="true" data-i18n="setDryRunOn">On — log matches, take no action</option></select><div class="hint" data-i18n="setDryRunHint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
+            <div class="field"><label for="setRulesDryRun" data-i18n="setDryRunLabel">Rules dry-run mode</label><select id="setRulesDryRun" class="switch-underlying"><option value="false" data-i18n="setDryRunOff">Off — rules enforced</option><option value="true" data-i18n="setDryRunOn">On — log matches, take no action</option></select><button type="button" class="switch" id="swRulesDryRun" role="switch" aria-checked="false" data-i18n-aria="setDryRunLabel" aria-label="Rules dry-run mode"><span class="switch-thumb"></span></button><div class="hint" data-i18n="setDryRunHint">In dry-run mode, rule matches are logged as <code>dryrun</code> entries with the level the rules would have set, but no request is challenged or blocked by rules.</div></div>
           </div>
         </div>
         </div>
@@ -1426,6 +1555,8 @@ function applyTheme(theme){
   document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
     btn.setAttribute("aria-pressed", btn.getAttribute("data-theme-choice") === theme ? "true" : "false");
   });
+  var ts = $("themeSwitch");
+  if(ts) ts.setAttribute("aria-checked", theme === "dark" ? "true" : "false");
   try { localStorage.setItem(THEME_KEY, theme); } catch(e){}
 }
 document.querySelectorAll("[data-theme-choice]").forEach(function(btn){
@@ -1494,6 +1625,7 @@ hostPillTitle: "Domain in the address bar",
 updating: "Updating",
 themeDark: "Dark",
 themeLight: "Light",
+themeSwitchAria: "Toggle dark mode",
 themeAria: "Color theme",
 langAria: "Language",
 refreshBtn: "Refresh",
@@ -1623,6 +1755,9 @@ ipExpHint: "Expired entries are removed automatically.",
 ipNoteLabel: "Note (optional)",
 ipNotePh: "Why this entry exists",
 ipAddBtn: "Add entry",
+ipModalClose: "Close",
+ipModalAria: "Add an IP list entry",
+ipAddBtn2: "Add IP / CIDR",
 stageTitle: "Stage",
 stageSubPre: "The current challenge stage for ",
 stageSubPost: ".",
@@ -1635,8 +1770,11 @@ stageBtn1: "Lock Stage 1",
 stageBtn2: "Lock Stage 2",
 stageBtn3: "Lock Stage 3",
 stageBtnAttack: "Under-attack mode",
+attackSwitchAria: "Under-attack mode switch",
+stageSegAria: "Stage selector",
 stageChangeNote: "Stage changes apply immediately and are <strong>runtime-only</strong>: a config reload or restart returns the domain to automatic switching. Under-attack mode locks Stage 3; Automatic turns it off.",
 stageWhatTitle: "What each stage does",
+stageMatrixToggle: "Stage reference",
 stageThChallenge: "Challenge",
 stageThEffect: "Effect",
 stageRow1Badge: "Stage 1",
@@ -1653,6 +1791,7 @@ stageRow4Challenge: "Block",
 stageRow4Effect: "All requests blocked (only when manually locked above 3).",
 stageNote: "<strong>Stage changes are runtime-only.</strong> Locking a stage here has the same effect as the terminal <span class=\"kbd\">stage</span> command, and a reload or restart returns the domain to automatic switching. There is no need to use the terminal for stage control.",
 logsTitle: "Logs",
+logsTerminalTitle: "Real-time terminal",
 logsSubPre: "Most recent requests that passed the challenges, for ",
 logsSubPost: ". Newest first. Logs only include requests that passed; blocked and challenged requests are not logged here.",
 clearLogsBtn: "Clear logs for this domain",
@@ -1665,6 +1804,7 @@ lsFromLabel: "From",
 lsToLabel: "To",
 lsPerPageLabel: "Per page",
 lsSearchBtn: "Search",
+lsCollapseLabel: "Filters",
 lsPrevBtn: "Previous page",
 lsNextBtn: "Next page",
 lsNoSearch: "No search run yet.",
@@ -2158,6 +2298,7 @@ tailTitle: "Live log tail",
 tailNote: "Streams new log entries as they happen, for all domains. Same sanitized fields as the JSON log file — no bodies, cookies, or secrets. The stream stops when you leave this view.",
 tailStart: "Start tail",
 tailStop: "Stop",
+tailLiveLabel: "Live stream",
 tailRunning: "Streaming…",
 tailStopped: "Stopped.",
 tailEmpty: "Tail is stopped. Press Start tail to stream new entries.",
@@ -2290,6 +2431,7 @@ hostPillTitle: "Address bar में domain",
 updating: "Update हो रहा है",
 themeDark: "Dark",
 themeLight: "Light",
+themeSwitchAria: "डार्क मोड बदलें",
 themeAria: "Color theme",
 langAria: "भाषा",
 refreshBtn: "Refresh",
@@ -2419,6 +2561,9 @@ ipExpHint: "Expired entries अपने आप हटा दी जाती �
 ipNoteLabel: "Note (optional)",
 ipNotePh: "यह entry क्यों है",
 ipAddBtn: "Entry जोड़ें",
+ipModalClose: "बंद करें",
+ipModalAria: "IP सूची में एंट्री जोड़ें",
+ipAddBtn2: "IP / CIDR जोड़ें",
 stageTitle: "Stage",
 stageSubPre: "",
 stageSubPost: " का current challenge stage।",
@@ -2431,8 +2576,11 @@ stageBtn1: "Stage 1 lock करें",
 stageBtn2: "Stage 2 lock करें",
 stageBtn3: "Stage 3 lock करें",
 stageBtnAttack: "Under-attack mode",
+attackSwitchAria: "अंडर-अटैक मोड स्विच",
+stageSegAria: "स्टेज चुनें",
 stageChangeNote: "Stage changes तुरंत apply होते हैं और <strong>सिर्फ runtime</strong> तक रहते हैं: config reload या restart होने पर domain वापस automatic switching पर आ जाता है। Under-attack mode Stage 3 lock करता है; Automatic उसे बंद करता है।",
 stageWhatTitle: "हर stage क्या करता है",
+stageMatrixToggle: "स्टेज संदर्भ",
 stageThChallenge: "Challenge",
 stageThEffect: "प्रभाव",
 stageRow1Badge: "Stage 1",
@@ -2449,6 +2597,7 @@ stageRow4Challenge: "Block",
 stageRow4Effect: "सभी requests blocked (सिर्फ तब जब 3 से ऊपर manually lock किया गया हो)।",
 stageNote: "<strong>Stage changes सिर्फ runtime तक रहते हैं।</strong> यहाँ stage lock करने का वही effect है जो terminal के <span class=\"kbd\">stage</span> command का है, और reload या restart होने पर domain वापस automatic switching पर आ जाता है। Stage control के लिए terminal इस्तेमाल करने की ज़रूरत नहीं है।",
 logsTitle: "Logs",
+logsTerminalTitle: "रियल-टाइम टर्मिनल",
 logsSubPre: "",
 logsSubPost: " के लिए challenges पास करने वाले सबसे recent requests। सबसे नए पहले। Logs में सिर्फ पास हुए requests आते हैं; blocked और challenged requests यहाँ log नहीं होते।",
 clearLogsBtn: "इस domain के logs साफ़ करें",
@@ -2461,6 +2610,7 @@ lsFromLabel: "कब से",
 lsToLabel: "कब तक",
 lsPerPageLabel: "प्रति page",
 lsSearchBtn: "Search",
+lsCollapseLabel: "फ़िल्टर",
 lsPrevBtn: "पिछला page",
 lsNextBtn: "अगला page",
 lsNoSearch: "अभी कोई search नहीं हुई।",
@@ -2954,6 +3104,7 @@ tailTitle: "लाइव लॉग टेल",
 tailNote: "नई लॉग एंट्री आते ही stream करती है, सभी domains के लिए। JSON लॉग फ़ाइल जैसे ही sanitized fields — कोई body, cookie या secret नहीं। इस view से जाते ही stream रुक जाती है।",
 tailStart: "टेल शुरू करें",
 tailStop: "रोकें",
+tailLiveLabel: "लाइव स्ट्रीम",
 tailRunning: "Streaming…",
 tailStopped: "रुक गई।",
 tailEmpty: "टेल रुकी हुई है। नई एंट्री stream करने के लिए Start tail दबाएँ।",
@@ -3173,14 +3324,46 @@ function setText(id, text){ var el = $(id); if(el) el.textContent = text; }
 /* setStat: like setText, but pops the value briefly when a poll changes it.
    Motion-only: the text update itself is identical, and the animation is
    disabled entirely under prefers-reduced-motion. */
+/* Smooth count-up for stat values: parses the current and target
+   numbers (comma-grouped, optional decimals/suffix like %), eases
+   between them over 380ms, and always lands on the exact target
+   text (timeout fallback for throttled rAF in background tabs). */
+function parseStatNum(s){
+  if(!s) return null;
+  var m = String(s).replace(/,/g, "").match(/^(-?\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+function formatStatNum(v, target){
+  var m = String(target).replace(/,/g, "").match(/^(-?\d+(?:\.\d+)?)(.*)$/);
+  if(!m) return String(v);
+  var dec = m[1].indexOf(".") >= 0 ? m[1].split(".")[1].length : 0;
+  var s = v.toFixed(dec);
+  if(dec === 0) s = Number(s).toLocaleString("en-US");
+  return s + m[2];
+}
 function setStat(id, text){
   var el = $(id);
   if(!el) return;
   if(el.textContent === text) return;
-  el.textContent = text;
+  var from = parseStatNum(el.textContent), to = parseStatNum(text);
   el.classList.remove("tick");
   void el.offsetWidth;
   el.classList.add("tick");
+  if(reducedMotion || from == null || to == null || from === to){ el.textContent = text; return; }
+  var token = (el._countToken || 0) + 1;
+  el._countToken = token;
+  var start = null, dur = 380;
+  function step(ts){
+    if(el._countToken !== token) return;
+    if(start == null) start = ts;
+    var p = Math.min(1, (ts - start) / dur);
+    var e = 1 - Math.pow(1 - p, 3);
+    el.textContent = formatStatNum(from + (to - from) * e, text);
+    if(p < 1) requestAnimationFrame(step);
+    else el.textContent = text;
+  }
+  requestAnimationFrame(step);
+  setTimeout(function(){ if(el._countToken === token) el.textContent = text; }, dur + 80);
 }
 function setHTML(id, html){ var el = $(id); if(el) el.innerHTML = html; }
 
@@ -3451,6 +3634,118 @@ function updateHeroState(){
   }
   el.classList.remove("ok", "warn", "bad", "off");
   el.classList.add(cls);
+  globeState = cls;
+  drawGlobe();
+}
+
+/* Overview hero globe: vanilla canvas wireframe sphere + orbital
+   rings. Green pulse when connected, crimson when under attack or
+   Stage >= 2 (warn/bad both crimson; bad pulses faster), dim grey
+   when disconnected. rAF pauses when the tab is hidden or under
+   reduced-motion (one static frame is drawn instead). */
+var globeState = "off";
+var globeAngle = 0, globeRAF = null, globeRunning = false;
+function globeColors(){
+  if(globeState === "ok") return {main: "#34d399", soft: "rgba(52,211,153,.4)"};
+  if(globeState === "warn") return {main: "#f43f5e", soft: "rgba(244,63,94,.4)"};
+  if(globeState === "bad") return {main: "#f43f5e", soft: "rgba(244,63,94,.55)"};
+  return {main: "#64748b", soft: "rgba(100,116,139,.35)"};
+}
+function drawGlobe(){
+  var cv = $("heroGlobe");
+  if(!cv) return;
+  var ctx = cv.getContext("2d");
+  if(!ctx) return;
+  var W = cv.width, H = cv.height, cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 16;
+  ctx.clearRect(0, 0, W, H);
+  var c = globeColors();
+  var t = Date.now() / 1000;
+  var pulse = globeState === "off" ? 0 : (globeState === "bad" ? 0.5 + 0.5 * Math.sin(t * 6) : 0.5 + 0.5 * Math.sin(t * 2.2));
+  ctx.save();
+  ctx.shadowColor = c.main;
+  ctx.shadowBlur = 10 + pulse * 20;
+  ctx.strokeStyle = c.main;
+  ctx.globalAlpha = 0.9;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+  var i, a, rx;
+  for(i = 0; i < 5; i++){
+    a = globeAngle + i * Math.PI / 5;
+    rx = Math.abs(Math.cos(a)) * R;
+    if(rx < 1.5) rx = 1.5;
+    ctx.globalAlpha = 0.45;
+    ctx.strokeStyle = c.main;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, R, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  [-0.55, -0.28, 0, 0.28, 0.55].forEach(function(f){
+    var y = cy + f * R, w = Math.sqrt(Math.max(0, 1 - f * f)) * R;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.ellipse(cx, y, w, R * 0.16, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  /* Two tilted orbital rings with a satellite dot each. */
+  [[-0.5, 1.35, globeAngle * 1.6], [0.42, 1.5, -globeAngle * 1.2]].forEach(function(rg){
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = c.soft;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, R * rg[1], R * 0.42, rg[0], 0, Math.PI * 2);
+    ctx.stroke();
+    var da = rg[2] % (Math.PI * 2);
+    var dx = cx + Math.cos(da) * R * rg[1] * Math.cos(rg[0]) - Math.sin(da) * R * 0.42 * Math.sin(rg[0]);
+    var dy = cy + Math.cos(da) * R * rg[1] * Math.sin(rg[0]) + Math.sin(da) * R * 0.42 * Math.cos(rg[0]);
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = c.main;
+    ctx.beginPath();
+    ctx.arc(dx, dy, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+function globeTick(){
+  if(document.hidden || reducedMotion){ globeRunning = false; drawGlobe(); return; }
+  globeAngle += 0.008;
+  drawGlobe();
+  globeRAF = requestAnimationFrame(globeTick);
+}
+function startGlobe(){
+  if(globeRunning) return;
+  if(reducedMotion){ drawGlobe(); return; }
+  globeRunning = true;
+  globeRAF = requestAnimationFrame(globeTick);
+}
+
+/* 3D tilt + cursor spotlight (pointer devices only, disabled under
+   reduced-motion). Inline transform includes the hover lift, so the
+   CSS hover rule is not fought; leaving clears the inline style. */
+var tiltOK = !reducedMotion && !!(window.matchMedia && window.matchMedia("(pointer:fine)").matches);
+function tiltTransform(px, py){
+  return "perspective(1000px) rotateX(" + (-py * 6).toFixed(2) + "deg) rotateY(" + (px * 6).toFixed(2) + "deg) translateY(-2px)";
+}
+function bindTilt(){
+  if(!tiltOK) return;
+  document.querySelectorAll(".ov-grid .card, .hero, #view-stage .cards .card, #view-reports .cards .card").forEach(function(el){
+    el.classList.add("tilt");
+    el.addEventListener("pointermove", function(ev){
+      var r = el.getBoundingClientRect();
+      if(!r.width || !r.height) return;
+      var px = (ev.clientX - r.left) / r.width - 0.5;
+      var py = (ev.clientY - r.top) / r.height - 0.5;
+      px = Math.max(-0.5, Math.min(0.5, px));
+      py = Math.max(-0.5, Math.min(0.5, py));
+      el.style.setProperty("--mx", ((px + 0.5) * 100).toFixed(1) + "%");
+      el.style.setProperty("--my", ((py + 0.5) * 100).toFixed(1) + "%");
+      el.style.transform = tiltTransform(px, py);
+    });
+    el.addEventListener("pointerleave", function(){ el.style.transform = ""; });
+  });
 }
 /* KPI mini-gauge: ring circumference for r=15.5 is 97.4. */
 function setGauge(id, pct){
@@ -3474,6 +3769,7 @@ function loadStageState(){
     heroStage = stage; heroAttack = !!r.UNDER_ATTACK;
     setHTML("heroStage", stageBadge(stage));
     updateHeroState();
+    syncStageControls(r);
     return r;
   }).catch(function(){
     setHTML("cStage", "—");
@@ -3484,6 +3780,7 @@ function loadStageState(){
     heroStage = null; heroAttack = false;
     setHTML("heroStage", "—");
     updateHeroState();
+    syncStageControls(null);
     return null;
   });
 }
@@ -3890,6 +4187,21 @@ function closeRuleModal(){
   if(ruleModalLastFocus && ruleModalLastFocus.focus) ruleModalLastFocus.focus();
 }
 
+/* IP entry drawer (same pattern as the rule/domain drawers): the
+   add-entry form lives inside it verbatim; closing never clears
+   the page-level status lines. */
+var ipModalLastFocus = null;
+function openIpModal(){
+  ipModalLastFocus = document.activeElement;
+  $("ipModal").hidden = false;
+  var t = $("ipEntryTarget");
+  if(t) t.focus();
+}
+function closeIpModal(){
+  $("ipModal").hidden = true;
+  if(ipModalLastFocus && ipModalLastFocus.focus) ipModalLastFocus.focus();
+}
+
 function loadRules(force){
   if(editingIndex !== null && !force) return Promise.resolve();
   setText("rulesDomain", currentDomain);
@@ -3993,8 +4305,8 @@ function ipEntryRows(entries, listName){
 function loadIPLists(){
   setText("ipListsDomain", currentDomain);
   return domainAction(currentDomain, "GET_IP_LISTS").then(function(r){
-    var h = '<div class="panel"><h2>' + t("ipListAllow") + '</h2>' + ipEntryRows(r.ALLOWLIST || [], "allowlist") + "</div>"
-      + '<div class="panel"><h2>' + t("ipListBlock") + '</h2>' + ipEntryRows(r.BLOCKLIST || [], "blocklist") + "</div>";
+    var h = '<div class="ip-grid"><div class="panel ip-allow"><h2>' + t("ipListAllow") + '</h2>' + ipEntryRows(r.ALLOWLIST || [], "allowlist") + "</div>"
+      + '<div class="panel ip-block"><h2>' + t("ipListBlock") + '</h2>' + ipEntryRows(r.BLOCKLIST || [], "blocklist") + "</div></div>";
     setHTML("ipListsBody", h);
     document.querySelectorAll("[data-ip-del-target]").forEach(function(btn){
       btn.addEventListener("click", function(){
@@ -4030,6 +4342,7 @@ function submitIPEntryForm(ev){
   showInline("ipListsError", "ipListsOk", "", "");
   domainWrite(currentDomain, "ADD_IP_ENTRY", params).then(function(){
     $("ipEntryForm").reset();
+    closeIpModal();
     showInline("ipListsError", "ipListsOk", "", t("ipEntryAdded"));
     return loadIPLists();
   }).catch(function(err){
@@ -4279,12 +4592,28 @@ function tailLine(entry){
   if(entry.method || entry.path) parts.push((entry.method || "") + " " + (entry.path || ""));
   return parts.join(" ");
 }
+/* Terminal syntax highlighting: every field is escaped first, then
+   wrapped in a class span (method/IP/level get their own colors). */
+function tailLineHTML(entry){
+  var h = '<span class="tl-ts">' + esc(entry.ts || "") + '</span> '
+    + '<span class="tl-level tl-' + esc(entry.level || "info") + '">[' + esc(entry.level || "info") + ']</span> '
+    + '<span class="tl-event">' + esc(entry.event || "") + '</span> '
+    + '<span class="tl-domain">' + esc(entry.domain || "") + '</span>';
+  if(entry.ip) h += ' <span class="tl-ip">' + esc(entry.ip) + '</span>';
+  if(entry.action) h += ' <span class="tl-action">' + esc(entry.action) + '</span>';
+  if(entry.method || entry.path) h += ' <span class="tl-method">' + esc(entry.method || "") + '</span> <span class="tl-path">' + esc(entry.path || "") + '</span>';
+  return h;
+}
+function syncTailSwitch(on){
+  var sw = $("tailSwitch");
+  if(sw) sw.setAttribute("aria-checked", on ? "true" : "false");
+}
 function appendTail(entry){
   var box = $("tailBody");
   if(tailLines === 0) box.textContent = "";
   var div = document.createElement("div");
   if(entry.level === "warn") div.className = "tl-warn";
-  div.textContent = tailLine(entry);
+  div.innerHTML = tailLineHTML(entry);
   box.appendChild(div);
   tailLines++;
   while(tailLines > 100 && box.firstChild){
@@ -4301,6 +4630,7 @@ function startTail(){
   setText("tailStatus", t("tailRunning"));
   $("tailStartBtn").disabled = true;
   $("tailStopBtn").disabled = false;
+  syncTailSwitch(true);
   var headers = {"X-SonuShield-CSRF": "1"};
   if(apiSecret){ headers["X-SonuShield-Secret"] = apiSecret; }
   var controller = tailController;
@@ -4343,6 +4673,7 @@ function stopTail(){
   setText("tailStatus", t("tailStopped"));
   $("tailStartBtn").disabled = false;
   $("tailStopBtn").disabled = true;
+  syncTailSwitch(false);
 }
 function loadCSPReports(){
   return domainAction(currentDomain, "GET_CSP_REPORTS?limit=50").then(function(r){
@@ -4497,6 +4828,77 @@ function setField(id, value){
   if(el) el.value = (value == null ? "" : String(value));
 }
 
+/* Pill toggle switches: the visible switch syncs both ways with its
+   underlying <select> (kept in the DOM, visually hidden). Clicking
+   the switch sets the select value and fires a bubbling change event
+   so existing handlers (e.g. the settings sticky bar) see it; loads
+   call the sync functions below because setField writes values
+   directly without firing change. */
+function syncSwitch(swId, selId){
+  var sw = $(swId), sel = $(selId);
+  if(!sw || !sel) return;
+  sw.setAttribute("aria-checked", sel.value === "true" ? "true" : "false");
+}
+function bindSwitch(swId, selId){
+  var sw = $(swId), sel = $(selId);
+  if(!sw || !sel) return;
+  sw.addEventListener("click", function(){
+    sel.value = sel.value === "true" ? "false" : "true";
+    sel.dispatchEvent(new Event("change", {bubbles: true}));
+    syncSwitch(swId, selId);
+  });
+  sel.addEventListener("change", function(){ syncSwitch(swId, selId); });
+  syncSwitch(swId, selId);
+}
+function syncSettingsSwitches(){
+  syncSwitch("swAdaptivePow", "setAdaptivePow");
+  syncSwitch("swWafInspectBody", "setWafInspectBody");
+  syncSwitch("swRulesDryRun", "setRulesDryRun");
+}
+function syncMaintSwitch(){
+  var on = $("maintEnabled") && $("maintEnabled").value === "true";
+  syncSwitch("swMaint", "maintEnabled");
+  var form = $("maintForm");
+  if(form) form.classList.toggle("maint-on", !!on);
+}
+
+/* Stage controls: status rings, under-attack master switch, and the
+   segmented control's sliding indicator. State comes only from the
+   live stage API (loadStageState); the indicator follows the locked
+   stage, or Automatic when unlocked/unknown. */
+var stageLockedState = false;
+function syncStageSeg(){
+  var seg = $("stageSeg"), ind = $("stageSegInd");
+  if(!seg || !ind) return;
+  var target = "0";
+  if(stageLockedState && heroStage != null) target = heroStage;
+  var active = null;
+  seg.querySelectorAll("[data-stage]").forEach(function(b){
+    var on = b.getAttribute("data-stage") === target;
+    b.classList.toggle("seg-active", on);
+    if(on) active = b;
+  });
+  if(!active) return;
+  ind.style.left = active.offsetLeft + "px";
+  ind.style.width = active.offsetWidth + "px";
+}
+function syncStageControls(r){
+  var stage = r && r.STAGE != null ? String(r.STAGE) : null;
+  stageLockedState = !!(r && r.STAGE_LOCKED);
+  var attack = !!(r && r.UNDER_ATTACK);
+  var ringCls = "ring-off";
+  if(stage === "3" || (stage && Number(stage) > 3)) ringCls = "ring-bad";
+  else if(attack || stage === "2") ringCls = "ring-warn";
+  else if(stage != null) ringCls = "ring-ok";
+  var cur = $("stageCardCurrent"), lok = $("stageCardLocked"), atk = $("stageCardAttack");
+  if(cur){ cur.classList.remove("ring-ok", "ring-warn", "ring-bad", "ring-off"); cur.classList.add(ringCls); }
+  if(lok){ lok.classList.remove("ring-ok", "ring-warn", "ring-bad", "ring-off"); lok.classList.add(stageLockedState ? "ring-warn" : "ring-ok"); }
+  if(atk){ atk.classList.remove("ring-ok", "ring-warn", "ring-bad", "ring-off"); atk.classList.add(attack ? "ring-bad" : "ring-ok"); }
+  var asw = $("attackSwitch");
+  if(asw) asw.setAttribute("aria-checked", attack ? "true" : "false");
+  syncStageSeg();
+}
+
 function loadSettings(){
   return domainAction(currentDomain, "GET_DOMAIN_CONFIG").then(function(r){
     setField("setBypassStage1", r.BYPASS_STAGE1);
@@ -4518,6 +4920,7 @@ function loadSettings(){
     showInline("settingsError", "settingsOk", "", "");
     /* Freshly loaded values are clean: hide the sticky save bar. */
     $("settingsStickyBar").hidden = true;
+    syncSettingsSwitches();
   }).catch(function(err){
     showInline("settingsError", "settingsOk", t("errLoadSettings", err.message), "");
   });
@@ -5145,6 +5548,7 @@ function loadMaintenance(){
       + "</tbody></table>";
     setHTML("maintState", h);
     setField("maintEnabled", r.OVERRIDE_ENABLED ? "true" : "false");
+    syncMaintSwitch();
     if(!$("maintMessage").value) $("maintMessage").value = r.OVERRIDE_MESSAGE || "";
   }).catch(function(err){
     setHTML("maintState", '<div class="state state-error"><strong>' + t("errMaintLoad") + '</strong><br>' + esc(err.message) + '</div>');
@@ -5264,13 +5668,21 @@ function showView(name){
       v.classList.toggle("active", v.id === "view-about");
     });
   }
+  var activeView = document.querySelector(".view.active");
+  if(activeView){
+    /* Restart the entrance choreography on every switch, including
+       re-clicking the same nav item. */
+    activeView.classList.remove("active");
+    void activeView.offsetWidth;
+    activeView.classList.add("active");
+  }
   if(!connected) return;
   if(name === "settings"){ loadSettings(); loadProxyFeatures(); loadBackups(); }
   else if(name === "reports"){ loadReport(); loadAttackMap(); }
   else if(name === "domains"){ loadDomains(); loadDomainPanel(); loadTenants(); loadTemplates(); }
   else if(name === "rules"){ loadRules(true); }
   else if(name === "iplists"){ loadIPLists(); }
-  else if(name === "stage"){ loadStageState(); loadMaintenance(); }
+  else if(name === "stage"){ loadStageState(); loadMaintenance(); syncStageSeg(); }
   else if(name === "logs"){ loadLogs(); }
   else if(name === "insights"){ loadInsights(); }
   else if(name === "approvals"){ loadApprovals(); }
@@ -5361,6 +5773,61 @@ $("clearLogsBtn").addEventListener("click", function(){ clearLogs(false); });
 $("clearAllLogsBtn").addEventListener("click", function(){ clearLogs(true); });
 $("tailStartBtn").addEventListener("click", startTail);
 $("tailStopBtn").addEventListener("click", stopTail);
+
+/* ===== Visual engine init: toggles, globe, tilt, terminal, drawers ===== */
+/* Theme Sun/Moon switch drives the same applyTheme logic. */
+var themeSwitchEl = $("themeSwitch");
+if(themeSwitchEl) themeSwitchEl.addEventListener("click", function(){
+  applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+});
+/* Generic pill switches for the settings + maintenance selects. */
+bindSwitch("swAdaptivePow", "setAdaptivePow");
+bindSwitch("swWafInspectBody", "setWafInspectBody");
+bindSwitch("swRulesDryRun", "setRulesDryRun");
+bindSwitch("swMaint", "maintEnabled");
+$("maintEnabled").addEventListener("change", syncMaintSwitch);
+/* Under-attack confirmation pulse (the API call itself stays on the
+   existing [data-underattack] handler). */
+var attackSw = $("attackSwitch");
+if(attackSw) attackSw.addEventListener("click", function(){
+  attackSw.classList.remove("pulse-on");
+  void attackSw.offsetWidth;
+  attackSw.classList.add("pulse-on");
+  setTimeout(function(){ attackSw.classList.remove("pulse-on"); }, 650);
+});
+/* Live Stream switch drives the existing SSE tail start/stop. */
+var tailSw = $("tailSwitch");
+if(tailSw) tailSw.addEventListener("click", function(){
+  if(tailController) stopTail(); else startTail();
+});
+/* Stage reference matrix + log search filter bar collapse. */
+var matrixToggle = $("stageMatrixToggle"), matrixPanel = $("stageMatrixPanel");
+if(matrixToggle && matrixPanel) matrixToggle.addEventListener("click", function(){
+  var collapsed = matrixPanel.classList.toggle("collapsed");
+  matrixToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+});
+var lsBtn = $("lsCollapseBtn"), lsPanel = $("lsPanel");
+if(lsBtn && lsPanel) lsBtn.addEventListener("click", function(){
+  var collapsed = lsPanel.classList.toggle("collapsed");
+  lsBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+});
+/* IP entry drawer open/close (backdrop click + Escape included). */
+$("ipAddBtn").addEventListener("click", openIpModal);
+$("ipModalClose").addEventListener("click", closeIpModal);
+$("ipModal").addEventListener("click", function(ev){ if(ev.target === $("ipModal")) closeIpModal(); });
+document.addEventListener("keydown", function(ev){
+  if(ev.key === "Escape" && $("ipModal") && !$("ipModal").hidden) closeIpModal();
+});
+/* 3D tilt on KPI cards and hero panels (pointer devices only). */
+bindTilt();
+/* Hero globe + mesh pause on hidden tab. */
+startGlobe();
+document.addEventListener("visibilitychange", function(){
+  document.documentElement.classList.toggle("anim-paused", document.hidden);
+  if(document.hidden){ if(globeRAF) cancelAnimationFrame(globeRAF); globeRunning = false; }
+  else startGlobe();
+});
+window.addEventListener("resize", syncStageSeg);
 $("settingsForm").addEventListener("submit", submitSettings);
 $("settingsReloadBtn").addEventListener("click", function(){ loadSettings(); });
 $("backupsReloadBtn").addEventListener("click", function(){ loadBackups(); });
